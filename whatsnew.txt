@@ -1,0 +1,27 @@
+### 2.0
+
+- jQuery integration
+- Major performance improvements
+- Ready-to-use PHP integration
+
+- Configurable multi-line scales
+- Configurable multi-column grid with optional sorting and Drag-n-Drop
+- Configurable popup form for editing tasks
+- All text elements can be defined through templates
+- All date strings can be configured
+- All text labels can be localized
+
+- Default skin changed to "terrace"
+- 3 new skins
+- Bars can have an optional inner resizer
+- Optional UI for task creation
+- Vertical and horizontal lines can be colored based on custom rules
+
+- Loading and serialization from JSON
+- Loading and serialization with the simplified XML format
+- 3 types of task linking
+- Gantt charts work on touch devices
+
+- A LOT of events added
+- Templates and configuration options added
+- API simplified, it uses a single gantt object instead of a bunch of different objects
