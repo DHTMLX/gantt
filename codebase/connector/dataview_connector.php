@@ -60,7 +60,6 @@ class DataViewConnector extends Connector{
 		foreach($this->attributes as $k=>$v)
 			$attributes .= " ".$k."='".$v."'";
 
-		$start.= ">";
 		if ($this->dload){
 			if ($pos=$this->request->get_start())
 				return "<data pos='".$pos."'".$attributes.">";

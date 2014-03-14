@@ -1,4 +1,8 @@
-scheduler.locale = {
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+gantt.locale = {
 	date: {
 		month_full: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"],
 		month_short: ["Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру"],
@@ -20,7 +24,7 @@ scheduler.locale = {
 		confirm_deleting: "Подія вилучиться назавжди. Ви впевнені?",
 		section_description: "Опис",
 		section_time: "Часовий проміжок",
-
+		section_type:"Тип",
         /* grid columns */
 
         column_text : "Task name",
@@ -33,6 +37,10 @@ scheduler.locale = {
 		confirm_link_deleting:"will be deleted",
 		link_start: " (start)",
 		link_end: " (end)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
         minutes: "Minutes",

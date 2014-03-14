@@ -160,7 +160,7 @@ class DataProcessor{
 				
 			$mode = $this->status_to_mode($action->get_status());
 			if (!$this->connector->access->check($mode)){
-				LogMaster::log("Access control: {$operation} operation blocked");
+				LogMaster::log("Access control: {$mode} operation blocked");
 				$action->error();
 			} else {
 				$check = $this->connector->event->trigger("beforeProcessing",$action);

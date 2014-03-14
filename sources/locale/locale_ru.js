@@ -1,3 +1,7 @@
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
 gantt.locale = {
 	date: {
 		month_full: ["Январь", "Февраль", "Март", "Апрель", "Maй", "Июнь", "Июль", "Август", "Сентябрь", "Oктябрь", "Ноябрь", "Декабрь"],
@@ -20,7 +24,7 @@ gantt.locale = {
 		confirm_deleting: "Событие будет удалено безвозвратно, продолжить?",
 		section_description: "Описание",
 		section_time: "Период времени",
-
+		section_type:"Тип",
         /* grid columns */
 
         column_text : "Задача",
@@ -33,6 +37,10 @@ gantt.locale = {
 		confirm_link_deleting:"будет удалена",
 		link_start: " (начало)",
 		link_end: " (конец)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
         minutes: "Минута",

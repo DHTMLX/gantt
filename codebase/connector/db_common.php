@@ -656,10 +656,10 @@ abstract class DBDataWrapper extends DataWrapper{
 			$id    = $this->config->id["db_name"];
 			$idvalue = $action->get_new_id();
 
-			$max = $this->queryOne("SELECT MAX($order) as maxvalue FROM $table");
-			$maxvalue = $max["maxvalue"] + 1;
+			$max = $this->queryOne("SELECT MAX($order) as dhx_maxvalue FROM $table");
+			$dhx_maxvalue = $max["dhx_maxvalue"] + 1;
 
-			$this->query("UPDATE $table SET $order = $maxvalue WHERE $id = $idvalue");
+			$this->query("UPDATE $table SET $order = $dhx_maxvalue WHERE $id = $idvalue");
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
-This software is allowed to use under GPL or you need to obtain Commercial or Enterise License 
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
  to use it in non-GPL project. Please contact sales@dhtmlx.com for details
 */
 gantt._tooltip = {};
@@ -92,10 +92,18 @@ gantt.attachEvent("onMouseMove", function(event_id, ev) { // (gantt event_id, br
 		if(document.createEventObject && !document.createEvent)
 			ev = document.createEventObject(ev);
 
+		var delay = this.config.tooltip_timeout;
+
+		if(this._tooltip_id && !event_id){
+			if(!isNaN(this.config.tooltip_hide_timeout)){
+				delay = this.config.tooltip_hide_timeout;
+			}
+		}
+
 		clearTimeout(gantt._tooltip_ev_timer);
 		gantt._tooltip_ev_timer = setTimeout(function(){
 			gantt._init_tooltip(event_id, ev);
-		}, gantt.config.tooltip_timeout);
+		}, delay);
 
 	}else{
 		gantt._init_tooltip(event_id, ev);

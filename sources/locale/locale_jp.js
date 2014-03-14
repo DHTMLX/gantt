@@ -1,7 +1,11 @@
 /*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+/*
  Translation by Genexus Japan Inc.
  */
-scheduler.locale = {
+gantt.locale = {
 	date: {
 		month_full: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
 		month_short: [ "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
@@ -23,7 +27,7 @@ scheduler.locale = {
 		confirm_deleting: "イベント完全に削除されます、宜しいですか？",
 		section_description: "デスクリプション",
 		section_time: "期間",
-
+		section_type:"Type",
         /* grid columns */
 
         column_text : "Task name",
@@ -36,6 +40,10 @@ scheduler.locale = {
 		confirm_link_deleting:"will be deleted",
 		link_start: " (start)",
 		link_end: " (end)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
         minutes: "Minutes",

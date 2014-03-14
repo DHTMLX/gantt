@@ -1,4 +1,8 @@
-﻿scheduler.locale = {
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+gantt.locale = {
 	date: {
 		month_full: ["Január", "Február", "Marec", "Apríl", "Máj", "Jún", "Júl", "August", "September", "Október", "November", "December"],
 		month_short: ["Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sept", "Okt", "Nov", "Dec"],
@@ -20,7 +24,7 @@
 		confirm_deleting: "Udalosť bude natrvalo vymazaná. Skutočne?",
 		section_description: "Poznámky",
 		section_time: "Doba platnosti",
-
+		section_type:"Type",
         /* grid columns */
 
         column_text : "Task name",
@@ -33,6 +37,10 @@
 		confirm_link_deleting:"will be deleted",
 		link_start: " (start)",
 		link_end: " (end)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
         minutes: "Minutes",

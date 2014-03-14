@@ -1,3 +1,7 @@
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
 gantt.locale = {
 	date: {
 		month_full: ["Студзень", "Люты", "Сакавік", "Красавік", "Maй", "Чэрвень", "Ліпень", "Жнівень", "Верасень", "Кастрычнік", "Лістапад", "Снежань"],
@@ -20,7 +24,7 @@ gantt.locale = {
 		confirm_deleting: "Падзея будзе выдалена незваротна, працягнуць?",
 		section_description: "Апісанне",
 		section_time: "Перыяд часу",
-
+		section_type:"Тып",
         /* grid columns */
 
         column_text : "Задача",
@@ -33,6 +37,10 @@ gantt.locale = {
 		confirm_link_deleting:"будзе выдалена",
 		link_start: "(пачатак)",
 		link_end: "(канец)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
         minutes: "Хвiлiна",

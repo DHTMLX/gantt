@@ -1,3 +1,16 @@
+### 2.1
+- Milestone and Projects support
+- Custom configuration of the lightbox for different task types
+- Non-linear scales, ability to skip time from the scale
+
+- Ability to calculate duration in work days/hours instead of calendar time
+
+- Support of multiple gantts on the page (requires PRO version)
+
+- Updated some localisations
+- Added more configurations and API methods events
+- Various bugfixes
+
 ### 2.0
 
 - jQuery integration

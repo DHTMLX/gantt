@@ -1,4 +1,8 @@
-scheduler.locale = {
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+gantt.locale = {
 	date: {
 		month_full: ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"],
 		month_short: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
@@ -20,7 +24,7 @@ scheduler.locale = {
 		confirm_deleting: "الحدث سيتم حذفها نهائيا ، هل أنت متأكد؟",
 		section_description: "الوصف",
 		section_time: "الفترة الزمنية",
-
+		section_type:"Type",
         /* grid columns */
 
         column_text : "Task name",
@@ -34,6 +38,9 @@ scheduler.locale = {
 		link_start: " (start)",
 		link_end: " (end)",
 
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
         minutes: "Minutes",
         hours: "Hours",

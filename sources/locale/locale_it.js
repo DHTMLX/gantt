@@ -1,4 +1,8 @@
-scheduler.locale = {
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+gantt.locale = {
 	date: {
 		month_full: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
 		month_short: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"],
@@ -20,7 +24,7 @@ scheduler.locale = {
 		confirm_deleting: "L'evento sarà eliminato, siete sicuri?",
 		section_description: "Descrizione",
 		section_time: "Periodo di tempo",
-
+		section_type:"Type",
         /* grid columns */
 
         column_text : "Task name",
@@ -33,6 +37,10 @@ scheduler.locale = {
 		confirm_link_deleting:"will be deleted",
 		link_start: " (start)",
 		link_end: " (end)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
         minutes: "Minutes",

@@ -1,5 +1,5 @@
 /*
-This software is allowed to use under GPL or you need to obtain Commercial or Enterise License 
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
  to use it in non-GPL project. Please contact sales@dhtmlx.com for details
 */
 gantt.config.quickinfo_buttons = ["icon_delete","icon_edit"];
@@ -67,8 +67,8 @@ gantt._show_quick_info = function(pos){
 	var qi = gantt._quick_info_box;
 
 	if (gantt.config.quick_info_detached){
-		if (!qi.parentNode
-			|| qi.parentNode.nodeName.toLowerCase() == "#document-fragment")//IE8
+		if (!qi.parentNode || 
+			qi.parentNode.nodeName.toLowerCase() == "#document-fragment")//IE8
 			gantt.$task_data.appendChild(qi);
 		var width = qi.offsetWidth;
 		var height = qi.offsetHeight;
@@ -106,10 +106,10 @@ gantt._init_quick_info = function(){
 		if (gantt.$testmode)
 			qi.className += " dhx_no_animate";
 	//title
-		var html = "<div class=\"dhx_cal_qi_title\">"
-			+ "<div class=\"dhx_cal_qi_tcontent\"></div><div  class=\"dhx_cal_qi_tdate\"></div>"
-			+"</div>"
-			+"<div class=\"dhx_cal_qi_content\"></div>";
+		var html = "<div class=\"dhx_cal_qi_title\">" +
+			"<div class=\"dhx_cal_qi_tcontent\"></div><div  class=\"dhx_cal_qi_tdate\"></div>" +
+			"</div>" +
+			"<div class=\"dhx_cal_qi_content\"></div>";
 
 	//buttons
 		html += "<div class=\"dhx_cal_qi_controls\">";

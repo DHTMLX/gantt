@@ -269,7 +269,7 @@ class JSONCommonDataItem extends DataItem{
 	/*! return self as XML string
 	*/
 	function to_xml(){
-		if ($this->skip) return "";
+		if ($this->skip) return false;
 		
 		$data = array(
 			'id' => $this->get_id()
@@ -489,7 +489,7 @@ class JSONTreeCommonDataItem extends TreeCommonDataItem{
 	/*! return self as XML string
 	*/
 	function to_xml_start(){
-		if ($this->skip) return "";
+		if ($this->skip) return false;
 
 		$data = array( "id" => $this->get_id() );
 		for ($i=0; $i<sizeof($this->config->text); $i++){

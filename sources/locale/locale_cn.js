@@ -1,11 +1,15 @@
 /*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+/*
 Translation by FreezeSoul
 */
-scheduler.config.day_date="%M %d日 %D";
-scheduler.config.default_date="%Y年 %M %d日";
-scheduler.config.month_date="%Y年 %M";
+gantt.config.day_date="%M %d日 %D";
+gantt.config.default_date="%Y年 %M %d日";
+gantt.config.month_date="%Y年 %M";
 
-scheduler.locale={
+gantt.locale={
 	date: {
 		month_full: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"],
 		month_short: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"],
@@ -27,7 +31,7 @@ scheduler.locale={
 		confirm_deleting: "是否删除日程?",
 		section_description: "描述",
 		section_time: "时间范围",
-
+		section_type:"Type",
         /* grid columns */
 
         column_text : "Task name",
@@ -41,6 +45,9 @@ scheduler.locale={
 		link_start: " (start)",
 		link_end: " (end)",
 
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
         minutes: "Minutes",
         hours: "Hours",

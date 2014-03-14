@@ -1,4 +1,8 @@
 /*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
+/*
 
  TRANSLATION BY MATTHEUS PIROVANI RORIZ GONЗALVES
 
@@ -8,7 +12,7 @@
 
  */
 
-scheduler.locale = {
+gantt.locale = {
 	date: {
 		month_full: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
 		month_short: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
@@ -30,13 +34,13 @@ scheduler.locale = {
 		confirm_deleting: "Tem certeza que deseja excluir?",
 		section_description: "Descrição",
 		section_time: "Período de tempo",
-
+		section_type:"Type",
         /* grid columns */
 
-        column_text : "Nome tarefa",
-        column_start_date : "Data início",
-        column_duration : "Duração",
-        column_add : "",
+		column_text : "Nome tarefa",
+		column_start_date : "Data início",
+		column_duration : "Duração",
+		column_add : "",
 
 		/* link confirmation */
 		link: "Link",
@@ -44,13 +48,16 @@ scheduler.locale = {
 		link_start: " (início)",
 		link_end: " (fim)",
 
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
-        minutes: "Minutos",
-        hours: "Horas",
-        days: "Dias",
-        weeks: "Semanas",
-        months: "Meses",
-        years: "Anos"
+
+		minutes: "Minutos",
+		hours: "Horas",
+		days: "Dias",
+		weeks: "Semanas",
+		months: "Meses",
+		years: "Anos"
 	}
 };
-

@@ -1,3 +1,7 @@
+/*
+This software is allowed to use under GPL or you need to obtain Commercial or Enterprise License
+ to use it in non-GPL project. Please contact sales@dhtmlx.com for details
+*/
 gantt.locale = {
 	date: {
 		month_full: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
@@ -17,7 +21,7 @@ gantt.locale = {
 
 		section_description:"Description",
 		section_time:"Période",
-
+		section_type:"Type",
 
         /* grid columns */
 
@@ -32,6 +36,10 @@ gantt.locale = {
 		confirm_link_deleting:"seront supprimées",
 		link_start: "(début)",
 		link_end: "(fin)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
 
     	minutes: "Minutes",
