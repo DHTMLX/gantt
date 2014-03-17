@@ -4467,7 +4467,7 @@ gantt.json = {
 
 		gantt.eachTask(function(obj){
 			tasks.push(this._copyObject(obj));
-		}, this.config.root_id, this);
+		}, gantt.config.root_id, this);
 		for (var key in gantt._lpull)
 			links.push(this._copyLink(gantt._lpull[key]));
 
@@ -4632,7 +4632,7 @@ gantt.oldxml = {
 gantt.serverList = function(name, array) {
 	if (array) {
 		this.serverList[name] = array.slice(0);
-	}else if(this.serverList[name]){
+	}else if(!this.serverList[name]){
 		this.serverList[name] = [];
 	}
 	return this.serverList[name];
