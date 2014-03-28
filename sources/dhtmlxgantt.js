@@ -1213,7 +1213,7 @@ if(!window.dhtmlx)
 	};
 })();
 gantt = {
-	version:"2.1.0"
+	version:"2.1.1"
 };
 
 /*jsl:ignore*/
@@ -1619,12 +1619,26 @@ gantt._init_grid = function() {
 			parent.$open = true;
 
         var item = { text:gantt.locale.labels.new_task, start_date:this.templates.xml_format(startDate), duration: 1, progress: 0, parent: id };
+		item.id = dhtmlx.uid();
         this.callEvent("onTaskCreated", [item]);
-        this.addTask(item);
-        this.showTask(item.id);
-		this.selectTask(item.id);
-        if (this.config.details_on_create)
-            this.showLightbox(item.id);
+
+        if (this.config.details_on_create){
+			item.$new = true;
+			this._pull[item.id] = this._init_task(item);
+
+			this._add_branch(item);
+			item.$level = this._item_level(item);
+			this.selectTask(item.id);
+			this.refreshData();
+			this.showLightbox(item.id);
+		}else{
+			this.addTask(item);
+
+			this.showTask(item.id);
+			this.selectTask(item.id);
+		}
+
+
     }, this);
 
 
@@ -4917,7 +4931,17 @@ gantt.updateTask = function(id, item) {
 gantt._add_branch = function(task){
 	if (!this._branches[task.parent])
 		this._branches[task.parent] = [];
-	this._branches[task.parent].push(task.id);
+	var branch = this._branches[task.parent];
+	var added_already = false;
+	for(var i = 0, length = branch.length; i < length; i++){
+		if(branch[i] == task.id){
+			added_already = true;
+			break;
+		}
+	}
+	if(!added_already)
+		branch.push(task.id);
+
 	this._sync_parent(task);
 	this._sync_order();
 };
@@ -4992,8 +5016,7 @@ gantt._deleteTask = function(id, silent) {
         this._dp.setUpdateMode("off");
     var branches = this._branches[item.id] || [];
 
-    if(this._selected_task == id)
-        this._selected_task = null;
+	this._update_flags(id, false);
 
     for (var i = 0; i < branches.length; i++) {
         this._silentStart();
@@ -5037,6 +5060,17 @@ gantt.clearAll = function() {
     this.callEvent("onClear", []);
 };
 
+gantt._update_flags = function(oldid, newid){
+	// TODO: need a proper way to update all possible flags
+	if (this._lightbox_id == oldid)
+		this._lightbox_id = newid;
+	if (this._selected_task == oldid){
+		this._selected_task = newid;
+	}
+	if (this._tasks_dnd.drag && this._tasks_dnd.drag.id == oldid){
+		this._tasks_dnd.drag.id = newid;
+	}
+};
 gantt.changeTaskId = function(oldid, newid) {
     var item = this._pull[newid] = this._pull[oldid];
     this._pull[newid].id = newid;
@@ -5045,8 +5079,7 @@ gantt.changeTaskId = function(oldid, newid) {
         if (this._pull[id].parent == oldid)
             this._pull[id].parent = newid;
     }
-    if (this._lightbox_id == oldid)
-        this._lightbox_id = newid;
+	this._update_flags(oldid, newid);
     this._replace_branch_child(item.parent, oldid, newid);
 
 	this.callEvent("onTaskIdChange", [oldid, newid]);
@@ -5108,7 +5141,7 @@ gantt.calculateEndDate = function(start, duration, unit){
 };
 
 gantt._init_task = function(task){
-    if (!dhtmlx.defined(task.id) || this._pull[task.id])
+    if (!dhtmlx.defined(task.id))
         task.id = dhtmlx.uid();
 
 	if(task.start_date)
@@ -5834,7 +5867,12 @@ gantt._init_lightbox_events = function(){
 
 
 gantt._cancel_lightbox=function(){
-    this.callEvent("onLightboxCancel",[this._lightbox_id, this.$new]);
+	var task = this.getLightboxValues();
+    this.callEvent("onLightboxCancel",[this._lightbox_id, task.$new]);
+	if(task.$new){
+		this._deleteTask(task.id, true);
+		this.refreshData();
+	}
     this.hideLightbox();
 };
 
@@ -5844,6 +5882,7 @@ gantt._save_lightbox=function(){
 		return;
 
     if (task.$new){
+		delete task.$new;
         this.addTask(task);
 	}else{
 		dhtmlx.mixin(this.getTask(task.id), task, true);
@@ -7211,7 +7250,14 @@ gantt.$click={
             var title = gantt.locale.labels.confirm_deleting_title;
 
             gantt._dhtmlx_confirm(question, title, function(){
-                gantt.deleteTask(id);
+				var task = gantt.getTask(id);
+				if(task.$new){
+					gantt._deleteTask(id, true);
+					gantt.refreshData();
+				}else{
+					gantt.deleteTask(id);
+				}
+
                 gantt.hideLightbox();
             });
         }
@@ -7655,8 +7701,24 @@ gantt.date={
 				break;
 			case "month": ndate.setMonth(ndate.getMonth()+inc); break;
 			case "year": ndate.setYear(ndate.getFullYear()+inc); break;
-			case "hour": ndate.setHours(ndate.getHours()+inc); break;
-			case "minute": ndate.setMinutes(ndate.getMinutes()+inc); break;
+			case "hour":
+				/*
+					adding hours/minutes via setHour(getHour() + inc) gives weird result when
+					adding one hour to the time before switch to a Daylight Saving time
+
+					example: //Sun Mar 30 2014 01:00:00 GMT+0100 (W. Europe Standard Time)
+					new Date(2014, 02, 30, 1).setHours(2)
+					>>Sun Mar 30 2014 01:00:00 GMT+0100 (W. Europe Standard Time)
+
+					setTime seems working as expected
+				 */
+				ndate.setTime(ndate.getTime()+inc * 60 * 60 * 1000);
+				break;
+			case "minute":
+
+				ndate.setTime(ndate.getTime() + inc * 60 * 1000);
+
+				break;
 			default:
 				return gantt.date["add_"+mode](date,inc,mode);
 		}
