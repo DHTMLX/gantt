@@ -4114,7 +4114,10 @@ gantt._get_task_coord = function(task, to_start, x_correction){
 	x_correction = x_correction || 0;
 
 	var isMilestone = (task.type == this.config.types.milestone);
-	var x = this.posFromDate((to_start || isMilestone) ? task.start_date : task.end_date),
+
+    var fromDate = (to_start || isMilestone) ? (task.start_date === undefined ? this._min_date : task.start_date) : (task.end_date === undefined ? this._max_date : task.end_date);
+    
+	var x = this.posFromDate(fromDate),
 		y = this._y_from_ind(this._get_visible_order(task.id));
 
 	if(isMilestone){
