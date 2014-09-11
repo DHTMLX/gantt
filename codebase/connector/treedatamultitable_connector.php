@@ -28,7 +28,7 @@ class TreeDataMultitableConnector extends TreeDataConnector{
 
 	public function xml_start(){
 		if (isset($_GET[$this->parent_name])) {
-			return "<data parent='".$this->render->level_id($_GET[$this->parent_name], $this->render->get_level() - 1)."'>";
+			return "<data parent='".$this->xmlentities($this->render->level_id($_GET[$this->parent_name], $this->render->get_level() - 1))."'>";
 		} else {
 			return "<data parent='0'>";
 		}

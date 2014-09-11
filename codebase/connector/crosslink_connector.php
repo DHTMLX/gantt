@@ -97,7 +97,7 @@ class CrossOptionsConnector extends Connector{
 	public function afterProcessing($action){
 		$status = $action->get_status();
 		
-		$master_key = $action->get_value($this->master_name);	
+		$master_key = $action->get_id();//value($this->master_name);	
 		$link_key = $action->get_value($this->link_name);
 		$link_key = explode(',', $link_key);
 		

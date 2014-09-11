@@ -1,3 +1,21 @@
+### 3.0
+- Support of Baselines, Deadlines and other custom elements of the timeline *
+- Critical path support *
+
+- Ability to display vertical lines in a timeline area (Today line, Status line, etc.)
+
+- Ability to resize Grid by D'n'D, ability to hide/show columns dynamically *
+- Simplified API for coloring tasks and links *
+- New performance-related options - dynamic loading and simple background rendering *
+
+- Extended configuration for managing 'readonly' state of the tasks
+- Extended set of methods for managing task tree hierarchy
+
+- Support of task types and ability to skip time from the scale was removed from a Free version of the component
+
+* The marked functionality requires Commercial or Enterprise license, and not provided under GPL
+
+
 ### 2.1
 - Milestone and Projects support
 - Custom configuration of the lightbox for different task types

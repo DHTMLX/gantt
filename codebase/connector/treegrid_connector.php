@@ -53,6 +53,7 @@ class TreeGridDataItem extends GridDataItem{
 **/
 class TreeGridConnector extends GridConnector{
 	protected $parent_name = 'id';
+	protected $rootId = "0";
 
 	/*! constructor
 		
@@ -82,7 +83,7 @@ class TreeGridConnector extends GridConnector{
 		if (isset($_GET[$this->parent_name]))
 			$this->request->set_relation($_GET[$this->parent_name]);
 		else
-			$this->request->set_relation("0");
+			$this->request->set_relation($this->rootId);
 
 		$this->request->set_limit(0,0); //netralize default reaction on dyn. loading mode
 	}
@@ -90,7 +91,7 @@ class TreeGridConnector extends GridConnector{
 	/*! renders self as  xml, starting part
 	*/	
 	protected function xml_start(){
-		return "<rows parent='".$this->request->get_relation()."'>";
+		return "<rows parent='".$this->xmlentities( $this->request->get_relation() )."'>";
 	}	
 }
 

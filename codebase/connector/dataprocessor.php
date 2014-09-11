@@ -488,11 +488,23 @@ class DataAction{
 	function to_xml(){
 		$str="<action type='{$this->status}' sid='{$this->id}' tid='{$this->nid}' ";
 		foreach ($this->attrs as $k => $v) {
-			$str.=$k."='".$v."' ";
+			$str.=$k."='".$this->xmlentities($v)."' ";
 		}
 		$str.=">{$this->output}</action>";	
 		return $str;
 	}
+
+	/*! replace xml unsafe characters
+		
+		@param string 
+			string to be escaped
+		@return 
+			escaped string
+	*/
+	public function xmlentities($string) { 
+   		return str_replace( array( '&', '"', "'", '<', '>', '’' ), array( '&amp;' , '&quot;', '&apos;' , '&lt;' , '&gt;', '&apos;' ), $string);
+	}
+
 	/*! convert self to string ( for logs )
 		
 		@return 

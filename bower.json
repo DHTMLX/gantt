@@ -1,9 +1,12 @@
 {
   "name": "gantt",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "homepage": "http://dhtmlx.com/docs/products/dhtmlxGantt/",
   "description": "JavaScript event calendar. Allows to manage events and appointments in different views",
-  "main": "codebase/dhtmlxgantt.js",
+  "main": [
+    "codebase/dhtmlxgantt.js",
+    "skins/dhtmlxgantt_terrace.css"
+  ],
   "keywords": [
     "calendar",
     "scheduler",

@@ -245,7 +245,7 @@ class MultitableTreeRenderStrategy extends TreeRenderStrategy {
 
 	private $level = 0;
 	private $max_level = null;
-	protected $sep = "#";
+	protected $sep = ",";
 	
 	public function __construct($conn) {
 		parent::__construct($conn);
@@ -341,7 +341,7 @@ class MultitableTreeRenderStrategy extends TreeRenderStrategy {
 		$this->max_level = $max_level;
 	}
 	public function parse_id($id, $set_level = true) {
-		$parts = explode('#', urldecode($id));
+		$parts = explode($this->sep, $id, 2);
 		if (count($parts) === 2) {
 			$level = $parts[0] + 1;
 			$id = $parts[1];

@@ -23,8 +23,8 @@ class OracleDBDataWrapper extends DBDataWrapper{
 		
 		
 		$mode = ($this->is_record_transaction() || $this->is_global_transaction())?OCI_DEFAULT:OCI_COMMIT_ON_SUCCESS;
-		$res=oci_execute($stm,$mode);
-		if ($res===false) throw new Exception("Oracle - sql execution failed\n".oci_error($this->connection));
+		$res = @oci_execute($stm,$mode);
+		if ($res===false) throw new Exception(oci_error($this->connection));
 		
 		$this->last_id=$out[0];
 		

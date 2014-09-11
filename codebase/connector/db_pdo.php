@@ -39,6 +39,31 @@ class PDODBDataWrapper extends DBDataWrapper{
 		return $sql;
 	}
 	
+	public function tables_list() {
+		$result = $this->query("SHOW TABLES");
+		if ($result===false) throw new Exception("MySQL operation failed\n".mysql_error($this->connection));
+
+		$tables = array();
+		while ($table = $result->next()) {
+			$tables[] = $table[0];
+		}
+		return $tables;
+	}
+
+	public function fields_list($table) {
+		$result = $this->query("SHOW COLUMNS FROM `".$table."`");
+		if ($result===false) throw new Exception("MySQL operation failed\n".mysql_error($this->connection));
+
+		$fields = array();
+        $id = "";
+		while ($field = $result->next()) {
+			if ($field['Key'] == "PRI")
+				$id = $field["Field"];
+            else
+			    $fields[] = $field["Field"];
+		}
+		return array("fields" => $fields, "key" => $id );
+	}
 		
 	public function get_next($res){
 		$data = $res->next();

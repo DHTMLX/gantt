@@ -290,6 +290,7 @@ class Connector {
 
 	public static $filter_var="dhx_filter";
 	public static $sort_var="dhx_sort";
+	public static $kids_var="dhx_kids";
 
 	public $model=false;
 
