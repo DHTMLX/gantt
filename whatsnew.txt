@@ -1,3 +1,13 @@
+### 3.1
+- Added ability to drag tasks on touch devices
+- Incorrect tooltip behavior on expand/collapse task tree fixed
+- Order of API events during gantt initialization fixed
+- Issues with markes and multiple initialization of the gantt fixed
+- Issues with markes and gantt.clearAll fixed
+- Issues with gantt.serialize method and nested projects of gantt tree fixed
+- Fixes in French locale
+- Improvements in time range calculation
+
 ### 3.0
 - Support of Baselines, Deadlines and other custom elements of the timeline *
 - Critical path support *

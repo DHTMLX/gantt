@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.0.0 Stardard
+dhtmlxGantt v.3.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -11,6 +11,10 @@ if(!gantt._markers)
 	gantt._markers = {};
 
 gantt.config.show_markers = true;
+
+gantt.attachEvent("onClear", function(){
+	gantt._markers = {};
+});
 
 gantt.attachEvent("onGanttReady", function(){
 	var markerArea = document.createElement("div");

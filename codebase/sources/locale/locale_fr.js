@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.0.0 Stardard
+dhtmlxGantt v.3.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -9,12 +9,12 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 gantt.locale = {
 	date: {
 		month_full: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
-		month_short: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aôu", "Sep", "Oct", "Nov", "Déc"],
+		month_short: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"],
 		day_full: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
 		day_short: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
 	},
 	labels:{
-		new_task:"Tâche neuve",
+		new_task:"Nouvelle tâche",
 		icon_save:"Enregistrer",
 		icon_cancel:"Annuler",
 		icon_details:"Détails",
@@ -29,7 +29,7 @@ gantt.locale = {
 
         /* grid columns */
 
-        column_text :  "Tâche neuve",
+        column_text : "Nom de la tâche",
         column_start_date : "Date initiale",
         column_duration : "Durée",
         column_add : "",
@@ -49,7 +49,7 @@ gantt.locale = {
     	minutes: "Minutes",
     	hours: "Heures",
     	days: "Jours",
-    	weeks: "Semaine",
+    	weeks: "Semaines",
     	months: "Mois",
     	years: "Années"
 	}
