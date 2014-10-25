@@ -1879,8 +1879,9 @@ gantt.moveTask = function (sid, tindex, parent) {
 	if(tindex*1 > 0){
 		if(id){
 			source.$drop_target = (this.getTaskIndex(sid) > this.getTaskIndex(id) ? "next:" : '') + id;
+		}else{
+			source.$drop_target = "next:" + gantt.getPrevSibling(sid);
 		}
-		source.$drop_target = "next:" + tbranch[tindex*1 - 1];
 	}else if(tbranch[tindex*1 + 1]){
 		source.$drop_target = tbranch[tindex*1 + 1];
 	}else{
@@ -3595,7 +3596,7 @@ gantt._get_tasks_data = function(){
 		var item = this._pull[this._order[i]];
 		item.$index = i;
 		//this._update_parents(item.id, true);
-		this.calculateProjectDuration(item);
+		this.resetProjectDates(item);
 		rows.push(item);
 	}
 	return rows;
@@ -4724,7 +4725,7 @@ gantt.json = {
 		var links = [];
 
 		gantt.eachTask(function(obj){
-			gantt.calculateProjectDuration(obj);
+			gantt.resetProjectDates(obj);
 			tasks.push(this._copyObject(obj));
 		}, gantt.config.root_id, this);
 		for (var key in gantt._lpull)
@@ -5580,20 +5581,29 @@ gantt._is_flex_task = function(task){
 };
 
 // downward calculation of project duration
-gantt.calculateProjectDuration = function(task){
-	var min,
-		max;
-
+gantt.resetProjectDates = function(task){
 	if(task.$no_end || task.$no_start){
-		this.eachTask(function(child){
-			if((child.start_date) && (!min || min > child.start_date.valueOf()))
-				min = child.start_date.valueOf();
-			if((child.end_date) && (!max || max < child.end_date.valueOf()))
-				max = child.end_date.valueOf();
-		}, task.id);
-
-		this._assign_project_dates(task, min, max);
+		var dates = this.getSubtaskDates(task.id);
+		this._assign_project_dates(task, dates.start_date, dates.end_date);
 	}
+};
+
+gantt.getSubtaskDates = function(task_id){
+	var min = null,
+		max = null,
+		root = task_id !== undefined ? task_id : gantt.config.root_id;
+
+	this.eachTask(function(child){
+		if((child.start_date) && (!min || min > child.start_date.valueOf()))
+			min = child.start_date.valueOf();
+		if((child.end_date) && (!max || max < child.end_date.valueOf()))
+			max = child.end_date.valueOf();
+	}, root);
+
+	return {
+		start_date: min ? new Date(min) : null,
+		end_date: max ? new Date(max): null
+	};
 };
 
 gantt._assign_project_dates = function(task, from, to){
@@ -5628,7 +5638,7 @@ gantt._update_parents = function(taskId, silent){
 	}
 
 	if(task.$no_start || task.$no_end){
-		gantt.calculateProjectDuration(task);
+		gantt.resetProjectDates(task);
 
 		if(!silent)
 			this.refreshTask(task.id, true);
@@ -6413,6 +6423,7 @@ gantt.getLightboxValues=function(){
         var node = document.getElementById(sns[i].id);
         node=(node?node.nextSibling:node);
         var block=this.form_blocks[sns[i].type];
+		if(!block) continue;
         var res=block.get_value.call(this,node,task, sns[i]);
         var map_to = gantt._resolve_default_mapping(sns[i]);
         if (typeof map_to == "string" && map_to != "auto") {
