@@ -13,8 +13,8 @@ class PHPYiiDBDataWrapper extends ArrayDBDataWrapper{
 		else
 			$res = $this->connection->findAll();
 
+		$temp = array();
 		if (sizeof($res)){
-			$temp = array();
 			foreach ($res as $obj)
 				$temp[]=$obj->getAttributes();
 		}

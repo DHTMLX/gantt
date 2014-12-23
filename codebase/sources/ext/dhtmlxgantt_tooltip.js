@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.1.0 Stardard
+dhtmlxGantt v.3.1.1 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -144,8 +144,10 @@ gantt._init_tooltip = function(event_id, ev){
 
 	var task = this.getTask(event_id);
 	var text = this.templates.tooltip_text(task.start_date, task.end_date, task);
-	if (!text)
+	if (!text){
 		this._hide_tooltip();
+		return;
+	}
 	this._show_tooltip(text, this._tooltip_pos(ev));
 };
 gantt.attachEvent("onMouseLeave", function(ev){

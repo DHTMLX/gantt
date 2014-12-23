@@ -19,8 +19,10 @@ class PHPCIDBDataWrapper extends DBDataWrapper{
 		if ($res===false) {
 			throw new Exception("CI - sql execution failed");
 		}
-		
-		return new PHPCIResultSet($res);
+
+		if (is_object($res))
+			return new PHPCIResultSet($res);
+		return new ArrayQueryWrapper(array());
 	}
 		
 	public function get_next($res){

@@ -19,9 +19,9 @@ class PHPCakeDBDataWrapper extends ArrayDBDataWrapper{
 		else
 			$res = $this->connection->find("all");
 
+		$temp = array();
 		if (sizeof($res)){
 			$name = get_class($this->connection);
-			$temp = array();
 			for ($i=sizeof($res)-1; $i>=0; $i--)
 				$temp[]=&$res[$i][$name];
 		}

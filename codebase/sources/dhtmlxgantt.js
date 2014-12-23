@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.1.0 Stardard
+dhtmlxGantt v.3.1.1 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -830,12 +830,14 @@ function dhtmlXHeir(a, b){
     return a;
 }
 
-function dhtmlxEvent(el, event, handler){
-    if (el.addEventListener)
-        el.addEventListener(event, handler, false);
+if(typeof (window.dhtmlxEvent) == 'undefined'){
+    window.dhtmlxEvent = function dhtmlxEvent(el, event, handler){
+        if (el.addEventListener)
+            el.addEventListener(event, handler, false);
 
-    else if (el.attachEvent)
-        el.attachEvent("on"+event, handler);
+        else if (el.attachEvent)
+            el.attachEvent("on"+event, handler);
+    };
 }
 
 //============= XSL Extension ===================================
@@ -1217,7 +1219,7 @@ if(!window.dhtmlx)
 	};
 })();
 gantt = {
-	version:"3.1.0"
+	version:"3.1.1"
 };
 
 /*jsl:ignore*/
@@ -1649,8 +1651,6 @@ gantt._calc_grid_width = function () {
 		var unknown = [];
 		var width = [];
 
-		this._reset_columns_width();
-
 		for (var i = 0; i < columns.length; i++) {
 			var v = parseInt(columns[i].width, 10);
 			if (window.isNaN(v)) {
@@ -1733,7 +1733,7 @@ gantt._render_grid_item = function (item) {
 		var cell;
 
 		var value;
-		if (col.name == "add" && i == columns.length - 1) {
+		if (col.name == "add") {
 			value = "<div class='gantt_add'></div>";
 		} else {
 			if (col.template)
@@ -2035,8 +2035,9 @@ gantt._init_dnd = function () {
 		var task = this.getTask(dnd.config.id);
 		task.$transparent = false;
 		task.$open = dnd.config.initial_open_state;
-		this.refreshData();
 		this.callEvent("onRowDragEnd", [dnd.config.id, task.$drop_target]);
+		this.refreshData();
+
 	}, this));
 };
 
@@ -2045,18 +2046,6 @@ gantt.getGridColumns = function () {
 	return this.config.columns;
 };
 
-gantt._reset_columns_width = function() {
-	var original = gantt._original_columns,
-		current = gantt.config.columns;
-
-	if((!original) || (original.length != current.length))
-		return false;
-
-	for(var i = 0; i < original.length; i++)
-		current[i].width = original[i].width;
-
-	return true;
-};
 
 gantt._has_children = function(id){
 	return this.getChildren(id).length > 0;
@@ -3228,21 +3217,22 @@ gantt._init_links_dnd = function() {
 
 
 	dnd.attachEvent("onDragEnd", dhtmlx.bind(function() {
-		var link = getDndState();
+		var drag = getDndState();
 
-		if(link.from && link.to && link.from != link.to){
-			var type = gantt._get_link_type(link.from_start, link.to_start);
-			var link = {source : link.from, target: link.to, type:type};
+		if(drag.from && drag.to && drag.from != drag.to){
+			var type = gantt._get_link_type(drag.from_start, drag.to_start);
+
+			var link = {source : drag.from, target: drag.to, type:type};
 			if(link.type && gantt.isLinkAllowed(link))
 				gantt.addLink(link);
 		}
 
 		resetDndState();
 
-		if(link.from)
-			gantt.refreshTask(link.from, false);
-		if(link.to)
-			gantt.refreshTask(link.to, false);
+		if(drag.from)
+			gantt.refreshTask(drag.from, false);
+		if(drag.to)
+			gantt.refreshTask(drag.to, false);
 		removeDirectionLine();
 	}, this));
 
@@ -3669,48 +3659,29 @@ gantt._scale_range_unit = function(){
 
 gantt._init_tasks_range = function(){
 	var unit = this._scale_range_unit();
-
 	if(this.config.start_date && this.config.end_date){
-
 		this._min_date = this.date[unit + "_start"]( new Date(this.config.start_date));
 		this._max_date = this.date[unit + "_start"]( new Date(this.config.end_date));
 		return;
 	}
 
-	var data = this._get_tasks_data();
-	var root = this._init_task({id:this.config.root_id});
-	data.push(root);
+	//reset project timing
+	this._get_tasks_data();
 
+	var range = this.getSubtaskDates();
+	this._min_date = range.start_date;
+	this._max_date = range.end_date;
 
-	var max = -Infinity,
-		min = Infinity;
-
-	this.eachTask(function(child){
-		if(child.end_date && +child.end_date > +max){
-			max = new Date(child.end_date);
-		}
-	}, this.config.root_id);
-
-	this.eachTask(function(child){
-		if(child.start_date && +child.start_date < +min){
-			min = new Date(child.start_date);
-		}
-	}, this.config.root_id);
-
-	this._min_date = min;
-	this._max_date = max;
-	
-	if(!max || max == -Infinity){
+	if(!(this._max_date && this._max_date)){
 		this._min_date = new Date();
 		this._max_date = new Date(this._min_date);
 	}
 
 	this._min_date = this.date[unit + "_start"](this._min_date);
-	if(+this._min_date == +min)
-		this._min_date = this.date.add(this.date[unit + "_start"](this._min_date), -1, unit);//one free column before first task
+	this._min_date = this.calculateEndDate(this.date[unit + "_start"](this._min_date), -1, unit);//one free column before first task
 
 	this._max_date = this.date[unit + "_start"](this._max_date);
-	this._max_date = this.date.add(this._max_date, 2, unit);//one free column after last task
+	this._max_date = this.calculateEndDate(this._max_date, 2, unit);//one free column after last task
 };
 
 
@@ -3724,8 +3695,10 @@ gantt._prepare_scale_html = function(config){
 	}
 
 
-	css = config.css || gantt.templates.scale_cell_class;
-
+	css = config.css || function(){};
+	if(!config.css && this.config.inherit_scale_class){
+		css = gantt.templates.scale_cell_class;
+	}
 
 	for (var i = 0; i < config.count; i++) {
 		date = new Date(config.trace_x[i]);
@@ -4051,7 +4024,7 @@ gantt._task_default_render = function(task){
 	//use separate div to display content above progress bar
 	var content = gantt._render_task_content(task, width);
 	if(task.textColor){
-		content.styles.color = task.textColor;
+		content.style.color = task.textColor;
 	}
 	div.appendChild(content);
 
@@ -5196,7 +5169,7 @@ gantt._move_branch = function(task, old_parent, new_parent){
 	task.parent = new_parent;
 	this._sync_parent(task);
 	this._replace_branch_child(old_parent, task.id);
-	if(this.isTaskExists(new_parent) || new_parent === this.config.root_id){
+	if(this.isTaskExists(new_parent) || new_parent == this.config.root_id){
 
 		this._add_branch(task);
 	}else{
@@ -5513,7 +5486,7 @@ gantt.calculateDuration = function(start_date, end_date){
 gantt.calculateEndDate = function(start, duration, unit){
 	var helper = this._working_time_helper;
 	var mult = duration >= 0 ? 1 : -1;
-	return helper.add_worktime(start, Math.abs(duration), this.config.duration_unit, mult*this.config.duration_step);
+	return helper.add_worktime(start, Math.abs(duration), unit || this.config.duration_unit, mult*this.config.duration_step);
 };
 
 gantt._init_task = function(task){
@@ -5594,9 +5567,12 @@ gantt.getSubtaskDates = function(task_id){
 		root = task_id !== undefined ? task_id : gantt.config.root_id;
 
 	this.eachTask(function(child){
-		if((child.start_date) && (!min || min > child.start_date.valueOf()))
+		if(this._get_safe_type(child.type) == gantt.config.types.project)
+			return;
+
+		if((child.start_date && !child.$no_start) && (!min || min > child.start_date.valueOf()))
 			min = child.start_date.valueOf();
-		if((child.end_date) && (!max || max < child.end_date.valueOf()))
+		if((child.end_date && !child.$no_end) && (!max || max < child.end_date.valueOf()))
 			max = child.end_date.valueOf();
 	}, root);
 
@@ -6114,7 +6090,7 @@ gantt._get_timepicker_step = function(){
 	if(this.config.round_dnd_dates){
 		var scale = gantt._tasks,
 			step = (this._get_line(scale.unit) * scale.step)/60;//timepicker step is measured in minutes
-		if(step >= 60*24){
+		if(step >= 60*24 || !this._is_chart_visible()){
 			step = this.config.time_step;
 		}
 		return step;
@@ -6650,7 +6626,7 @@ gantt.form_blocks={
 						options+="<option value='"+i+"'>"+i+"</option>";
                     break;
                 case "%H:%i":
-                    var last = 24*60, first = 0;
+                  //  var last = 24*60, first = 0;
                     sns._time_format_order[3] = p;
                     sns._time_format_order.size++;
                     //hours
@@ -6686,7 +6662,10 @@ gantt.form_blocks={
         if (dhtmlx.defined(map[3])) {
             var v = d.getHours()*60+ d.getMinutes();
             v = Math.round(v/gantt._get_timepicker_step())*gantt._get_timepicker_step();
-            s[i+map[3]].value= v;
+			var input = s[i+map[3]];
+			input.value= v;
+			//in case option not shown
+			input.setAttribute('data-value', v);
         }
     },
     template:{
@@ -6921,7 +6900,12 @@ gantt.form_blocks={
             var hours = 0;
             var minutes = 0;
             if (dhtmlx.defined(map[3])) {
-                var time = parseInt(s[map[3]].value, 10);
+				var input = s[map[3]];
+                var time = parseInt(input.value, 10);
+				if(isNaN(time) && input.hasAttribute("data-value")){
+					time = parseInt(input.getAttribute("data-value"), 10);
+				}
+
                 hours = Math.floor(time/60);
                 minutes = time%60;
             }
@@ -7759,14 +7743,6 @@ gantt.init = function(node, from, to){
     if (!this.config.scroll_size)
         this.config.scroll_size = this._detectScrollSize();
 
-	if (!this._original_columns) {
-		var cols = this.config.columns;
-		this._original_columns = [];
-		for (var i=0, l=cols.length; i<l; i++) {
-			this._original_columns.push(dhtmlx.copy(cols[i]));
-		}
-	}
-
 	dhtmlxEvent(window, "resize", this._on_resize);
 
 	//can be called only once
@@ -8068,6 +8044,10 @@ gantt._on_resize = gantt.setSizes = function(){
 //renders self
 gantt.render = function(){
 	var pos = dhtmlx.copy(this._restore_scroll_state());
+	var visible_date = null;
+	if(pos){
+		visible_date = gantt._date_from_pos(pos.x + this.config.task_scroll_offset);
+	}
 
 	this._render_grid();	//grid.js
 	this._render_tasks_scales();	//tasks.js
@@ -8078,11 +8058,10 @@ gantt.render = function(){
 	if(this.config.preserve_scroll && pos){
 
 		var new_pos =gantt._restore_scroll_state();
-		var visible_date = gantt._date_from_pos(pos.x);
-		if(!(new_pos.x == pos.x && new_pos.y == pos.y)){
+		var new_date = gantt._date_from_pos(new_pos.x);
+		if(!(+visible_date == +new_date && new_pos.y == pos.y)){
 			if(visible_date){
-				var date_x = this.posFromDate(visible_date);
-				this.scrollTo(date_x);
+				this.showDate(visible_date);
 			}
 			gantt.scrollTo(undefined, pos.y);
 		}
@@ -8094,6 +8073,9 @@ gantt.render = function(){
 
 gantt._set_scroll_events = function(){
     dhtmlxEvent(this.$scroll_hor, "scroll", function() {
+    	//in safari we can catch previous onscroll after setting new value from mouse-wheel event
+    	//set delay to prevent value drifiting
+    	if ((new Date()) - ( gantt._wheel_time || 0 ) < 100) return true; 
         if (gantt._touch_scroll_active) return;
         var left = gantt.$scroll_hor.scrollLeft;
         gantt.scrollTo(left);
@@ -8120,11 +8102,12 @@ gantt._set_scroll_events = function(){
     var ff = _isFF && !window._KHTMLrv;
 	function onMouseWheel(e){
 		var res = gantt._get_resize_options();
+		gantt._wheel_time = new Date();
 
-        var wx = ff ? (e.deltaX*-20) : e.wheelDeltaX;
+        var wx = ff ? (e.deltaX*-20) : e.wheelDeltaX*2;
         var wy = ff ? (e.deltaY*-40) : e.wheelDelta;
 
-		if (wx){
+		if (wx && Math.abs(wx) > Math.abs(wy)){
 			if(res.x) return true;//no horisontal scroll, must not block scrolling
 
 			var dir  = wx/-40;
@@ -8662,6 +8645,9 @@ dhtmlx.mixin(gantt.config,
 	subscales : [
 
 	],
+
+	inherit_scale_class:false,
+
     time_step: 60,
     duration_step: 1,
 	date_scale: "%d %M",
