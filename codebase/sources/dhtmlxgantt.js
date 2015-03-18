@@ -1,975 +1,601 @@
 /*
 @license
 
-dhtmlxGantt v.3.1.1 Stardard
+dhtmlxGantt v.3.2.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 */
-if (!window.dhtmlx) {
-	dhtmlx = function(obj){
-		for (var a in obj) dhtmlx[a]=obj[a];
-		return dhtmlx; //simple singleton
+if (typeof(window.dhx4) == "undefined") {
+	
+	window.dhx4 = {
+		
+		version: "4.1.3",
+		
+		skin: null, // allow to be set by user
+		
+		skinDetect: function(comp) {
+			return {10:"dhx_skyblue",20:"dhx_web",30:"dhx_terrace"}[this.readFromCss(comp+"_skin_detect")]||null;
+		},
+		
+		// read value from css
+		readFromCss: function(className, property) {
+			var t = document.createElement("DIV");
+			t.className = className;
+			if (document.body.firstChild != null) document.body.insertBefore(t, document.body.firstChild); else document.body.appendChild(t);
+			var w = t[property||"offsetWidth"];
+			t.parentNode.removeChild(t);
+			t = null;
+			return w;
+		},
+		
+		// id manager
+		lastId: 1,
+		newId: function() {
+			return this.lastId++;
+		},
+		
+		// z-index manager
+		zim: {
+			data: {},
+			step: 5,
+			first: function() {
+				return 100;
+			},
+			last: function() {
+				var t = this.first();
+				for (var a in this.data) t = Math.max(t, this.data[a]);
+				return t;
+			},
+			reserve: function(id) {
+				this.data[id] = this.last()+this.step;
+				return this.data[id];
+			},
+			clear: function(id) {
+				if (this.data[id] != null) {
+					this.data[id] = null;
+					delete this.data[id];
+				}
+			}
+		},
+		
+		// string to boolean
+		s2b: function(r) {
+			if (typeof(r) == "string") r = r.toLowerCase();
+			return (r == true || r == 1 || r == "true" || r == "1" || r == "yes" || r == "y");
+		},
+		
+		// string to json
+		s2j: function(s) {
+			var obj = null;
+			dhx4.temp = null;
+			try { eval("dhx4.temp="+s); } catch(e) { dhx4.temp = null; }
+			obj = dhx4.temp;
+			dhx4.temp = null;
+			return obj;
+		},
+		
+		// absolute top/left position on screen
+		absLeft: function(obj) {
+			if (typeof(obj) == "string") obj = document.getElementById(obj);
+			return this.getOffset(obj).left;
+		},
+		absTop: function(obj) {
+			if (typeof(obj) == "string") obj = document.getElementById(obj);
+			return this.getOffset(obj).top;
+		},
+		_aOfs: function(elem) {
+			var top = 0, left = 0;
+			while (elem) {
+				top = top + parseInt(elem.offsetTop);
+				left = left + parseInt(elem.offsetLeft);
+				elem = elem.offsetParent;
+			}
+			return {top: top, left: left};
+		},
+		_aOfsRect: function(elem) {
+			var box = elem.getBoundingClientRect();
+			var body = document.body;
+			var docElem = document.documentElement;
+			var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+			var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+			var clientTop = docElem.clientTop || body.clientTop || 0;
+			var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+			var top  = box.top +  scrollTop - clientTop;
+			var left = box.left + scrollLeft - clientLeft;
+			return { top: Math.round(top), left: Math.round(left) };
+		},
+		getOffset: function(elem) {
+			if (elem.getBoundingClientRect) {
+				return this._aOfsRect(elem);
+			} else {
+				return this._aOfs(elem);
+			}
+		},
+		
+		// copy obj
+		_isObj: function(k) {
+			return (k != null && typeof(k) == "object" && typeof(k.length) == "undefined");
+		},
+		_copyObj: function(r) {
+			if (this._isObj(r)) {
+				var t = {};
+				for (var a in r) {
+					if (typeof(r[a]) == "object" && r[a] != null) t[a] = this._copyObj(r[a]); else t[a] = r[a];
+				}
+			} else {
+				var t = [];
+				for (var a=0; a<r.length; a++) {
+					if (typeof(r[a]) == "object" && r[a] != null) t[a] = this._copyObj(r[a]); else t[a] = r[a];
+				}
+			}
+			return t;
+		},
+		
+		// screen dim
+		screenDim: function() {
+			var isIE = (navigator.userAgent.indexOf("MSIE") >= 0);
+			var dim = {};
+			dim.left = document.body.scrollLeft;
+			dim.right = dim.left+(window.innerWidth||document.body.clientWidth);
+			dim.top = Math.max((isIE?document.documentElement:document.getElementsByTagName("html")[0]).scrollTop, document.body.scrollTop);
+			dim.bottom = dim.top+(isIE?Math.max(document.documentElement.clientHeight||0,document.documentElement.offsetHeight||0):window.innerHeight);
+			return dim;
+		},
+		
+		// input/textarea range selection
+		selectTextRange: function(inp, start, end) {
+			
+			inp = (typeof(inp)=="string"?document.getElementById(inp):inp);
+			
+			var len = inp.value.length;
+			start = Math.max(Math.min(start, len), 0);
+			end = Math.min(end, len);
+			
+			if (inp.setSelectionRange) {
+				try {inp.setSelectionRange(start, end);} catch(e){}; // combo in grid under IE requires try/catch
+			} else if (inp.createTextRange) {
+				var range = inp.createTextRange();
+				range.moveStart("character", start);
+				range.moveEnd("character", end-len);
+				try {range.select();} catch(e){};
+			}
+		},
+		// transition
+		transData: null,
+		transDetect: function() {
+			
+			if (this.transData == null) {
+				
+				this.transData = {transProp: false, transEv: null};
+				
+				// transition, MozTransition, WebkitTransition, msTransition, OTransition
+				var k = {
+					"MozTransition": "transitionend",
+					"WebkitTransition": "webkitTransitionEnd",
+					"OTransition": "oTransitionEnd",
+					"msTransition": "transitionend",
+					"transition": "transitionend"
+				};
+				
+				for (var a in k) {
+					if (this.transData.transProp == false && document.documentElement.style[a] != null) {
+						this.transData.transProp = a;
+						this.transData.transEv = k[a];
+					}
+				}
+				k = null;
+			}
+			
+			return this.transData;
+			
+		},
+		
+		// xml parser
+		_xmlNodeValue: function(node) {
+			var value = "";
+			for (var q=0; q<node.childNodes.length; q++) {
+				value += (node.childNodes[q].nodeValue!=null?node.childNodes[q].nodeValue.toString().replace(/^[\n\r\s]{0,}/,"").replace(/[\n\r\s]{0,}$/,""):"");
+			}
+			return value;
+		}
+		
 	};
-}
-dhtmlx.extend_api=function(name,map,ext){
-    var t = window[name];
-    if (!t) return; //component not defined
-    window[name]=function(obj){
-        var that;
-
-        if (obj && typeof obj == "object" && !obj.tagName){
-            that = t.apply(this,(map._init?map._init(obj):arguments));
-            //global settings
-            for (var a in dhtmlx)
-                if (map[a]) this[map[a]](dhtmlx[a]);
-            //local settings
-            for (var a in obj){
-                if (map[a]) this[map[a]](obj[a]);
-                else if (a.indexOf("on")===0){
-                    this.attachEvent(a,obj[a]);
-                }
-            }
-        } else
-            that = t.apply(this,arguments);
-        if (map._patch) map._patch(this);
-        return that||this;
-    };
-    window[name].prototype=t.prototype;
-    if (ext)
-        dhtmlXHeir(window[name].prototype,ext);
+	
+	// browser
+	window.dhx4.isIE = (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0);
+	window.dhx4.isIE6 = (window.XMLHttpRequest == null && navigator.userAgent.indexOf("MSIE") >= 0);
+	window.dhx4.isIE7 = (navigator.userAgent.indexOf("MSIE 7.0") >= 0 && navigator.userAgent.indexOf("Trident") < 0);
+	window.dhx4.isIE8 = (navigator.userAgent.indexOf("MSIE 8.0") >= 0 && navigator.userAgent.indexOf("Trident") >= 0);
+	window.dhx4.isOpera = (navigator.userAgent.indexOf("Opera") >= 0);
+	window.dhx4.isChrome = (navigator.userAgent.indexOf("Chrome") >= 0);
+	window.dhx4.isKHTML = (navigator.userAgent.indexOf("Safari") >= 0 || navigator.userAgent.indexOf("Konqueror") >= 0);
+	window.dhx4.isFF = (navigator.userAgent.indexOf("Firefox") >= 0);
+	window.dhx4.isIPad = (navigator.userAgent.search(/iPad/gi) >= 0);
 };
 
-dhtmlxAjax={
-    get:function(url,callback){
-        var t=new dtmlXMLLoaderObject(true);
-        t.async=(arguments.length<3);
-        t.waitCall=callback;
-        t.loadXML(url);
-        return t;
-    },
-    post:function(url,post,callback){
-        var t=new dtmlXMLLoaderObject(true);
-        t.async=(arguments.length<4);
-        t.waitCall=callback;
-        t.loadXML(url,true,post);
-        return t;
-    },
-    getSync:function(url){
-        return this.get(url,null,true);
-    },
-    postSync:function(url,post){
-        return this.post(url,post,null,true);
-    }
+
+
+
+if (typeof(window.dhx4.ajax) == "undefined") {
+
+	window.dhx4.ajax = {
+
+		// if false - dhxr param will added to prevent caching on client side (default),
+		// if true - do not add extra params
+		cache: false,
+
+		// default method for load/loadStruct, post/get allowed
+		// get - since 4.1.1, this should fix 412 error for macos safari
+		method: "get",
+
+		parse: function(data) {
+			if (typeof data !== "string") return data;
+
+			data = data.replace(/^[\s]+/,"");
+			if (window.DOMParser && !dhx4.isIE) { // ff,ie9
+				var obj = (new window.DOMParser()).parseFromString(data, "text/xml");
+			} else if (window.ActiveXObject !== window.undefined) {
+				var obj = new window.ActiveXObject("Microsoft.XMLDOM");
+				obj.async = "false";
+				obj.loadXML(data);
+			}
+			return obj;
+		},
+		xmltop: function(tagname, xhr, obj) {
+			if (typeof xhr.status == "undefined" || xhr.status < 400) {
+				var xml = (!xhr.responseXML) ? dhx4.ajax.parse(xhr.responseText || xhr) : (xhr.responseXML || xhr);
+				if (xml && xml.documentElement !== null && !xml.getElementsByTagName("parsererror").length) {
+					return xml.getElementsByTagName(tagname)[0];
+				}
+			}
+			if (obj !== -1) dhx4.callEvent("onLoadXMLError",["Incorrect XML", arguments[1], obj]);
+			return document.createElement("DIV");
+		},
+		xpath: function(xpathExp, docObj) {
+			if (!docObj.nodeName) docObj = docObj.responseXML || docObj;
+			if (dhx4.isIE) {
+				return docObj.selectNodes(xpathExp)||[];
+			} else {
+				var rows = [];
+				var first;
+				var col = (docObj.ownerDocument||docObj).evaluate(xpathExp, docObj, null, XPathResult.ANY_TYPE, null);
+				while (first = col.iterateNext()) rows.push(first);
+				return rows;
+			}
+		},
+		query: function(config) {
+			dhx4.ajax._call(
+				(config.method || "GET"),
+				config.url,
+				config.data || "",
+				(config.async || true),
+				config.callback,
+				null,
+				config.headers
+			);
+		},
+		get: function(url, onLoad) {
+			this._call("GET", url, null, true, onLoad);
+		},
+		getSync: function(url) {
+			return this._call("GET", url, null, false);
+		},
+		put: function(url, postData, onLoad) {
+			this._call("PUT", url, postData, true, onLoad);
+		},
+		del: function(url, postData, onLoad) {
+			this._call("DELETE", url, postData, true, onLoad);
+		},
+		post: function(url, postData, onLoad) {
+			if (arguments.length == 1) {
+				postData = "";
+			} else if (arguments.length == 2 && (typeof(postData) == "function" || typeof(window[postData]) == "function")) {
+				onLoad = postData;
+				postData = "";
+			} else {
+				postData = String(postData);
+			}
+			this._call("POST", url, postData, true, onLoad);
+		},
+		postSync: function(url, postData) {
+			postData = (postData == null ? "" : String(postData));
+			return this._call("POST", url, postData, false);
+		},
+		getLong: function(url, onLoad) {
+			this._call("GET", url, null, true, onLoad, {url:url});
+		},
+		postLong: function(url, postData, onLoad) {
+			if (arguments.length == 2 && (typeof(postData) == "function" || typeof(window[postData]))) {
+				onLoad = postData;
+				postData = "";
+			}
+			this._call("POST", url, postData, true, onLoad, {url:url, postData:postData});
+		},
+		_call: function(method, url, postData, async, onLoad, longParams, headers) {
+
+			var t = (window.XMLHttpRequest && !dhx4.isIE ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+			var isQt = (navigator.userAgent.match(/AppleWebKit/) != null && navigator.userAgent.match(/Qt/) != null && navigator.userAgent.match(/Safari/) != null);
+
+			if (async == true) {
+				t.onreadystatechange = function() {
+					if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) { // what for long response and status 404?
+						if (t.status != 200 || t.responseText == "")
+							if (!dhx4.callEvent("onAjaxError", [t])) return;
+
+						window.setTimeout(function(){
+							if (typeof(onLoad) == "function") {
+								onLoad.apply(window, [{xmlDoc:t}]); // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+							}
+							if (longParams != null) {
+								if (typeof(longParams.postData) != "undefined") {
+									dhx4.ajax.postLong(longParams.url, longParams.postData, onLoad);
+								} else {
+									dhx4.ajax.getLong(longParams.url, onLoad);
+								}
+							}
+							onLoad = null;
+							t = null;
+						},1);
+					}
+				}
+			}
+
+			if (method == "GET" && this.cache != true) {
+				url += (url.indexOf("?")>=0?"&":"?")+"dhxr"+new Date().getTime()+"=1";
+			}
+
+			t.open(method, url, async);
+
+			if (headers){
+				for (var key in headers)
+					t.setRequestHeader(key, headers[key]);
+			} else if (method.toUpperCase() == "POST" || method == "PUT" || method == "DELETE") {
+				t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			} else if (method == "GET") {
+				postData = null;
+			}
+
+			t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+			t.send(postData);
+
+			if (!async) return {xmlDoc:t}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+
+		}
+	};
+
 };
 
-/**
- *     @desc: xmlLoader object
- *     @type: private
- *     @param: funcObject - xml parser function
- *     @param: object - jsControl object
- *     @param: async - sync/async mode (async by default)
- *     @param: rSeed - enable/disable random seed ( prevent IE caching)
- *     @topic: 0
- */
-function dtmlXMLLoaderObject(funcObject, dhtmlObject, async, rSeed){
-    this.xmlDoc="";
 
-    if (typeof (async) != "undefined")
-        this.async=async;
-    else
-        this.async=true;
-
-    this.onloadAction=funcObject||null;
-    this.mainObject=dhtmlObject||null;
-    this.waitCall=null;
-    this.rSeed=rSeed||false;
-    return this;
-}
-
-dtmlXMLLoaderObject.count = 0;
-
-/**
- *     @desc: xml loading handler
- *     @type: private
- *     @param: dtmlObject - xmlLoader object
- *     @topic: 0
- */
-dtmlXMLLoaderObject.prototype.waitLoadFunction=function(dhtmlObject){
-    var once = true;
-    this.check=function (){
-        if ((dhtmlObject)&&(dhtmlObject.onloadAction)){
-            if ((!dhtmlObject.xmlDoc.readyState)||(dhtmlObject.xmlDoc.readyState == 4)){
-                if (!once)
-                    return;
-
-                once=false; //IE 5 fix
-                dtmlXMLLoaderObject.count++;
-                if (typeof dhtmlObject.onloadAction == "function")
-                    dhtmlObject.onloadAction(dhtmlObject.mainObject, null, null, null, dhtmlObject);
-
-                if (dhtmlObject.waitCall){
-                    dhtmlObject.waitCall.call(this,dhtmlObject);
-                    dhtmlObject.waitCall=null;
-                }
-            }
-        }
-    };
-    return this.check;
+if (typeof(window.dhx4._eventable) == "undefined") {
+	
+	window.dhx4._eventable = function(obj, mode) {
+		
+		if (mode == "clear") {
+			
+			obj.detachAllEvents();
+			
+			obj.dhxevs = null;
+			
+			obj.attachEvent = null;
+			obj.detachEvent = null;
+			obj.checkEvent = null;
+			obj.callEvent = null;
+			obj.detachAllEvents = null;
+			
+			obj = null;
+			
+			return;
+			
+		}
+		
+		obj.dhxevs = { data: {} };
+		
+		obj.attachEvent = function(name, func) {
+			name = String(name).toLowerCase();
+			if (!this.dhxevs.data[name]) this.dhxevs.data[name] = {};
+			var eventId = window.dhx4.newId();
+			this.dhxevs.data[name][eventId] = func;
+			return eventId;
+		}
+		
+		obj.detachEvent = function(eventId) {
+			for (var a in this.dhxevs.data) {
+				var k = 0;
+				for (var b in this.dhxevs.data[a]) {
+					if (b == eventId) {
+						this.dhxevs.data[a][b] = null;
+						delete this.dhxevs.data[a][b];
+					} else {
+						k++;
+					}
+				}
+				if (k == 0) {
+					this.dhxevs.data[a] = null;
+					delete this.dhxevs.data[a];
+				}
+			}
+		}
+		
+		obj.checkEvent = function(name) {
+			name = String(name).toLowerCase();
+			return (this.dhxevs.data[name] != null);
+		}
+		
+		obj.callEvent = function(name, params) {
+			name = String(name).toLowerCase();
+			if (this.dhxevs.data[name] == null) return true;
+			var r = true;
+			for (var a in this.dhxevs.data[name]) {
+				r = this.dhxevs.data[name][a].apply(this, params) && r;
+			}
+			return r;
+		}
+		
+		obj.detachAllEvents = function() {
+			for (var a in this.dhxevs.data) {
+				for (var b in this.dhxevs.data[a]) {
+					this.dhxevs.data[a][b] = null;
+					delete this.dhxevs.data[a][b];
+				}
+				this.dhxevs.data[a] = null;
+				delete this.dhxevs.data[a];
+			}
+		}
+		
+		obj = null;
+	};
+	
+	dhx4._eventable(dhx4);
+	
 };
 
-/**
- *     @desc: return XML top node
- *     @param: tagName - top XML node tag name (not used in IE, required for Safari and Mozilla)
- *     @type: private
- *     @returns: top XML node
- *     @topic: 0
- */
-dtmlXMLLoaderObject.prototype.getXMLTopNode=function(tagName, oldObj){
-    var z;
-
-    if (this.xmlDoc.responseXML){
-        var temp = this.xmlDoc.responseXML.getElementsByTagName(tagName);
-        if(temp.length === 0 && tagName.indexOf(":")!=-1)
-            var temp = this.xmlDoc.responseXML.getElementsByTagName((tagName.split(":"))[1]);
-        z = temp[0];
-    } else
-        z = this.xmlDoc.documentElement;
-
-    if (z){
-        this._retry=false;
-        return z;
-    }
-
-    if (!this._retry&&_isIE){
-        this._retry=true;
-        var oldObj = this.xmlDoc;
-        this.loadXMLString(this.xmlDoc.responseText.replace(/^[\s]+/,""), true);
-        return this.getXMLTopNode(tagName, oldObj);
-    }
-
-    dhtmlxError.throwError("LoadXML", "Incorrect XML", [
-        (oldObj||this.xmlDoc),
-        this.mainObject
-    ]);
-
-    return document.createElement("DIV");
+if (typeof(window.dhtmlx) == "undefined") {
+	window.dhtmlx={
+		extend:function(a, b){
+			for (var key in b)
+				if (!a[key])
+					a[key]=b[key];
+			return a;
+		},
+		extend_api:function(name,map,ext){
+			var t = window[name];
+			if (!t) return; //component not defined
+			window[name]=function(obj){
+				if (obj && typeof obj == "object" && !obj.tagName){
+					var that = t.apply(this,(map._init?map._init(obj):arguments));
+					//global settings
+					for (var a in dhtmlx)
+						if (map[a]) this[map[a]](dhtmlx[a]);			
+					//local settings
+					for (var a in obj){
+						if (map[a]) this[map[a]](obj[a]);
+						else if (a.indexOf("on")===0){
+							this.attachEvent(a,obj[a]);
+						}
+					}
+				} else
+					var that = t.apply(this,arguments);
+				if (map._patch) map._patch(this);
+				return that||this;
+			};
+			window[name].prototype=t.prototype;
+			if (ext)
+				dhtmlx.extend(window[name].prototype,ext);
+		},
+		url:function(str){
+			if (str.indexOf("?") != -1)
+				return "&";
+			else
+				return "?";
+		}
+	};
 };
 
-/**
- *     @desc: load XML from string
- *     @type: private
- *     @param: xmlString - xml string
- *     @topic: 0
- */
-dtmlXMLLoaderObject.prototype.loadXMLString=function(xmlString, silent){
-
-    if (!_isIE){
-        var parser = new DOMParser();
-        this.xmlDoc=parser.parseFromString(xmlString, "text/xml");
-    } else {
-        this.xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
-        this.xmlDoc.async=this.async;
-        this.xmlDoc.onreadystatechange = function(){};
-        this.xmlDoc["loadXM"+"L"](xmlString);
-    }
-
-    if (silent)
-        return;
-
-    if (this.onloadAction)
-        this.onloadAction(this.mainObject, null, null, null, this);
-
-    if (this.waitCall){
-        this.waitCall();
-        this.waitCall=null;
-    }
-};
-/**
- *     @desc: load XML
- *     @type: private
- *     @param: filePath - xml file path
- *     @param: postMode - send POST request
- *     @param: postVars - list of vars for post request
- *     @topic: 0
- */
-dtmlXMLLoaderObject.prototype.loadXML=function(filePath, postMode, postVars, rpc){
-    if (this.rSeed)
-        filePath+=((filePath.indexOf("?") != -1) ? "&" : "?")+"a_dhx_rSeed="+(new Date()).valueOf();
-    this.filePath=filePath;
-
-    if ((!_isIE)&&(window.XMLHttpRequest))
-        this.xmlDoc=new XMLHttpRequest();
-    else {
-        this.xmlDoc=new ActiveXObject("Microsoft.XMLHTTP");
-    }
-
-    if (this.async)
-        this.xmlDoc.onreadystatechange=new this.waitLoadFunction(this);
-    this.xmlDoc.open(postMode ? "POST" : "GET", filePath, this.async);
-
-    if (rpc){
-        this.xmlDoc.setRequestHeader("User-Agent", "dhtmlxRPC v0.1 ("+navigator.userAgent+")");
-        this.xmlDoc.setRequestHeader("Content-type", "text/xml");
-    }
-
-    else if (postMode)
-        this.xmlDoc.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-
-    this.xmlDoc.setRequestHeader("X-Requested-With","XMLHttpRequest");
-    this.xmlDoc.send(null||postVars);
-
-    if (!this.async)
-        (new this.waitLoadFunction(this))();
-};
-/**
- *     @desc: destructor, cleans used memory
- *     @type: private
- *     @topic: 0
- */
-dtmlXMLLoaderObject.prototype.destructor=function(){
-    this._filterXPath = null;
-    this._getAllNamedChilds = null;
-    this._retry = null;
-    this.async = null;
-    this.rSeed = null;
-    this.filePath = null;
-    this.onloadAction = null;
-    this.mainObject = null;
-    this.xmlDoc = null;
-    this.doXPath = null;
-    this.doXPathOpera = null;
-    this.doXSLTransToObject = null;
-    this.doXSLTransToString = null;
-    this.loadXML = null;
-    this.loadXMLString = null;
-    // this.waitLoadFunction = null;
-    this.doSerialization = null;
-    this.xmlNodeToJSON = null;
-    this.getXMLTopNode = null;
-    this.setXSLParamValue = null;
-    return null;
-};
-
-dtmlXMLLoaderObject.prototype.xmlNodeToJSON = function(node){
-    var t={};
-    for (var i=0; i<node.attributes.length; i++)
-        t[node.attributes[i].name]=node.attributes[i].value;
-    t["_tagvalue"]=node.firstChild?node.firstChild.nodeValue:"";
-    for (var i=0; i<node.childNodes.length; i++){
-        var name=node.childNodes[i].tagName;
-        if (name){
-            if (!t[name]) t[name]=[];
-            t[name].push(this.xmlNodeToJSON(node.childNodes[i]));
-        }
-    }
-    return t;
-};
-
-/**
- *     @desc: Call wrapper
- *     @type: private
- *     @param: funcObject - action handler
- *     @param: dhtmlObject - user data
- *     @returns: function handler
- *     @topic: 0
- */
-function callerFunction(funcObject, dhtmlObject){
-    this.handler=function(e){
-        if (!e)
-            e=window.event;
-        funcObject(e, dhtmlObject);
-        return true;
-    };
-    return this.handler;
-}
-
-/**
- *     @desc: Calculate absolute position of html object
- *     @type: private
- *     @param: htmlObject - html object
- *     @topic: 0
- */
-function getAbsoluteLeft(htmlObject){
-    return getOffset(htmlObject).left;
-}
-/**
- *     @desc: Calculate absolute position of html object
- *     @type: private
- *     @param: htmlObject - html object
- *     @topic: 0
- */
-function getAbsoluteTop(htmlObject){
-    return getOffset(htmlObject).top;
-}
-
-function getOffsetSum(elem) {
-    var top=0, left=0;
-    while(elem) {
-        top = top + parseInt(elem.offsetTop);
-        left = left + parseInt(elem.offsetLeft);
-        elem = elem.offsetParent;
-    }
-    return {top: top, left: left};
-}
-function getOffsetRect(elem) {
-    var box = elem.getBoundingClientRect();
-    var body = document.body;
-    var docElem = document.documentElement;
-    var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
-    var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
-    var clientTop = docElem.clientTop || body.clientTop || 0;
-    var clientLeft = docElem.clientLeft || body.clientLeft || 0;
-    var top  = box.top +  scrollTop - clientTop;
-    var left = box.left + scrollLeft - clientLeft;
-    return { top: Math.round(top), left: Math.round(left) };
-}
-function getOffset(elem) {
-    if (elem.getBoundingClientRect) {
-        return getOffsetRect(elem);
-    } else {
-        return getOffsetSum(elem);
-    }
-}
-
-/**
- *     @desc: Convert string to it boolean representation
- *     @type: private
- *     @param: inputString - string for covertion
- *     @topic: 0
- */
-function convertStringToBoolean(inputString){
-    if (typeof (inputString) == "string")
-        inputString=inputString.toLowerCase();
-
-    switch (inputString){
-        case "1":
-        case "true":
-        case "yes":
-        case "y":
-        case 1:
-        case true:
-            return true;
-        default:
-            return false;
-    }
-}
-
-/**
- *     @desc: find out what symbol to use as url param delimiters in further params
- *     @type: private
- *     @param: str - current url string
- *     @topic: 0
- */
-function getUrlSymbol(str){
-    if (str.indexOf("?") != -1)
-        return "&";
-    else
-        return "?";
-}
-
-function dhtmlDragAndDropObject(){
-    if (window.dhtmlDragAndDrop)
-        return window.dhtmlDragAndDrop;
-
-    this.lastLanding=0;
-    this.dragNode=0;
-    this.dragStartNode=0;
-    this.dragStartObject=0;
-    this.tempDOMU=null;
-    this.tempDOMM=null;
-    this.waitDrag=0;
-    window.dhtmlDragAndDrop=this;
-
-    return this;
-}
-
-dhtmlDragAndDropObject.prototype.removeDraggableItem=function(htmlNode){
-    htmlNode.onmousedown=null;
-    htmlNode.dragStarter=null;
-    htmlNode.dragLanding=null;
-};
-
-dhtmlDragAndDropObject.prototype.addDraggableItem=function(htmlNode, dhtmlObject){
-    htmlNode.onmousedown=this.preCreateDragCopy;
-    htmlNode.dragStarter=dhtmlObject;
-    this.addDragLanding(htmlNode, dhtmlObject);
-};
-
-dhtmlDragAndDropObject.prototype.addDragLanding=function(htmlNode, dhtmlObject){
-    htmlNode.dragLanding=dhtmlObject;
-};
-
-dhtmlDragAndDropObject.prototype.preCreateDragCopy=function(e){
-    if ((e||window.event) && (e||event).button == 2)
-        return;
-
-    if (window.dhtmlDragAndDrop.waitDrag){
-        window.dhtmlDragAndDrop.waitDrag=0;
-        document.body.onmouseup=window.dhtmlDragAndDrop.tempDOMU;
-        document.body.onmousemove=window.dhtmlDragAndDrop.tempDOMM;
-        return false;
-    }
-
-    if (window.dhtmlDragAndDrop.dragNode)
-        window.dhtmlDragAndDrop.stopDrag(e);
-
-    window.dhtmlDragAndDrop.waitDrag=1;
-    window.dhtmlDragAndDrop.tempDOMU=document.body.onmouseup;
-    window.dhtmlDragAndDrop.tempDOMM=document.body.onmousemove;
-    window.dhtmlDragAndDrop.dragStartNode=this;
-    window.dhtmlDragAndDrop.dragStartObject=this.dragStarter;
-    document.body.onmouseup=window.dhtmlDragAndDrop.preCreateDragCopy;
-    document.body.onmousemove=window.dhtmlDragAndDrop.callDrag;
-    window.dhtmlDragAndDrop.downtime = new Date().valueOf();
-
-
-    if ((e)&&(e.preventDefault)){
-        e.preventDefault();
-        return false;
-    }
-    return false;
-};
-
-dhtmlDragAndDropObject.prototype.callDrag=function(e){
-    if (!e)
-        e=window.event;
-    var dragger=window.dhtmlDragAndDrop;
-    if ((new Date()).valueOf()-dragger.downtime<100) return;
-
-    //if ((e.button == 0)&&(_isIE))
-    //	return dragger.stopDrag();
-
-    if (!dragger.dragNode){
-        if (dragger.waitDrag){
-            dragger.dragNode=dragger.dragStartObject._createDragNode(dragger.dragStartNode, e);
-
-            if (!dragger.dragNode)
-                return dragger.stopDrag();
-
-            dragger.dragNode.onselectstart=function(){return false;};
-            dragger.gldragNode=dragger.dragNode;
-            document.body.appendChild(dragger.dragNode);
-            document.body.onmouseup=dragger.stopDrag;
-            dragger.waitDrag=0;
-            dragger.dragNode.pWindow=window;
-            dragger.initFrameRoute();
-        }
-        else return dragger.stopDrag(e, true);
-    }
-
-    if (dragger.dragNode.parentNode != window.document.body && dragger.gldragNode){
-        var grd = dragger.gldragNode;
-
-        if (dragger.gldragNode.old)
-            grd=dragger.gldragNode.old;
-
-        //if (!document.all) dragger.calculateFramePosition();
-        grd.parentNode.removeChild(grd);
-        var oldBody = dragger.dragNode.pWindow;
-
-        if (grd.pWindow &&	grd.pWindow.dhtmlDragAndDrop.lastLanding)
-            grd.pWindow.dhtmlDragAndDrop.lastLanding.dragLanding._dragOut(grd.pWindow.dhtmlDragAndDrop.lastLanding);
-
-        //		var oldp=dragger.dragNode.parentObject;
-        if (_isIE){
-            var div = document.createElement("Div");
-            div.innerHTML=dragger.dragNode.outerHTML;
-            dragger.dragNode=div.childNodes[0];
-        } else
-            dragger.dragNode=dragger.dragNode.cloneNode(true);
-
-        dragger.dragNode.pWindow=window;
-        //		dragger.dragNode.parentObject=oldp;
-
-        dragger.gldragNode.old=dragger.dragNode;
-        document.body.appendChild(dragger.dragNode);
-        oldBody.dhtmlDragAndDrop.dragNode=dragger.dragNode;
-    }
-
-    dragger.dragNode.style.left=e.clientX+15 + 
-        (dragger.fx ? dragger.fx*(-1) : 0) +
-        (document.body.scrollLeft||document.documentElement.scrollLeft)+"px";
-    dragger.dragNode.style.top=e.clientY+3+
-        (dragger.fy ? dragger.fy*(-1) : 0) +
-        (document.body.scrollTop||document.documentElement.scrollTop)+"px";
-
-    var z;
-    if (!e.srcElement)
-        z = e.target;
-    else
-        z=e.srcElement;
-    dragger.checkLanding(z, e);
-};
-
-dhtmlDragAndDropObject.prototype.calculateFramePosition=function(n){
-    //this.fx = 0, this.fy = 0;
-    if (window.name){
-        var el = parent.frames[window.name].frameElement.offsetParent;
-        var fx = 0;
-        var fy = 0;
-
-        while (el){
-            fx+=el.offsetLeft;
-            fy+=el.offsetTop;
-            el=el.offsetParent;
-        }
-
-        if ((parent.dhtmlDragAndDrop)){
-            var ls = parent.dhtmlDragAndDrop.calculateFramePosition(1);
-            fx+=ls.split('_')[0]*1;
-            fy+=ls.split('_')[1]*1;
-        }
-
-        if (n)
-            return fx+"_"+fy;
-        else
-            this.fx=fx;
-        this.fy=fy;
-    }
-    return "0_0";
-};
-
-dhtmlDragAndDropObject.prototype.checkLanding=function(htmlObject, e){
-    if ((htmlObject)&&(htmlObject.dragLanding)){
-        if (this.lastLanding)
-            this.lastLanding.dragLanding._dragOut(this.lastLanding);
-        this.lastLanding=htmlObject;
-        this.lastLanding=this.lastLanding.dragLanding._dragIn(this.lastLanding, this.dragStartNode, e.clientX,
-            e.clientY, e);
-        this.lastLanding_scr=(_isIE ? e.srcElement : e.target);
-    } else {
-        if ((htmlObject)&&(htmlObject.tagName != "BODY"))
-            this.checkLanding(htmlObject.parentNode, e);
-        else {
-            if (this.lastLanding)
-                this.lastLanding.dragLanding._dragOut(this.lastLanding, e.clientX, e.clientY, e);
-            this.lastLanding=0;
-
-            if (this._onNotFound)
-                this._onNotFound();
-        }
-    }
-};
-
-dhtmlDragAndDropObject.prototype.stopDrag=function(e, mode){
-    var dragger=window.dhtmlDragAndDrop;
-
-    if (!mode){
-        dragger.stopFrameRoute();
-        var temp = dragger.lastLanding;
-        dragger.lastLanding=null;
-
-        if (temp)
-            temp.dragLanding._drag(dragger.dragStartNode, dragger.dragStartObject, temp,
-                (_isIE ? event.srcElement : e.target));
-    }
-    dragger.lastLanding=null;
-
-    if ((dragger.dragNode)&&(dragger.dragNode.parentNode == document.body))
-        dragger.dragNode.parentNode.removeChild(dragger.dragNode);
-    dragger.dragNode=0;
-    dragger.gldragNode=0;
-    dragger.fx=0;
-    dragger.fy=0;
-    dragger.dragStartNode=0;
-    dragger.dragStartObject=0;
-    document.body.onmouseup=dragger.tempDOMU;
-    document.body.onmousemove=dragger.tempDOMM;
-    dragger.tempDOMU=null;
-    dragger.tempDOMM=null;
-    dragger.waitDrag=0;
-};
-
-dhtmlDragAndDropObject.prototype.stopFrameRoute=function(win){
-    if (win)
-        window.dhtmlDragAndDrop.stopDrag(1, 1);
-
-    for (var i = 0; i < window.frames.length; i++){
-        try{
-            if ((window.frames[i] != win)&&(window.frames[i].dhtmlDragAndDrop))
-                window.frames[i].dhtmlDragAndDrop.stopFrameRoute(window);
-        } catch(e){}
-    }
-
-    try{
-        if ((parent.dhtmlDragAndDrop)&&(parent != window)&&(parent != win))
-            parent.dhtmlDragAndDrop.stopFrameRoute(window);
-    } catch(e){}
-};
-
-dhtmlDragAndDropObject.prototype.initFrameRoute=function(win, mode){
-    if (win){
-        window.dhtmlDragAndDrop.preCreateDragCopy();
-        window.dhtmlDragAndDrop.dragStartNode=win.dhtmlDragAndDrop.dragStartNode;
-        window.dhtmlDragAndDrop.dragStartObject=win.dhtmlDragAndDrop.dragStartObject;
-        window.dhtmlDragAndDrop.dragNode=win.dhtmlDragAndDrop.dragNode;
-        window.dhtmlDragAndDrop.gldragNode=win.dhtmlDragAndDrop.dragNode;
-        window.document.body.onmouseup=window.dhtmlDragAndDrop.stopDrag;
-        window.waitDrag=0;
-
-        if (((!_isIE)&&(mode))&&((!_isFF)||(_FFrv < 1.8)))
-            window.dhtmlDragAndDrop.calculateFramePosition();
-    }
-    try{
-        if ((parent.dhtmlDragAndDrop)&&(parent != window)&&(parent != win))
-            parent.dhtmlDragAndDrop.initFrameRoute(window);
-    }catch(e){}
-
-    for (var i = 0; i < window.frames.length; i++){
-        try{
-            if ((window.frames[i] != win)&&(window.frames[i].dhtmlDragAndDrop))
-                window.frames[i].dhtmlDragAndDrop.initFrameRoute(window, ((!win||mode) ? 1 : 0));
-        } catch(e){}
-    }
-};
-
-_isFF = false;
-_isIE = false;
-_isOpera = false;
-_isKHTML = false;
-_isMacOS = false;
-_isChrome = false;
-_FFrv = false;
-_KHTMLrv = false;
-_OperaRv = false;
+ _isFF = false;
+ _isIE = false;
+ _isOpera = false;
+ _isKHTML = false;
+ _isMacOS = false;
+ _isChrome = false;
+ _FFrv = false;
+ _KHTMLrv = false;
+ _OperaRv = false;
 
 if (navigator.userAgent.indexOf('Macintosh') != -1)
-    _isMacOS=true;
+	_isMacOS=true;
 
 
 if (navigator.userAgent.toLowerCase().indexOf('chrome')>-1)
-    _isChrome=true;
+	_isChrome=true;
 
 if ((navigator.userAgent.indexOf('Safari') != -1)||(navigator.userAgent.indexOf('Konqueror') != -1)){
-    _KHTMLrv = parseFloat(navigator.userAgent.substr(navigator.userAgent.indexOf('Safari')+7, 5));
+	 _KHTMLrv = parseFloat(navigator.userAgent.substr(navigator.userAgent.indexOf('Safari')+7, 5));
 
-    if (_KHTMLrv > 525){ //mimic FF behavior for Safari 3.1+
-        _isFF=true;
-        _FFrv = 1.9;
-    } else
-        _isKHTML=true;
+	if (_KHTMLrv > 525){ //mimic FF behavior for Safari 3.1+
+		_isFF=true;
+		 _FFrv = 1.9;
+	} else
+		_isKHTML=true;
 } else if (navigator.userAgent.indexOf('Opera') != -1){
-    _isOpera=true;
-    _OperaRv=parseFloat(navigator.userAgent.substr(navigator.userAgent.indexOf('Opera')+6, 3));
+	_isOpera=true;
+	_OperaRv=parseFloat(navigator.userAgent.substr(navigator.userAgent.indexOf('Opera')+6, 3));
 }
 
 
 else if (navigator.appName.indexOf("Microsoft") != -1){
-    _isIE=true;
-    if ((navigator.appVersion.indexOf("MSIE 8.0")!= -1 || navigator.appVersion.indexOf("MSIE 9.0")!= -1 || navigator.appVersion.indexOf("MSIE 10.0")!= -1 ) && document.compatMode != "BackCompat"){
-        _isIE=8;
-    }
+	_isIE=true;
+	if ((navigator.appVersion.indexOf("MSIE 8.0")!= -1 || 
+		 navigator.appVersion.indexOf("MSIE 9.0")!= -1 || 
+		 navigator.appVersion.indexOf("MSIE 10.0")!= -1 ||
+		 document.documentMode > 7) && 
+			document.compatMode != "BackCompat"){
+		_isIE=8;
+	}
 } else if (navigator.appName  == 'Netscape' && navigator.userAgent.indexOf("Trident") != -1){
 	//ie11
 	_isIE=8;
 } else {
-    _isFF=true;
-    _FFrv = parseFloat(navigator.userAgent.split("rv:")[1]);
+	_isFF=true;
+	 _FFrv = parseFloat(navigator.userAgent.split("rv:")[1])
 }
 
-
-//multibrowser Xpath processor
-dtmlXMLLoaderObject.prototype.doXPath=function(xpathExp, docObj, namespace, result_type){
-    if (_isKHTML || (!_isIE && !window.XPathResult))
-        return this.doXPathOpera(xpathExp, docObj);
-
-    if (_isIE){ //IE
-        if (!docObj)
-            if (!this.xmlDoc.nodeName)
-                docObj=this.xmlDoc.responseXML;
-            else
-                docObj=this.xmlDoc;
-
-        if (!docObj)
-            dhtmlxError.throwError("LoadXML", "Incorrect XML", [
-                (docObj||this.xmlDoc),
-                this.mainObject
-            ]);
-
-        if (namespace)
-            docObj.setProperty("SelectionNamespaces", "xmlns:xsl='"+namespace+"'"); //
-
-        if (result_type == 'single'){
-            return docObj.selectSingleNode(xpathExp);
-        }
-        else {
-            return docObj.selectNodes(xpathExp)||new Array(0);
-        }
-    } else { //Mozilla
-        var nodeObj = docObj;
-
-        if (!docObj){
-            if (!this.xmlDoc.nodeName){
-                docObj=this.xmlDoc.responseXML;
-            }
-            else {
-                docObj=this.xmlDoc;
-            }
-        }
-
-        if (!docObj)
-            dhtmlxError.throwError("LoadXML", "Incorrect XML", [
-                (docObj||this.xmlDoc),
-                this.mainObject
-            ]);
-
-        if (docObj.nodeName.indexOf("document") != -1){
-            nodeObj=docObj;
-        }
-        else {
-            nodeObj=docObj;
-            docObj=docObj.ownerDocument;
-        }
-        var retType = XPathResult.ANY_TYPE;
-
-        if (result_type == 'single')
-            retType=XPathResult.FIRST_ORDERED_NODE_TYPE;
-        var rowsCol = [];
-        var col = docObj.evaluate(xpathExp, nodeObj, function(pref){
-            return namespace;
-        }, retType, null);
-
-        if (retType == XPathResult.FIRST_ORDERED_NODE_TYPE){
-            return col.singleNodeValue;
-        }
-        var thisColMemb = col.iterateNext();
-
-        while (thisColMemb){
-            rowsCol[rowsCol.length]=thisColMemb;
-            thisColMemb=col.iterateNext();
-        }
-        return rowsCol;
-    }
+if (typeof(window.dhtmlxEvent) == "undefined") {
+	
+	function dhtmlxEvent(el, event, handler){
+		if (el.addEventListener)
+			el.addEventListener(event, handler, false);
+	
+		else if (el.attachEvent)
+			el.attachEvent("on"+event, handler);
+	}
 };
 
-function _dhtmlxError(type, name, params){
-    if (!this.catches)
-        this.catches=[];
-
-    return this;
-}
-
-_dhtmlxError.prototype.catchError=function(type, func_name){
-    this.catches[type]=func_name;
+if (dhtmlxEvent.touchDelay == null) {
+	dhtmlxEvent.touchDelay = 2000;
 };
 
-_dhtmlxError.prototype.throwError=function(type, name, params){
-    if (this.catches[type])
-        return this.catches[type](type, name, params);
-
-    if (this.catches["ALL"])
-        return this.catches["ALL"](type, name, params);
-
-    window.alert("Error type: "+arguments[0]+"\nDescription: "+arguments[1]);
-    return null;
+if (typeof(dhtmlxEvent.initTouch) == "undefined") {
+	
+	dhtmlxEvent.initTouch = function(){
+		var longtouch;
+		var target;
+		var tx, ty;
+	
+		dhtmlxEvent(document.body, "touchstart", function(ev){
+			target = ev.touches[0].target;
+			tx = ev.touches[0].clientX;
+			ty = ev.touches[0].clientY;
+			longtouch = window.setTimeout(touch_event, dhtmlxEvent.touchDelay);
+		});
+		function touch_event(){
+			if (target){
+				var ev = document.createEvent("HTMLEvents"); // for chrome and firefox
+				ev.initEvent("dblclick", true, true);
+				target.dispatchEvent(ev);
+				longtouch = target = null;
+			}
+		};
+		dhtmlxEvent(document.body, "touchmove", function(ev){
+			if (longtouch){
+				if (Math.abs(ev.touches[0].clientX - tx) > 50 || Math.abs(ev.touches[0].clientY - ty) > 50 ){
+					window.clearTimeout(longtouch);
+					longtouch = target = false;
+				}
+			}
+		});
+		dhtmlxEvent(document.body, "touchend", function(ev){
+			if (longtouch){
+				window.clearTimeout(longtouch);
+				longtouch = target = false;
+			}
+		});
+	
+		dhtmlxEvent.initTouch = function(){};
+	};
 };
 
-window.dhtmlxError=new _dhtmlxError();
-
-
-//opera fake, while 9.0 not released
-//multibrowser Xpath processor
-dtmlXMLLoaderObject.prototype.doXPathOpera=function(xpathExp, docObj){
-    //this is fake for Opera
-    var z = xpathExp.replace(/[\/]+/gi, "/").split('/');
-    var obj = null;
-    var i = 1;
-
-    if (!z.length)
-        return [];
-
-    if (z[0] == ".")
-        obj=[docObj]; else if (z[0] === ""){
-        obj=(this.xmlDoc.responseXML||this.xmlDoc).getElementsByTagName(z[i].replace(/\[[^\]]*\]/g, ""));
-        i++;
-    } else
-        return [];
-
-    for (i; i < z.length; i++)obj=this._getAllNamedChilds(obj, z[i]);
-
-    if (z[i-1].indexOf("[") != -1)
-        obj=this._filterXPath(obj, z[i-1]);
-    return obj;
-};
-
-dtmlXMLLoaderObject.prototype._filterXPath=function(a, b){
-    var c = [];
-    var b = b.replace(/[^\[]*\[\@/g, "").replace(/[\[\]\@]*/g, "");
-
-    for (var i = 0; i < a.length; i++)
-        if (a[i].getAttribute(b))
-            c[c.length]=a[i];
-
-    return c;
-};
-
-dtmlXMLLoaderObject.prototype._getAllNamedChilds=function(a, b){
-    var c = [];
-
-    if (_isKHTML)
-        b=b.toUpperCase();
-
-    for (var i = 0; i < a.length; i++)for (var j = 0; j < a[i].childNodes.length; j++){
-        if (_isKHTML){
-            if (a[i].childNodes[j].tagName&&a[i].childNodes[j].tagName.toUpperCase() == b)
-                c[c.length]=a[i].childNodes[j];
-        }
-
-        else if (a[i].childNodes[j].tagName == b)
-            c[c.length]=a[i].childNodes[j];
-    }
-
-    return c;
-};
-
-function dhtmlXHeir(a, b){
-    for (var c in b)
-        if (typeof (b[c]) == "function")
-            a[c]=b[c];
-    return a;
-}
-
-if(typeof (window.dhtmlxEvent) == 'undefined'){
-    window.dhtmlxEvent = function dhtmlxEvent(el, event, handler){
-        if (el.addEventListener)
-            el.addEventListener(event, handler, false);
-
-        else if (el.attachEvent)
-            el.attachEvent("on"+event, handler);
-    };
-}
-
-//============= XSL Extension ===================================
-
-dtmlXMLLoaderObject.prototype.xslDoc=null;
-dtmlXMLLoaderObject.prototype.setXSLParamValue=function(paramName, paramValue, xslDoc){
-    if (!xslDoc)
-        xslDoc=this.xslDoc;
-
-    if (xslDoc.responseXML)
-        xslDoc=xslDoc.responseXML;
-    var item =
-        this.doXPath("/xsl:stylesheet/xsl:variable[@name='"+paramName+"']", xslDoc,
-            "http:/\/www.w3.org/1999/XSL/Transform", "single");
-
-    if (item)
-        item.firstChild.nodeValue=paramValue;
-};
-
-dtmlXMLLoaderObject.prototype.doXSLTransToObject=function(xslDoc, xmlDoc){
-    if (!xslDoc)
-        xslDoc=this.xslDoc;
-
-    if (xslDoc.responseXML)
-        xslDoc=xslDoc.responseXML;
-
-    if (!xmlDoc)
-        xmlDoc=this.xmlDoc;
-
-    if (xmlDoc.responseXML)
-        xmlDoc=xmlDoc.responseXML;
-
-    
-    var result;
-    //Mozilla
-    if (!_isIE){
-        if (!this.XSLProcessor){
-            this.XSLProcessor=new XSLTProcessor();
-            this.XSLProcessor.importStylesheet(xslDoc);
-        }
-        result = this.XSLProcessor.transformToDocument(xmlDoc);
-    } else {
-        result = new ActiveXObject("Msxml2.DOMDocument.3.0");
-        try{
-            xmlDoc.transformNodeToObject(xslDoc, result);
-        }catch(e){
-            result = xmlDoc.transformNode(xslDoc);
-        }
-    }
-    return result;
-};
-
-dtmlXMLLoaderObject.prototype.doXSLTransToString=function(xslDoc, xmlDoc){
-    var res = this.doXSLTransToObject(xslDoc, xmlDoc);
-    if(typeof(res)=="string")
-        return res;
-    return this.doSerialization(res);
-};
-
-dtmlXMLLoaderObject.prototype.doSerialization=function(xmlDoc){
-    if (!xmlDoc)
-        xmlDoc=this.xmlDoc;
-    if (xmlDoc.responseXML)
-        xmlDoc=xmlDoc.responseXML;
-    if (!_isIE){
-        var xmlSerializer = new XMLSerializer();
-        return xmlSerializer.serializeToString(xmlDoc);
-    } else
-        return xmlDoc.xml;
-};
-
-/**
- *   @desc:
- *   @type: private
- */
-dhtmlxEventable=function(obj){
-    obj.attachEvent=function(name, catcher, callObj){
-        name='ev_'+name.toLowerCase();
-        if (!this[name])
-            this[name]=new this.eventCatcher(callObj||this);
-
-        return(name+':'+this[name].addEvent(catcher)); //return ID (event name & event ID)
-    };
-    obj.callEvent=function(name, arg0){
-        name='ev_'+name.toLowerCase();
-        if (this[name])
-            return this[name].apply(this, arg0);
-        return true;
-    };
-    obj.checkEvent=function(name){
-        return (!!this['ev_'+name.toLowerCase()]);
-    };
-    obj.eventCatcher=function(obj){
-        var dhx_catch = [];
-        var z = function(){
-            var res = true;
-            for (var i = 0; i < dhx_catch.length; i++){
-                if (dhx_catch[i]){
-                    var zr = dhx_catch[i].apply(obj, arguments);
-                    res=res&&zr;
-                }
-            }
-            return res;
-        };
-        z.addEvent=function(ev){
-            if (typeof (ev) != "function")
-                ev=eval(ev);
-            if (ev)
-                return dhx_catch.push(ev)-1;
-            return false;
-        };
-        z.removeEvent=function(id){
-            dhx_catch[id]=null;
-        };
-        return z;
-    };
-    obj.detachEvent=function(id){
-        if (id){
-            var list = id.split(':');           //get EventName and ID
-            this[list[0]].removeEvent(list[1]); //remove event
-        }
-    };
-    obj.detachAllEvents = function(){
-        for (var name in this){
-            if (name.indexOf("ev_")===0){
-                this.detachEvent(name);
-                this[name] = null;
-            }
-        }
-    };
-    obj = null;
-};
 if(!window.dhtmlx)
 	window.dhtmlx = {};
 
@@ -1219,7 +845,7 @@ if(!window.dhtmlx)
 	};
 })();
 gantt = {
-	version:"3.1.1"
+	version:"3.2.0"
 };
 
 /*jsl:ignore*/
@@ -1348,7 +974,10 @@ dhtmlx.uid = function() {
 
 //creates function with specified "this" pointer
 dhtmlx.bind=function(functor, object){
-    return function(){ return functor.apply(object,arguments); };
+	if(functor.bind)
+		return functor.bind(object);
+	else
+		return function(){ return functor.apply(object,arguments); };
 };
 
 
@@ -1388,7 +1017,62 @@ gantt._detectScrollSize = function(){
     return width;
 };
 
+if (window.dhtmlx){
+
+	if (!dhtmlx.attaches)
+		dhtmlx.attaches = {};
+
+	dhtmlx.attaches.attachGantt=function(start, end, gantt){
+		var obj = document.createElement("DIV");
+		obj.id = "gantt_"+dhtmlx.uid();
+		obj.style.width = "100%";
+		obj.style.height = "100%";
+		obj.cmp = "grid";
+		gantt = gantt || window.gantt;
+		document.body.appendChild(obj);
+		this.attachObject(obj.id);
+
+		var that = this.vs[this.av];
+		that.grid = gantt;
+
+		gantt.init(obj.id, start, end);
+		obj.firstChild.style.border = "none";
+
+		that.gridId = obj.id;
+		that.gridObj = obj;
+
+		var method_name="_viewRestore";
+		return this.vs[this[method_name]()].grid;
+	};
+
+}
+if (typeof(window.dhtmlXCellObject) != "undefined") {
+
+	dhtmlXCellObject.prototype.attachGantt=function(start, end, gantt){
+		var obj = document.createElement("DIV");
+		obj.id = "gantt_"+dhtmlx.uid();
+		obj.style.width = "100%";
+		obj.style.height = "100%";
+		obj.cmp = "grid";
+
+		document.body.appendChild(obj);
+		this.attachObject(obj.id);
+		gantt = gantt || window.gantt;
+		gantt.init(obj.id, start, end);
+		obj.firstChild.style.border = "none";
+		var method_name="_viewRestore";
+		obj = null;
+		this.callEvent("_onContentAttach",[]);
+
+		return this.dataObj;
+	};
+
+}
+
+
 dhtmlxEventable(gantt);
+
+dhx4.ajax.cache = true;
 
 gantt._click = {};
 gantt._dbl_click = {};
@@ -1591,7 +1275,8 @@ gantt._init_grid = function () {
 	this._click.gantt_row = dhtmlx.bind(function (e, id, trg) {
 		if (id !== null) {
 			var task = this.getTask(id);
-			this.showDate(task.start_date);
+			if(this.config.scroll_on_click)
+				this.showDate(task.start_date);
 			this.callEvent("onTaskRowClick", [id, trg]);
 		}
 	}, this);
@@ -1612,8 +1297,6 @@ gantt._init_grid = function () {
 				name: column,
 				direction: sort
 			};
-			this._render_grid_header();
-
 			this.sort(column, sort == "desc");
 		}
 	}, this);
@@ -1645,21 +1328,22 @@ gantt._render_grid = function () {
 };
 
 gantt._calc_grid_width = function () {
-	if (this.config.autofit) {
-		var columns = this.getGridColumns();
-		var cols_width = 0;
-		var unknown = [];
-		var width = [];
+	var columns = this.getGridColumns();
+	var cols_width = 0;
+	var unknown = [];
+	var width = [];
 
-		for (var i = 0; i < columns.length; i++) {
-			var v = parseInt(columns[i].width, 10);
-			if (window.isNaN(v)) {
-				v = 50;
-				unknown.push(i);
-			}
-			width[i] = v;
-			cols_width += v;
+	for (var i = 0; i < columns.length; i++) {
+		var v = parseInt(columns[i].width, 10);
+		if (window.isNaN(v)) {
+			v = 50;
+			unknown.push(i);
 		}
+		width[i] = v;
+		cols_width += v;
+	}
+
+	if (this.config.autofit || unknown.length) {
 		var diff = this._get_grid_width() - cols_width;
 		// TODO: logic may be improved for proportional changing of width
 		var step = diff / (unknown.length > 0 ? unknown.length : (width.length > 0 ? width.length : 1));
@@ -1680,6 +1364,8 @@ gantt._calc_grid_width = function () {
 		for (var i = 0; i < width.length; i++) {
 			columns[i].width = width[i];
 		}
+	}else{
+		this.config.grid_width = cols_width;
 	}
 };
 
@@ -1713,10 +1399,6 @@ gantt._render_grid_header = function () {
 	this.$grid_scale.style.lineHeight = lineHeigth + "px";
 	this.$grid_scale.style.width = (width - 1) + "px";
 	this.$grid_scale.innerHTML = cells.join("");
-
-	if(this._render_grid_header_resize){
-		this._render_grid_header_resize();
-	}
 };
 
 
@@ -1818,7 +1500,7 @@ gantt._get_grid_width = function () {
 	}
 };
 gantt.getTaskIndex = function (id) {
-	var branch = this._branches[this.getTask(id).parent];
+	var branch = this.getChildren(this.getParent(id));
 	for (var i = 0; i < branch.length; i++)
 		if (branch[i] == id)
 			return i;
@@ -1839,7 +1521,7 @@ gantt.moveTask = function (sid, tindex, parent) {
 	if (id) {
 		if (id === sid) return;
 
-		parent = this.getTask(id).parent;
+		parent = this.getParent(id);
 		tindex = this.getTaskIndex(id);
 	}
 	if(sid == parent){
@@ -1847,18 +1529,33 @@ gantt.moveTask = function (sid, tindex, parent) {
 	}
 	parent = parent || this.config.root_id;
 	var source = this.getTask(sid);
-	var sbranch = this._branches[source.parent];
+	var source_pid = this.getParent(source.id);
+	var sbranch = this.getChildren(this.getParent(source.id));
 
-	var tbranch = this._branches[parent] || [];
+	var tbranch = this.getChildren(parent);
 	if (tindex == -1)
 		tindex = tbranch.length + 1;
-	if (source.parent == parent) {
+	if (source_pid == parent) {
 		var sindex = this.getTaskIndex(sid);
 		if (sindex == tindex) return;
 	}
 
-	this._replace_branch_child(source.parent, sid);
-	tbranch = this._branches[parent] || [];
+
+	/*
+	prevent moving to another sub-branch:
+
+	gantt.attachEvent("onBeforeTaskMove", function(id, parent, tindex){
+	 var task = gantt.getTask(id);
+	 if(task.parent != parent)
+	  return false;
+	 return true;
+	});
+	*/
+	if(this.callEvent("onBeforeTaskMove", [sid, parent, tindex]) === false)
+		return;
+
+	this._replace_branch_child(source_pid, sid);
+	tbranch = this.getChildren(parent);
 
 	var tid = tbranch[tindex];
 	if (!tid) //adding as last element
@@ -1866,7 +1563,7 @@ gantt.moveTask = function (sid, tindex, parent) {
 	else
 		tbranch = tbranch.slice(0, tindex).concat([ sid ]).concat(tbranch.slice(tindex));
 
-	source.parent = parent;
+	this.setParent(source, parent);
 	this._branches[parent] = tbranch;
 
 	var childTree = this._getTaskTree(sid);
@@ -1888,7 +1585,11 @@ gantt.moveTask = function (sid, tindex, parent) {
 		source.$drop_target = parent;
 	}
 
+	if(!this.callEvent("onAfterTaskMove", [sid, parent, tindex]))
+		return;
+
 	this.refreshData();
+
 };
 
 gantt._init_dnd = function () {
@@ -1918,9 +1619,10 @@ gantt._init_dnd = function () {
 	dnd.attachEvent("onAfterDragStart", dhtmlx.bind(function (obj, e) {
 		var el = this._locateHTML(e);
 		dnd.config.marker.innerHTML = el.outerHTML;
-
 		dnd.config.id = this.locate(e);
 		var task = this.getTask(dnd.config.id);
+		dnd.config.index = this.getTaskIndex(dnd.config.id);
+		dnd.config.parent = task.parent;
 		task.$open = false;
 		task.$transparent = true;
 		this.refreshData();
@@ -1998,7 +1700,7 @@ gantt._init_dnd = function () {
 					//we at end of the list, check and drop at the end of list
 					next = this._pull[this._order[index]];
 					if (next.$level == item.$level && next.id != item.id) {
-						this.moveTask(item.id, -1, next.parent);
+						this.moveTask(item.id, -1, this.getParent(next.id));
 
 						return;
 					}
@@ -2023,7 +1725,7 @@ gantt._init_dnd = function () {
 				this.moveTask(item.id, 0, over.id);
 
 			} else if(prev && (prev.$level == item.$level) && (item.id != prev.id)){
-				this.moveTask(item.id, -1, prev.parent);
+				this.moveTask(item.id, -1, this.getParent(prev.id));
 
 			}
 		}
@@ -2033,9 +1735,15 @@ gantt._init_dnd = function () {
 
 	dnd.attachEvent("onDragEnd", dhtmlx.bind(function () {
 		var task = this.getTask(dnd.config.id);
+		if(this.callEvent("onBeforeRowDragEnd",[dnd.config.id, dnd.config.index, dnd.config.parent]) === false) {
+			this.moveTask(dnd.config.id, dnd.config.index, dnd.config.parent);
+			task.$drop_target = null;
+		}else{
+			this.callEvent("onRowDragEnd", [dnd.config.id, task.$drop_target]);
+		}
+
 		task.$transparent = false;
 		task.$open = dnd.config.initial_open_state;
-		this.callEvent("onRowDragEnd", [dnd.config.id, task.$drop_target]);
 		this.refreshData();
 
 	}, this));
@@ -2176,9 +1884,16 @@ gantt._scale_helpers = {
 		for( var i =0; i < configs.length-1; i++){
 			this.alineScaleColumns(configs[configs.length-1], configs[i]);
 		}
-
+		for(var i = 0; i < configs.length; i++){
+			this.setPosSettings(configs[i]);
+		}
 		return configs;
 
+	},
+	setPosSettings: function(config){
+		for(var i = 0, len = config.trace_x.length; i < len; i++){
+			config.left.push((config.width[i - 1] || 0) + (config.left[i - 1] || 0));
+		}
 	},
 
 	_ignore_time_config : function(date){
@@ -2230,6 +1945,7 @@ gantt._scale_helpers = {
 			full_width:0,
 			height:0,
 			width:[],
+			left:[],
 			trace_x:[]
 		}, config);
 
@@ -2285,6 +2001,7 @@ gantt._scale_helpers = {
 		while(+curr < +end){
 			callback.call(this, new Date(curr));
 			curr = gantt.date.add(curr, step, unit);
+			curr = gantt.date[unit + "_start"](curr);
 		}
 	},
 	limitVisibleRange : function(cfg){
@@ -2381,12 +2098,12 @@ gantt._tasks_dnd = {
 		var cfg = gantt.config;
 		var coords_x = this._drag_task_coords(ev, drag);
 		if(drag.left){
-			ev.start_date = gantt._date_from_pos(coords_x.start + shift);
+			ev.start_date = gantt.dateFromPos(coords_x.start + shift);
 			if(!ev.start_date){
 				ev.start_date = new Date(gantt.getState().min_date);
 			}
 		}else{
-			ev.end_date =gantt._date_from_pos(coords_x.end + shift);
+			ev.end_date =gantt.dateFromPos(coords_x.end + shift);
 			if(!ev.end_date){
 				ev.end_date = new Date(gantt.getState().max_date);
 			}
@@ -2408,14 +2125,14 @@ gantt._tasks_dnd = {
 	},
 	_move : function(ev, shift, drag){
 		var coords_x = this._drag_task_coords(ev, drag);
-		var new_start = gantt._date_from_pos(coords_x.start + shift),
-			new_end = gantt._date_from_pos(coords_x.end + shift);
+		var new_start = gantt.dateFromPos(coords_x.start + shift),
+			new_end = gantt.dateFromPos(coords_x.end + shift);
 		if(!new_start){
 			ev.start_date = new Date(gantt.getState().min_date);
-			ev.end_date = gantt._date_from_pos(gantt.posFromDate(ev.start_date) + (coords_x.end - coords_x.start));
+			ev.end_date = gantt.dateFromPos(gantt.posFromDate(ev.start_date) + (coords_x.end - coords_x.start));
 		}else if(!new_end){
 			ev.end_date = new Date(gantt.getState().max_date);
-			ev.start_date = gantt._date_from_pos(gantt.posFromDate(ev.end_date) - (coords_x.end - coords_x.start));
+			ev.start_date = gantt.dateFromPos(gantt.posFromDate(ev.end_date) - (coords_x.end - coords_x.start));
 		}else{
 			ev.start_date = new_start;
 			ev.end_date = new_end;
@@ -2453,7 +2170,7 @@ gantt._tasks_dnd = {
 
 			drag.pos=pos;
 
-			var curr_date = gantt._date_from_pos(pos.x);
+			var curr_date = gantt.dateFromPos(pos.x);
 			if(!curr_date || isNaN( curr_date.getTime() ))
 				return;
 
@@ -2548,14 +2265,26 @@ gantt._tasks_dnd = {
 			step = gantt.config.time_step;
 		}
 
+		function fixStart(task){
+			if(!gantt.isWorkTime(task.start_date))
+				task.start_date = gantt.calculateEndDate(task.start_date, -1, gantt.config.duration_unit);
+		}
+		function fixEnd(task){
+			if(!gantt.isWorkTime(new Date(task.end_date - 1)))
+				task.end_date = gantt.calculateEndDate(task.end_date, 1, gantt.config.duration_unit);
+		}
 		if(drag.mode == gantt.config.drag_mode.resize){
 			if(drag.left){
 				task.start_date = gantt.roundDate({date:task.start_date, unit:unit, step:step});
+				fixStart(task);
 			}else{
 				task.end_date = gantt.roundDate({date:task.end_date, unit:unit, step:step});
+				fixEnd(task);
 			}
 		}else if(drag.mode == gantt.config.drag_mode.move){
 			task.start_date = gantt.roundDate({date:task.start_date, unit:unit, step:step});
+			fixStart(task);
+
 			task.end_date = gantt.calculateEndDate(task.start_date, task.duration, gantt.config.duration_unit);
 		}
 	},
@@ -2683,8 +2412,11 @@ gantt.roundTaskDates = function(task){
 
 gantt._render_link = function(id){
 	var link = this.getLink(id);
-	gantt._linkRenderer.render_item(link, this.$task_links);
+	var renders = gantt._get_link_renderers();
+	for(var i = 0; i < renders.length; i++)
+		renders[i].render_item(link);
 };
+
 gantt._get_link_type = function(from_start, to_start){
 	var type = null;
 	if(from_start && to_start){
@@ -3422,7 +3154,7 @@ gantt._init_tasks = function(){
 
 	this._click.gantt_scale_cell = dhtmlx.bind(function(e, trg){
 		var pos = gantt._get_mouse_pos(e);
-		var date = gantt._date_from_pos(pos.x);
+		var date = gantt.dateFromPos(pos.x);
 		var coll = Math.floor(gantt._day_index_by_date(date));
 
 		var coll_date = gantt._tasks.trace_x[coll];
@@ -3456,19 +3188,33 @@ gantt._init_tasks = function(){
 	this._tasks_dnd.init();
 	this._init_links_dnd();
 
+	this._link_layers.clear();
 
-	var filter_grid_task = this._create_filter('_filter_task', '_is_grid_visible');
-	var filter_chart_task =  this._create_filter('_filter_task', '_is_chart_visible');
-	var filter_link =  this._create_filter('_filter_link', '_is_chart_visible');
-	var filter_chart_bg = this._create_filter('_filter_task', '_is_chart_visible', '_is_std_background');
+	var links_layer = this.addLinkLayer({
+		renderer: this._render_link_element,
+		container: this.$task_links,
+		filter: gantt._create_filter(['_filter_link', '_is_chart_visible'])
+	});
+	this._linkRenderer = this._link_layers.getRenderer(links_layer);
 
+	this._task_layers.clear();
+	var bar_layer = this.addTaskLayer({
+		renderer: this._render_task_element,
+		container: this.$task_bars,
+		filter: gantt._create_filter(['_filter_task', '_is_chart_visible'])
+	});
+	this._taskRenderer = this._task_layers.getRenderer(bar_layer);
 
-	this._task_renderers = {};
-
-	this._linkRenderer = this._task_renderer("links", this._render_link_element, this.$task_links, filter_link);
-	this._taskRenderer = this._task_renderers["task"] = this._task_renderer("task", this._render_task_element, this.$task_bars, filter_chart_task);
-	this._task_renderers["grid"] = this._task_renderer("grid", this._render_grid_item, this.$grid_data, filter_grid_task);
-	this._task_renderers["bg"] = this._task_renderer("bg", this._render_bg_line, this.$task_bg, filter_chart_bg);
+	this.addTaskLayer({
+		renderer: this._render_grid_item,
+		container: this.$grid_data,
+		filter: gantt._create_filter(['_filter_task', '_is_grid_visible'])
+	});
+	this.addTaskLayer({
+		renderer: this._render_bg_line,
+		container: this.$task_bg,
+		filter: gantt._create_filter(['_filter_task', '_is_chart_visible', '_is_std_background'])
+	});
 
 
 
@@ -3478,12 +3224,18 @@ gantt._init_tasks = function(){
 			renders[i].render_item(item);
 		}
 	}
-	this.attachEvent("onTaskIdChange", function(oldId, newId){
+	if(this._onTaskIdChange)
+		this.detachEvent(this._onTaskIdChange);
+
+	this._onTaskIdChange = this.attachEvent("onTaskIdChange", function(oldId, newId){
 		var render = this._get_task_renderers();
 		refreshId(render, oldId, newId, this.getTask(newId));
 	});
 
-	this.attachEvent("onLinkIdChange", function(oldId, newId){
+	if(this._onLinkIdChange)
+		this.detachEvent(this._onLinkIdChange);
+
+	this._onLinkIdChange = this.attachEvent("onLinkIdChange", function(oldId, newId){
 		var render = this._get_link_renderers();
 		refreshId(render, oldId, newId, this.getLink(newId));
 	});
@@ -3536,24 +3288,6 @@ gantt._is_std_background = function(){
 	return !this.config.static_background;
 };
 
-
-
-gantt._task_layers = [];
-gantt._task_renderers = {};
-
-
-gantt._get_task_renderers = function(){
-	var r = [];
-	for(var i in this._task_renderers){
-		r.push(this._task_renderers[i]);
-	}
-	return r;
-};
-gantt._get_link_renderers = function(){
-	return [
-		this._linkRenderer
-	];
-};
 gantt._delete_link_handler = function(id, e){
 	if(id && this.callEvent("onLinkDblClick", [id, e])){
 		var link = gantt.getLink(id);
@@ -3599,6 +3333,10 @@ gantt._get_links_data = function(){
 	return links;
 };
 gantt._render_data = function(){
+	this.callEvent("onBeforeDataRender", []);
+	if(!this._is_render_active())
+		return;
+
 	this._sync_order();
 	this._update_layout_sizes();
 	
@@ -3846,6 +3584,9 @@ gantt._adjust_scales = function(){
 
 //refresh task and related links
 gantt.refreshTask = function(taskId, refresh_links){
+	if(!this._is_render_active())
+		return;
+
 	var renders = this._get_task_renderers();
 
 	var task = this.getTask(taskId);
@@ -3867,10 +3608,16 @@ gantt.refreshTask = function(taskId, refresh_links){
 	}
 };
 gantt.refreshLink = function(linkId){
-	if(this.isLinkExists(linkId))
-		gantt._render_link(linkId);
-	else
-		gantt._linkRenderer.remove_item(linkId);
+	if(!this._is_render_active())
+		return;
+
+	if(this.isLinkExists(linkId)){
+		this._render_link(linkId);
+	}else{
+		var renders = this._get_link_renderers();
+		for(var i =0; i < renders.length; i++)
+			renders[i].remove_item(linkId);
+	}
 };
 
 
@@ -4085,11 +3832,13 @@ gantt._task_default_render = function(task){
 
 gantt._render_task_element = function(task){
 	var painters = this.config.type_renderers;
-	var renderer = painters[this._get_safe_type(task.type)];
+	var renderer = painters[this._get_safe_type(task.type)],
+		defaultRenderer = this._task_default_render;
+
 	if(!renderer){
-		renderer = this._task_default_render;
+		renderer = defaultRenderer;
 	}
-	return renderer.apply(this, arguments);
+	return renderer.call(this, task, dhtmlx.bind(defaultRenderer, this));
 };
 
 gantt._render_side_content = function(task, template, cssClass){
@@ -4204,24 +3953,24 @@ gantt._get_line = function(step) {
 };
 
 
-gantt._date_from_pos = function(x){
+gantt.dateFromPos = function(x){
 	var scale = this._tasks;
 	if(x < 0 || x > scale.full_width || !scale.full_width){
 		return null;
 	}
-	var ind = 0;
-	var summ = 0;
-	while(summ + scale.width[ind] < x){
-		summ += scale.width[ind];
-		ind++;
-	}
+
+	var ind = this._findBinary(this._tasks.left, x);
+	var summ = this._tasks.left[ind];
+
 	var col_width = scale.width[ind] || scale.col_width;
 	var part = 0;
 	if(col_width)
 		part = (x - summ)/col_width;
 
-	var unit =  gantt._get_coll_duration(scale, scale.trace_x[ind]);
-
+	var unit = 0;
+	if(part){
+		unit =  gantt._get_coll_duration(scale, scale.trace_x[ind]);
+	}
 
 	var date = new Date(scale.trace_x[ind].valueOf() + Math.round(part*unit));
 	return date;
@@ -4234,9 +3983,11 @@ gantt.posFromDate = function(date){
 	var wholeCells = Math.floor(ind);
 	var partCell = ind % 1;
 
-	var pos = 0;
-	for(var i=1; i <= wholeCells; i++)
-		pos += gantt._tasks.width[i-1];
+	var pos = gantt._tasks.left[Math.min(wholeCells, gantt._tasks.width.length - 1)];
+	if(wholeCells == gantt._tasks.width.length)
+		pos += gantt._tasks.width[gantt._tasks.width.length - 1];
+	//for(var i=1; i <= wholeCells; i++)
+	//	pos += gantt._tasks.width[i-1];
 
 	if(partCell){
 		if(wholeCells < gantt._tasks.width.length){
@@ -4260,17 +4011,52 @@ gantt._day_index_by_date = function(date){
 	if(pos >= this._max_date)
 		return days.length;
 
-	var day = null;
+	/*var day = null;
 	for (var xind = 0, length = days.length-1; xind < length; xind++) {
 		// | 8:00, 8:30 | 8:15 should be checked against 8:30
 		// clicking at the most left part of the cell, say 8:30 should create event in that cell, not previous one
 		day = +days[xind+1];
 		if (pos < day && !ignores[day])
 			break;
-	}
-	if(!days[xind]) return 0;
+	}*/
 
-	return xind + ((date - days[xind]) / gantt._get_coll_duration(gantt._tasks, days[xind]));
+	var day_ind = gantt._findBinary(days, pos);
+	var day = +gantt._tasks.trace_x[day_ind];
+	while(ignores[day]){
+		day = gantt._tasks.trace_x[++day_ind];
+	}
+
+	if(!day) return 0;
+
+	return day_ind + ((date - days[day_ind]) / gantt._get_coll_duration(gantt._tasks, days[day_ind]));
+
+
+};
+gantt._findBinary = function(array, target) {
+	// modified binary search, target value not exactly match array elements, looking for closest one
+
+	var low = 0, high = array.length - 1, i, item, prev;
+	while (low <= high) {
+
+		i = Math.floor((low + high) / 2);
+		item = +array[i];
+		prev = +array[i - 1];
+		if (item < target){
+			low = i + 1; continue;
+		}
+		if (item > target){
+			if(!(!isNaN(prev) && prev < target)) {
+				high = i - 1; continue;
+			}else{
+				// if target is between 'i' and 'i-1' return 'i - 1'
+				return i - 1;
+			}
+
+		}
+
+		return i;
+	}
+	return array.length - 1;
 };
 gantt._get_coll_duration = function(scale, date){
 	return gantt.date.add(date, scale.step, scale.unit) -  date;
@@ -4441,7 +4227,135 @@ gantt._clear_renderers = function(){
 
 
 // --#include core/tasks_canvas_render.js
-// --#include core/tasks_custom_layers.js
+gantt.attachEvent("onGanttReady", function(){
+	gantt._task_layers.add();
+	gantt._link_layers.add();
+});
+
+gantt._layers = {
+	prepareConfig: function(config){
+		if(typeof config == "function"){
+			config = {renderer: config};
+		}
+
+		var id = config.id = dhtmlx.uid();
+
+		if(!config.container)
+			config.container = document.createElement("div");
+
+		return config;
+	},
+	create: function(get_container, rel_root){
+		return {
+			tempCollection:[],
+			renderers:{},
+			container: get_container,
+			getRenderers: function(){
+				var res = [];
+				for (var i in this.renderers){
+					res.push(this.renderers[i]);
+				}
+				return res;
+			},
+			getRenderer: function(id){
+				return this.renderers[id];
+			},
+			add: function(layer){
+				if(layer)
+					this.tempCollection.push(layer);
+
+				if(!this.container()) return;
+
+				var container = this.container();
+
+				var pending = this.tempCollection;
+				for(var i =0; i < pending.length; i++){
+					var layer = pending[i];
+					var node = layer.container,
+						id = layer.id,
+						topmost = layer.topmost;
+					if(!node.parentNode){
+						//insert on top or below the tasks
+						if(topmost){
+							container.appendChild(node);
+						}else{
+							var rel = rel_root ? rel_root() : container.firstChild;
+							if(rel)
+								container.insertBefore(node, rel);
+							else
+								container.appendChild(node);
+						}
+					}
+					this.renderers[id] = gantt._task_renderer(id, layer.renderer, node, layer.filter);
+					this.tempCollection.splice(i,1);
+					i--;
+				}
+			},
+			remove: function(id){
+				this.renderers[id].unload();
+				delete this.renderers[id];
+			},
+			clear: function(){
+				for(var i in this.renderers){
+					this.renderers[i].unload();
+				}
+				this.renderers = {};
+			}
+		};
+	}
+};
+
+gantt._create_filter = function(filter_methods){
+	if(!(filter_methods instanceof Array)){
+		filter_methods = Array.prototype.slice.call(arguments, 0);
+	}
+
+	return function(obj){
+		var res = true;
+		for(var i = 0, len = filter_methods.length; i < len; i++){
+			var filter_method = filter_methods[i];
+			if(gantt[filter_method]){
+				res = res && (gantt[filter_method].call(gantt, obj.id, obj) !== false);
+			}
+		}
+
+		return res;
+	};
+};
+
+gantt._add_generic_layer = function(layersManager, filters){
+	return function(config){
+		if(config.filter === undefined){
+			config.filter = gantt._create_filter(filters);
+		}
+		config = gantt._layers.prepareConfig(config);
+		layersManager.add(config);
+		return config.id;
+	};
+};
+
+gantt._task_layers = gantt._layers.create(function(){return gantt.$task_data; }, function(){return gantt.$task_links;});
+
+gantt._link_layers = gantt._layers.create(function(){return gantt.$task_data; });
+
+gantt.addTaskLayer = gantt._add_generic_layer(gantt._task_layers, ['_filter_task', '_is_chart_visible']);
+
+gantt.removeTaskLayer = function(id){
+	gantt._task_layers.remove(id);
+};
+
+gantt.addLinkLayer = gantt._add_generic_layer(gantt._link_layers, ['_filter_link', '_is_chart_visible']);
+gantt.removeLinkLayer = function(id){
+	gantt._link_layers.remove(id);
+};
+
+gantt._get_task_renderers = function(){
+	return this._task_layers.getRenderers();
+};
+gantt._get_link_renderers = function(){
+	return this._link_layers.getRenderers();
+};
+
 gantt._pull = {};
 gantt._branches = {};
 gantt._order = [];
@@ -4464,7 +4378,7 @@ gantt.load = function(url, type, callback){
 
 	this._load_type = tp;
 
-	dhtmlxAjax.get(url, dhtmlx.bind(function(l) {
+	dhx4.ajax.get(url, dhtmlx.bind(function(l) {
 		this.on_load(l, tp);
 		this.callEvent("onLoadEnd", []);
 		if(typeof cl == "function")
@@ -4517,6 +4431,7 @@ collections:{
 * */
 
 gantt.on_load = function(resp, type){
+	this.callEvent("onBeforeParse", []);
 	if(!type)
 		type = "json";
 	dhtmlx.assert(this[type], "Invalid data type:'" + type + "'");
@@ -4534,24 +4449,28 @@ gantt._process_loading = function(data){
 		this._load_collections(data.collections);
 
 	var tasks = data.data;
-
+	var task;
 	for (var i = 0; i < tasks.length; i++) {
-		var task = tasks[i];
+		task = tasks[i];
 		this._init_task(task);
 		if (!this.callEvent("onTaskLoading", [task])) continue;
-
 		this._pull[task.id] = task;
-		this._add_branch(task, true);
 	}
 
-
-    this._sync_order();
+	for (var i in this._pull){
+		task = this._pull[i];
+		this.setParent(task, this.getParent(task) || this.config.root_id);
+	}
 
     // calculating $level for each item
-    for (var i in this._pull)
-        this._pull[i].$level = this.calculateTaskLevel(this._pull[i]);
-
+    for (var i in this._pull){
+		task = this._pull[i];
+		this._add_branch(task, true);
+		task.$level = this.calculateTaskLevel(task);
+	}
+	this._sync_order();
 	this._init_links(data.links || (data.collections ? data.collections.links : []));
+	this.callEvent("onParse", []);
 	this.render();
 	if(this.config.initial_scroll){
 		var id = (this._order[0] || this.config.root_id);
@@ -4615,16 +4534,14 @@ gantt.attachEvent("onBeforeTaskDisplay", function(id, task){
 	return !task.$ignore;
 });
 gantt._sync_order_item = function(item) {
-
 	if(item.id && //do not trigger event for virtual root
 		this._filter_task(item.id, item) &&
 		this.callEvent("onBeforeTaskDisplay", [item.id, item])){
 			this._order.push(item.id);
 	}
 
-
     if (item.$open) {
-        var children = this._branches[item.id];
+        var children = this.getChildren(item.id);
         if (children)
         	for (var i = 0; i < children.length; i++)
         		this._sync_order_item(this._pull[children[i]]);            	
@@ -4646,12 +4563,12 @@ gantt.eachTask = function(code, parent, master){
 	parent = parent || this.config.root_id;
 	master = master || this;
 
-	var branch = this._branches[parent];
+	var branch = this.getChildren(parent);
 	if (branch)
 		for (var i=0; i<branch.length; i++){
 			var item = this._pull[branch[i]];
 			code.call(master, item);
-			if (this._branches[item.id])
+			if (this.hasChild(item.id))
 				this.eachTask(code, item.id, master);
 		}
 };
@@ -4746,11 +4663,11 @@ gantt.xml = {
 	},
 	_getCollections:function(loader){
 		var collection = {};
-		var opts = loader.doXPath("//coll_options");
+		var opts =   dhx4.ajax.xpath("//coll_options", loader);
 		for (var i = 0; i < opts.length; i++) {
 			var bind = opts[i].getAttribute("for");
 			var arr = collection[bind] = [];
-			var itms = loader.doXPath(".//item", opts[i]);
+			var itms =  dhx4.ajax.xpath(".//item", opts[i]);
 			for (var j = 0; j < itms.length; j++) {
 				var itm = itms[j];
 				var attrs = itm.attributes;
@@ -4769,25 +4686,24 @@ gantt.xml = {
 	_getXML:function(text, loader, toptag){
 		toptag = toptag || "data";
 		if (!loader.getXMLTopNode){
-			loader = new dtmlXMLLoaderObject(function() {});
-			loader.loadXMLString(text);	
+			loader = dhx4.ajax.parse(loader);
 		}
 
-		var xml = loader.getXMLTopNode(toptag);
+		var xml = dhx4.ajax.xmltop(toptag, loader.xmlDoc);
 		if (xml.tagName != toptag) throw "Invalid XML data";
 
 		var skey = xml.getAttribute("dhx_security");
 		if (skey)
 			dhtmlx.security_key = skey;
 
-		return loader;
+		return xml;
 	},
 	parse:function(text, loader){
 		loader = this._getXML(text, loader);
 		var data = { };
 
 		var evs = data.data = [];
-		var xml = loader.doXPath("//task");
+		var xml = dhx4.ajax.xpath("//task", loader);
 
 		for (var i = 0; i < xml.length; i++)
 			evs[i] = this._xmlNodeToJSON(xml[i]);
@@ -4823,7 +4739,8 @@ gantt.oldxml = {
 		var data = { collections:{ links:[] } };
 
 		var evs = data.data = [];
-		var xml = loader.doXPath("//task");
+		var xml = dhx4.ajax.xpath("//task", loader);
+
 		for (var i = 0; i < xml.length; i++){
 			evs[i] = gantt.xml._xmlNodeToJSON(xml[i]);
 			var parent = xml[i].parentNode;
@@ -4834,7 +4751,7 @@ gantt.oldxml = {
 				evs[i].parent = parent.parentNode.getAttribute("id");
 		}
 
-		xml = loader.doXPath("//project");
+		xml = dhx4.ajax.xpath("//project", loader);
 		for (var i = 0; i < xml.length; i++){
 			var ev = gantt.xml._xmlNodeToJSON(xml[i], true);
 			ev.id ="project-"+ev.id;
@@ -4885,6 +4802,42 @@ gantt._working_time_helper = {
 		6:false
 	},
 
+	// cache previously calculated worktime
+	_working_units_cache: {
+		_cache: {},
+
+		get: function(unit, date) {
+			if(!unit || !date) return -1;
+
+			var cache = this._cache;
+			var time = date.getTime();
+
+			var result = -1; // default value (if not existed in the cache)
+			if(cache && cache[unit] && cache[unit][time] !== undefined) result = cache[unit][time];
+
+			return result;
+		},
+
+		put: function(unit, date, value) {
+			if(!unit || !date) return false;
+
+			var cache = this._cache;
+
+			var time = date.getTime();
+
+			value = !!value;
+
+			if(!cache) return false;
+			if(!cache[unit]) cache[unit] = {};
+			cache[unit][time] = value;
+			return true;
+		},
+
+		clear: function() {
+			this._cache = {};
+		}
+	},
+
 	_get_unit_order : function(unit){
 		for(var i= 0, len =  this.units.length; i < len; i++){
 			if(this.units[i] == unit)
@@ -4913,6 +4866,8 @@ gantt._working_time_helper = {
 		}else{
 			this.hours = hours;
 		}
+
+		this._working_units_cache.clear();
 	},
 	unset_time:function(settings){
 
@@ -4927,11 +4882,26 @@ gantt._working_time_helper = {
 				delete this.dates[timestamp];
 			}
 		}
+		// Clear work units cache
+		this._working_units_cache.clear();
 	},
 
 	is_working_unit : function(date, unit, order){
 		if(!gantt.config.work_time) return true;
 
+		//Check if this item has in the cache
+		var is_work_unit = this._working_units_cache.get(unit, date);
+
+		if(is_work_unit == -1) {
+			// calculate if not cached
+			is_work_unit = this._check_is_working_unit(date, unit, order);
+			this._working_units_cache.put(unit, date, is_work_unit);
+		}
+
+		return is_work_unit;
+	},
+
+	_check_is_working_unit: function(date, unit, order) {
 		if(order === undefined){
 			order = this._get_unit_order(unit);
 		}
@@ -5006,7 +4976,21 @@ gantt._working_time_helper = {
 		}
 		return units;
 	},
+	is_work_units_between:function(from, to, unit, step){
+		if(!unit){
+			return false;
+		}
+		var start = new Date(from),
+			end = new Date(to),
+			step = step || 1;
 
+		while(start.valueOf() < end.valueOf()){
+			if(this.is_working_unit(start, unit))
+				return true;
+			start = gantt.date.add(start, step, unit);
+		}
+		return false;
+	},
 	add_worktime : function(from, duration, unit, step){
 		if(!unit)
 			return false;
@@ -5016,13 +5000,18 @@ gantt._working_time_helper = {
 			step = step || 1,
 			duration = duration*1;
 
-		while(added < duration){
-			var next = gantt.date.add(start, step, unit);
-			if(this.is_working_unit(step > 0 ? start : next, unit))
-				added++;
-			start = next;
+		if(!gantt.config.work_time){
+			return gantt.date.add(start, step*duration, unit);
+		}else{
+
+			while(added < duration){
+				var next = gantt.date.add(start, step, unit);
+				if(this.is_working_unit(step > 0 ? start : next, unit))
+					added++;
+				start = next;
+			}
+			return start;
 		}
-		return start;
 	},
 
 	/* settings:
@@ -5060,6 +5049,7 @@ gantt._working_time_helper = {
 			}
 
 			curr = gantt.date.add(curr, inc, unit);
+			curr = gantt.date[unit + '_start'](curr);
 
 			if(both_directins){
 				if(tick){
@@ -5148,9 +5138,10 @@ gantt.updateTask = function(id, item) {
 };
 
 gantt._add_branch = function(task, silent){
-	if (!this._branches[task.parent])
-		this._branches[task.parent] = [];
-	var branch = this._branches[task.parent];
+	var pid = this.getParent(task);
+	if (!this.hasChild(pid))
+		this._branches[pid] = [];
+	var branch = this.getChildren(pid);
 	var added_already = false;
 	for(var i = 0, length = branch.length; i < length; i++){
 		if(branch[i] == task.id){
@@ -5166,7 +5157,7 @@ gantt._add_branch = function(task, silent){
 };
 
 gantt._move_branch = function(task, old_parent, new_parent){
-	task.parent = new_parent;
+	this.setParent(task, new_parent);
 	this._sync_parent(task);
 	this._replace_branch_child(old_parent, task.id);
 	if(this.isTaskExists(new_parent) || new_parent == this.config.root_id){
@@ -5179,18 +5170,18 @@ gantt._move_branch = function(task, old_parent, new_parent){
 	this._sync_order();
 };
 gantt._resync_parent = function(task){
-	this._move_branch(task, task.$rendered_parent, task.parent);
+	this._move_branch(task, task.$rendered_parent, this.getParent(task));
 };
 gantt._sync_parent = function(task){
-	task.$rendered_parent = task.parent;
+	task.$rendered_parent = this.getParent(task);
 };
 gantt._is_parent_sync = function(task){
-	return (task.$rendered_parent == task.parent);
+	return (task.$rendered_parent == this.getParent(task));
 };
 
 
 gantt._replace_branch_child = function(node, old_id, new_id){
-	var branch = this._branches[node];
+	var branch = this.getChildren(node);
 	if (branch){
 		var newbranch = [];
 		for (var i=0; i<branch.length; i++){
@@ -5205,9 +5196,9 @@ gantt._replace_branch_child = function(node, old_id, new_id){
 };
 
 gantt.addTask = function(item, parent) {
-    if (!dhtmlx.defined(parent)) parent = item.parent || 0;
-    if (!dhtmlx.defined(this._pull[parent])) parent = 0;
-    item.parent = parent;
+    if (!dhtmlx.defined(parent)) parent = this.getParent(item) || 0;
+    if (!this.isTaskExists(parent)) parent = 0;
+    this.setParent(item, parent);
     item = this._init_task(item);
 
     if (this.callEvent("onBeforeTaskAdd", [item.id, item])===false) return false;
@@ -5236,7 +5227,7 @@ gantt._default_task_date = function(item, parent_id){
 };
 
 gantt._set_default_task_timing = function(task){
-	task.start_date = task.start_date || gantt._default_task_date(task, task.parent);
+	task.start_date = task.start_date || gantt._default_task_date(task, this.getParent(task));
 	task.duration = task.duration || this.config.duration_step;
 	task.end_date = task.end_date || this.calculateEndDate(task.start_date, task.duration);
 };
@@ -5255,7 +5246,7 @@ gantt.createTask = function(item, parent){
 	}
 
 	if(parent){
-		item.parent = parent;
+		this.setParent(item, parent);
 		parent = this.getTask(parent);
 		parent.$open = true;
 	}
@@ -5326,7 +5317,10 @@ gantt._getTaskTree = function(id){
 };
 gantt._deleteRelatedLinks = function(links, silent){
 	var use_dp = (this._dp && !silent);
+	var prev_mode = '';
+	var send_changes = use_dp ? this._dp.updateMode != 'off' : false;
 	if (use_dp){
+		prev_mode = this._dp.updateMode;
 		this._dp.setUpdateMode("off");
 	}
 	for(var i =0; i < links.length; i++){
@@ -5338,13 +5332,17 @@ gantt._deleteRelatedLinks = function(links, silent){
 	}
 
 	if(use_dp){
-		this._dp.sendData();
-		this._dp.setUpdateMode("cell");
+		this._dp.setUpdateMode(prev_mode);
+		if(send_changes)
+			this._dp.sendAllData();
 	}
 };
 gantt._deleteRelatedTasks = function(id, silent){
 	var use_dp = (this._dp && !silent);
+	var prev_mode = '';
+
 	if (use_dp) {
+		prev_mode = this._dp.updateMode;
 		this._dp.setGanttMode("tasks");
 		this._dp.setUpdateMode("off");
 	}
@@ -5360,14 +5358,14 @@ gantt._deleteRelatedTasks = function(id, silent){
 	}
 	if(use_dp){
 
-		this._dp.setUpdateMode("cell");
+		this._dp.setUpdateMode(prev_mode);
 	}
 };
 gantt._unset_task = function(id){
 	var item = this.getTask(id);
 	this._update_flags(id, null);
 	delete this._pull[id];
-	this._move_branch(item, item.parent, null);
+	this._move_branch(item, this.getParent(item), null);
 };
 gantt._deleteTask = function(id, silent) {
     var item = this.getTask(id);
@@ -5385,15 +5383,18 @@ gantt._deleteTask = function(id, silent) {
 };
 
 gantt.clearAll = function() {
-    this._pull = {};
-    this._branches = {};
-    this._order = [];
-    this._order_full = [];
-    this._lpull = {};
-	this._update_flags();
-	this.userdata = {};
+	this._clear_data();
 	this.callEvent("onClear", []);
 	this.refreshData();
+};
+gantt._clear_data = function(){
+	this._pull = {};
+	this._branches = {};
+	this._order = [];
+	this._order_full = [];
+	this._lpull = {};
+	this._update_flags();
+	this.userdata = {};
 };
 
 gantt._update_flags = function(oldid, newid){
@@ -5419,11 +5420,12 @@ gantt.changeTaskId = function(oldid, newid) {
     this._pull[newid].id = newid;
     delete this._pull[oldid];
     for (var id in this._pull) {
-        if (this._pull[id].parent == oldid)
-            this._pull[id].parent = newid;
+		var task = this._pull[id];
+		if(this.getParent(task) == oldid)
+			this.setParent(task, newid);
     }
 	this._update_flags(oldid, newid);
-    this._replace_branch_child(item.parent, oldid, newid);
+    this._replace_branch_child(this.getParent(item), oldid, newid);
 
 	this.callEvent("onTaskIdChange", [oldid, newid]);
 };
@@ -5483,6 +5485,11 @@ gantt.calculateDuration = function(start_date, end_date){
 	var helper = this._working_time_helper;
 	return helper.get_work_units_between(start_date, end_date, this.config.duration_unit, this.config.duration_step);
 };
+gantt._hasDuration = function(start_date, end_date){
+	var helper = this._working_time_helper;
+	return helper.is_work_units_between(start_date, end_date, this.config.duration_unit, this.config.duration_step);
+};
+
 gantt.calculateEndDate = function(start, duration, unit){
 	var helper = this._working_time_helper;
 	var mult = duration >= 0 ? 1 : -1;
@@ -5512,7 +5519,9 @@ gantt._init_task = function(task){
 
     task.$source = [];
     task.$target = [];
-    task.parent = task.parent || this.config.root_id;
+	if(task.parent === undefined){
+		this.setParent(task, this.config.root_id);
+	}
     task.$open = dhtmlx.defined(task.open) ? task.open : this.config.open_tree_initially;
     task.$level = this.calculateTaskLevel(task);
     return task;
@@ -5587,7 +5596,7 @@ gantt._assign_project_dates = function(task, from, to){
 		if(from && from != Infinity){
 			task.start_date = new Date(from);
 		}else{
-			task.start_date = this._default_task_date(task, task.parent);
+			task.start_date = this._default_task_date(task, this.getParent(task));
 		}
 	}
 
@@ -5608,9 +5617,11 @@ gantt._update_parents = function(taskId, silent){
 	if(!taskId) return;
 
 	var task = this.getTask(taskId);
+	var pid = this.getParent(task);
 
-	while(!(task.$no_end || task.$no_start) && task.parent && this.isTaskExists(task.parent)){
-		task = this.getTask(task.parent);
+	while(!(task.$no_end || task.$no_start) && pid && this.isTaskExists(pid)){
+		task = this.getTask(pid);
+		pid = this.getParent(task);
 	}
 
 	if(task.$no_start || task.$no_end){
@@ -5620,8 +5631,8 @@ gantt._update_parents = function(taskId, silent){
 			this.refreshTask(task.id, true);
 	}
 
-	if(task.parent && this.isTaskExists(task.parent)){
-		this._update_parents(task.parent, silent);
+	if(pid && this.isTaskExists(pid)){
+		this._update_parents(pid, silent);
 	}
 };
 gantt.isChildOf = function(child_id, parent_id){
@@ -5631,11 +5642,14 @@ gantt.isChildOf = function(child_id, parent_id){
 		return this.isTaskExists(child_id);
 
 	var task = this.getTask(child_id);
+	var pid = this.getParent(child_id);
 
-	while(task && this.isTaskExists(task.parent)){
-		task = this.getTask(task.parent);
+	while(task && this.isTaskExists(pid)){
+		task = this.getTask(pid);
+
 		if(task && task.id == parent_id)
 			return true;
+		pid = this.getParent(task);
 	}
 	return false;
 };
@@ -5654,7 +5668,7 @@ gantt.roundDate = function(config){
 
 	var upper = gantt.date[unit + "_start"](new Date(this._min_date));
 	while(+upper < +date){
-		upper = gantt.date.add(upper, steps, unit);
+		upper = gantt.date[unit + "_start"](gantt.date.add(upper, steps, unit));
 	}
 
 	var lower = gantt.date.add(upper, -1*steps, unit);
@@ -5683,23 +5697,23 @@ gantt.attachEvent("onBeforeTaskAdd", function(id, task){
 
 gantt.calculateTaskLevel = function (item) {
     var level = 0;
-    while (item.parent) {
-        if (!dhtmlx.defined(this._pull[item.parent])) break;
-        item = this._pull[item.parent];
+    while (this.getParent(item)) {
+        if (!this.isTaskExists(this.getParent(item))) break;
+        item = this.getTask(this.getParent(item));
         level++;
     }
     return level;
 };
 
 
-gantt.sort = function(field, desc, parent) {
-    var render = !arguments[3];//4th argument to cancel redraw after sorting
+gantt.sort = function(field, desc, parent, silent) {
+    var render = !silent;//4th argument to cancel redraw after sorting
 
-    if (!dhtmlx.defined(parent)) {
+    if (!this.isTaskExists(parent)) {
         parent = this.config.root_id;
     }
 
-    if (!dhtmlx.defined(field)) field = "order";
+    if (!field) field = "order";
     var criteria = (typeof(field) == "string") ? (function(a, b) {
 		if(a[field] == b[field]){
 			return 0;
@@ -5711,7 +5725,7 @@ gantt.sort = function(field, desc, parent) {
     }) : field;
 
 
-    var els = this._branches[parent];
+    var els = this.getChildren(parent);
     if (els){
         var temp = [];
         for (var i = els.length - 1; i >= 0; i--)
@@ -5726,7 +5740,7 @@ gantt.sort = function(field, desc, parent) {
     }
 
     if (render) {
-		this.refreshData();
+		this.render();
     }
 };
 
@@ -5745,17 +5759,37 @@ gantt.getPrev = function(id) {
     return null;
 };
 
-gantt.getParent = function(id){
+gantt._get_parent_id = function(task){
 	var parent = this.config.root_id;
-	if(this.isTaskExists(id)){
-		var task = gantt.getTask(id);
+	if(task){
 		parent = task.parent;
 	}
 	return parent;
 };
+
+gantt.getParent = function(id){
+	var task = null;
+	if(id.id){
+		task = id;
+	}else if(this.isTaskExists(id)){
+		task = gantt.getTask(id);
+	}
+
+	return this._get_parent_id(task);
+};
+
+
+
+gantt.setParent = function(task, new_pid){
+	task.parent = new_pid;
+};
+
 gantt.getSiblings = function(id){
+	if(!this.isTaskExists(id)){
+		return [];
+	}
 	var parent = this.getParent(id);
-	return this._branches[parent] || [];
+	return this.getChildren(parent);
 };
 gantt.getNextSibling = function(id){
 	var siblings = this.getSiblings(id);
@@ -5836,6 +5870,11 @@ gantt._dp_init = function(dp) {
     this.attachEvent("onAfterTaskDelete", function(id, item) {
         dp.setGanttMode("tasks");
         dp.setUpdated(id,true,"deleted");
+
+		if(dp.updateMode != 'off' && !dp._tSend){
+			dp.sendAllData();
+		}
+
     });
 
     this.attachEvent("onAfterLinkUpdate", function(id, item) {
@@ -5855,19 +5894,43 @@ gantt._dp_init = function(dp) {
     });
 
     dp.attachEvent("onBeforeDataSending", function() {
-        this.serverProcessor = this._serverProcessor + getUrlSymbol(this._serverProcessor) + "gantt_mode=" + this._ganttMode;
+		if(this._tMode == "REST"){
+			var urlPart = this._ganttMode.substr(0, this._ganttMode.length - 1);// links, tasks -> /link/id, /task/id
+			this.serverProcessor = this._serverProcessor + (this._serverProcessor.slice(-1) == "/" ? "" : "/") + urlPart;
+		}else{
+			this.serverProcessor = this._serverProcessor + window.dhtmlx.url(this._serverProcessor) + "gantt_mode=" + this._ganttMode;
+		}
+
         return true;
     });
 
 
 	var afterUpdate = dp.afterUpdate;
-	dp.afterUpdate = function(that,b,c,d,xml){
-		var mode = dp._ganttMode;
-		if(xml.filePath && xml.filePath.indexOf("gantt_mode=links") != -1){
-			dp.setGanttMode("links");
+	dp.afterUpdate = function(){
+		var xml;
+		if(arguments.length == 3){
+			xml = arguments[1];
 		}else{
-			dp.setGanttMode("tasks");
+			// old dataprocessor
+			xml = arguments[4];
 		}
+		var mode = dp._ganttMode;
+		var reqUrl = xml.filePath || (xml.xmlDoc ? xml.xmlDoc.responseURL : "");
+
+		if(this._tMode != "REST"){
+			if (reqUrl.indexOf("gantt_mode=links") != -1) {
+				mode = "links";
+			}else{
+				mode = "tasks";
+			}
+		}else{
+			if(reqUrl.indexOf("/link") > reqUrl.indexOf("/task")){
+				mode = "links";
+			}else{
+				mode = "tasks";
+			}
+		}
+		dp.setGanttMode(mode);
 
 		var res = afterUpdate.apply(dp, arguments);
 		dp.setGanttMode(mode);
@@ -5967,6 +6030,13 @@ gantt.getLink = function(id) {
     return this._lpull[id];
 };
 
+gantt.getLinks = function(){
+	var links = [];
+	for (var key in gantt._lpull)
+		links.push(gantt._lpull[key]);
+	return links;
+};
+
 gantt.isLinkExists = function(id) {
     return dhtmlx.defined(this._lpull[id]);
 };
@@ -6034,13 +6104,17 @@ gantt.refreshData = function(){
 };
 
 
-gantt._configure = function(col, data){
+gantt._configure = function(col, data, force){
 	for (var key in data)
-		if (typeof col[key] == "undefined")
+		if (typeof col[key] == "undefined" || force)
 			col[key] = data[key];
 };
 gantt._init_skin = function(){
-	if (!gantt.skin){
+	gantt._get_skin(false);
+	gantt._init_skin = function(){};
+};
+gantt._get_skin = function(force){
+	if (!gantt.skin || force){
 		var links = document.getElementsByTagName("link");
 		for (var i = 0; i < links.length; i++) {
 			var res = links[i].href.match("dhtmlxgantt_([a-z]+).css");
@@ -6055,18 +6129,22 @@ gantt._init_skin = function(){
 	var skinset = gantt.skins[gantt.skin];
 
 	//apply skin related settings
-	this._configure(gantt.config, skinset.config);
+	this._configure(gantt.config, skinset.config, force);
 
 	var config = gantt.getGridColumns();
 	if (config[1] && typeof config[1].width == "undefined")
 		config[1].width = skinset._second_column_width;
 	if (config[2] && typeof config[2].width == "undefined")
 		config[2].width = skinset._third_column_width;
-	
+
 	if (skinset._lightbox_template)
 		gantt._lightbox_template = skinset._lightbox_template;
-	
-	gantt._init_skin = function(){};
+
+	gantt.resetLightbox();
+};
+gantt.resetSkin = function(){
+	this.skin = "";
+	this._get_skin(true);
 };
 gantt.skins = {};
 
@@ -6480,6 +6558,9 @@ gantt.getLightboxSection = function(name){
         if (config[i].name == name)
             break;
     var section = config[i];
+    if(!section)
+        return null;
+
     if (!this._lightbox)
         this.getLightbox();
     var header = document.getElementById(section.id);
@@ -6607,9 +6688,27 @@ gantt.form_blocks={
                     sns._time_format_order[2] = p;
                     sns._time_format_order.size++;
                     //year
-                    var year = dt.getFullYear()-5; //maybe take from config?
-                    for (var i=0; i < 10; i++)
-						options+="<option value='"+(year+i)+"'>"+(year+i)+"</option>";
+
+					var range, offset, start_year, end_year;
+
+					if(sns.year_range){
+						if(!isNaN(sns.year_range)){
+							range = sns.year_range;
+						}else if(sns.year_range.push){
+							// if
+							start_year = sns.year_range[0];
+							end_year = sns.year_range[1];
+						}
+					}
+
+					range = range || 10;
+					offset = offset || Math.floor(range/2);
+					start_year = start_year || dt.getFullYear() - offset;
+					end_year = end_year || start_year + range;
+
+
+                    for (var i=start_year; i < end_year; i++)
+						options+="<option value='"+(i)+"'>"+(i)+"</option>";
                     break;
                 case "%m":
                     sns._time_format_order[1] = p;
@@ -6726,7 +6825,7 @@ gantt.form_blocks={
     time:{
         render:function(sns) {
             var time = this.form_blocks.getTimePicker.call(this, sns);
-			var parts = ["<div style='height:30px;padding-top:0px;font-size:inherit;text-align:center;' class='gantt_section_time'>"];
+			var parts = ["<div style='height:"+(sns.height || 30)+"px;padding-top:0px;font-size:inherit;text-align:center;' class='gantt_section_time'>"];
 			parts.push(time);
 
 			if(sns.single_date){
@@ -6822,7 +6921,7 @@ gantt.form_blocks={
 				"<input type='text' value='5' class='gantt_duration_value'"+readonly+">" +
 				"<input type='button' class='gantt_duration_inc' value='+'"+readonly+"> " + label + " <span></span>" +
 				"</div>";
-            var html = "<div style='height:30px;padding-top:0px;font-size:inherit;' class='gantt_section_time'>"+time+" "+duration+"</div>";
+            var html = "<div style='height:"+(sns.height || 30)+"px;padding-top:0px;font-size:inherit;' class='gantt_section_time'>"+time+" "+duration+"</div>";
             return html;
         },
         set_value:function(node,value,ev,config){
@@ -7059,8 +7158,6 @@ gantt._silent_redraw_lightbox = function(type){
 		var box = this.getLightbox(type ? type : undefined);
 		this._center_lightbox(this.getLightbox());
 		this._set_lightbox_values(updTask, box);
-
-		this.callEvent("onLightboxChange", [oldType, this.getLightboxType()]);
 	}else{
 		this.resetLightbox();
 		this.getLightbox(type ? type : undefined);
@@ -7152,6 +7249,8 @@ function dataProcessor(serverProcessorURL){
 	this.autoUpdate = true;
 	this.updateMode = "cell";
 	this._tMode="GET"; 
+	this._headers = null;
+	this._payload = null;
 	this.post_delim = "_";
 	
     this._waitMode=0;
@@ -7171,21 +7270,26 @@ function dataProcessor(serverProcessorURL){
     };
     
     this.enableUTFencoding(true);
-    dhtmlxEventable(this);
+    dhx4._eventable(this);
 
     return this;
     }
 
 dataProcessor.prototype={
-	/**
-	* 	@desc: select GET or POST transaction model
-	*	@param: mode - GET/POST
-	*	@param: total - true/false - send records row by row or all at once (for grid only)
-	*	@type: public
-	*/
 	setTransactionMode:function(mode,total){
-        this._tMode=mode;
-		this._tSend=total;
+		if (typeof mode == "object"){
+			this._tMode = mode.mode || this._tMode;
+			this._headers = this._headers || mode.headers;
+			this._payload = this._payload || mode.payload;
+		} else {
+     	    this._tMode=mode;
+			this._tSend=total;
+		}
+
+		if (this._tMode == "REST"){
+			this._tSend = false;
+			this._endnm = true;
+		}
     },
     escape:function(data){
     	if (this._utf)
@@ -7199,7 +7303,7 @@ dataProcessor.prototype={
 	*	@type: public
 	*/	
 	enableUTFencoding:function(mode){
-        this._utf=convertStringToBoolean(mode);
+        this._utf=dhx4.s2b(mode);
     },
     /**
 	* 	@desc: allows to define, which column may trigger update
@@ -7223,7 +7327,7 @@ dataProcessor.prototype={
 	*	@type: public
 	*/
 	enableDataNames:function(mode){
-		this._endnm=convertStringToBoolean(mode);
+		this._endnm=dhx4.s2b(mode);
 	},
 	/**
 	* 	@desc: enable/disable mode , when only changed fields and row id send to the server side, instead of all fields in default mode
@@ -7231,7 +7335,7 @@ dataProcessor.prototype={
 	*	@type: public
 	*/
 	enablePartialDataSend:function(mode){
-		this._changed=convertStringToBoolean(mode);
+		this._changed=dhx4.s2b(mode);
 	},
 	/**
 	* 	@desc: set if rows should be send to server automaticaly
@@ -7367,8 +7471,10 @@ dataProcessor.prototype={
     		return data;
     	var stack = [];
     	for (var key in data)
-    		if (data.hasOwnProperty(key))
+    		if (data.hasOwnProperty(key)){
+    			if ((key == "id" || key == this.action_param) && this._tMode == "REST") continue;
     			stack.push(this.escape((pref||"")+key)+"="+this.escape(data[key]));
+    		}
 		return stack.join("&");
     },
     _sendData:function(a1,rowId){
@@ -7377,14 +7483,55 @@ dataProcessor.prototype={
 		
     	if (rowId)
 			this._in_progress[rowId]=(new Date()).valueOf();
-		var a2=new dtmlXMLLoaderObject(this.afterUpdate,this,true);
-		
-		var a3 = this.serverProcessor+(this._user?(getUrlSymbol(this.serverProcessor)+["dhx_user="+this._user,"dhx_version="+this.obj.getUserData(0,"version")].join("&")):"");
 
-		if (this._tMode!="POST")
-        	a2.loadXML(a3+((a3.indexOf("?")!=-1)?"&":"?")+this.serialize(a1,rowId));
-		else
-        	a2.loadXML(a3,true,this.serialize(a1,rowId));
+		var that = this;
+		var back = function(xml){
+			var ids = [];
+			if (rowId)
+				ids.push(rowId);
+			else if (a1)
+				for (var key in a1)
+					ids.push(key);
+
+			return that.afterUpdate(that,xml,ids);
+		};
+		
+		var a3 = this.serverProcessor+(this._user?(dhtmlx.url(this.serverProcessor)+["dhx_user="+this._user,"dhx_version="+this.obj.getUserData(0,"version")].join("&")):"");
+
+		if (this._tMode=="GET")
+        	dhx4.ajax.get(a3+((a3.indexOf("?")!=-1)?"&":"?")+this.serialize(a1,rowId), back);
+		else if (this._tMode == "POST")
+        	dhx4.ajax.post(a3,this.serialize(a1,rowId), back);
+        else if (this._tMode == "REST"){
+        	var state = this.getState(rowId);
+        	var url = a3.replace(/(\&|\?)editing\=true/,"");
+        	var data = "";
+        	var method = "post";
+
+        	if (state == "inserted"){
+        		data = this.serialize(a1, rowId);
+        	} else if (state == "deleted"){
+        		method = "DELETE";
+        		url = url + (url.slice(-1) == "/" ? "" : "/") + rowId;
+        	} else {
+        		method = "PUT";
+        		data = this.serialize(a1, rowId);
+        		url = url + (url.slice(-1) == "/" ? "" : "/") + rowId;
+        	}
+
+
+        	if (this._payload)
+        		for (var key in this._payload)
+        			url = url + dhtmlx.url(url) + this.escape(key) + "=" + this.escape(this._payload[key]);
+
+        	dhx4.ajax.query({
+        		url:url,
+        		method:method,
+        		headers:this._headers,
+        		data:data,
+        		callback:back
+        	});
+        }
 
 		this._waitMode++;
     },
@@ -7420,7 +7567,7 @@ dataProcessor.prototype={
 		for(var i=0;i<this.updatedRows.length;i++){
 			var id=this.updatedRows[i];
 			if (this._in_progress[id] || this.is_invalid(id)) continue;
-			if (!this.callEvent("onBeforeUpdate",[id,this.getState(id)])) continue;	
+			if (!this.callEvent("onBeforeUpdate",[id,this.getState(id), this._getRowData(id)])) continue;
 			out[id]=this._getRowData(id,id+this.post_delim);
 			has_one = true;
 			this._in_progress[id]=(new Date()).valueOf();
@@ -7436,7 +7583,7 @@ dataProcessor.prototype={
 	*	@type: public
 	*/
 	setVerificator:function(ind,verifFunction){
-		this.mandatoryFields[ind] = verifFunction||(function(value){return (value !== "");});
+		this.mandatoryFields[ind] = verifFunction||(function(value){return (value!=="");});
 	},
 	/**
 	* 	@desc: remove column from list of those which should be verified
@@ -7516,6 +7663,7 @@ dataProcessor.prototype={
 	        this.obj[this._methods[3]](sid);
 	        delete this._in_progress[marker];
 	        return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
+	        break;
 	    }
 	    
 	    if (this._in_progress[marker]!="wait"){
@@ -7534,10 +7682,26 @@ dataProcessor.prototype={
 	*	@param: xml - XMLLoader object with response XML
 	*	@type: private
 	*/
-	afterUpdate:function(that,b,c,d,xml){
-		xml.getXMLTopNode("data"); //fix incorrect content type in IE
-		if (!xml.xmlDoc.responseXML) return;
-		var atag=xml.doXPath("//data/action");
+	afterUpdate:function(that,xml,id){
+		//try to use json first
+		if (window.JSON){
+			try{
+				var tag = JSON.parse(xml.xmlDoc.responseText);
+				var action = tag.action || this.getState(id) || "updated";
+				var sid = tag.sid || id[0];
+				var tid = tag.tid || id[0];
+				that.afterUpdateCallback(sid, tid, action, tag);
+				that.finalizeUpdate();
+				return;
+			} catch(e){
+			}
+		}
+		//xml response
+		var top = dhx4.ajax.xmltop("data", xml.xmlDoc); //fix incorrect content type in IE
+		if (!top) return this.cleanUpdate(id);
+		var atag=dhx4.ajax.xpath("//data/action", top);
+		if (!atag.length) return this.cleanUpdate(id);
+
 		for (var i=0; i<atag.length; i++){
         	var btag=atag[i];
 			var action = btag.getAttribute("type");
@@ -7547,6 +7711,11 @@ dataProcessor.prototype={
 			that.afterUpdateCallback(sid,tid,action,btag);
 		}
 		that.finalizeUpdate();
+	},
+	cleanUpdate:function(id){
+		if (id)
+			for (var i = 0; i < id.length; i++)
+				delete this._in_progress[id[i]];
 	},
 	finalizeUpdate:function(){
 		if (this._waitMode) this._waitMode--;
@@ -7585,7 +7754,7 @@ dataProcessor.prototype={
 
 
 
-	/*! starts autoupdate mode
+	/* starts autoupdate mode
 		@param interval
 			time interval for sending update requests
 	*/
@@ -7611,7 +7780,7 @@ dataProcessor.prototype={
 	},
 
 
-	/*! process updating request answer
+	/* process updating request answer
 		if status == collision version is depricated
 		set flag for autoupdating immidiatly
 	*/
@@ -7625,11 +7794,11 @@ dataProcessor.prototype={
 	},
 
 
-	/*! callback function for onFillSync event
+	/* callback function for onFillSync event
 		call update function if it's need
 	*/
 	fullSync: function() {
-		if (this._need_update === true) {
+		if (this._need_update == true) {
 			this._need_update = false;
 			this.loadUpdate();
 		}
@@ -7637,7 +7806,7 @@ dataProcessor.prototype={
 	},
 
 
-	/*! sends query to the server and call callback function
+	/* sends query to the server and call callback function
 	*/
 	getUpdates: function(url,callback){
 		if (this._update_busy) 
@@ -7653,7 +7822,7 @@ dataProcessor.prototype={
 	},
 
 
-	/*! returns xml node value
+	/* returns xml node value
 		@param node
 			xml node
 	*/
@@ -7663,7 +7832,7 @@ dataProcessor.prototype={
 	},
 
 
-	/*! returns values array of xml nodes array
+	/* returns values array of xml nodes array
 		@param arr
 			array of xml nodes
 	*/
@@ -7671,17 +7840,17 @@ dataProcessor.prototype={
 		var res = [];
 		for (var i=0; i < arr.length; i++) {
 			res[i]=this._v(arr[i]);
-		}
+		};
 		return res;
 	},
 
 
-	/*! loads updates and processes them
+	/* loads updates and processes them
 	*/
 	loadUpdate: function(){
 		var self = this;
 		var version = this.obj.getUserData(0,"version");
-		var url = this.serverProcessor+getUrlSymbol(this.serverProcessor)+["dhx_user="+this._user,"dhx_version="+version].join("&");
+		var url = this.serverProcessor+dhtmlx.url(this.serverProcessor)+["dhx_user="+this._user,"dhx_version="+version].join("&");
 		url = url.replace("editing=true&","");
 		this.getUpdates(url, function(){
 			var vers = self._loader.doXPath("//userdata");
@@ -7718,6 +7887,7 @@ dataProcessor.prototype={
 
 };
 
+
 // --#include core/data_task_types.js
 
 /*
@@ -7734,6 +7904,7 @@ dhtmlx.assert = function(check, message){
 
 //initial initialization
 gantt.init = function(node, from, to){
+	this.callEvent("onBeforeGanttReady", []);
 	if(from && to){
 		this.config.start_date = this._min_date = new Date(from);
 		this.config.end_date = this._max_date = new Date(to);
@@ -8043,10 +8214,14 @@ gantt._on_resize = gantt.setSizes = function(){
 
 //renders self
 gantt.render = function(){
+	if(!this._is_render_active())
+		return;
+	this.callEvent("onBeforeGanttRender", []);
+
 	var pos = dhtmlx.copy(this._restore_scroll_state());
 	var visible_date = null;
 	if(pos){
-		visible_date = gantt._date_from_pos(pos.x + this.config.task_scroll_offset);
+		visible_date = gantt.dateFromPos(pos.x + this.config.task_scroll_offset);
 	}
 
 	this._render_grid();	//grid.js
@@ -8058,7 +8233,7 @@ gantt.render = function(){
 	if(this.config.preserve_scroll && pos){
 
 		var new_pos =gantt._restore_scroll_state();
-		var new_date = gantt._date_from_pos(new_pos.x);
+		var new_date = gantt.dateFromPos(new_pos.x);
 		if(!(+visible_date == +new_date && new_pos.y == pos.y)){
 			if(visible_date){
 				this.showDate(visible_date);
@@ -8121,7 +8296,9 @@ gantt._set_scroll_events = function(){
 			if (typeof wy == "undefined")
 				dir = e.detail;
 
-			var top = gantt.$grid_data.scrollTop+dir*30;
+			var top = gantt.$scroll_ver.scrollTop+dir*30;
+			if(!gantt.config.prevent_default_scroll && gantt._cached_scroll_pos && gantt._cached_scroll_pos.y == top) return true;
+
 			gantt.scrollTo(null, top);
 			gantt.$scroll_ver.scrollTop = top;
 		}
@@ -8327,13 +8504,34 @@ gantt.changeLightboxType = function(type){
 	gantt._silent_redraw_lightbox(type);
 };
 
-(function(){
-	if(gantt._modules && gantt._modules.length){
-		for(var i=0; i < gantt._modules.length; i++){
-			gantt._modules[i](gantt);
-		}
+gantt._is_render_active = function(){
+	return !this._skip_render;
+};
+
+gantt.batchUpdate = function (callback) {
+	var call_dp = (this._dp && this._dp.updateMode != "off");
+	var dp_mode;
+	if (call_dp){
+		dp_mode = this._dp.updateMode;
+		this._dp.setUpdateMode("off");
 	}
-})();
+
+	this._skip_render = true;
+
+	try{
+		callback();
+	}catch(e){
+
+	}
+
+	this._skip_render = false;
+	this.render();
+	if (call_dp) {
+		this._dp.setUpdateMode(dp_mode);
+		this._dp.sendData();
+	}
+};
+
 
 gantt.date={
 	init:function(){
@@ -8348,11 +8546,13 @@ gantt.date={
 			t[s[i]]=i;
 	},
 	date_part:function(date){
+		var old = new Date(date);
 		date.setHours(0);
 		date.setMinutes(0);
 		date.setSeconds(0);
 		date.setMilliseconds(0);
-		if (date.getHours())
+		if (date.getHours() && //shift to yesterday on dst
+			(date.getDate() < old.getDate() || date.getMonth() < old.getMonth() || date.getFullYear() < old.getFullYear()) )
 			date.setTime(date.getTime() + 60 * 60 * 1000 * (24 - date.getHours()));
 		return date;
 	},
@@ -8394,7 +8594,8 @@ gantt.date={
 		var ndate = new Date(date.valueOf());
 
 		ndate.setDate(ndate.getDate() + inc);
-		if (!date.getHours() && ndate.getHours()) //shift to yesterday
+		if (inc >= 0 && (!date.getHours() && ndate.getHours()) &&//shift to yesterday on dst
+			(ndate.getDate() < date.getDate() || ndate.getMonth() < date.getMonth() || ndate.getFullYear() < date.getFullYear()) )
 			ndate.setTime(ndate.getTime() + 60 * 60 * 1000 * (24 - ndate.getHours()));
 		return ndate;
 	},
@@ -8546,6 +8747,27 @@ gantt.date={
 		return date;
 	}
 };
+gantt.date.quarter_start = function(date){
+	gantt.date.month_start(date);
+	var m = date.getMonth(),
+		res_month;
+
+	if(m >= 9){
+		res_month = 9;
+	}else if(m >= 6){
+		res_month = 6;
+	}else if(m >= 3){
+		res_month = 3;
+	}else{
+		res_month = 0;
+	}
+
+	date.setMonth(res_month);
+	return date;
+};
+gantt.date.add_quarter = function(date, inc){
+	return gantt.date.add(date, inc*3, "month");
+};
 /*
  %d - the day as a number with a leading zero ( 01 to 31 );
  %j - the day as a number without a leading zero ( 1 to 31 );
@@ -8609,7 +8831,7 @@ dhtmlx.mixin(gantt.config,
 	show_progress:true,
 	fit_tasks : false,
 	select_task:true,
-
+	scroll_on_click: true,
 	preserve_scroll: true,
 	readonly:false,
 
@@ -8630,7 +8852,7 @@ dhtmlx.mixin(gantt.config,
 	link_wrapper_width:20,
 	root_id:0,
 
-    autofit: true, // grid column automatic fit
+    autofit: false, // grid column automatic fit grid_width config
 	columns: [
 		{name:"text", tree:true, width:'*', resize:true },
 		{name:"start_date", align: "center", resize:true },
@@ -8671,17 +8893,17 @@ dhtmlx.mixin(gantt.config,
     lightbox: {
         sections: [
             {name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-            {name: "time", height: 72, type: "duration", map_to: "auto"}
+            {name: "time", type: "duration", map_to: "auto"}
 		],
 		project_sections: [
 			{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
 			{name: "type", type: "typeselect", map_to: "type"},
-			{name: "time", height: 72, type: "duration", readonly:true, map_to: "auto"}
+			{name: "time", type: "duration", readonly:true, map_to: "auto"}
 		],
 		milestone_sections: [
 			{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
 			{name: "type", type: "typeselect", map_to: "type"},
-			{name: "time", height: 72, type: "duration", single_date:true, map_to: "auto"}
+			{name: "time", type: "duration", single_date:true, map_to: "auto"}
 		]
     },
     drag_lightbox: true,
@@ -8712,7 +8934,9 @@ dhtmlx.mixin(gantt.config,
 	editable_property: "editable",
 	type_renderers:{},
 
-	open_tree_initially: false
+	open_tree_initially: false,
+	optimize_render: 'auto',
+	prevent_default_scroll: false
 
 });
 gantt.keys={
@@ -8953,7 +9177,6 @@ gantt.skins.skyblue = {
 		grid_width:350,
 		row_height: 27,
 		scale_height: 27,
-		task_height: 24,
 		link_line_width:1,
 		link_arrow_size:8,
 		lightbox_additional_height:75
@@ -8966,7 +9189,6 @@ gantt.skins.meadow = {
 		grid_width:350,
 		row_height: 27,
 		scale_height: 30,
-		task_height:24,
 		link_line_width:2,
 		link_arrow_size:6,
 		lightbox_additional_height:72
@@ -8980,7 +9202,6 @@ gantt.skins.terrace = {
 		grid_width:360,
 		row_height: 35,
 		scale_height: 35,
-		task_height: 24,
 		link_line_width:2,
 		link_arrow_size:6,
 		lightbox_additional_height:75
@@ -8993,7 +9214,6 @@ gantt.skins.broadway = {
 		grid_width:360,
 		row_height: 35,
 		scale_height: 35,
-		task_height: 24,
 		link_line_width:1,
 		link_arrow_size:7,
 		lightbox_additional_height:86

@@ -1,3 +1,12 @@
+### 3.2
+- Added ability to group tasks by custom properties
+- Added multiple selection
+- Added export to iCal and to Excel
+- Added public events for managing tasks reordering in a grid
+- Added ability to specify time range in year selector
+- Major performance improvement of worktime and critical path calculations
+- New samples and API events
+
 ### 3.1
 - Added ability to drag tasks on touch devices
 - Incorrect tooltip behavior on expand/collapse task tree fixed

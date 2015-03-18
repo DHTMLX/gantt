@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.1.1 Stardard
+dhtmlxGantt v.3.2.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -27,9 +27,15 @@ gantt.attachEvent("onGanttReady", function(){
 	function render_marker(marker){
 		if(!gantt.config.show_markers)
 			return false;
-		
+
 		if(!marker.start_date)
 			return false;
+
+		var state = gantt.getState();
+		if(+marker.start_date > +state.max_date)
+			return;
+		if(+marker.end_date && +marker.end_date < +state.min_date || +marker.start_date < +state.min_date)
+			return;
 
 		var div = document.createElement("div");
 
