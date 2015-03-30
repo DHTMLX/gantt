@@ -121,7 +121,7 @@ class TreeDataItem extends DataItem{
 	function to_xml_start(){
 		if ($this->skip) return "";
 		
-		$str1="<item id='".$this->get_id()."' text='".$this->xmlentities($this->data[$this->config->text[0]["name"]])."' ";
+		$str1="<item id='".$this->xmlentities($this->get_id())."' text='".$this->xmlentities($this->data[$this->config->text[0]["name"]])."' ";
 		if ($this->has_kids()==true) $str1.="child='".$this->has_kids()."' ";
 		if ($this->im0) $str1.="im0='".$this->im0."' ";
 		if ($this->im1) $str1.="im1='".$this->im1."' ";

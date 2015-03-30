@@ -245,7 +245,7 @@ class MultitableTreeRenderStrategy extends TreeRenderStrategy {
 
 	private $level = 0;
 	private $max_level = null;
-	protected $sep = ",";
+	protected $sep = "-@level@-";
 	
 	public function __construct($conn) {
 		parent::__construct($conn);

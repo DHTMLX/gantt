@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.2.0 Stardard
+dhtmlxGantt v.3.2.1 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -845,7 +845,7 @@ if(!window.dhtmlx)
 	};
 })();
 gantt = {
-	version:"3.2.0"
+	version:"3.2.1"
 };
 
 /*jsl:ignore*/
@@ -1735,7 +1735,7 @@ gantt._init_dnd = function () {
 
 	dnd.attachEvent("onDragEnd", dhtmlx.bind(function () {
 		var task = this.getTask(dnd.config.id);
-		if(this.callEvent("onBeforeRowDragEnd",[dnd.config.id, dnd.config.index, dnd.config.parent]) === false) {
+		if(this.callEvent("onBeforeRowDragEnd",[dnd.config.id, dnd.config.parent, dnd.config.index]) === false) {
 			this.moveTask(dnd.config.id, dnd.config.index, dnd.config.parent);
 			task.$drop_target = null;
 		}else{
@@ -2000,8 +2000,11 @@ gantt._scale_helpers = {
 		}
 		while(+curr < +end){
 			callback.call(this, new Date(curr));
+			var tzOffset = curr.getTimezoneOffset();
 			curr = gantt.date.add(curr, step, unit);
-			curr = gantt.date[unit + "_start"](curr);
+			curr = gantt._correct_dst_change(curr, tzOffset, step, unit);
+			if(gantt.date[unit + '_start'])
+				curr = gantt.date[unit + "_start"](curr);
 		}
 	},
 	limitVisibleRange : function(cfg){
@@ -5047,9 +5050,12 @@ gantt._working_time_helper = {
 				curr = tick ? future_target : prev_target;
 				inc = inc*(-1);
 			}
-
+			var tzOffset = curr.getTimezoneOffset();
 			curr = gantt.date.add(curr, inc, unit);
-			curr = gantt.date[unit + '_start'](curr);
+
+			curr = gantt._correct_dst_change(curr, tzOffset, inc, unit);
+			if(gantt.date[unit + '_start'])
+				curr = gantt.date[unit + '_start'](curr);
 
 			if(both_directins){
 				if(tick){
@@ -5221,7 +5227,7 @@ gantt._default_task_date = function(item, parent_id){
 		startDate = parent.start_date;
 	}else{
 		var first = this._order[0];
-		startDate = first ? this.getTask(first).start_date : this.getState().min_date;
+		startDate = first ? this.getTask(first).start_date : (this.config.start_date || this.getState().min_date);
 	}
 	return new Date(startDate);
 };
@@ -5666,12 +5672,30 @@ gantt.roundDate = function(config){
 		steps = config.step,
 		unit = config.unit;
 
-	var upper = gantt.date[unit + "_start"](new Date(this._min_date));
-	while(+upper < +date){
-		upper = gantt.date[unit + "_start"](gantt.date.add(upper, steps, unit));
-	}
+	var upper, lower;
+	if(unit == gantt._tasks.unit && steps == gantt._tasks.step &&
+		+date >= +gantt._min_date && +date <= +gantt._max_date){
+		//find date in time scale config
+		var colIndex = Math.floor(gantt._day_index_by_date(date));
+		lower = new Date(gantt._tasks.trace_x[colIndex]);
+		upper = new Date(lower);
+		if(gantt._tasks.trace_x[colIndex + 1])
+			upper = new Date(gantt._tasks.trace_x[colIndex + 1]);
+	}else{
+		upper = gantt.date[unit + "_start"](new Date(this._min_date));
+		while(+upper < +date){
+			upper = gantt.date[unit + "_start"](gantt.date.add(upper, steps, unit));
 
-	var lower = gantt.date.add(upper, -1*steps, unit);
+			var tzOffset = upper.getTimezoneOffset();
+			upper = gantt.date.add(upper, steps, unit);
+			upper = gantt._correct_dst_change(upper, tzOffset, upper, unit);
+			if(gantt.date[unit + '_start'])
+				upper = gantt.date[unit + '_start'](upper);
+		}
+
+		lower = gantt.date.add(upper, -1*steps, unit);
+
+	}
 	if(config.dir && config.dir == 'future')
 		return upper;
 	if(config.dir && config.dir == 'past')
@@ -5894,11 +5918,15 @@ gantt._dp_init = function(dp) {
     });
 
     dp.attachEvent("onBeforeDataSending", function() {
+		var url = this._serverProcessor;
 		if(this._tMode == "REST"){
-			var urlPart = this._ganttMode.substr(0, this._ganttMode.length - 1);// links, tasks -> /link/id, /task/id
-			this.serverProcessor = this._serverProcessor + (this._serverProcessor.slice(-1) == "/" ? "" : "/") + urlPart;
+			var mode = this._ganttMode.substr(0, this._ganttMode.length - 1);// links, tasks -> /link/id, /task/id
+
+			url = url.substring(0, url.indexOf("?") > -1 ? url.indexOf("?") : url.length);
+			//editing=true&
+			this.serverProcessor = url + (url.slice(-1) == "/" ? "" : "/") + mode;
 		}else{
-			this.serverProcessor = this._serverProcessor + window.dhtmlx.url(this._serverProcessor) + "gantt_mode=" + this._ganttMode;
+			this.serverProcessor = url + window.dhtmlx.url(url) + "gantt_mode=" + this._ganttMode;
 		}
 
         return true;
@@ -5915,7 +5943,7 @@ gantt._dp_init = function(dp) {
 			xml = arguments[4];
 		}
 		var mode = dp._ganttMode;
-		var reqUrl = xml.filePath || (xml.xmlDoc ? xml.xmlDoc.responseURL : "");
+		var reqUrl = xml.filePath;
 
 		if(this._tMode != "REST"){
 			if (reqUrl.indexOf("gantt_mode=links") != -1) {
@@ -5991,6 +6019,69 @@ gantt._dp_init = function(dp) {
     this._delete_task = function(row_id, node){};
 
     this._dp = dp;
+
+	gantt._patch_dhx4_ajax();
+};
+
+gantt._patch_dhx4_ajax = function(){
+	var dhxVersion = parseInt((dhx4.version || "").split(".").join(""), 10);
+
+	// dhtmlx 4.0.0 - 4.1.3 does not provide filePath parameter to callback, patch won't be needed for future versions
+	if(dhxVersion <= 413){
+		window.dhx4.ajax._call = function(method, url, postData, async, onLoad, longParams, headers) {
+
+			var t = (window.XMLHttpRequest && !dhx4.isIE ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+			var isQt = (navigator.userAgent.match(/AppleWebKit/) != null && navigator.userAgent.match(/Qt/) != null && navigator.userAgent.match(/Safari/) != null);
+
+			if (async == true) {
+				t.onreadystatechange = function() {
+					if ((t.readyState == 4) || (isQt == true && t.readyState == 3)) { // what for long response and status 404?
+						if (t.status != 200 || t.responseText == "")
+							if (!dhx4.callEvent("onAjaxError", [t])) return;
+
+						window.setTimeout(function(){
+							if (typeof(onLoad) == "function") {
+								onLoad.apply(window, [{xmlDoc:t, filePath:url}]); // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+							}
+							if (longParams != null) {
+								if (typeof(longParams.postData) != "undefined") {
+									dhx4.ajax.postLong(longParams.url, longParams.postData, onLoad);
+								} else {
+									dhx4.ajax.getLong(longParams.url, onLoad);
+								}
+							}
+							onLoad = null;
+							t = null;
+						},1);
+					}
+				}
+			}
+
+			if (method == "GET" && this.cache != true) {
+				url += (url.indexOf("?")>=0?"&":"?")+"dhxr"+new Date().getTime()+"=1";
+			}
+
+			t.open(method, url, async);
+
+			if (headers){
+				for (var key in headers)
+					t.setRequestHeader(key, headers[key]);
+			} else if (method.toUpperCase() == "POST" || method == "PUT" || method == "DELETE") {
+				t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			} else if (method == "GET") {
+				postData = null;
+			}
+
+			t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+			t.send(postData);
+
+			if (!async) return {xmlDoc:t, filePath:url}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+
+		};
+	}
+
+	gantt._patch_dhx4_ajax = function(){};
 };
 
 gantt.getUserData = function(id, name) {
@@ -8350,7 +8441,12 @@ gantt.locate = function(e) {
     var trg = gantt._get_target_node(e);
 
     //ignore empty cells
-    if ((trg.className || "").indexOf("gantt_task_cell") >= 0) return null;
+	var className = trg.className || "";
+	if(!className.indexOf){
+		//'className' exist but not a string - IE svg element in DOM
+		className = '';
+	}
+    if ((className || "").indexOf("gantt_task_cell") >= 0) return null;
 
     var attribute = arguments[1] || this.config.task_attribute;
 
@@ -8387,6 +8483,10 @@ gantt._locate_css = function(e, classname, strict){
 	var test = false;
 	while (trg){
 		css = trg.className;
+		if(css && !css.indexOf){
+			//'className' exist but not a string - IE svg element in DOM
+			css = '';
+		}
 
 		if(css){
 			var ind = css.indexOf(classname);
@@ -8508,6 +8608,18 @@ gantt._is_render_active = function(){
 	return !this._skip_render;
 };
 
+gantt._correct_dst_change = function(date, prevOffset, step, unit){
+	var time_unit = gantt._get_line(unit) * step;
+	if(time_unit > 60*60 && time_unit < 60*60*24){
+		//correct dst change only if current unit is more than one hour and less than day (days have own checking), e.g. 12h
+		var offsetChanged = date.getTimezoneOffset() - prevOffset;
+		if(offsetChanged){
+			date = gantt.date.add(date, offsetChanged, "minute");
+		}
+	}
+	return date;
+};
+
 gantt.batchUpdate = function (callback) {
 	var call_dp = (this._dp && this._dp.updateMode != "off");
 	var dp_mode;
@@ -8548,9 +8660,7 @@ gantt.date={
 	date_part:function(date){
 		var old = new Date(date);
 		date.setHours(0);
-		date.setMinutes(0);
-		date.setSeconds(0);
-		date.setMilliseconds(0);
+		this.hour_start(date);
 		if (date.getHours() && //shift to yesterday on dst
 			(date.getDate() < old.getDate() || date.getMonth() < old.getMonth() || date.getFullYear() < old.getFullYear()) )
 			date.setTime(date.getTime() + 60 * 60 * 1000 * (24 - date.getHours()));
@@ -8579,15 +8689,17 @@ gantt.date={
 		return this.date_part(date);
 	},
 	hour_start:function(date){
-		var hour = date.getHours();
-		this.day_start(date);
-		date.setHours(hour);
+		if(date.getMinutes())
+			date.setMinutes(0);
+		this.minute_start(date);
+
 		return date;
 	},
 	minute_start:function(date){
-		var min = date.getMinutes();
-		this.hour_start(date);
-		date.setMinutes(min);
+		if(date.getSeconds())
+			date.setSeconds(0);
+		if(date.getMilliseconds())
+			date.setMilliseconds(0);
 		return date;
 	},
 	_add_days:function(date, inc){
@@ -9320,6 +9432,13 @@ gantt._touch_events = function(names, accessor, ignore){
 
 				if (scroll_mode){
 					gantt.scrollTo(scroll_state.x + dx, scroll_state.y + dy);
+					var new_scroll_state = gantt.getScrollState();
+
+					if((scroll_state.x != new_scroll_state.x && dy > 2 * dx) ||
+						(scroll_state.y != new_scroll_state.y && dx > 2 * dy ))
+					{
+						return block_action(e);
+					}
 				}
 			}
 			return block_action(e);
@@ -9360,7 +9479,7 @@ gantt._touch_events = function(names, accessor, ignore){
 		//long tap
 		long_tap_timer = setTimeout(function(){
 			var taskId = gantt.locate(action_start);
-			if(taskId && action_start.target.className.indexOf("gantt_link_point") == -1) {
+			if(taskId && !gantt._locate_css(action_start, "gantt_link_control") &&  !gantt._locate_css(action_start, "gantt_grid_data")) {
 				gantt._tasks_dnd.on_mouse_down(action_start);
 				gantt._tasks_dnd._start_dnd(action_start);
 				gantt._touch_drag = true;
