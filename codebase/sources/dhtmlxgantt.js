@@ -1289,7 +1289,21 @@ gantt._init_grid = function () {
 
 		if (column == "add") {
 			this._click.gantt_add(e, this.config.root_id);
-		} else if (this.config.sort) {
+            return;
+		} 
+        
+        if (this.config.sort) {
+            var sorting_method = column;
+
+            var conf = this.config.columns.filter(function(c){ return c.name == column })[0];
+            if ( conf && conf.sort !== undefined ) {
+                sorting_method = conf.sort;
+
+                if ( ! sorting_method ) { // sort is 'false', no no sorting
+                    return
+                }
+            }
+
 			var sort = (this._sort && this._sort.direction && this._sort.name == column) ? this._sort.direction : "desc";
 			// invert sort direction
 			sort = (sort == "desc") ? "asc" : "desc";
@@ -1298,6 +1312,7 @@ gantt._init_grid = function () {
 				direction: sort
 			};
 			this.sort(column, sort == "desc");
+			this.sort(sorting_method, sort == "desc");
 		}
 	}, this);
 
