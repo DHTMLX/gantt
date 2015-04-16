@@ -5744,10 +5744,13 @@ gantt.sort = function(field, desc, parent, silent) {
 		}
 
         var result = a[field] > b[field];
-        if (desc) result = !result;
         return result ? 1 : -1;
     }) : field;
 
+    if ( desc ) {
+        var original_criteria = criteria;
+        criteria = function(a,b) { original_criteria(b,a) };
+    }
 
     var els = this.getChildren(parent);
     if (els){
