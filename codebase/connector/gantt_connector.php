@@ -31,15 +31,36 @@ class GanttDataItem extends DataItem{
     }
 }
 
+class GanttLinkDataItem extends DataItem {
+
+    public function to_xml_start(){
+        $str="<item id='".$this->xmlentities($this->get_id())."'";
+        for ($i=0; $i < sizeof($this->config->data); $i++){
+            $name=$this->config->data[$i]["name"];
+            $db_name=$this->config->data[$i]["db_name"];
+            $str.=" ".$name."='".$this->xmlentities($this->data[$name])."'";
+        }
+        //output custom data
+        if ($this->userdata !== false)
+            foreach ($this->userdata as $key => $value){
+                $str.=" ".$key."='".$this->xmlentities($value)."'";
+            }
+
+        return $str.">";
+    }
+
+}
 
 /*! Connector class for dhtmlxGantt
 **/
 class GanttConnector extends Connector{
 
+    private $action_mode = "";
+    public $links_table = "";
+
+    protected $live_update_data_type = "GanttDataUpdate";
     protected $extra_output="";//!< extra info which need to be sent to client side
     protected $options=array();//!< hash of OptionsConnector
-    protected $links_mode = false;
-
 
     /*! assign options collection to the column
 
@@ -87,8 +108,14 @@ class GanttConnector extends Connector{
     function parse_request(){
         parent::parse_request();
 
-        if (isset($_GET["gantt_mode"]) && $_GET["gantt_mode"] == "links")
-            $this->links_mode = true;
+        $action_links = "links";
+        if(isset($_GET["gantt_mode"]) && $_GET["gantt_mode"] == $action_links) {
+            $this->action_mode = $action_links;
+            $this->request->set_action_mode($action_links);
+            $this->options[$action_links]->request->set_action_mode($action_links);
+            $this->options[$action_links]->request->set_user($this->request->get_user());
+        }
+
 
         if (count($this->config->text)){
             if (isset($_GET["to"]))
@@ -119,11 +146,70 @@ class GanttConnector extends Connector{
         }
     }
 
-    public function render_links($table,$id="",$fields=false,$extra=false,$relation_id=false) {
+    public function render_links($table,$id="",$fields=false,$extra=false) {
         $links = new GanttLinksConnector($this->get_connection(),$this->names["db_class"]);
+
+        if($this->live_update)
+            $links->enable_live_update($this->live_update->get_table());
+
         $links->render_table($table,$id,$fields,$extra);
         $this->set_options("links", $links);
+        $this->links_table = $table;
     }
+
+
+    /*! render self
+		process commands, output requested data as XML
+	*/
+    public function render(){
+        $this->event->trigger("onInit", $this);
+        EventMaster::trigger_static("connectorInit",$this);
+
+        if (!$this->as_string)
+            $this->parse_request();
+        $this->set_relation();
+
+        if ($this->live_update !== false && $this->updating!==false) {
+                $this->live_update->get_updates();
+        } else {
+            if ($this->editing){
+                if (($this->action_mode == "links") && isset($this->options["links"])) {
+                    $this->options["links"]->save();
+                } else {
+                    $dp = new $this->names["data_class"]($this,$this->config,$this->request);
+                    $dp->process($this->config,$this->request);
+                }
+            } else {
+                if (!$this->access->check("read")){
+                    LogMaster::log("Access control: read operation blocked");
+                    echo "Access denied";
+                    die();
+                }
+                $wrap = new SortInterface($this->request);
+                $this->apply_sorts($wrap);
+                $this->event->trigger("beforeSort",$wrap);
+                $wrap->store();
+
+                $wrap = new FilterInterface($this->request);
+                $this->apply_filters($wrap);
+                $this->event->trigger("beforeFilter",$wrap);
+                $wrap->store();
+
+                if ($this->model && method_exists($this->model, "get")){
+                    $this->sql = new ArrayDBDataWrapper();
+                    $result = new ArrayQueryWrapper(call_user_func(array($this->model, "get"), $this->request));
+                    $out = $this->output_as_xml($result);
+                } else {
+                    $out = $this->output_as_xml($this->get_resource());
+
+                    if ($out !== null) return $out;
+                }
+
+            }
+        }
+        $this->end_run();
+    }
+
 }
 
 /*! DataProcessor class for Gantt component
@@ -174,6 +260,7 @@ class JSONGanttDataItem extends GanttDataItem{
 class JSONGanttConnector extends GanttConnector {
 
     protected $data_separator = ",";
+    protected $live_update_data_type = "JSONGanttDataUpdate";
 
     /*! constructor
 
@@ -267,66 +354,25 @@ class JSONGanttConnector extends GanttConnector {
 
     public function render_links($table,$id="",$fields=false,$extra=false,$relation_id=false) {
         $links = new JSONGanttLinksConnector($this->get_connection(),$this->names["db_class"]);
+
+        if($this->live_update)
+            $links->enable_live_update($this->live_update->get_table());
+
         $links->render_table($table,$id,$fields,$extra);
         $this->set_options("links", $links);
     }
 
-
-    /*! render self
-		process commands, output requested data as XML
-	*/
-    public function render(){
-        $this->event->trigger("onInit", $this);
-        EventMaster::trigger_static("connectorInit",$this);
-
-        if (!$this->as_string)
-            $this->parse_request();
-        $this->set_relation();
-
-        if ($this->live_update !== false && $this->updating!==false) {
-            $this->live_update->get_updates();
-        } else {
-            if ($this->editing){
-                if ($this->links_mode && isset($this->options["links"])) {
-                    $this->options["links"]->save();
-                } else {
-                    $dp = new $this->names["data_class"]($this,$this->config,$this->request);
-                    $dp->process($this->config,$this->request);
-                }
-            } else {
-                if (!$this->access->check("read")){
-                    LogMaster::log("Access control: read operation blocked");
-                    echo "Access denied";
-                    die();
-                }
-                $wrap = new SortInterface($this->request);
-                $this->apply_sorts($wrap);
-                $this->event->trigger("beforeSort",$wrap);
-                $wrap->store();
-
-                $wrap = new FilterInterface($this->request);
-                $this->apply_filters($wrap);
-                $this->event->trigger("beforeFilter",$wrap);
-                $wrap->store();
-
-                if ($this->model && method_exists($this->model, "get")){
-                    $this->sql = new ArrayDBDataWrapper();
-                    $result = new ArrayQueryWrapper(call_user_func(array($this->model, "get"), $this->request));
-                    $out = $this->output_as_xml($result);
-                } else {
-                    $out = $this->output_as_xml($this->get_resource());
-
-                    if ($out !== null) return $out;
-                }
-
-            }
-        }
-        $this->end_run();
-    }
 }
 
 
 class GanttLinksConnector extends OptionsConnector {
+    protected $live_update_data_type = "GanttDataUpdate";
+
+    public function __construct($res,$type=false,$item_type=false,$data_type=false,$render_type=false){
+        if (!$item_type) $item_type="GanttLinkDataItem";
+        parent::__construct($res,$type,$item_type,$data_type,$render_type);
+    }
+
     public function render(){
         if (!$this->init_flag){
             $this->init_flag=true;
@@ -345,6 +391,7 @@ class GanttLinksConnector extends OptionsConnector {
 
 
 class JSONGanttLinksConnector extends JSONOptionsConnector {
+    protected $live_update_data_type = "JSONGanttDataUpdate";
     public function render(){
         if (!$this->init_flag){
             $this->init_flag=true;
@@ -358,6 +405,62 @@ class JSONGanttLinksConnector extends JSONOptionsConnector {
     public function save() {
         $dp = new $this->names["data_class"]($this,$this->config,$this->request);
         $dp->process($this->config,$this->request);
+    }
+}
+
+class JSONGanttDataUpdate extends JSONDataUpdate {
+
+    public function get_updates() {
+        $updates = $this->get_data_updates();
+        //ToDo: Add rendering for data.
+    }
+
+
+    private function get_data_updates() {
+        $actions_table = $this->table;
+        $version = $this->request->get_version();
+        $user = $this->request->get_user();
+
+        $select_actions = "SELECT DATAID, TYPE, USER FROM {$actions_table}";
+        $select_actions .= " WHERE {$actions_table}.ID > '{$version}' AND {$actions_table}.USER <> '{$user}'";
+
+
+        $output = array();
+        $index = 0;
+        $actions_query = $this->sql->query($select_actions);
+        while($action_data=$this->sql->get_next($actions_query)){
+            $action_type = $action_data["TYPE"];
+            $type_parts = explode("#", $action_type);
+            $action_mode = $type_parts[1];
+            if($action_mode == "links") {
+                $data = $this->select_links_for_action($action_data["DATAID"]);
+                $data = new DataItemUpdate($data, $this->config, $index, $this->item_class);
+            }
+            else {
+                $data = $this->select_task_for_action($action_data["DATAID"]);
+                $data = new DataItemUpdate($data, $this->config, $index, $this->item_class);
+            }
+
+            array_push($output, $data);
+            $index++;
+        }
+
+        return $output;
+    }
+
+    protected function select_task_for_action($taskId) {
+        $tasks_table = $this->request->get_source();
+        $field_task_id = $this->config->id['db_name'];
+        $select_actions_tasks = "SELECT * FROM {$tasks_table} WHERE {$taskId} = {$tasks_table}.{$field_task_id}";
+        return $this->sql->get_next($this->sql->query($select_actions_tasks));
+    }
+
+    protected function select_links_for_action($taskId) {
+        $links_connector_options = $this->options["connector"]->get_options();
+        $links_table = $links_connector_options["links"]->get_request()->get_source();
+        $field_task_id = $this->config->id['db_name'];
+        $select_actions_tasks = "SELECT * FROM {$links_table} WHERE {$taskId} = {$links_table}.{$field_task_id}";
+        return $this->sql->get_next($this->sql->query($select_actions_tasks));
     }
 }
 

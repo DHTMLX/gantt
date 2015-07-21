@@ -136,6 +136,7 @@ class JSONSchedulerDataItem extends SchedulerDataItem{
 class JSONSchedulerConnector extends SchedulerConnector {
 	
 	protected $data_separator = ",";
+    protected $live_update_data_type = "JSONDataUpdate";
 
 	/*! constructor
 		

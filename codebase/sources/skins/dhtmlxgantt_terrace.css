@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.2.1 Stardard
+dhtmlxGantt v.3.3.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -37,7 +37,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   margin-left: -6px;
   margin-top: -3px;
 }
-.gantt_task_link .gantt_link_arrow_top {
+.gantt_task_link .gantt_link_arrow_up {
   border-width: 6px 6px 6px 6px;
 }
 .gantt_task_link .gantt_link_arrow_down {
@@ -786,7 +786,7 @@ div.dhx_modal_cover {
   border-bottom-color: transparent !important;
   border-left-color: transparent !important;
 }
-.gantt_link_arrow_top {
+.gantt_link_arrow_up {
   border-width: 0 4px 6px 4px;
   border-color: transparent transparent #ffa011 transparent;
   border-top-color: transparent !important;

@@ -11,75 +11,76 @@ require_once("db_common.php");
 
 if you plan to use it for Oracle - use Oracle connection type instead
 **/
-class PHPCakeDBDataWrapper extends ArrayDBDataWrapper{
-	public function select($sql){
-		$source = $sql->get_source();
-		if (is_array($source))	//result of find
-			$res = $source;
-		else
-			$res = $this->connection->find("all");
+class PHPCakeDBDataWrapper extends ArrayDBDataWrapper {
 
-		$temp = array();
-		if (sizeof($res)){
-			$name = get_class($this->connection);
-			for ($i=sizeof($res)-1; $i>=0; $i--)
-				$temp[]=&$res[$i][$name];
-		}
-		return new ArrayQueryWrapper($temp);
-	}
+    public function select($source) {
+        $sourceData = $source->get_source();
+        if(is_array($sourceData))	//result of find
+            $query = $sourceData;
+        else
+            $query = $sourceData->find("all");
 
-	protected function getErrorMessage(){
-		$errors = $this->connection->invalidFields();
-		$text = array();
-		foreach ($errors as $key => $value){
-			$text[] = $key." - ".$value[0];
-		}
-		return implode("\n", $text);
-	}
+        $temp = array();
+        foreach($query as $row)
+            $temp[] = $row->toArray();
 
-	public function insert($data,$source){
-		$name = get_class($this->connection);
-		$save = array(); 
-		$temp_data = $data->get_data();
-		unset($temp_data[$this->config->id['db_name']]);
-		unset($temp_data["!nativeeditor_status"]);
-		$save[$name] = $temp_data;
+        return new ArrayQueryWrapper($temp);
+    }
 
-		if ($this->connection->save($save)){
-			$data->success($this->connection->getLastInsertID());	
-		} else {
-			$data->set_response_attribute("details", $this->getErrorMessage());
-			$data->invalid();
-		}
-	}
-	public function delete($data,$source){
-		$id = $data->get_id();
-		$this->connection->delete($id);
-		$data->success();
-	}
-	public function update($data,$source){
-		$name = get_class($this->connection);
-		$save = array(); 
-		$save[$name] = &$data->get_data();
+    protected function getErrorMessage() {
+        $errors = $this->connection->invalidFields();
+        $text = array();
+        foreach ($errors as $key => $value){
+            $text[] = $key." - ".$value[0];
+        }
+        return implode("\n", $text);
+    }
 
-		if ($this->connection->save($save)){
-			$data->success();
-		} else {
-			$data->set_response_attribute("details", $this->getErrorMessage());
-			$data->invalid();
-		}
-	}	
-		
+    public function insert($data, $source) {
+        $sourceData = $source->get_source();
+        $obj = $sourceData->newEntity();
+        $obj = $this->fillModel($obj, $data);
+        $savedResult = $source->get_source()->save($obj);
+        $data->success($savedResult->get($this->config->id["db_name"]));
+    }
 
-	public function escape($str){
-		throw new Exception("Not implemented");
-	}
-	public function query($str){
-		throw new Exception("Not implemented");
-	}
-	public function get_new_id(){
-		throw new Exception("Not implemented");
-	}
+    public function delete($data, $source) {
+        $sourceData = $source->get_source();
+        $obj = $sourceData->get($data->get_id());
+        $source->get_source()->delete($obj);
+    }
+
+    public function update($data, $source) {
+        $sourceData = $source->get_source();
+        $obj = $sourceData->get($data->get_id());
+        $obj = $this->fillModel($obj, $data);
+        $sourceData->save($obj);
+    }
+
+    private function fillModel($obj, $data) {
+        //Map data to model object.
+        for($i = 0; $i < count($this->config->text); $i++) {
+            $step=$this->config->text[$i];
+            $obj->set($step["name"], $data->get_value($step["name"]));
+        }
+
+        if($relation = $this->config->relation_id["db_name"])
+            $obj->set($relation, $data->get_value($relation));
+
+        return $obj;
+    }
+
+    public function escape($str){
+        throw new Exception("Not implemented");
+    }
+
+    public function query($str){
+        throw new Exception("Not implemented");
+    }
+
+    public function get_new_id(){
+        throw new Exception("Not implemented");
+    }
 }
 
 ?>

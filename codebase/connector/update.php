@@ -43,7 +43,7 @@ class DataItemUpdate extends DataItem {
 	*/
 	public function to_xml(){
         $str= "<update ";
-		$str .= 'status="'.$this->data['type'].'" ';
+		$str .= 'status="'.$this->data['action_table_type'].'" ';
 		$str .= 'id="'.$this->data['dataId'].'" ';
 		$str .= 'parent="'.$this->get_parent_id().'"';
 		$str .= '>';
@@ -56,7 +56,7 @@ class DataItemUpdate extends DataItem {
 	*/
 	public function to_xml_start(){
 		$str="<update ";
-		$str .= 'status="'.$this->data['type'].'" ';
+		$str .= 'status="'.$this->data['action_table_type'].'" ';
 		$str .= 'id="'.$this->data['dataId'].'" ';
 		$str .= 'parent="'.$this->get_parent_id().'"';
 		$str .= '>';
@@ -100,7 +100,6 @@ class DataItemUpdate extends DataItem {
 	}
 }
 
-
 class DataUpdate{
 	
 	protected $table; //!< table , where actions are stored
@@ -124,13 +123,14 @@ class DataUpdate{
 	  @param request
 	     DataRequestConfig object
 	*/
-	function __construct($sql, $config, $request, $table, $url){
+	function __construct($sql, $config, $request, $table, $url, $options){
         $this->config= $config;
         $this->request= $request;
         $this->sql = $sql;
         $this->table=$table;
         $this->url=$url;
         $this->demu = false;
+        $this->options = $options;
 	}
 
     public function set_demultiplexor($path){
@@ -142,15 +142,15 @@ class DataUpdate{
         $this->item_class = $name;
     }
    	
-	private function select_update($actions_table, $join_table, $id_field_name, $version, $user) {
-		$sql = "SELECT * FROM  {$actions_table}";
+	protected function select_update($actions_table, $join_table, $id_field_name, $version, $user) {
+		$sql = "SELECT $join_table.*, {$actions_table}.id, {$actions_table}.dataId, {$actions_table}.type as action_table_type, {$actions_table}.user FROM  {$actions_table}";
 		$sql .= " LEFT OUTER JOIN {$join_table} ON ";
 		$sql .= "{$actions_table}.DATAID = {$join_table}.{$id_field_name} ";
 		$sql .= "WHERE {$actions_table}.ID > '{$version}' AND {$actions_table}.USER <> '{$user}'";
 		return $sql;
 	}
 
-	private function get_update_max_version() {
+	protected function get_update_max_version() {
 		$sql = "SELECT MAX(id) as VERSION FROM {$this->table}";
 		$res = $this->sql->query($sql);
 		$data = $this->sql->get_next($res);
@@ -168,8 +168,9 @@ class DataUpdate{
             file_get_contents($this->demu);
 	}
 
-
-
+    public function get_table() {
+        return $this->table;
+    }
 
 	/*! records operations in actions_table
 		@param action
@@ -180,6 +181,10 @@ class DataUpdate{
 		$dataId = 	$this->sql->escape($action->get_new_id());
 		$user = 	$this->sql->escape($this->request->get_user());
 		if ($type!="error" && $type!="invalid" && $type !="collision") {
+            $action_mode = $this->request->get_action_mode();
+            if(!empty($action_mode))
+                $type .= "#".$action_mode;
+
 			$this->log_update_action($this->table, $dataId, $type, $user);
 		}
 	}
@@ -261,6 +266,80 @@ class DataUpdate{
 			$action->set_status('collision');
 		}
 	}
+}
+
+
+class JSONDataItemUpdate extends DataItemUpdate {
+
+    public function to_xml() {
+        return array(
+            "status" => $this->data["action_table_type"],
+            "id" => $this->data["dataId"],
+            "parent" => $this->get_parent_id(),
+            "data" => $this->child->to_xml()
+        );
+    }
+
+}
+
+class JSONDataUpdate extends DataUpdate {
+
+    /*! adds action version in output XML as userdata
+*/
+    public function version_output($conn, $out) {
+        $outJson = json_decode($out->__toString(), true);
+        if(!isset($outJson["userdata"]))
+            $outJson["userdata"] = array();
+
+        $outJson["userdata"] = array_merge($outJson["userdata"], $this->get_version());
+        $out->reset();
+        $out->add(json_encode($outJson));
+    }
+
+    /*! return action version in XMl format
+    */
+    public function get_version() {
+        $version = array("version" => $this->get_update_max_version());
+        return $version;
+    }
+
+    public function get_updates() {
+        $sub_request = new DataRequestConfig($this->request);
+        $version = $this->request->get_version();
+        $user = $this->request->get_user();
+
+        $sub_request->parse_sql($this->select_update($this->table, $this->request->get_source(), $this->config->id['db_name'], $version, $user));
+        $sub_request->set_relation(false);
+
+        $output = $this->render_set($this->sql->select($sub_request), $this->item_class);
+
+        if(!isset($output["userdata"]))
+            $output["userdata"] = array();
+
+        $output["userdata"] = array_merge($output["userdata"], $this->get_version());
+        $this->output(json_encode($output));
+    }
+
+    protected function render_set($res, $name){
+        $output = array();
+        $index = 0;
+        while($data = $this->sql->get_next($res)) {
+            $data = new JSONDataItemUpdate($data, $this->config, $index, $name);
+            $this->event->trigger("beforeRender", $data);
+            array_push($output, $data->to_xml());
+            $index++;
+        }
+
+        return array("updates" => $output);
+    }
+
+    protected function output($res){
+        $out = new OutputWriter($res, "");
+        $out->set_type("json");
+        $this->event->trigger("beforeOutput", $this, $out);
+        $out->output("", true, $this->encoding);
+    }
+
 }
 	
 ?>

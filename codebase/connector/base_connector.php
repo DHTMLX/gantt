@@ -282,38 +282,38 @@ class DataItem{
 	Can be used on its own to provide raw data.	
 **/
 class Connector {
+
+    private $id_seed=0; //!< default value, used to generate auto-IDs
+    private $db; //!< db connection resource
+
 	protected $config;//DataConfig instance
 	protected $request;//DataRequestConfig instance
 	protected $names;//!< hash of names for used classes
 	protected $encoding="utf-8";//!< assigned encoding (UTF-8 by default) 
 	protected $editing=false;//!< flag of edit mode ( response for dataprocessor )
+    protected $updating=false;//!< flag of update mode ( response for data-update )
+    protected $dload;//!< flag of dyn. loading mode
+    protected $data_separator = "\n";
+    protected $live_update = false; // actions table name for autoupdating
+    protected $live_update_data_type = "DataUpdate";
+    protected $extra_output="";//!< extra info which need to be sent to client side
+    protected $options=array();//!< hash of OptionsConnector
+    protected $as_string = false; // render() returns string, don't send result in response
+    protected $simple = false; // render only data without any other info
+    protected $filters;
+    protected $sorts;
+    protected $mix;
+    protected $order = false;
 
 	public static $filter_var="dhx_filter";
 	public static $sort_var="dhx_sort";
 	public static $kids_var="dhx_kids";
 
-	public $model=false;
-
-	private $updating=false;//!< flag of update mode ( response for data-update )
-	private $db; //!< db connection resource
-	protected $dload;//!< flag of dyn. loading mode
-	public $access;  //!< AccessMaster instance
-	protected $data_separator = "\n";
-	
-	public $sql;	//DataWrapper instance
-	public $event;	//EventMaster instance
-	public $limit=false;
-	
-	private $id_seed=0; //!< default value, used to generate auto-IDs
-	protected $live_update = false; // actions table name for autoupdating
-	protected $extra_output="";//!< extra info which need to be sent to client side
-	protected $options=array();//!< hash of OptionsConnector 
-	protected $as_string = false; // render() returns string, don't send result in response
-	protected $simple = false; // render only data without any other info
-	protected $filters;
-	protected $sorts;
-	protected $mix;
-	protected $order = false;
+    public $model=false;
+    public $access;  //!< AccessMaster instance
+    public $sql;	//DataWrapper instance
+    public $event;	//EventMaster instance
+    public $limit=false;
 
 	/*! constructor
 		
@@ -419,7 +419,7 @@ class Connector {
                 $id = $info["key"];
         }
 		$this->config->init($id,$fields,$extra,$relation_id);
-		if (strpos(trim($table), " ")!==false)
+		if (is_string($table) && strpos(trim($table), " ")!==false)
 			$this->request->parse_sql($table);
 		else
 			$this->request->set_source($table);
@@ -810,6 +810,10 @@ class Connector {
 		$this->options[$name]=$options;
 	}
 
+    public function get_options() {
+        return $this->options;
+    }
+
 
 	public function insert($data) {
 		$action = new DataAction('inserted', false, $data);
@@ -851,7 +855,7 @@ class Connector {
 			url used for update notifications
 	*/	
 	public function enable_live_update($table, $url=false){
-		$this->live_update = new DataUpdate($this->sql, $this->config, $this->request, $table,$url);
+        $this->live_update = new $this->live_update_data_type($this->sql, $this->config, $this->request, $table,$url, array("connector" => $this));
         $this->live_update->set_event($this->event,$this->names["item_class"]);
 		$this->event->attach("beforeOutput", 		Array($this->live_update, "version_output"));
 		$this->event->attach("beforeFiltering", 	Array($this->live_update, "get_updates"));

@@ -1,3 +1,15 @@
+### 3.3
+- Added dependency Auto Scheduling feature *
+- Added support for Fullscreen mode
+- Added support of unscheduled tasks
+- Added initial support of Content Security Policy
+- Allow specifying per column grid sorting settings
+- Improved branch ordering feature - allow D'n'D between levels
+- Support of REST mode for ajax loading/saving
+- Support of backward planning
+
+* The marked functionality requires Commercial or Enterprise license, and not provided under GPL
+
 ### 3.2
 - Added ability to group tasks by custom properties
 - Added multiple selection

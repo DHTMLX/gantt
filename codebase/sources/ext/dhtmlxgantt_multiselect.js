@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.2.1 Stardard
+dhtmlxGantt v.3.3.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -174,10 +174,9 @@ gantt._multiselect = {
 	};
 	var old_unselectTask = gantt.unselectTask;
 	gantt.unselectTask = function(id){
-		var res = old_unselectTask.call(this, id);
-		if(this.config.multiselect)
+		if(id != undefined && this.config.multiselect)
 			this._multiselect.unselect(id);
-
+		var res = old_unselectTask.call(this, id);
 		return res;
 	};
 

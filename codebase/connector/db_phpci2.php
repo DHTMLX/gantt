@@ -9,7 +9,7 @@ require_once("db_common.php");
 
 if you plan to use it for Oracle - use Oracle connection type instead
 **/
-class PHPCIDBDataWrapper extends DBDataWrapper{
+class PHPCI2DBDataWrapper extends DBDataWrapper{
 	private $last_result;//!< store result or last operation
 	
 	public function query($sql){
@@ -44,24 +44,16 @@ class PHPCIDBDataWrapper extends DBDataWrapper{
 }
 
 class PHPCIResultSet{
-    private $is_result_done = false;
 	private $res;
 	private $start;
 	private $count;
 
 	public function __construct($res){
-        if(is_bool($res)) {
-            $this->$is_result_done = true;
-            return $this;
-        }
 		$this->res = $res;
 		$this->start = $res->current_row;
-		$this->count = $res->num_rows();
+		$this->count = $res->num_rows;
 	}
 	public function next(){
-        if($this->is_result_done)
-            return null;
-
 		if ($this->start != $this->count){
 			return $this->res->row($this->start++,'array');
 		} else {

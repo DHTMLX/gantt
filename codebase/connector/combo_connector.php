@@ -25,7 +25,7 @@ class ComboDataItem extends DataItem{
 	function to_xml_start(){
 		if ($this->skip) return "";
 		
-		return "<option ".($this->selected?"selected='true'":"")."value='".$this->xmlentities($this->get_id())."'><![CDATA[".$this->data[$this->config->text[0]["name"]]."]]>";
+		return "<option ".($this->selected?"selected='true' ":"")."value='".$this->xmlentities($this->get_id())."'><![CDATA[".$this->data[$this->config->text[0]["name"]]."]]>";
 	}
 	/*! return self as XML string, ending part
 	*/
