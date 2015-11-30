@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.3.0 Stardard
+dhtmlxGantt v.4.0.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -69,7 +69,7 @@ gantt.hideQuickInfo = function(forced){
 			qi.parentNode.removeChild(qi);
 	}
 };
-dhtmlxEvent(window, "keydown", function(e){
+gantt.event(window, "keydown", function(e){
 	if (e.keyCode == 27)
 		gantt.hideQuickInfo();
 });
@@ -156,12 +156,12 @@ gantt._init_quick_info = function(pos, id){
 		html += "</div>";
 
 		qi.innerHTML = html;
-		dhtmlxEvent(qi, "click", function(ev){
+		gantt.event(qi, "click", function(ev){
 			ev = ev || event;
 			gantt._qi_button_click(ev.target || ev.srcElement);
 		});
 		if (gantt.config.quick_info_detached)
-			dhtmlxEvent(gantt.$task_data, "scroll", function(){  gantt.hideQuickInfo(); });
+			gantt.event(gantt.$task_data, "scroll", function(){  gantt.hideQuickInfo(); });
 	}
 
 	return this._quick_info_box;

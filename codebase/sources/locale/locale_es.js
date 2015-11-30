@@ -1,13 +1,17 @@
 /*
 @license
 
-dhtmlxGantt v.3.3.0 Stardard
+dhtmlxGantt v.4.0.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 */
 /*
  @Autor Manuel Fernandez Panzuela - www.mfernandez.es
+
+ Update 30/10/2015:
+ Translation of new labels by Jorge Macias
+ https://disqus.com/by/disqus_bTuZk1voC7/
  */
 gantt.locale = {
 	date: {
@@ -31,31 +35,30 @@ gantt.locale = {
 		confirm_deleting: "El evento se borrará definitivamente, ¿continuar?",
 		section_description: "Descripción",
 		section_time: "Período",
-		section_type:"Type",
-        /* grid columns */
+		section_type:"Tipo",
+		/* grid columns */
 
-        column_text : "Task name",
-        column_start_date : "Start time",
-        column_duration : "Duration",
-        column_add : "",
+		column_text : "Tarea",
+		column_start_date : "Inicio",
+		column_duration : "Duración",
+		column_add : "",
 
 		/* link confirmation */
-		link: "Link",
-		confirm_link_deleting:"will be deleted",
-		link_start: " (start)",
-		link_end: " (end)",
+		link: "Enlace",
+		confirm_link_deleting:"será borrada",
+		link_start: " (inicio)",
+		link_end: " (fin)",
 
-		type_task: "Task",
-		type_project: "Project",
-		type_milestone: "Milestone",
+		type_task: "Tarea",
+		type_project: "Proyecto",
+		type_milestone: "Hito",
 
 
-        minutes: "Minutes",
-        hours: "Hours",
-        days: "Days",
-        weeks: "Week",
-        months: "Months",
-        years: "Years"
+		minutes: "Minutos",
+		hours: "Horas",
+		days: "Días",
+		weeks: "Semanas",
+		months: "Meses",
+		years: "Años"
 	}
 };
-

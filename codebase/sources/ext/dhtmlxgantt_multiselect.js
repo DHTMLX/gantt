@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.3.0 Stardard
+dhtmlxGantt v.4.0.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -113,7 +113,7 @@ gantt._multiselect = {
 			return true;
 		}
 
-		if (e.ctrlKey) {
+		if (e.ctrlKey || e.metaKey) {
 			if (target_ev) {
 				this.toggle(target_ev, e);
 				this._after_select(target_ev);
@@ -131,7 +131,7 @@ gantt._multiselect = {
 					this._after_select(tmp);
 					tmp = (last_si > cur_si) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
 				}
-				this.forSelected(dhtmlx.bind(function (task_id) {
+				this.forSelected(gantt.bind(function (task_id) {
 					var index = gantt.getGlobalTaskIndex(task_id);
 					if ((index > last_si && index > cur_si) || (index < last_si && index < cur_si)) {
 						this.unselect(task_id);
@@ -142,7 +142,7 @@ gantt._multiselect = {
 
 		}
 		else {
-			this.forSelected(dhtmlx.bind(function (task_id) {
+			this.forSelected(gantt.bind(function (task_id) {
 				if (task_id != target_ev) {
 					this.unselect(task_id);
 					gantt.refreshTask(task_id);
@@ -174,7 +174,7 @@ gantt._multiselect = {
 	};
 	var old_unselectTask = gantt.unselectTask;
 	gantt.unselectTask = function(id){
-		if(id != undefined && this.config.multiselect)
+		if(id !== undefined && this.config.multiselect)
 			this._multiselect.unselect(id);
 		var res = old_unselectTask.call(this, id);
 		return res;

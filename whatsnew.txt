@@ -1,3 +1,12 @@
+### 4.0
+- Added Smart rendering of big data sets feature
+- Added Undo/Redo feature
+- Public API improvements - public helpers for popups, ajax, environment variables
+- Public API cleanup - remove redundant global objects, resolve conflicts with dhtmlxSuite
+- Updated critical path calculation - add support for lag/lead of links
+- Updated Spanish and Chinese locales
+- Minor bugfixes
+
 ### 3.3
 - Added dependency Auto Scheduling feature *
 - Added support for Fullscreen mode
@@ -23,8 +32,8 @@
 - Added ability to drag tasks on touch devices
 - Incorrect tooltip behavior on expand/collapse task tree fixed
 - Order of API events during gantt initialization fixed
-- Issues with markes and multiple initialization of the gantt fixed
-- Issues with markes and gantt.clearAll fixed
+- Issues with markers and multiple initialization of the gantt fixed
+- Issues with markers and gantt.clearAll fixed
 - Issues with gantt.serialize method and nested projects of gantt tree fixed
 - Fixes in French locale
 - Improvements in time range calculation

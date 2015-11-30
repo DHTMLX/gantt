@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.3.0 Stardard
+dhtmlxGantt v.4.0.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -99,7 +99,7 @@ gantt._tooltip_pos = function(ev) {
 	if (ev.pageX || ev.pageY)
 		var pos = {x:ev.pageX, y:ev.pageY};
 
-	var d = _isIE ? document.documentElement : document.body;
+	var d = gantt.env.isIE ? document.documentElement : document.body;
 	var pos = {
 		x:ev.clientX + d.scrollLeft - d.clientLeft,
 		y:ev.clientY + d.scrollTop - d.clientTop

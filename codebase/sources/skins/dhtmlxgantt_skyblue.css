@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.3.3.0 Stardard
+dhtmlxGantt v.4.0.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -52,6 +52,18 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 }
 .gantt_cal_qi_controls .gantt_qi_big_icon .gantt_menu_icon.icon_delete {
   margin-top: 5px;
+}
+.gantt_popup_title {
+  box-shadow: 0px 1px 1px #fff inset;
+  background-color: #dfedff;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #e4f0ff), color-stop(50%, #dfedff), color-stop(100%, #d5e8ff));
+  /* old webkit */
+  background-image: -webkit-linear-gradient(top, #e4f0ff 0%, #dfedff 50%, #d5e8ff 100%);
+  background-image: -moz-linear-gradient(top, #e4f0ff 0%, #dfedff 60%, #d5e8ff 100%);
+  background-image: -ms-linear-gradient(top, #e4f0ff 0%, #dfedff 60%, #d5e8ff 100%);
+  background-image: -o-linear-gradient(top, #e4f0ff 0%, #dfedff 60%, #d5e8ff 100%);
+  background-position: 0px 1px;
+  background-repeat: repeat-x;
 }
 .gantt_container {
   font-family: "Tahoma";
@@ -387,13 +399,13 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 #gantt_ajax_dots span.gantt_dot_visible {
   opacity: 1;
 }
-.dhtmlx_message_area {
+.gantt_message_area {
   position: fixed;
   right: 5px;
   width: 250px;
   z-index: 1000;
 }
-.dhtmlx-info {
+.gantt-info {
   min-width: 120px;
   padding: 4px 4px 4px 20px;
   font-family: "Tahoma";
@@ -405,14 +417,14 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   -o-transition: all .5s ease;
   transition: all .5s ease;
 }
-.dhtmlx-info.hidden {
+.gantt-info.hidden {
   height: 0px;
   padding: 0px;
   border-width: 0px;
   margin: 0px;
   overflow: hidden;
 }
-.dhtmlx_modal_box {
+.gantt_modal_box {
   overflow: hidden;
   display: inline-block;
   min-width: 250px;
@@ -426,13 +438,13 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   border: 1px solid #a4bed4;
   background: #ffffff;
 }
-.dhtmlx_popup_title {
+.gantt_popup_title {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   border-width: 0px;
 }
-.dhtmlx_button,
-.dhtmlx_popup_button {
+.gantt_button,
+.gantt_popup_button {
   border: 1px solid #a4bed4;
   height: 24px;
   line-height: 24px;
@@ -445,22 +457,22 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   background-image: -ms-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
   background-image: linear-gradient(to top, #e6e6e6 0%, #ffffff 100%);
 }
-.dhtmlx-info,
-.dhtmlx_popup_button,
-.dhtmlx_button {
+.gantt-info,
+.gantt_popup_button,
+.gantt_button {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: -moz-none;
   cursor: pointer;
 }
-.dhtmlx_popup_text {
+.gantt_popup_text {
   overflow: hidden;
 }
-.dhtmlx_popup_controls {
+.gantt_popup_controls {
   border-radius: 6px;
   padding: 10px;
 }
-.dhtmlx_popup_button {
+.gantt_popup_button {
   min-width: 100px;
 }
 div.dhx_modal_cover {
@@ -477,18 +489,18 @@ div.dhx_modal_cover {
   border: none;
   zoom: 1;
 }
-.dhtmlx-info img,
-.dhtmlx_modal_box img {
+.gantt-info img,
+.gantt_modal_box img {
   float: left;
   margin-right: 20px;
 }
-.dhtmlx-alert-error,
-.dhtmlx-confirm-error {
+.gantt-alert-error,
+.gantt-confirm-error {
   border: 1px solid #ff0000;
 }
 /*Skin section*/
-.dhtmlx_button input,
-.dhtmlx_popup_button div {
+.gantt_button input,
+.gantt_popup_button div {
   border-radius: 4px;
   font-size: 15px;
   -moz-box-sizing: content-box;
@@ -497,22 +509,21 @@ div.dhx_modal_cover {
   margin: 0px;
   vertical-align: top;
 }
-.dhtmlx_popup_title {
-  color: #fff;
-  text-shadow: 1px 1px #000;
+.gantt_popup_title {
+  border-bottom: 1px solid #a4bed4;
   height: 40px;
   line-height: 40px;
   font-size: 20px;
 }
-.dhtmlx_popup_text {
+.gantt_popup_text {
   margin: 15px 15px 5px 15px;
   font-size: 14px;
   color: #000;
   min-height: 30px;
   border-radius: 0;
 }
-.dhtmlx-info,
-.dhtmlx-error {
+.gantt-info,
+.gantt-error {
   font-size: 14px;
   color: #000;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
@@ -521,18 +532,18 @@ div.dhx_modal_cover {
   border-radius: 3px;
   border: 1px solid #ffffff;
 }
-.dhtmlx-info div {
+.gantt-info div {
   padding: 5px 10px 5px 10px;
   background-color: #fff;
   border-radius: 3px;
   border: 1px solid #a4bed4;
 }
-.dhtmlx-error {
+.gantt-error {
   background-color: #d81b1b;
   border: 1px solid #ff3c3c;
   box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
 }
-.dhtmlx-error div {
+.gantt-error div {
   background-color: #d81b1b;
   border: 1px solid #940000;
   color: #FFF;
