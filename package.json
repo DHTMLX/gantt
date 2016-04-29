@@ -1,0 +1,24 @@
+{
+  "name": "dhtmlx-gantt",
+  "version": "4.0.0",
+  "description": "An open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.",
+  "main": "codebase/dhtmlxgantt.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DHTMLX/gantt.git"
+  },
+  "keywords": [
+    "calendar",
+    "scheduler",
+    "dhtmlx",
+    "timeline",
+    "gantt",
+    "browser"
+  ],
+  "author": "DHTMLX",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/DHTMLX/gantt/issues"
+  },
+  "homepage": "https://github.com/DHTMLX/gantt#readme"
+}
