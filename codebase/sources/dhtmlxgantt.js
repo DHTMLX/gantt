@@ -5188,7 +5188,7 @@ gantt._get_parent_id = function(task){
 
 gantt.getParent = function(id){
 	var task = null;
-	if(id.id){
+	if(id.id !== undefined){
 		task = id;
 	}else{
 		task = gantt.getTask(id);
