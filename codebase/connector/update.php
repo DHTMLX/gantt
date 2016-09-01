@@ -104,12 +104,13 @@ class DataUpdate{
 	
 	protected $table; //!< table , where actions are stored
 	protected $url; //!< url for notification service, optional
-    protected $sql; //!< DB wrapper object
-    protected $config; //!< DBConfig object
-    protected $request; //!< DBRequestConfig object
-    protected $event;
-    protected $item_class;
-    protected $demu;
+	protected $sql; //!< DB wrapper object
+	protected $config; //!< DBConfig object
+	protected $request; //!< DBRequestConfig object
+	protected $encoding="utf-8";
+	protected $event;
+	protected $item_class;
+	protected $demu;
 	
 	//protected $config;//!< DataConfig instance
 	//protected $request;//!< DataRequestConfig instance
@@ -141,8 +142,16 @@ class DataUpdate{
         $this->event = $master;
         $this->item_class = $name;
     }
+
+    public function set_encoding($encoding){
+        $this->encoding = $encoding;
+    }
    	
 	protected function select_update($actions_table, $join_table, $id_field_name, $version, $user) {
+
+		if ($this->options["table"] !== false)
+			$join_table = $this->options["table"];
+
 		$sql = "SELECT $join_table.*, {$actions_table}.id, {$actions_table}.dataId, {$actions_table}.type as action_table_type, {$actions_table}.user FROM  {$actions_table}";
 		$sql .= " LEFT OUTER JOIN {$join_table} ON ";
 		$sql .= "{$actions_table}.DATAID = {$join_table}.{$id_field_name} ";
@@ -218,8 +227,8 @@ class DataUpdate{
 		$output = $this->render_set($this->sql->select($sub_request), $this->item_class);
         
 		ob_clean();
-		header("Content-type:text/xml");
-        
+		header("Content-type:text/xml; charset=".$this->encoding);
+
 		echo $this->updates_start();
 		echo $this->get_version();
 		echo $output;

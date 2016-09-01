@@ -1,11 +1,14 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 */
+.buttonBg {
+  background: #ffffff;
+}
 /* colors for items with inline styles assigned (task.color, link.color)*/
 .gridHoverStyle {
   background-color: #fff3a1;
@@ -131,6 +134,9 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_popup_title {
   background-color: #fff;
 }
+.gantt_popup_shadow {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+}
 /*
 	Quick info
 */
@@ -145,6 +151,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   border-width: 0;
 }
 /*links dnd*/
+.gantt_tooltip {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+  background-color: white;
+  border-left: 1px solid rgba(0, 0, 0, 0.07);
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  font-family: "Arial";
+  font-size: 8pt;
+  color: #454545;
+}
 .gantt_container {
   font-family: "Arial";
   font-size: 13px;
@@ -201,7 +216,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   line-height: 33px;
   -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -user-select: none;
+  user-select: none;
   overflow: hidden;
 }
 .gantt_scale_line {
@@ -276,6 +291,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   cursor: col-resize;
   position: absolute;
   width: 13px;
+  margin-left: -7px;
 }
 .gantt_grid_column_resize_wrap .gantt_grid_column_resize {
   background-color: #cecece;
@@ -287,6 +303,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   cursor: col-resize;
   position: absolute;
   width: 13px;
+  margin-left: -7px;
   z-index: 1;
 }
 .gantt_grid_resize_wrap .gantt_grid_resize {
@@ -508,6 +525,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   display: inline-block;
   margin: 0 5px;
   border-radius: 4px;
+  background: #ffffff;
   background: #fff;
 }
 .gantt-info,
@@ -571,7 +589,7 @@ div.dhx_modal_cover {
 .gantt_popup_text {
   margin: 15px 15px 5px 15px;
   font-size: 14px;
-  color: #000;
+  color: #000000;
   min-height: 30px;
   border-radius: 6px;
 }
@@ -612,7 +630,7 @@ div.dhx_modal_cover {
   overflow-y: hidden;
   -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -user-select: none;
+  user-select: none;
 }
 .gantt_links_area {
   position: absolute;
@@ -929,6 +947,16 @@ div.dhx_modal_cover {
 .gantt_critical_link .gantt_link_arrow {
   border-color: #e63030;
 }
+.gantt_row:focus,
+.gantt_cell:focus,
+.gantt_btn_set:focus,
+.gantt_qi_big_icon:focus,
+.gantt_popup_button:focus,
+.gantt_grid_head_cell:focus {
+  -moz-box-shadow: inset 0px 0px 1px 1px #4d90fe;
+  -webkit-box-shadow: inset 0px 0px 1px 1px #4d90fe;
+  box-shadow: inset 0px 0px 1px 1px #4d90fe;
+}
 .gantt_unselectable,
 .gantt_unselectable div {
   -webkit-user-select: none;
@@ -1024,7 +1052,7 @@ div.dhx_modal_cover {
   border: 1px solid #cecece;
   border-left: none;
   border-right: none;
-  background-color: #fff;
+  background-color: #ffffff;
   overflow: hidden;
   height: 1px;
 }
@@ -1040,6 +1068,7 @@ div.dhx_modal_cover {
   border-style: solid;
   height: 32px;
   font-weight: bold;
+  background: #ffffff;
   background: #fff;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -1221,7 +1250,8 @@ div.dhx_modal_cover {
 .gantt_duration .gantt_duration_inc {
   width: 20px;
   padding: 1px;
-  padding-bottom: 3px;
+  padding-bottom: 1px;
+  background: #ffffff;
   background: #fff;
 }
 .gantt_duration .gantt_duration_dec {
@@ -1326,6 +1356,7 @@ div.dhx_modal_cover {
   font-size: 13px;
   border-radius: 4px;
   font-weight: bold;
+  background: #ffffff;
   background: #fff;
   margin: 5px 9px 8px 0px;
   min-width: 60px;
@@ -1342,13 +1373,6 @@ div.dhx_modal_cover {
   line-height: 32px;
 }
 .gantt_tooltip {
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
-  background-color: white;
-  border-left: 1px solid rgba(0, 0, 0, 0.07);
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
-  font-family: "Arial";
-  font-size: 8pt;
-  color: #454545;
   padding: 10px;
   position: absolute;
   z-index: 50;
@@ -1381,10 +1405,13 @@ div.dhx_modal_cover {
 .gantt_noselect {
   -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .gantt_drag_marker {
   position: absolute;
+  top: -1000px;
+  left: -1000px;
   font-family: "Arial";
   font-size: 13px;
 }

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -91,9 +91,31 @@ gantt._smart_render = {
 		}
 		return visible_links;
 	},
+
+	_recalculateLinkedProjects: function(visibleLinks){
+		// projects have dynamic duration, make sure that durations are recalculated before links display,
+		// so links are shown on correct dates
+		var recalculateTasks = {};
+		for(var i = 0; i < visibleLinks.length; i++){
+			recalculateTasks[visibleLinks[i].source] = true;
+			recalculateTasks[visibleLinks[i].target] = true;
+		}
+
+		for(var i in recalculateTasks){
+			if(gantt.isTaskExists(i))
+				gantt.resetProjectDates(gantt.getTask(i));
+		}
+	},
 	updateRender: function(){
+		gantt.callEvent("onBeforeSmartRender", []);
+		var visibleLinks = this._getVisibleLinks();
+
+		// TODO: performance test
+		this._recalculateLinkedProjects(visibleLinks);
+
 		this._redrawItems(gantt._get_task_renderers(), this._getVisibleTasks());
-		this._redrawItems(gantt._get_link_renderers(), this._getVisibleLinks());
+		this._redrawItems(gantt._get_link_renderers(), visibleLinks);
+		gantt.callEvent("onSmartRender", []);
 	},
 
 	cached:{},
@@ -210,6 +232,10 @@ gantt.attachEvent("onGanttScroll", function(oldLeft, oldTop, left, top){
 		if(oldTop != top){
 			gantt._smart_render.updateRender();
 		}
+
+		// correct grid scroll top since in smart rendering mode it's shorter then full chart height
+		var gridTop = Math.floor(top / gantt.config.row_height) * gantt.config.row_height;
+		gantt.$grid_data.scrollTop = top - gridTop;
 	}
 });
 

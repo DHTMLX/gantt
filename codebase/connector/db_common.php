@@ -217,7 +217,6 @@ class DataRequestConfig{
 		if (is_string($value))
 			$value = trim($value);
 		$this->source = $value;
-		if (!$this->source) throw new Exception("Source of data can't be empty");
 	}
 	/*! sets data limits
 		

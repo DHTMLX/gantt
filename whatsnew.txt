@@ -1,3 +1,16 @@
+### 4.1
+- Added keyboard navigation
+- Added WAI-ARIA support
+- Added High-contrast themes
+- Updated Auto Scheduling and Critical Path calculations (PRO version)
+- Performance improvements for worktime calculation and timescale rendering
+- Croatian locale added
+- Turkish locale updated
+- Fixed bug redrawing vertical markers using gantt.updateMarker
+- Fixed bug with gantt.showTask error in smart rendering mode
+- Bugfixes for skip_off_time config and multi-tier scales configurations
+- Bugfixes with dataProcessor and REST mode support
+
 ### 4.0
 - Added Smart rendering of big data sets feature
 - Added Undo/Redo feature

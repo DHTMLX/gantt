@@ -1,58 +1,65 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 */
+/*
+ * updated by @levkar at https://github.com/DHTMLX/gantt/pull/10
+ */
+
 gantt.locale = {
 	date: {
-		month_full: ["Ocak", "Þubat", "Mart", "Nisan", "Mayýs", "Haziran", "Temmuz", "Aðustos", "Eylül", "Ekim", "Kasým", "Aralýk"],
-		month_short: ["Oca", "Þub", "Mar", "Nis", "May", "Haz", "Tem", "Aðu", "Eyl", "Eki", "Kas", "Ara"],
-		day_full: ["Pazar", "Pazartes,", "Salý", "Çarþamba", "Perþembe", "Cuma", "Cumartesi"],
-		day_short: ["Paz", "Pts", "Sal", "Çar", "Per", "Cum", "Cts"]
+		month_full: ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"],
+		month_short: ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"],
+		day_full: ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"],
+		day_short: ["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"]
 	},
 	labels: {
 		dhx_cal_today_button: "Bugün",
 		day_tab: "Gün",
 		week_tab: "Hafta",
 		month_tab: "Ay",
-		new_event: "Uygun",
+		new_event: "Yeni Görev",
 		icon_save: "Kaydet",
-		icon_cancel: "Ýptal",
+		icon_cancel: "İptal",
 		icon_details: "Detaylar",
 		icon_edit: "Düzenle",
 		icon_delete: "Sil",
 		confirm_closing: "", //Your changes will be lost, are your sure ?
-		confirm_deleting: "Etkinlik silinecek, devam?",
-		section_description: "Açýklama",
-		section_time: "Zaman aralýðý",
-		section_type:"Type",
-        /* grid columns */
+		confirm_deleting: "Görev silinecek, emin misiniz?",
+		section_description: "Açıklama",
+		section_time: "Zaman Aralığı",
+		section_type: "Tip",
+		/* grid columns */
 
-        column_text : "Task name",
-        column_start_date : "Start time",
-        column_duration : "Duration",
-        column_add : "",
+		column_text: "Görev Adı",
+		column_start_date: "Başlangıç",
+		column_duration: "Süre",
+		column_add: "",
 
 		/* link confirmation */
-		link: "Link",
-		confirm_link_deleting:"will be deleted",
-		link_start: " (start)",
-		link_end: " (end)",
+		link: "Bağlantı",
+		confirm_link_deleting: "silinecek",
+		link_start: " (başlangıç)",
+		link_end: " (bitiş)",
 
-		type_task: "Task",
-		type_project: "Project",
-		type_milestone: "Milestone",
+		type_task: "Görev",
+		type_project: "Proje",
+		type_milestone: "Kilometretaşı",
 
 
-        minutes: "Minutes",
-        hours: "Hours",
-        days: "Days",
-        weeks: "Week",
-        months: "Months",
-        years: "Years"
+		minutes: "Dakika",
+		hours: "Saat",
+		days: "Gün",
+		weeks: "Hafta",
+		months: "Ay",
+		years: "Yıl",
+
+		/* message popup */
+		message_ok: "OK",
+		message_cancel: "Ýptal"
 	}
 };
-

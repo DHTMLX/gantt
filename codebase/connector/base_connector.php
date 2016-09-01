@@ -700,6 +700,9 @@ class Connector {
 	*/
 	public function set_encoding($encoding){
 		$this->encoding=$encoding;
+		if ($this->live_update !== false) {
+			$this->live_update->set_encoding($this->encoding);
+		}
 	}
 
 	/*! enable or disable dynamic loading mode
@@ -854,9 +857,10 @@ class Connector {
 		@param url
 			url used for update notifications
 	*/	
-	public function enable_live_update($table, $url=false){
-        $this->live_update = new $this->live_update_data_type($this->sql, $this->config, $this->request, $table,$url, array("connector" => $this));
+	public function enable_live_update($table, $url=false, $origin_table = false){
+        $this->live_update = new $this->live_update_data_type($this->sql, $this->config, $this->request, $table,$url, array("connector" => $this, "table" => $origin_table));
         $this->live_update->set_event($this->event,$this->names["item_class"]);
+		$this->live_update->set_encoding($this->encoding);
 		$this->event->attach("beforeOutput", 		Array($this->live_update, "version_output"));
 		$this->event->attach("beforeFiltering", 	Array($this->live_update, "get_updates"));
 		$this->event->attach("beforeProcessing", 	Array($this->live_update, "check_collision"));

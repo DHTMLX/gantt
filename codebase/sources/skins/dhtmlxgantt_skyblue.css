@@ -1,11 +1,14 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 */
+.buttonBg {
+  background: #ffffff;
+}
 /* colors for items with inline styles assigned (task.color, link.color)*/
 .gridHoverStyle {
   background-color: #ffe6b1 !important;
@@ -47,6 +50,9 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /*
 	Message
 */
+.gantt_popup_shadow {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+}
 .gantt_cal_quick_info .gantt_cal_qi_title {
   background: #ffffff;
 }
@@ -64,6 +70,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   background-image: -o-linear-gradient(top, #e4f0ff 0%, #dfedff 60%, #d5e8ff 100%);
   background-position: 0px 1px;
   background-repeat: repeat-x;
+}
+.gantt_tooltip {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+  background-color: white;
+  border-left: 1px solid rgba(0, 0, 0, 0.07);
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  font-family: "Tahoma";
+  font-size: 8pt;
+  color: #1e2022;
 }
 .gantt_container {
   font-family: "Tahoma";
@@ -138,7 +153,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   line-height: 25px;
   -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -user-select: none;
+  user-select: none;
   overflow: hidden;
 }
 .gantt_scale_line {
@@ -220,6 +235,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   cursor: col-resize;
   position: absolute;
   width: 13px;
+  margin-left: -7px;
 }
 .gantt_grid_column_resize_wrap .gantt_grid_column_resize {
   background-color: #a4bed4;
@@ -231,6 +247,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   cursor: col-resize;
   position: absolute;
   width: 13px;
+  margin-left: -7px;
   z-index: 1;
 }
 .gantt_grid_resize_wrap .gantt_grid_resize {
@@ -451,6 +468,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   display: inline-block;
   margin: 0 5px;
   border-radius: 4px;
+  background: #ffffff;
   background-color: #f8f8f8;
   background-image: -webkit-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
   background-image: -moz-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
@@ -518,7 +536,7 @@ div.dhx_modal_cover {
 .gantt_popup_text {
   margin: 15px 15px 5px 15px;
   font-size: 14px;
-  color: #000;
+  color: #000000;
   min-height: 30px;
   border-radius: 0;
 }
@@ -559,7 +577,7 @@ div.dhx_modal_cover {
   overflow-y: hidden;
   -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -user-select: none;
+  user-select: none;
 }
 .gantt_links_area {
   position: absolute;
@@ -892,6 +910,16 @@ div.dhx_modal_cover {
 .gantt_critical_link .gantt_link_arrow {
   border-color: #e63030;
 }
+.gantt_row:focus,
+.gantt_cell:focus,
+.gantt_btn_set:focus,
+.gantt_qi_big_icon:focus,
+.gantt_popup_button:focus,
+.gantt_grid_head_cell:focus {
+  -moz-box-shadow: inset 0px 0px 1px 1px #4d90fe;
+  -webkit-box-shadow: inset 0px 0px 1px 1px #4d90fe;
+  box-shadow: inset 0px 0px 1px 1px #4d90fe;
+}
 .gantt_unselectable,
 .gantt_unselectable div {
   -webkit-user-select: none;
@@ -986,7 +1014,7 @@ div.dhx_modal_cover {
   border: 1px solid #a4bed4;
   border-left: none;
   border-right: none;
-  background-color: #fff;
+  background-color: #ffffff;
   overflow: hidden;
   height: 1px;
 }
@@ -1002,6 +1030,7 @@ div.dhx_modal_cover {
   border-style: solid;
   height: 26px;
   color: #42464b;
+  background: #ffffff;
   background-color: #f8f8f8;
   background-image: -webkit-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
   background-image: -moz-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
@@ -1187,7 +1216,8 @@ div.dhx_modal_cover {
 .gantt_duration .gantt_duration_inc {
   width: 20px;
   padding: 1px;
-  padding-bottom: 3px;
+  padding-bottom: 1px;
+  background: #ffffff;
   background-color: #f8f8f8;
   background-image: -webkit-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
   background-image: -moz-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
@@ -1305,6 +1335,7 @@ div.dhx_modal_cover {
   font-size: 13px;
   border-radius: 4px;
   color: #42464b;
+  background: #ffffff;
   background-color: #f8f8f8;
   background-image: -webkit-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
   background-image: -moz-linear-gradient(top, #e6e6e6 0%, #ffffff 100%);
@@ -1325,13 +1356,6 @@ div.dhx_modal_cover {
   line-height: 26px;
 }
 .gantt_tooltip {
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
-  background-color: white;
-  border-left: 1px solid rgba(0, 0, 0, 0.07);
-  border-top: 1px solid rgba(0, 0, 0, 0.07);
-  font-family: "Tahoma";
-  font-size: 8pt;
-  color: #1e2022;
   padding: 10px;
   position: absolute;
   z-index: 50;
@@ -1364,10 +1388,13 @@ div.dhx_modal_cover {
 .gantt_noselect {
   -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .gantt_drag_marker {
   position: absolute;
+  top: -1000px;
+  left: -1000px;
   font-family: "Tahoma";
   font-size: 11px;
 }

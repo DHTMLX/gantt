@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -44,6 +44,10 @@ gantt.locale = {
 		days: "일",
 		weeks: "주",
 		months: "달",
-		years: "년"
+		years: "년",
+
+		/* message popup */
+		message_ok: "OK",
+		message_cancel: "취소"
 	}
 };

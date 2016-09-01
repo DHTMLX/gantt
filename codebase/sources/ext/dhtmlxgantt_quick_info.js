@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -40,11 +40,12 @@ gantt.showQuickInfo = function(id){
 	
 	if (pos){
 		this._quick_info_box = this._init_quick_info(pos, id);
-
+		this._quick_info_task = id;
 		this._quick_info_box.className = gantt._prepare_quick_info_classname(id);
 
 		this._fill_quick_data(id);
 		this._show_quick_info(pos);
+		this.callEvent("onQuickInfo", [id]);
 	}
 };
 gantt._hideQuickInfo = function(){
@@ -53,11 +54,15 @@ gantt._hideQuickInfo = function(){
 gantt.hideQuickInfo = function(forced){
 	var qi = this._quick_info_box;
 	this._quick_info_box_id = 0;
+	var taskId = this._quick_info_task;
+	this._quick_info_task = null;
 
 	if (qi && qi.parentNode){
-		if (gantt.config.quick_info_detached)
-			return qi.parentNode.removeChild(qi);
 
+		if (gantt.config.quick_info_detached) {
+			this.callEvent("onAfterQuickInfo", [taskId]);
+			return qi.parentNode.removeChild(qi);
+		}
 
 		qi.className += " gantt_qi_hidden";
 		if (qi.style.right == "auto")
@@ -67,6 +72,7 @@ gantt.hideQuickInfo = function(forced){
 
 		if (forced)
 			qi.parentNode.removeChild(qi);
+		this.callEvent("onAfterQuickInfo", [taskId]);
 	}
 };
 gantt.event(window, "keydown", function(e){
@@ -135,8 +141,13 @@ gantt._init_quick_info = function(pos, id){
 
 	if (!this._quick_info_box){
 		var qi = this._quick_info_box = document.createElement("div");
+
+		this._waiAria.quickInfoAttr(qi);
+
+
 	//title
-		var html = "<div class=\"gantt_cal_qi_title\">" +
+		var ariaAttr = gantt._waiAria.quickInfoHeaderAttrString();
+		var html = "<div class=\"gantt_cal_qi_title\" "+ariaAttr+">" +
 			"<div class=\"gantt_cal_qi_tcontent\"></div><div  class=\"gantt_cal_qi_tdate\"></div>" +
 			"</div>" +
 			"<div class=\"gantt_cal_qi_content\"></div>";
@@ -151,14 +162,28 @@ gantt._init_quick_info = function(pos, id){
 			if(this._quick_info_readonly && is_editor[buttons[i]])
 				continue;
 
-			html += "<div class=\"gantt_qi_big_icon "+buttons[i]+"\" title=\""+gantt.locale.labels[buttons[i]]+"\"><div class='gantt_menu_icon " + buttons[i] + "'></div><div>"+gantt.locale.labels[buttons[i]]+"</div></div>";
+			var ariaAttr = gantt._waiAria.quickInfoButtonAttrString(gantt.locale.labels[buttons[i]]);
+
+			html += "<div class=\"gantt_qi_big_icon "+buttons[i]+"\" title=\""+gantt.locale.labels[buttons[i]]+"\" " + ariaAttr +"><div class='gantt_menu_icon " + buttons[i] + "'></div><div>"+gantt.locale.labels[buttons[i]]+"</div></div>";
 		}
 		html += "</div>";
 
 		qi.innerHTML = html;
-		gantt.event(qi, "click", function(ev){
+
+		var buttonClick = function(ev){
 			ev = ev || event;
 			gantt._qi_button_click(ev.target || ev.srcElement);
+		};
+
+		gantt.event(qi, "click", buttonClick);
+		gantt.event(qi, "keypress", function(e){
+			e = e || event;
+			var code = e.which||event.keyCode;
+			if (code == 13 || code == 32){
+				setTimeout(function(){
+					gantt._qi_button_click(e.target || e.srcElement);
+				},1);
+			}
 		});
 		if (gantt.config.quick_info_detached)
 			gantt.event(gantt.$task_data, "scroll", function(){  gantt.hideQuickInfo(); });
@@ -207,10 +232,18 @@ gantt._fill_quick_data  = function(id){
 	gantt._quick_info_box_id = id;
 
 //title content
+
+	var header = {
+		content: gantt.templates.quick_info_title(ev.start_date, ev.end_date, ev),
+		date: gantt.templates.quick_info_date(ev.start_date, ev.end_date, ev)
+	};
 	var titleContent = qi.firstChild.firstChild;
-	titleContent.innerHTML = gantt.templates.quick_info_title(ev.start_date, ev.end_date, ev);
+	titleContent.innerHTML = header.content;
 	var titleDate = titleContent.nextSibling;
-	titleDate.innerHTML = gantt.templates.quick_info_date(ev.start_date, ev.end_date, ev);
+	titleDate.innerHTML = header.date;
+
+
+	gantt._waiAria.quickInfoHeader(qi, [header.content, header.date].join(" "));
 
 //main content
 	var main = qi.firstChild.nextSibling;

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.0.0 Stardard
+dhtmlxGantt v.4.1.0 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -99,21 +99,23 @@ gantt.deleteMarker = function(id){
 };
 gantt.updateMarker = function(id){
 	if(this._markerRenderer)
-		this._markerRenderer.render_item(id);
+		this._markerRenderer.render_item(this.getMarker(id));
 };
-gantt.renderMarkers = function(){
-	if(!this._markers)
+
+gantt._getMarkers = function(){
+	var markers = [];
+	for(var i in this._markers)
+		markers.push(this._markers[i]);
+	return markers;
+};
+
+gantt.renderMarkers = function () {
+	if (!this._markers)
 		return false;
-
-	if(!this._markerRenderer)
+	if (!this._markerRenderer)
 		return false;
-
-	var to_render = [];
-
-	for(var id in this._markers)
-		to_render.push(this._markers[id]);
+	var to_render = this._getMarkers();
 
 	this._markerRenderer.render_items(to_render);
-
 	return true;
 };
