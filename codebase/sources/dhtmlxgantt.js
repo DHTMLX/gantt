@@ -7,7 +7,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 (c) Dinamenta, UAB.
 */
 
-gantt = {
+window.gantt = {
 	version:"4.1.0"
 };
 
@@ -406,6 +406,7 @@ gantt.mixin(gantt.config,
 		{name:"duration", align: "center" },
 		{name:"add", width:'44' }
 	],
+    ignore_max_date: false,
 
 	/*scale*/
 	step: 1,
@@ -3609,8 +3610,13 @@ gantt._init_tasks_range = function(){
 	this._max_date = range.end_date;
 
 	if(!(this._max_date && this._max_date)){
-		this._min_date = new Date();
-		this._max_date = new Date(this._min_date);
+        if (this.config.ignore_max_date) {
+            this._min_date = this._min_date || new Date();
+		    this._max_date = new Date();
+        } else {
+		    this._min_date = new Date();
+		    this._max_date = new Date(this._min_date);
+        }
 	}
 
 	this._min_date = this.date[unit + "_start"](this._min_date);
