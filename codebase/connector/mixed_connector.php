@@ -18,7 +18,6 @@ class MixedConnector extends Connector {
 
     public function add($name, $conn) {
         $this->connectors[$name] = $conn;
-        $conn->simple = true;
     }
 
     public function render() {

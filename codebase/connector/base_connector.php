@@ -330,7 +330,7 @@ class Connector {
 	public function __construct($db,$type=false, $item_type=false, $data_type=false, $render_type = false){
 		$this->exec_time=microtime(true);
 
-		if (!$type) $type="MySQL";
+		if (!$type) $type="PDO";
 		if (class_exists($type."DBDataWrapper",false)) $type.="DBDataWrapper";
 		if (!$item_type) $item_type="DataItem";
 		if (!$data_type) $data_type="DataProcessor";

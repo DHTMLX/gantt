@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.1.0 Stardard
+dhtmlxGantt v.4.2.1 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -17,6 +17,17 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 				scopeObject.prototype.bind(shortcut, handler);
 			}
 		};
+
+		gantt.getShortcutHandler = function(shortcut, scope){
+			var scopeObject = getScope(scope);
+			if(scopeObject){
+				var commands = gantt.$keyboardNavigation.shortcuts.parse(shortcut);
+				if(commands.length){
+					return scopeObject.prototype.findHandler(commands[0]);
+				}
+			}
+		};
+
 		gantt.removeShortcut = function(shortcut, scope){
 			var scopeObject = getScope(scope);
 			if(scopeObject){
@@ -978,7 +989,7 @@ gantt.$keyboardNavigation.dispatcher = {
 						var res = updateRender.apply(this, arguments);
 						if(gantt.config.keyboard_navigation && dispatcher.isEnabled()){
 							var currentNode = dispatcher.getActiveNode();
-							if(currentNode.taskId !== undefined){
+							if(currentNode && currentNode.taskId !== undefined){
 								for(var i = 0; i < items.length; i++){
 									if(items[i].id == currentNode.taskId){
 										dispatcher.focusNode(currentNode);

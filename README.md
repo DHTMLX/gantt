@@ -1,4 +1,4 @@
-dhtmlxGantt v.4.1
+dhtmlxGantt v.4.2
 =================
 
 [![Join the chat at https://gitter.im/dhtmlx/dhtmlx](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dhtmlx/dhtmlx) 

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.1.0 Stardard
+dhtmlxGantt v.4.2.1 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -30,21 +30,21 @@ gantt.locale = {
 		icon_details: "Dettagli",
 		icon_edit: "Modifica",
 		icon_delete: "Elimina",
-		confirm_closing: "",//"Confermi la chiusura, siete sicuri?",
-		confirm_deleting: "Confermi l`eliminazione, siete sicuri?",
+		confirm_closing: "",//"Sei sicuro di confermare la chiusura?",
+		confirm_deleting: "Sei sicuro di confermare l'eliminazione?",
 		section_description: "Descrizione",
 		section_time: "Periodo di tempo",
 		section_type: "Tipo",
 		/* grid columns */
 
-		column_text: "Nome Attivita`",
+		column_text: "Nome Attività",
 		column_start_date: "Inizio",
 		column_duration: "Durata",
 		column_add: "",
 
 		/* link confirmation */
 		link: "Link",
-		confirm_link_deleting: "sara` eliminato",
+		confirm_link_deleting: "sarà eliminato",
 		link_start: " (inizio)",
 		link_end: " (fine)",
 

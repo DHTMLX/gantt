@@ -1,3 +1,15 @@
+### 4.2
+- Work Time calendars at the task and resource levels
+- WBS code (outline numbers) calculation
+- Autoscroll for drag and drop operations
+- Persian (Farsi) locale 
+- The getter function for key navigation shortcuts 
+- The config for cascade deleting of nested tasks and links
+- The ability to scroll timeline horizontally on Shift+a mouse wheel movement 
+- German and Italian locales are updated
+- GIF images in the Gantt skins are replaced with PNG
+- various fixes
+
 ### 4.1
 - Added keyboard navigation
 - Added WAI-ARIA support

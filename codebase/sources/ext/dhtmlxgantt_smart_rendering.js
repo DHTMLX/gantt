@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.4.1.0 Stardard
+dhtmlxGantt v.4.2.1 Stardard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -226,16 +226,19 @@ gantt._smart_render = {
 
 };
 
-gantt._smart_render.initCache();
 gantt.attachEvent("onGanttScroll", function(oldLeft, oldTop, left, top){
 	if(gantt.config.smart_rendering){
-		if(oldTop != top){
+
+		if((oldTop != top) || (oldLeft == left)){
+
+			var visibleTasks = gantt._smart_render._getVisibleTasks();
 			gantt._smart_render.updateRender();
+			if(visibleTasks.length){
+				gantt.$grid_data.scrollTop = (top - gantt.getTaskTop(visibleTasks[0].id));
+			}
+
 		}
 
-		// correct grid scroll top since in smart rendering mode it's shorter then full chart height
-		var gridTop = Math.floor(top / gantt.config.row_height) * gantt.config.row_height;
-		gantt.$grid_data.scrollTop = top - gridTop;
 	}
 });
 
