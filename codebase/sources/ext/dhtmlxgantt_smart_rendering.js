@@ -1,28 +1,106 @@
-/*
-@license
+/*!
+ * @license
+ * 
+ * dhtmlxGantt v.5.0.5 Stardard
+ * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+ * 
+ * (c) Dinamenta, UAB.
+ * 
+ */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 23);
+/******/ })
+/************************************************************************/
+/******/ ({
 
-dhtmlxGantt v.4.2.1 Stardard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+/***/ 23:
+/***/ (function(module, exports, __webpack_require__) {
 
-(c) Dinamenta, UAB.
-*/
+module.exports = __webpack_require__(24);
+
+
+/***/ }),
+
+/***/ 24:
+/***/ (function(module, exports) {
+
 gantt.config.smart_rendering = true;
 
 gantt._smart_render = {
 	getViewPort: function(){
-		var scrollSize = this.getScrollSizes();
+		var timelineSize = gantt.$ui.getView("timeline").getSize();
+		var scrollPos = gantt.getScrollState();
 
-		var scrollPos = gantt._restore_scroll_state();
-		scrollPos.y = Math.min(scrollSize.y_inner - scrollSize.y, scrollPos.y);
 		return {
 			y: scrollPos.y,
-			y_end: scrollPos.y + scrollSize.y
+			y_end: scrollPos.y + timelineSize.y
 		};
 	},
 	getScrollSizes: function(){
-		var scroll = gantt._scroll_sizes();
+		var scroll = gantt.getScrollState();
 		scroll.x = scroll.x || 0;
-		scroll.y = scroll.y || gantt._order.length*gantt.config.row_height;
+		scroll.y = scroll.y || gantt.getVisibleTaskCount()*gantt.config.row_height;
 		return scroll;
 	},
 	isInViewPort: function(item, viewPort){
@@ -60,12 +138,17 @@ gantt._smart_render = {
 		var firstTask = Math.floor(Math.max(0, port.y) / gantt.config.row_height) - buffer;
 		var lastTask = Math.ceil(Math.max(0, port.y_end) / gantt.config.row_height) + buffer;
 
-		var visible_ids = gantt._order.slice(firstTask, lastTask);
-		return visible_ids;
+		var visibleTasks = gantt.$data.tasksStore.getIndexRange(firstTask, lastTask);
+		var visibleIds = [];
+		for(var i = 0; i < visibleTasks.length; i++){
+			visibleIds.push(visibleTasks[i].id);
+		}
+
+		return visibleIds;
 	},
 	_redrawItems: function(renderers, visibleItems){
-		for(var i in renderers){
-			var render = renderers[i];
+		for(var r = 0; r < renderers.length; r++){
+			var render = renderers[r];
 
 			for(var i in render.rendered){
 				render.hide(i);
@@ -78,11 +161,20 @@ gantt._smart_render = {
 	},
 
 	_getVisibleTasks: function(){
-		return gantt._get_tasks_data();
+		var ids = this.getRange();
+		var rows = [];
+		for(var i=0; i < ids.length; i++){
+			var item = gantt.getTask(ids[i]);
+			item.$index = i;
+			//this._update_parents(item.id, true);
+			gantt.resetProjectDates(item);
+			rows.push(item);
+		}
+		return rows;
 	},
 	_getVisibleLinks: function(){
 		var visible_links = [];
-		var links = gantt._get_links_data();
+		var links = gantt.getLinks();
 
 		for(var i = 0; i < links.length; i++){
 			if(this.isLinkDisplayed(links[i].id)){
@@ -108,13 +200,19 @@ gantt._smart_render = {
 	},
 	updateRender: function(){
 		gantt.callEvent("onBeforeSmartRender", []);
+		var visibleTasks = this._getVisibleTasks();
 		var visibleLinks = this._getVisibleLinks();
 
 		// TODO: performance test
 		this._recalculateLinkedProjects(visibleLinks);
 
-		this._redrawItems(gantt._get_task_renderers(), this._getVisibleTasks());
-		this._redrawItems(gantt._get_link_renderers(), visibleLinks);
+		var layers = gantt.$services.getService("layers");
+
+		var taskRenderer = layers.getDataRender("task");
+		var linkRenderer = layers.getDataRender("link");
+
+		this._redrawItems(taskRenderer.getLayers(), visibleTasks);
+		this._redrawItems(linkRenderer.getLayers(), visibleLinks);
 		gantt.callEvent("onSmartRender", []);
 	},
 
@@ -231,11 +329,8 @@ gantt.attachEvent("onGanttScroll", function(oldLeft, oldTop, left, top){
 
 		if((oldTop != top) || (oldLeft == left)){
 
-			var visibleTasks = gantt._smart_render._getVisibleTasks();
+			var visibleTasks = gantt._smart_render.getRange();
 			gantt._smart_render.updateRender();
-			if(visibleTasks.length){
-				gantt.$grid_data.scrollTop = (top - gantt.getTaskTop(visibleTasks[0].id));
-			}
 
 		}
 
@@ -249,45 +344,30 @@ gantt.attachEvent("onDataRender", function() {
 });
 
 (function(){
-	function proxy(original, override){
-		return function(){
-			if(gantt.config.smart_rendering){
-				return override.apply(this, arguments);
-			}else{
-				return original.apply(this, arguments);
-			}
-		};
-	}
-
-	var taskFilters = gantt._get_task_filters;
-	gantt._get_task_filters = proxy(gantt._get_task_filters, function(){
-		var res = taskFilters.call(gantt);
-		res.push(function(id){
-			if(gantt.config.smart_rendering){
-				return gantt._smart_render.isTaskDisplayed(id);
-			}else{
+	var attachOnce = gantt.attachEvent("onGanttReady", function(){
+		var layers = gantt.$services.getService("layers");
+		var taskRenderer = layers.getDataRender("task");
+		taskRenderer.filters.push(function(id){
+			if(!gantt.config.smart_rendering)
 				return true;
-			}
+			else
+				return !!gantt._smart_render.isTaskDisplayed(id);
 		});
-		return res;
-	});
 
-
-	var linkFilters = gantt._get_link_filters;
-	gantt._get_link_filters = proxy(gantt._get_link_filters, function(){
-		var res = linkFilters.call(gantt);
-		res.push(function(id){
-			if(gantt.config.smart_rendering){
-				return gantt._smart_render.isLinkDisplayed(id);
-			}else{
+		var linkRenderer = layers.getDataRender("link");
+		linkRenderer.filters.push(function(id){
+			if(!gantt.config.smart_rendering)
 				return true;
-			}
+			else
+				return !!gantt._smart_render.isLinkDisplayed(id);
 		});
-		return res;
-	});
 
-	gantt._get_data_range = proxy(gantt._get_data_range, function(){
-		return this._smart_render.getRange();
+		gantt.detachEvent(attachOnce);
 	});
 })();
 
+
+
+/***/ })
+
+/******/ });

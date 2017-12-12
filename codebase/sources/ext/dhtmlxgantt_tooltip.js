@@ -1,11 +1,367 @@
+/*!
+ * @license
+ * 
+ * dhtmlxGantt v.5.0.5 Stardard
+ * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+ * 
+ * (c) Dinamenta, UAB.
+ * 
+ */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 25);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ 0:
+/***/ (function(module, exports) {
+
+//returns position of html element on the page
+function elementPosition(elem) {
+	var top=0, left=0, right=0, bottom=0;
+	if (elem.getBoundingClientRect) { //HTML5 method
+		var box = elem.getBoundingClientRect();
+		var body = document.body;
+		var docElem = (document.documentElement ||
+			document.body.parentNode ||
+			document.body);
+
+		var scrollTop = window.pageYOffset || docElem.scrollTop || body.scrollTop;
+		var scrollLeft = window.pageXOffset || docElem.scrollLeft || body.scrollLeft;
+		var clientTop = docElem.clientTop || body.clientTop || 0;
+		var clientLeft = docElem.clientLeft || body.clientLeft || 0;
+		top  = box.top +  scrollTop - clientTop;
+		left = box.left + scrollLeft - clientLeft;
+
+		right = document.body.offsetWidth - box.right;
+		bottom = document.body.offsetHeight - box.bottom;
+	} else { //fallback to naive approach
+		while(elem) {
+			top = top + parseInt(elem.offsetTop,10);
+			left = left + parseInt(elem.offsetLeft,10);
+			elem = elem.offsetParent;
+		}
+
+		right = document.body.offsetWidth - elem.offsetWidth - left;
+		bottom = document.body.offsetHeight - elem.offsetHeight - top;
+	}
+	return { y: Math.round(top), x: Math.round(left), width:elem.offsetWidth, height:elem.offsetHeight, right: Math.round(right), bottom: Math.round(bottom) };
+}
+
+function isVisible(node){
+	var display = false,
+		visibility = false;
+	if(window.getComputedStyle){
+		var style = window.getComputedStyle(node, null);
+		display = style["display"];
+		visibility = style["visibility"];
+	}else if(node.currentStyle){
+		display = node.currentStyle["display"];
+		visibility = node.currentStyle["visibility"];
+	}
+	return (display != "none" && visibility != "hidden");
+}
+
+function hasNonNegativeTabIndex(node){
+	return !isNaN(node.getAttribute("tabindex")) && (node.getAttribute("tabindex")*1 >= 0);
+}
+
+function hasHref(node){
+	var canHaveHref = {"a": true, "area": true};
+	if(canHaveHref[node.nodeName.loLowerCase()]){
+		return !!node.getAttribute("href");
+	}
+	return true;
+}
+
+function isEnabled(node){
+	var canDisable = {"input":true, "select":true, "textarea":true, "button":true, "object":true};
+	if(canDisable[node.nodeName.toLowerCase()]){
+		return !node.hasAttribute("disabled");
+	}
+
+	return true;
+}
+
+function getFocusableNodes(root){
+	var nodes = root.querySelectorAll([
+		"a[href]",
+		"area[href]",
+		"input",
+		"select",
+		"textarea",
+		"button",
+		"iframe",
+		"object",
+		"embed",
+		"[tabindex]",
+		"[contenteditable]"
+	].join(", "));
+
+	var nodesArray = Array.prototype.slice.call(nodes, 0);
+	for(var i = 0; i < nodesArray.length; i++){
+		var node = nodesArray[i];
+		var isValid = (hasNonNegativeTabIndex(node)  || isEnabled(node) || hasHref(node)) && isVisible(node);
+		if(!isValid){
+			nodesArray.splice(i, 1);
+			i--;
+		}
+	}
+	return nodesArray;
+}
+
+function getScrollSize(){
+	var div = document.createElement("div");
+	div.style.cssText="visibility:hidden;position:absolute;left:-1000px;width:100px;padding:0px;margin:0px;height:110px;min-height:100px;overflow-y:scroll;";
+
+	document.body.appendChild(div);
+	var width = div.offsetWidth-div.clientWidth;
+	document.body.removeChild(div);
+
+	return width;
+}
+
+function getClassName(node){
+	if(!node) return "";
+
+	var className = node.className || "";
+	if(className.baseVal)//'className' exist but not a string - IE svg element in DOM
+		className = className.baseVal;
+
+	if(!className.indexOf)
+		className = '';
+
+	return _trimString(className);
+}
+
+function addClassName(node, className){
+	if (className && node.className.indexOf(className) === -1) {
+		node.className += " " + className;
+	}
+}
+
+function removeClassName(node, name) {
+	name = name.split(" ");
+	for (var i = 0; i < name.length; i++) {
+		var regEx = new RegExp('\\s?\\b' + name[i] + '\\b(?![-_\.])', "");
+		node.className = node.className.replace(regEx, "");
+	}
+}
+
+function toNode(node) {
+	if (typeof node === "string") {
+		return (document.getElementById(node) || document.querySelector(node) || document.body);
+	}
+	return node || document.body;
+}
+
+var _slave = document.createElement("div");
+function insert(node, newone) {
+	_slave.innerHTML = newone;
+	var child = _slave.firstChild;
+	node.appendChild(child);
+	return child;
+}
+
+function remove(node) {
+	if (node && node.parentNode) {
+		node.parentNode.removeChild(node);
+	}
+}
+
+function getChildren(node, css) {
+	var ch = node.childNodes;
+	var len = ch.length;
+	var out = [];
+	for (var i = 0; i < len; i++) {
+		var obj = ch[i];
+		if (obj.className && obj.className.indexOf(css) !== -1) {
+			out.push(obj);
+		}
+	}
+	return out;
+}
+
+function getTargetNode(e){
+	var trg;
+	if (e.tagName)
+		trg = e;
+	else {
+		e=e||window.event;
+		trg=e.target||e.srcElement;
+	}
+	return trg;
+}
+
+function locateAttribute(e, attribute) {
+	if(!attribute) return;
+
+	var trg = getTargetNode(e);
+
+	while (trg){
+		if (trg.getAttribute){	//text nodes has not getAttribute
+			var test = trg.getAttribute(attribute);
+			if (test) return trg;
+		}
+		trg=trg.parentNode;
+	}
+	return null;
+}
+
+function _trimString(str){
+	var func = String.prototype.trim || function(){ return this.replace(/^\s+|\s+$/g, ""); };
+	return func.apply(str);
+}
+
+function locateClassName(e, classname, strict){
+	if(strict === undefined)
+		strict = true;
+
+	var trg = getTargetNode(e);
+	var css = '';
+	var test = false;
+	while (trg){
+		css = getClassName(trg);
+
+		if(css){
+			var ind = css.indexOf(classname);
+			if (ind >= 0){
+				if (!strict)
+					return trg;
+
+				//check that we have exact match
+				var left = (ind === 0) || (!_trimString(css.charAt(ind - 1)));
+				var right = ((ind + classname.length >= css.length)) || (!_trimString(css.charAt(ind + classname.length)));
+
+				if (left && right)
+					return trg;
+			}
+		}
+
+		trg=trg.parentNode;
+	}
+	return null;
+}
+
 /*
-@license
+event position relatively to DOM element
+ */
+function getRelativeEventPosition(ev, node){
+	if (ev.pageX || ev.pageY)
+		var pos = {x: ev.pageX, y: ev.pageY};
 
-dhtmlxGantt v.4.2.1 Stardard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+	var d = document.documentElement;
+	var pos = {
+		x: ev.clientX + d.scrollLeft - d.clientLeft,
+		y: ev.clientY + d.scrollTop - d.clientTop
+	};
 
-(c) Dinamenta, UAB.
-*/
+	var box = elementPosition(node);
+	pos.x = pos.x - box.x + node.scrollLeft;
+	pos.y = pos.y - box.y + node.scrollTop;
+	return pos;
+}
+
+
+function isChildOf(child, parent){
+	while(child && child != parent) {
+		child = child.parentNode;
+	}
+	return child == parent;
+}
+
+module.exports = {
+	getNodePosition: elementPosition,
+	getFocusableNodes: getFocusableNodes,
+	getScrollSize: getScrollSize,
+	getClassName: getClassName,
+	addClassName: addClassName,
+	removeClassName: removeClassName,
+	insertNode: insert,
+	removeNode: remove,
+	getChildNodes: getChildren,
+	toNode: toNode,
+	locateClassName:locateClassName,
+	locateAttribute: locateAttribute,
+	getTargetNode: getTargetNode,
+	getRelativeEventPosition: getRelativeEventPosition,
+	isChildOf: isChildOf,
+};
+
+/***/ }),
+
+/***/ 25:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(26);
+
+
+/***/ }),
+
+/***/ 26:
+/***/ (function(module, exports, __webpack_require__) {
+
 gantt._tooltip = {};
 gantt._tooltip_class = "gantt_tooltip";
 gantt.config.tooltip_timeout = 30;//,
@@ -110,13 +466,18 @@ gantt._tooltip_pos = function(ev) {
 	if (ev.pageX || ev.pageY)
 		var pos = {x:ev.pageX, y:ev.pageY};
 
-	var d = gantt.env.isIE ? document.documentElement : document.body;
+	var d = (document.documentElement ||
+		document.body.parentNode ||
+		document.body);
+
 	var pos = {
 		x:ev.clientX + d.scrollLeft - d.clientLeft,
 		y:ev.clientY + d.scrollTop - d.clientTop
 	};
 
-	var box = gantt._get_position(gantt.$task_data);
+	var domHelpers = __webpack_require__(0);
+
+	var box = domHelpers.getNodePosition(gantt.$task_data);
 	pos.x = pos.x - box.x;
 	pos.y = pos.y - box.y;
 	return pos;
@@ -174,3 +535,8 @@ gantt.attachEvent("onMouseLeave", function(ev){
 // 	gantt._tooltip.hide();
 // 	return true;
 // });
+
+
+/***/ })
+
+/******/ });

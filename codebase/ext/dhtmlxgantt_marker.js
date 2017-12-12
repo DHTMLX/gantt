@@ -1,13 +1,11 @@
-/*
-@license
-
-dhtmlxGantt v.4.2.1 Stardard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
-
-(c) Dinamenta, UAB.
-*/
-gantt._markers||(gantt._markers={}),gantt.config.show_markers=!0,gantt.attachEvent("onClear",function(){gantt._markers={}}),gantt.attachEvent("onGanttReady",function(){function t(t){if(!gantt.config.show_markers)return!1;if(!t.start_date)return!1;var e=gantt.getState();if(!(+t.start_date>+e.max_date||+t.end_date&&+t.end_date<+e.min_date||+t.start_date<+e.min_date)){var n=document.createElement("div");n.setAttribute("marker_id",t.id);var a="gantt_marker";gantt.templates.marker_class&&(a+=" "+gantt.templates.marker_class(t)),
-t.css&&(a+=" "+t.css),t.title&&(n.title=t.title),n.className=a;var i=gantt.posFromDate(t.start_date);if(n.style.left=i+"px",n.style.height=Math.max(gantt._y_from_ind(gantt._order.length),0)+"px",t.end_date){var s=gantt.posFromDate(t.end_date);n.style.width=Math.max(s-i,0)+"px"}return t.text&&(n.innerHTML="<div class='gantt_marker_content' >"+t.text+"</div>"),n}}var e=document.createElement("div");e.className="gantt_marker_area",gantt.$task_data.appendChild(e),gantt.$marker_area=e,gantt._markerRenderer=gantt._task_renderer("markers",t,gantt.$marker_area,null);
-}),gantt.attachEvent("onDataRender",function(){gantt.renderMarkers()}),gantt.getMarker=function(t){return this._markers?this._markers[t]:null},gantt.addMarker=function(t){return t.id=t.id||gantt.uid(),this._markers[t.id]=t,t.id},gantt.deleteMarker=function(t){return this._markers&&this._markers[t]?(delete this._markers[t],!0):!1},gantt.updateMarker=function(t){this._markerRenderer&&this._markerRenderer.render_item(this.getMarker(t))},gantt._getMarkers=function(){var t=[];for(var e in this._markers)t.push(this._markers[e]);
-return t},gantt.renderMarkers=function(){if(!this._markers)return!1;if(!this._markerRenderer)return!1;var t=this._getMarkers();return this._markerRenderer.render_items(t),!0};
-//# sourceMappingURL=../sources/ext/dhtmlxgantt_marker.js.map
+/*!
+ * @license
+ * 
+ * dhtmlxGantt v.5.0.5 Stardard
+ * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+ * 
+ * (c) Dinamenta, UAB.
+ * 
+ */
+!function(t){function e(a){if(r[a])return r[a].exports;var n=r[a]={i:a,l:!1,exports:{}};return t[a].call(n.exports,n,n.exports,e),n.l=!0,n.exports}var r={};e.m=t,e.c=r,e.d=function(t,r,a){e.o(t,r)||Object.defineProperty(t,r,{configurable:!1,enumerable:!0,get:a})},e.n=function(t){var r=t&&t.__esModule?function(){return t.default}:function(){return t};return e.d(r,"a",r),r},e.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},e.p="",e(e.s=17)}({17:function(t,e,r){t.exports=r(18)},18:function(t,e){gantt._markers||(gantt._markers=gantt.createDatastore({name:"marker",initItem:function(t){return t.id=t.id||gantt.uid(),t}})),gantt.config.show_markers=!0,gantt.attachEvent("onGanttReady",function(){function t(t){if(!gantt.config.show_markers)return!1;if(!t.start_date)return!1;var e=gantt.getState();if(!(+t.start_date>+e.max_date||+t.end_date&&+t.end_date<+e.min_date||+t.start_date<+e.min_date)){var r=document.createElement("div");r.setAttribute("marker_id",t.id);var a="gantt_marker";gantt.templates.marker_class&&(a+=" "+gantt.templates.marker_class(t)),t.css&&(a+=" "+t.css),t.title&&(r.title=t.title),r.className=a;var n=gantt.posFromDate(t.start_date);if(r.style.left=n+"px",r.style.height=Math.max(gantt.getRowTop(gantt.getVisibleTaskCount()),0)+"px",t.end_date){var s=gantt.posFromDate(t.end_date);r.style.width=Math.max(s-n,0)+"px"}return t.text&&(r.innerHTML="<div class='gantt_marker_content' >"+t.text+"</div>"),r}}var e=document.createElement("div");e.className="gantt_marker_area",gantt.$task_data.appendChild(e),gantt.$marker_area=e,gantt.$services.getService("layers").createDataRender({name:"marker",defaultContainer:function(){return gantt.$marker_area}}).addLayer(t)}),gantt.getMarker=function(t){return this._markers?this._markers.getItem(t):null},gantt.addMarker=function(t){return this._markers.addItem(t)},gantt.deleteMarker=function(t){return!!this._markers.exists(t)&&(this._markers.removeItem(t),!0)},gantt.updateMarker=function(t){this._markers.refresh(t)},gantt._getMarkers=function(){return this._markers.getItems()},gantt.renderMarkers=function(){this._markers.refresh()}}});
+//# sourceMappingURL=dhtmlxgantt_marker.js.map

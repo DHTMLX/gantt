@@ -1,13 +1,14 @@
-/*
-@license
-
-dhtmlxGantt v.4.2.1 Stardard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
-
-(c) Dinamenta, UAB.
-*/
+/*!
+ * @license
+ * 
+ * dhtmlxGantt v.5.0.5 Stardard
+ * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+ * 
+ * (c) Dinamenta, UAB.
+ * 
+ */
 .buttonBg {
-  background: #ffffff;
+  background: #fff;
 }
 /* colors for items with inline styles assigned (task.color, link.color)*/
 .gridHoverStyle {
@@ -32,11 +33,11 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 }
 .gantt_grid_data .gantt_cell {
   border-right: none;
-  color: #000000;
+  color: #000;
 }
 .gantt_grid_data .gantt_row.gantt_selected .gantt_cell,
 .gantt_grid_data .gantt_row:hover .gantt_cell {
-  color: #ffffff;
+  color: #fff;
 }
 /*
 	Tasks
@@ -63,13 +64,13 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   width: 16px;
 }
 .chartHeaderBg {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .gantt_task .gantt_task_scale .gantt_scale_cell {
   color: #585858;
   text-transform: uppercase;
   font-weight: bold;
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000;
 }
 /*
 	project highlight
@@ -83,7 +84,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   background-color: #f5fff9;
 }
 .gantt_task_line.gantt_project {
-  background-color: #74ffa9;
+  background-color: #74FFA9;
 }
 .gantt_task_line.gantt_project .gantt_task_progress {
   background-color: #47BB55;
@@ -97,32 +98,30 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_cal_larea input,
 .gantt_cal_larea select,
 .gantt_cal_larea textarea {
-  color: #000000;
-  border: #000000;
+  color: #000;
+  border: #000;
 }
 .gantt_cal_larea .gantt_cal_lsection {
-  color: #000000;
+  color: #000;
   font-size: 14px;
 }
 .modalBorder {
-  border-color: #000000;
-  -webkit-box-shadow: inset 0px 0px 0px 2px #000000;
-  -moz-box-shadow: inset 0px 0px 0px 2px #000000;
-  box-shadow: inset 0px 0px 0px 2px #000000;
+  border-color: #000;
+  -webkit-box-shadow: inset 0px 0px 0px 2px #000;
+          box-shadow: inset 0px 0px 0px 2px #000;
   padding: 2px;
 }
 .gantt_popup_shadow {
-  border-color: #000000;
-  -webkit-box-shadow: inset 0px 0px 0px 2px #000000;
-  -moz-box-shadow: inset 0px 0px 0px 2px #000000;
-  box-shadow: inset 0px 0px 0px 2px #000000;
+  border-color: #000;
+  -webkit-box-shadow: inset 0px 0px 0px 2px #000;
+          box-shadow: inset 0px 0px 0px 2px #000;
   padding: 2px;
 }
 .gantt_cal_larea {
-  background: #ffffff;
+  background: #fff;
 }
 .lightboxHeaderBackground {
-  background: #ffffff;
+  background: #fff;
 }
 .gantt_cal_light .gantt_btn_set {
   margin: 5px 10px;
@@ -130,27 +129,27 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_btn_set.gantt_cancel_btn_set {
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
-  background: #ffffff;
-  color: #000000;
+  border-color: #000;
+  background: #fff;
+  color: #000;
 }
 .gantt_btn_set.gantt_save_btn_set {
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
+  border-color: #000;
   background: #006600;
-  color: #000000;
+  color: #000;
   border-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }
 .gantt_btn_set.gantt_delete_btn_set {
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
+  border-color: #000;
   background: #9f3500;
-  color: #000000;
+  color: #000;
   border-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }
 .gantt_delete_btn {
   margin-top: 2px;
@@ -171,23 +170,23 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   font-weight: bold;
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
+  border-color: #000;
   background: #006600;
-  color: #000000;
+  color: #000;
   border-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }
 .gantt_popup_button.gantt_cancel_button {
   font-weight: bold;
   color: #454544;
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
-  background: #ffffff;
-  color: #000000;
+  border-color: #000;
+  background: #fff;
+  color: #000;
 }
 .gantt_popup_title {
-  color: #000000;
+  color: #000;
 }
 /*
 	Quick info
@@ -195,52 +194,49 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_qi_big_icon {
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
-  background: #ffffff;
-  color: #000000;
+  border-color: #000;
+  background: #fff;
+  color: #000;
 }
 .gantt_qi_big_icon.icon_edit {
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
-  background: #ffffff;
-  color: #000000;
+  border-color: #000;
+  background: #fff;
+  color: #000;
 }
 .gantt_qi_big_icon.icon_delete {
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
+  border-color: #000;
   background: #9f3500;
-  color: #000000;
+  color: #000;
   border-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }
 /*links dnd*/
 .gantt_tooltip {
   font-size: 14px;
-  color: #000000;
-  background: #ffffff;
-  border: 1px solid #000000;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
 }
 .gantt_container {
-  background-color: #ffffff;
+  background-color: #fff;
   font-family: "arial";
   font-size: 14px;
-  border: 1px solid #000000;
+  border: 1px solid #000;
   position: relative;
   white-space: nowrap;
-}
-.gantt_grid {
-  border-right: 1px solid #000000;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 .gantt_task_scroll {
   overflow-x: scroll;
 }
-.gantt_task {
-  position: relative;
-}
 .gantt_task,
 .gantt_grid {
+  position: relative;
   overflow-x: hidden;
   overflow-y: hidden;
   display: inline-block;
@@ -250,18 +246,24 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_task_scale {
   color: #262626;
   font-size: 14px;
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid #000;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
 }
 .gantt_grid_scale {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .gantt_task_scale {
-  background-color: #ffffff;
+  background-color: #fff;
+}
+.gantt_task_vscroll {
+  background-color: #fff;
 }
 .gantt_scale_line {
-  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   -moz-box-sizing: border-box;
-  border-top: 1px solid #000000;
+  border-top: 1px solid #000;
 }
 .gantt_scale_line:first-child {
   border-top: none;
@@ -269,17 +271,19 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_grid_head_cell {
   display: inline-block;
   vertical-align: top;
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000;
   text-align: center;
   position: relative;
   cursor: default;
   height: 100%;
-  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   -moz-box-sizing: border-box;
   line-height: 33px;
-  -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   overflow: hidden;
 }
 .gantt_scale_line {
@@ -327,15 +331,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 }
 .gantt_task_row,
 .gantt_row {
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid #000;
 }
 .gantt_row,
 .gantt_task_row {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .gantt_row.odd,
 .gantt_task_row.odd {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .gantt_row,
 .gantt_cell,
@@ -343,7 +347,8 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 .gantt_task_cell,
 .gantt_grid_head_cell,
 .gantt_scale_cell {
-  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
 .gantt_grid_head_cell,
@@ -357,37 +362,24 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   margin-left: -7px;
 }
 .gantt_grid_column_resize_wrap .gantt_grid_column_resize {
-  background-color: #000000;
+  background-color: #000;
   height: 100%;
-  width: 1px;
-  margin: 0 auto;
-}
-.gantt_grid .gantt_grid_resize_wrap {
-  cursor: col-resize;
-  position: absolute;
-  width: 13px;
-  margin-left: -7px;
-  z-index: 1;
-}
-.gantt_grid_resize_wrap .gantt_grid_resize {
-  background-color: #000000;
   width: 1px;
   margin: 0 auto;
 }
 .gantt_drag_marker.gantt_grid_resize_area {
   background-color: rgba(231, 231, 231, 0.5);
-  border-left: 1px solid #000000;
-  border-right: 1px solid #000000;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
   height: 100%;
   width: 100%;
-  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
 }
 .gantt_cell {
   display: inline-block;
   vertical-align: top;
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000;
   padding-left: 6px;
   padding-right: 6px;
   height: 100%;
@@ -397,9 +389,12 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 }
 .gantt_grid_scale .gantt_last_cell,
 .gantt_grid_data .gantt_last_cell,
-.gantt_task_scale .gantt_last_cell,
+.gantt_task .gantt_task_scale .gantt_scale_cell.gantt_last_cell,
 .gantt_task_bg .gantt_last_cell {
   border-right-width: 0px;
+}
+.gantt_task .gantt_task_scale .gantt_scale_cell.gantt_last_cell {
+  border-right-width: 1px;
 }
 .gantt_task_bg {
   overflow: hidden;
@@ -408,24 +403,24 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000;
   text-align: center;
   height: 100%;
 }
 .gantt_task_cell {
   display: inline-block;
   height: 100%;
-  border-right: 1px solid #000000;
+  border-right: 1px solid #000;
 }
-.gantt_ver_scroll {
+.gantt_layout_cell.gantt_ver_scroll {
   width: 0px;
   background-color: transparent;
   height: 1px;
   overflow-x: hidden;
   overflow-y: scroll;
-  display: none;
   position: absolute;
   right: 0px;
+  z-index: 1;
 }
 .gantt_ver_scroll > div {
   width: 1px;
@@ -438,7 +433,9 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   clear: both;
   overflow-x: scroll;
   overflow-y: hidden;
-  display: none;
+}
+.gantt_layout_cell .gantt_hor_scroll {
+  position: absolute;
 }
 .gantt_hor_scroll > div {
   width: 5000px;
@@ -509,7 +506,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   text-decoration: line-through;
 }
 .gantt_invalid {
-  background-color: FFE0E0;
+  background-color: #FFE0E0;
 }
 .gantt_error {
   color: red;
@@ -550,8 +547,6 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   margin: 5px;
   margin-bottom: 10px;
   -webkit-transition: all .5s ease;
-  -moz-transition: all .5s ease;
-  -o-transition: all .5s ease;
   transition: all .5s ease;
 }
 .gantt-info.hidden {
@@ -569,15 +564,14 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
   text-align: center;
   position: fixed;
   z-index: 20000;
-  border-color: #000000;
-  -webkit-box-shadow: inset 0px 0px 0px 2px #000000;
-  -moz-box-shadow: inset 0px 0px 0px 2px #000000;
-  box-shadow: inset 0px 0px 0px 2px #000000;
+  border-color: #000;
+  -webkit-box-shadow: inset 0px 0px 0px 2px #000;
+          box-shadow: inset 0px 0px 0px 2px #000;
   padding: 2px;
   font-family: "arial";
   border-radius: 6px;
-  border: 1px solid #000000;
-  background: #ffffff;
+  border: 1px solid #000;
+  background: #fff;
 }
 .gantt_popup_title {
   border-top-left-radius: 6px;
@@ -586,18 +580,19 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 }
 .gantt_button,
 .gantt_popup_button {
-  border: 1px solid #000000;
+  border: 1px solid #000;
   height: 30px;
   line-height: 30px;
   display: inline-block;
   margin: 0 5px;
   border-radius: 4px;
-  background: #ffffff;
+  background: #fff;
 }
 .gantt-info,
 .gantt_popup_button,
 .gantt_button {
-  user-select: none;
+  -ms-user-select: none;
+      user-select: none;
   -webkit-user-select: none;
   -moz-user-select: -moz-none;
   cursor: pointer;
@@ -640,14 +635,14 @@ div.dhx_modal_cover {
 .gantt_popup_button div {
   border-radius: 4px;
   font-size: 16px;
-  -moz-box-sizing: content-box;
-  box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
   padding: 0px;
   margin: 0px;
   vertical-align: top;
 }
 .gantt_popup_title {
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid #000;
   height: 40px;
   line-height: 40px;
   font-size: 20px;
@@ -655,7 +650,7 @@ div.dhx_modal_cover {
 .gantt_popup_text {
   margin: 15px 15px 5px 15px;
   font-size: 16px;
-  color: #000000;
+  color: #000;
   min-height: 30px;
   border-radius: 6px;
 }
@@ -663,7 +658,8 @@ div.dhx_modal_cover {
 .gantt-error {
   font-size: 16px;
   color: #000;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+  -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+          box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
   padding: 0px;
   background-color: #FFF;
   border-radius: 3px;
@@ -673,12 +669,13 @@ div.dhx_modal_cover {
   padding: 5px 10px 5px 10px;
   background-color: #fff;
   border-radius: 3px;
-  border: 1px solid #000000;
+  border: 1px solid #000;
 }
 .gantt-error {
   background-color: #b60000;
-  border: 1px solid #000000;
-  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+  border: 1px solid #000;
+  -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
+          box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
 }
 .gantt-error div {
   background-color: #b60000;
@@ -694,9 +691,10 @@ div.dhx_modal_cover {
   position: relative;
   overflow-x: hidden;
   overflow-y: hidden;
-  -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 .gantt_links_area {
   position: absolute;
@@ -712,7 +710,7 @@ div.dhx_modal_cover {
 }
 .gantt_task_content {
   font-size: 15px;
-  color: #000000;
+  color: #000;
   width: 100%;
   top: 0;
   cursor: pointer;
@@ -723,17 +721,22 @@ div.dhx_modal_cover {
 .gantt_task_progress {
   text-align: center;
   z-index: 0;
-  background: #18eeff;
+  background: #18EEFF;
+}
+.gantt_task_progress_wrapper {
+  border-radius: inherit;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 .gantt_task_line {
-  -webkit-border-radius: 1px;
-  -moz-border-radius: 1px;
   border-radius: 1px;
   position: absolute;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  background-color: #bbf9ff;
-  border: 1px solid #000000;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  background-color: #BBF9FF;
+  border: 1px solid #000;
   -webkit-user-select: none;
   -moz-user-select: none;
   -moz-user-select: -moz-none;
@@ -743,25 +746,17 @@ div.dhx_modal_cover {
 }
 .gantt_touch_move,
 .gantt_touch_progress .gantt_touch_resize {
-  -moz-transform: scale(1.02, 1.1);
-  -o-transform: scale(1.02, 1.1);
   -webkit-transform: scale(1.02, 1.1);
-  transform: scale(1.02, 1.1);
-  -moz-transform-origin: 50%;
-  -o-transform-origin: 50%;
+          transform: scale(1.02, 1.1);
   -webkit-transform-origin: 50%;
-  transform-origin: 50%;
+          transform-origin: 50%;
 }
 .gantt_touch_progress .gantt_task_progress_drag,
 .gantt_touch_resize .gantt_task_drag {
-  -moz-transform: scaleY(1.3);
-  -o-transform: scaleY(1.3);
   -webkit-transform: scaleY(1.3);
-  transform: scaleY(1.3);
-  -moz-transform-origin: 50%;
-  -o-transform-origin: 50%;
+          transform: scaleY(1.3);
   -webkit-transform-origin: 50%;
-  transform-origin: 50%;
+          transform-origin: 50%;
 }
 .gantt_side_content {
   position: absolute;
@@ -789,10 +784,11 @@ div.dhx_modal_cover {
   cursor: pointer;
 }
 .gantt_line_wrapper div {
-  background-color: #000000;
+  background-color: #000;
 }
 .gantt_task_link:hover .gantt_line_wrapper div {
-  box-shadow: 0 0 5px 0px #000000;
+  -webkit-box-shadow: 0 0 5px 0px #000;
+          box-shadow: 0 0 5px 0px #000;
 }
 .gantt_task_link div.gantt_link_arrow {
   background-color: transparent;
@@ -808,14 +804,13 @@ div.dhx_modal_cover {
 .gantt_link_control div {
   display: none;
   cursor: pointer;
-  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   position: relative;
   top: 50%;
   margin-top: -7.5px;
   vertical-align: middle;
   border: 1px solid #929292;
-  -webkit-border-radius: 6.5px;
-  -moz-border-radius: 6.5px;
   border-radius: 6.5px;
   height: 13px;
   width: 13px;
@@ -825,7 +820,7 @@ div.dhx_modal_cover {
   margin-left: 7px;
 }
 .gantt_link_control div:hover {
-  background-color: #ffffff;
+  background-color: #FFF;
 }
 .gantt_link_control.task_left {
   left: -20px;
@@ -834,7 +829,20 @@ div.dhx_modal_cover {
   right: -20px;
 }
 .gantt_task_line.gantt_selected .gantt_link_control div,
-.gantt_task_line:hover .gantt_link_control div {
+.gantt_task_line:hover .gantt_link_control div,
+.gantt_task_line.gantt_drag_progress .gantt_link_control div,
+.gantt_task_line.gantt_drag_move .gantt_link_control div,
+.gantt_task_line.gantt_drag_resize .gantt_link_control div,
+.gantt_task_line.gantt_selected .gantt_task_progress_drag,
+.gantt_task_line:hover .gantt_task_progress_drag,
+.gantt_task_line.gantt_drag_progress .gantt_task_progress_drag,
+.gantt_task_line.gantt_drag_move .gantt_task_progress_drag,
+.gantt_task_line.gantt_drag_resize .gantt_task_progress_drag,
+.gantt_task_line.gantt_selected .gantt_task_drag,
+.gantt_task_line:hover .gantt_task_drag,
+.gantt_task_line.gantt_drag_progress .gantt_task_drag,
+.gantt_task_line.gantt_drag_move .gantt_task_drag,
+.gantt_task_line.gantt_drag_resize .gantt_task_drag {
   display: block;
 }
 .gantt_link_target .gantt_link_control div {
@@ -842,15 +850,18 @@ div.dhx_modal_cover {
 }
 .gantt_link_source,
 .gantt_link_target {
-  box-shadow: 0px 0px 3px #bbf9ff;
+  -webkit-box-shadow: 0px 0px 3px #BBF9FF;
+          box-shadow: 0px 0px 3px #BBF9FF;
 }
 .gantt_link_target.link_start_allow,
 .gantt_link_target.link_finish_allow {
-  box-shadow: 0px 0px 3px #262626;
+  -webkit-box-shadow: 0px 0px 3px #262626;
+          box-shadow: 0px 0px 3px #262626;
 }
 .gantt_link_target.link_start_deny,
 .gantt_link_target.link_finish_deny {
-  box-shadow: 0px 0px 3px #e87e7b;
+  -webkit-box-shadow: 0px 0px 3px #e87e7b;
+          box-shadow: 0px 0px 3px #e87e7b;
 }
 .link_start_allow .gantt_link_control.task_left div,
 .link_finish_allow .gantt_link_control.task_right div {
@@ -867,28 +878,28 @@ div.dhx_modal_cover {
   border-top-color: transparent !important;
   border-right-color: transparent !important;
   border-bottom-color: transparent !important;
-  border-left-color: #000000;
+  border-left-color: #000;
   margin-top: -1px;
 }
 .gantt_link_arrow_left {
   border-width: 4px 6px 4px 0;
   margin-top: -1px;
   border-top-color: transparent !important;
-  border-right-color: #000000;
+  border-right-color: #000;
   border-bottom-color: transparent !important;
   border-left-color: transparent !important;
 }
 .gantt_link_arrow_up {
   border-width: 0 4px 6px 4px;
-  border-color: transparent transparent #000000 transparent;
+  border-color: transparent transparent #000 transparent;
   border-top-color: transparent !important;
   border-right-color: transparent !important;
-  border-bottom-color: #000000;
+  border-bottom-color: #000;
   border-left-color: transparent !important;
 }
 .gantt_link_arrow_down {
   border-width: 4px 6px 0 4px;
-  border-top-color: #000000;
+  border-top-color: #000;
   border-right-color: transparent !important;
   border-bottom-color: transparent !important;
   border-left-color: transparent !important;
@@ -896,7 +907,6 @@ div.dhx_modal_cover {
 .gantt_task_drag,
 .gantt_task_progress_drag {
   cursor: ew-resize;
-  height: 100%;
   display: none;
   position: absolute;
 }
@@ -906,13 +916,8 @@ div.dhx_modal_cover {
 .gantt_task_drag.task_left {
   cursor: w-resize;
 }
-.gantt_task_line.gantt_selected .gantt_task_progress_drag,
-.gantt_task_line:hover .gantt_task_progress_drag,
-.gantt_task_line.gantt_selected .gantt_task_drag,
-.gantt_task_line:hover .gantt_task_drag {
-  display: block;
-}
 .gantt_task_drag {
+  height: 100%;
   width: 8px;
   /*background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAACCAYAAAB7Xa1eAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QYDDjkw3UJvAwAAABRJREFUCNdj/P//PwM2wASl/6PTAKrrBf4+lD8LAAAAAElFTkSuQmCC);*/
   z-index: 1;
@@ -932,25 +937,26 @@ div.dhx_modal_cover {
   background-position: bottom;
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAYAAAB24g05AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyhpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTMyIDc5LjE1OTI4NCwgMjAxNi8wNC8xOS0xMzoxMzo0MCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUuNSAoV2luZG93cykiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QzM0N0ZFRkM2ODc4MTFFNjhFNUREOTU2N0ZBMkI4ODUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QzM0N0ZFRkQ2ODc4MTFFNjhFNUREOTU2N0ZBMkI4ODUiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpDMzQ3RkVGQTY4NzgxMUU2OEU1REQ5NTY3RkEyQjg4NSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpDMzQ3RkVGQjY4NzgxMUU2OEU1REQ5NTY3RkEyQjg4NSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pkl1dsMAAADJSURBVHjapJK9DcIwEIXjKA2SSxqnZghar0Cb7EBBmRlYwF4Bam+QMgPQuYUeKVLwcc+QAmQIKJ/05J9772TpLIgoSyGEyHnZP4879oWkEQ3exSxYB601Qbw/4i7pTYSXrLaqKur7PqquaxRa1L42YFasU9M0FEKgEexxhxo8yQbMuiiKszGGPmGtJfZc4H1pwGyklFfnHE0BD7zIjAPYKqWGruvoV+Aty/KGbByE957+BRlkxWOS6b8wBf+VLM9mEl8wp8FdgAEAX8VEJCVY4FsAAAAASUVORK5CYII=);
   background-repeat: no-repeat;
-  z-index: 2;
+  z-index: 1;
 }
 .gantt_task_progress_drag:hover {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAALCAYAAAB24g05AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAABJElEQVQoz6WRsWqDUBSG/3uvXFHQoBwcMgtu1U6BQAn4BoUMTi7t5JBH0EHo1pdw6liwa8mQMVM6BzrHJUOgNZJws4XQEkjItx04/wfn/MAZiEhKKVdSyhURSVwDEfU1TfsJw1CFYag0Tfslov5FYdd1B5zzXRzHqq5rVde1iuNYcc53rusO/u6L08FxnHS9Xn8kScKzLIMQAkIIDIdD7Pd7Pp/PnxzH+W7bdvFP0Ov1XjabzetkMmHj8RiMsaOYMYYoikBEbDabPdq2rW+328+jwLKs967rnouiwGg0Onue7/sIggDT6fTBMIz7ruvemGmaC13X78qyhO/7F/1puVwiz3O0bfvFAKiqquB53lVNNU2DNE3BAVwdPs1w3AgDoG4RHADj3FVF5NgPuQAAAABJRU5ErkJggg==);
 }
 .gantt_link_tooltip {
-  box-shadow: 3px 3px 3px #888888;
-  background-color: #ffffff;
+  -webkit-box-shadow: 3px 3px 3px #888888;
+          box-shadow: 3px 3px 3px #888888;
+  background-color: #fff;
   border-left: 1px dotted #cecece;
   border-top: 1px dotted #cecece;
   font-family: Tahoma;
   font-size: 8pt;
-  color: #444444;
+  color: #444;
   padding: 6px;
   line-height: 20px;
 }
 .gantt_link_direction {
   height: 0px;
-  border: 0px none #000000;
+  border: 0px none #000;
   border-bottom-style: dashed;
   border-bottom-width: 2px;
   transform-origin: 0% 0%;
@@ -971,16 +977,19 @@ div.dhx_modal_cover {
   border-right-color: #3d4dad;
 }
 .gantt_task_line.gantt_selected {
-  box-shadow: 0 0 5px #18eeff;
+  -webkit-box-shadow: 0 0 5px #18EEFF;
+          box-shadow: 0 0 5px #18EEFF;
 }
 .gantt_task_line.gantt_project.gantt_selected {
-  box-shadow: 0 0 5px #74ffa9;
+  -webkit-box-shadow: 0 0 5px #74FFA9;
+          box-shadow: 0 0 5px #74FFA9;
 }
 .gantt_task_line.gantt_milestone {
   visibility: hidden;
   background-color: #c06fce;
   border: 0px solid #6e2a7a;
-  box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+          box-sizing: content-box;
   -moz-box-sizing: content-box;
 }
 .gantt_task_line.gantt_milestone div {
@@ -991,13 +1000,11 @@ div.dhx_modal_cover {
   border: inherit;
   border-width: 1px;
   border-radius: inherit;
-  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
   -moz-box-sizing: border-box;
   -webkit-transform: rotate(45deg);
-  -moz-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  -o-transform: rotate(45deg);
-  transform: rotate(45deg);
+          transform: rotate(45deg);
 }
 .gantt_task_line.gantt_task_inline_color {
   border-color: #999999;
@@ -1007,13 +1014,16 @@ div.dhx_modal_cover {
   opacity: 0.2;
 }
 .gantt_task_line.gantt_task_inline_color.gantt_selected {
-  box-shadow: 0 0 5px #999999;
+  -webkit-box-shadow: 0 0 5px #999999;
+          box-shadow: 0 0 5px #999999;
 }
 .gantt_task_line.gantt_task_inline_color.gantt_project.gantt_selected {
-  box-shadow: 0 0 5px #999999;
+  -webkit-box-shadow: 0 0 5px #999999;
+          box-shadow: 0 0 5px #999999;
 }
 .gantt_task_link.gantt_link_inline_color:hover .gantt_line_wrapper div {
-  box-shadow: 0 0 5px 0px #999999;
+  -webkit-box-shadow: 0 0 5px 0px #999999;
+          box-shadow: 0 0 5px 0px #999999;
 }
 .gantt_critical_task {
   background-color: #e63030;
@@ -1034,9 +1044,8 @@ div.dhx_modal_cover {
 .gantt_qi_big_icon:focus,
 .gantt_popup_button:focus,
 .gantt_grid_head_cell:focus {
-  -moz-box-shadow: inset 0px 0px 1px 1px #4d90fe;
   -webkit-box-shadow: inset 0px 0px 1px 1px #4d90fe;
-  box-shadow: inset 0px 0px 1px 1px #4d90fe;
+          box-shadow: inset 0px 0px 1px 1px #4d90fe;
 }
 .gantt_unselectable,
 .gantt_unselectable div {
@@ -1046,7 +1055,7 @@ div.dhx_modal_cover {
 }
 .gantt_cal_light {
   -webkit-tap-highlight-color: transparent;
-  background: #ffffff;
+  background: #fff;
   border-radius: 6px;
   font-family: "arial";
   border: 1px solid #c1c1c1;
@@ -1056,10 +1065,9 @@ div.dhx_modal_cover {
   z-index: 10001;
   width: 550px;
   height: 250px;
-  border-color: #000000;
-  -webkit-box-shadow: inset 0px 0px 0px 2px #000000;
-  -moz-box-shadow: inset 0px 0px 0px 2px #000000;
-  box-shadow: inset 0px 0px 0px 2px #000000;
+  border-color: #000;
+  -webkit-box-shadow: inset 0px 0px 0px 2px #000;
+          box-shadow: inset 0px 0px 0px 2px #000;
   padding: 2px;
 }
 .gantt_cal_light_wide {
@@ -1114,12 +1122,12 @@ div.dhx_modal_cover {
   overflow: hidden;
 }
 .gantt_cal_ltext textarea {
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-family: "arial";
   font-size: 14px;
-  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
   border: 1px solid #c1c1c1;
   height: 100%;
   width: 100%;
@@ -1136,7 +1144,7 @@ div.dhx_modal_cover {
   border: 1px solid #c1c1c1;
   border-left: none;
   border-right: none;
-  background-color: #ffffff;
+  background-color: #fff;
   overflow: hidden;
   height: 1px;
 }
@@ -1144,18 +1152,15 @@ div.dhx_modal_cover {
   margin: 10px 7px 5px 10px;
   padding: 5px 15px 5px 10px;
   float: left;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
   border-radius: 4px;
   border-width: 2px;
   border-color: #c1c1c1;
   border-style: solid;
   height: 32px;
   font-weight: bold;
-  background: #ffffff;
-  -moz-box-sizing: border-box;
+  background: #fff;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
   cursor: pointer;
 }
 .gantt_btn_set div {
@@ -1205,10 +1210,6 @@ div.dhx_modal_cover {
   width: 90px;
   border: 1px solid #CECECE;
   text-align: center;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -o-border-radius: 4px;
   border-radius: 4px;
 }
 .gantt_custom_button div {
@@ -1226,9 +1227,8 @@ div.dhx_modal_cover {
   padding: 2px 4px;
 }
 .gantt_cal_light_wide .gantt_cal_larea {
-  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
   border: 1px solid #c1c1c1;
 }
 .gantt_cal_light_wide .gantt_cal_lsection {
@@ -1243,7 +1243,7 @@ div.dhx_modal_cover {
   position: relative;
   padding: 10px 0;
   overflow: hidden;
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid #000;
 }
 .gantt_cal_light_wide .gantt_section_time {
   overflow: hidden;
@@ -1315,9 +1315,8 @@ div.dhx_modal_cover {
 .gantt_duration .gantt_duration_value,
 .gantt_duration .gantt_duration_dec,
 .gantt_duration .gantt_duration_inc {
-  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
   text-align: center;
   vertical-align: top;
   height: 100%;
@@ -1334,7 +1333,7 @@ div.dhx_modal_cover {
   width: 20px;
   padding: 1px;
   padding-bottom: 1px;
-  background: #ffffff;
+  background: #fff;
 }
 .gantt_duration .gantt_duration_dec {
   -moz-border-top-left-radius: 4px;
@@ -1355,16 +1354,15 @@ div.dhx_modal_cover {
 }
 /* Quick info */
 .gantt_cal_quick_info {
-  border: 1px solid #000000;
+  border: 1px solid #000;
   border-radius: 6px;
   position: absolute;
   z-index: 300;
-  border-color: #000000;
-  -webkit-box-shadow: inset 0px 0px 0px 2px #000000;
-  -moz-box-shadow: inset 0px 0px 0px 2px #000000;
-  box-shadow: inset 0px 0px 0px 2px #000000;
+  border-color: #000;
+  -webkit-box-shadow: inset 0px 0px 0px 2px #000;
+          box-shadow: inset 0px 0px 0px 2px #000;
   padding: 2px;
-  background-color: #ffffff;
+  background-color: #fff;
   width: 300px;
   transition: left 0.5s ease, right 0.5s;
   -moz-transition: left 0.5s ease, right 0.5s;
@@ -1394,9 +1392,9 @@ div.dhx_modal_cover {
   border-top-right-radius: 6px;
   border-bottom-right-radius: 0;
   padding: 5px 0px 8px 12px;
-  color: #000000;
-  background-color: #ffffff;
-  border-bottom: 1px solid #000000;
+  color: #000;
+  background-color: #fff;
+  border-bottom: 1px solid #000;
 }
 .gantt_cal_qi_tdate {
   font-size: 14px;
@@ -1408,7 +1406,7 @@ div.dhx_modal_cover {
 .gantt_cal_qi_content {
   padding: 16px 8px;
   font-size: 14px;
-  color: #000000;
+  color: #000;
   overflow: hidden;
 }
 .gantt_cal_qi_controls {
@@ -1442,14 +1440,14 @@ div.dhx_modal_cover {
   font-size: 13px;
   border-radius: 4px;
   font-weight: bold;
-  background: #ffffff;
+  background: #fff;
   margin: 5px 9px 8px 0px;
   min-width: 60px;
   line-height: 32px;
   vertical-align: middle;
   padding: 0px 10px 0px 5px;
   cursor: pointer;
-  border: 1px solid #000000;
+  border: 1px solid #000;
 }
 .gantt_cal_qi_controls div {
   float: left;
@@ -1469,9 +1467,8 @@ div.dhx_modal_cover {
   position: absolute;
   text-align: center;
   background-color: rgba(255, 0, 0, 0.4);
-  -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+          box-sizing: border-box;
 }
 .gantt_marker .gantt_marker_content {
   padding: 5px;
@@ -1487,11 +1484,210 @@ div.dhx_modal_cover {
   top: 0;
   left: 0;
 }
+.gantt_layout_content {
+  width: 100%;
+  overflow: auto;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.gantt_layout_cell {
+  position: relative;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.gantt_layout_cell > .gantt_layout_header {
+  background: #33aae8;
+  color: white;
+  font-size: 17px;
+  padding: 5px 10px;
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.gantt_layout_header.collapsed_x {
+  background: #a9a9a9;
+}
+.gantt_layout_header.collapsed_x .gantt_header_arrow:before {
+  content: "\21E7";
+}
+.gantt_layout_header.collapsed_y {
+  background: #a9a9a9;
+}
+.gantt_layout_header.collapsed_y .gantt_header_arrow:before {
+  content: "\21E9";
+}
+.gantt_layout_header {
+  cursor: pointer;
+}
+.gantt_layout_header .gantt_header_arrow {
+  float: right;
+  text-align: right;
+}
+.gantt_layout_header .gantt_header_arrow:before {
+  content: "\21E6";
+}
+.gantt_layout_header.vertical .gantt_header_arrow:before {
+  content: "\21E7";
+}
+.gantt_layout_outer_scroll_vertical .gantt_layout_content {
+  overflow-y: hidden;
+}
+.gantt_layout_outer_scroll_horizontal .gantt_layout_content {
+  overflow-x: hidden;
+}
+.gantt_layout_x > .gantt_layout_cell {
+  display: inline-block;
+  vertical-align: top;
+}
+.gantt_layout_x {
+  white-space: nowrap;
+}
+.gantt_resizing {
+  opacity: 0.7;
+  background: #f2f2f2;
+}
+.gantt_layout_cell_border_right.gantt_resizer {
+  overflow: visible;
+  border-right: 0;
+}
+.gantt_resizer {
+  cursor: e-resize;
+  position: relative;
+}
+.gantt_resizer_y {
+  cursor: n-resize;
+}
+.gantt_resizer_stick {
+  background: #33aae8;
+  z-index: 9999;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.gantt_resizer_x .gantt_resizer_x {
+  position: absolute;
+  width: 20px;
+  height: 100%;
+  margin-left: -10px;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+.gantt_resizer_y .gantt_resizer_y {
+  position: absolute;
+  height: 20px;
+  width: 100%;
+  top: -10px;
+  left: 0;
+  z-index: 1;
+}
+.gantt_resizer_error {
+  background: indianred!important;
+}
 .gantt_noselect {
-  -moz-user-select: -moz-none;
   -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.gantt_layout_cell_border_left {
+  border-left: 1px solid #000;
+}
+.gantt_layout_cell_border_right {
+  border-right: 1px solid #000;
+}
+.gantt_layout_cell_border_top {
+  border-top: 1px solid #000;
+}
+.gantt_layout_cell_border_bottom {
+  border-bottom: 1px solid #000;
+}
+.gantt_layout_cell_border_transparent {
+  border-color: transparent;
+}
+.gantt_window {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 999999999;
+  background: white;
+}
+.gantt_window_content {
+  position: relative;
+}
+.gantt_window_content_header {
+  background: #39c;
+  color: #ffffff;
+  height: 33px;
+  padding: 10px 10px 0 10px;
+  border-bottom: solid 2px #ffffff;
+  position: relative;
+}
+.gantt_window_content_header_text {
+  padding-left: 10%;
+}
+.gantt_window_content_header_buttons {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.gantt_window_content_header_buttons:hover {
+  color: #000000;
+  cursor: pointer;
+}
+.gantt_window_content_resizer {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  bottom: 0;
+  line-height: 15px;
+  right: -1px;
+  text-align: center;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAMAAAAMCGV4AAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAABZJREFUeAFjIAUwUshlpJDLSIhLGAAACQ4AFk79JaMAAAAASUVORK5CYII=);
+  cursor: nw-resize;
+  z-index: 999;
+}
+.gantt_window_content_frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+}
+.gantt_window_drag {
+  cursor: pointer!important;
+}
+.gantt_window_resizing {
+  overflow: visible;
+}
+.gantt_window_resizing_body {
+  overflow: hidden!important;
+}
+.gantt_window_modal {
+  background: rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+}
+.gantt_container,
+.gantt_cal_light,
+.gantt_message_area,
+.gantt_modal_box,
+.gantt_cal_quick_info,
+.gantt_tooltip {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.gantt_noselect {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 .gantt_drag_marker {
   position: absolute;
@@ -1508,7 +1704,7 @@ div.dhx_modal_cover {
 }
 .gantt_drag_marker,
 .gantt_drag_marker .gantt_row.odd {
-  background-color: #ffffff;
+  background-color: #fff;
 }
 .gantt_drag_marker .gantt_row {
   border-left: 1px solid #000000;
@@ -1531,9 +1727,9 @@ div.dhx_modal_cover {
   font-weight: bold;
   border-style: solid;
   border-width: 2px;
-  border-color: #000000;
+  border-color: #000;
   background: #006600;
-  color: #000000;
+  color: #000;
   border-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }

@@ -1,17 +1,99 @@
-/*
-@license
+/*!
+ * @license
+ * 
+ * dhtmlxGantt v.5.0.5 Stardard
+ * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+ * 
+ * (c) Dinamenta, UAB.
+ * 
+ */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 21);
+/******/ })
+/************************************************************************/
+/******/ ({
 
-dhtmlxGantt v.4.2.1 Stardard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+/***/ 21:
+/***/ (function(module, exports, __webpack_require__) {
 
-(c) Dinamenta, UAB.
-*/
+module.exports = __webpack_require__(22);
+
+
+/***/ }),
+
+/***/ 22:
+/***/ (function(module, exports) {
+
 gantt.config.quickinfo_buttons = ["icon_delete","icon_edit"];
 gantt.config.quick_info_detached = true;
 gantt.config.show_quick_info = true;
 
 gantt.attachEvent("onTaskClick", function(id){
-	gantt.showQuickInfo(id);
+	setTimeout(function() {
+		gantt.showQuickInfo(id);
+	}, 0);
+	
 	return true;
 });
 
@@ -35,8 +117,9 @@ gantt.templates.quick_info_class = function(start, end, task){ return ""; };
 gantt.showQuickInfo = function(id){
 	if (id == this._quick_info_box_id || !this.config.show_quick_info) return;
 	this.hideQuickInfo(true);
+	var offset = 6; // offset TASK <> QI-BOX in 'px'
 
-	var pos = this._get_event_counter_part(id);
+	var pos = this._get_event_counter_part(id, offset);
 	
 	if (pos){
 		this._quick_info_box = this._init_quick_info(pos, id);
@@ -44,7 +127,7 @@ gantt.showQuickInfo = function(id){
 		this._quick_info_box.className = gantt._prepare_quick_info_classname(id);
 
 		this._fill_quick_data(id);
-		this._show_quick_info(pos);
+		this._show_quick_info(pos, offset);
 		this.callEvent("onQuickInfo", [id]);
 	}
 };
@@ -70,8 +153,10 @@ gantt.hideQuickInfo = function(forced){
 		else
 			qi.style.right = "-350px";
 
-		if (forced)
+		if (forced) {
+			qi.style.left = qi.style.right = "";
 			qi.parentNode.removeChild(qi);
+		}
 		this.callEvent("onAfterQuickInfo", [taskId]);
 	}
 };
@@ -80,9 +165,8 @@ gantt.event(window, "keydown", function(e){
 		gantt.hideQuickInfo();
 });
 
-gantt._show_quick_info = function(pos){
+gantt._show_quick_info = function(pos, offset){
 	var qi = gantt._quick_info_box;
-
 	if (gantt.config.quick_info_detached){
 		if (!qi.parentNode || 
 			qi.parentNode.nodeName.toLowerCase() == "#document-fragment")//IE8
@@ -93,8 +177,10 @@ gantt._show_quick_info = function(pos){
 		var scrolls = this.getScrollState();
 		var screen_width = this.$task.offsetWidth + scrolls.x - width;
 
+		//pos.dy = (pos.top + height - scrolls.y > (gantt._y - gantt.config.scale_height)*0.96) ? 1 : 0; // uncomment to show QI at the bottom of task always
+
 		qi.style.left = Math.min(Math.max(scrolls.x, pos.left - pos.dx*(width - pos.width)), screen_width) + "px";
-		qi.style.top = pos.top - (pos.dy?height:-pos.height) - 25 + "px";
+		qi.style.top = pos.top - (pos.dy ? (height + pos.height + 2*offset) : 0) + "px";
 	} else {
 		qi.style.top = 20 + "px";
 		if (pos.dx == 1){
@@ -102,18 +188,18 @@ gantt._show_quick_info = function(pos){
 			qi.style.left = "-300px";
 			
 			setTimeout(function(){
-				qi.style.left = "-10px";
+				qi.style.left = "10px";
 			},1);
 		} else {
 			qi.style.left = "auto";
 			qi.style.right = "-300px";
 			
 			setTimeout(function(){
-				qi.style.right = "-10px";
+				qi.style.right = "10px";
 			},1);
 		}
 		qi.className += " gantt_qi_"+(pos.dx == 1 ? "left" : "right");
-		gantt._obj.appendChild(qi);
+		gantt.$root.appendChild(qi);
 	}
 };
 gantt._prepare_quick_info_classname = function(id){
@@ -131,13 +217,13 @@ gantt._prepare_quick_info_classname = function(id){
 gantt._init_quick_info = function(pos, id){
 	var task = gantt.getTask(id);
 	if(typeof this._quick_info_readonly == "boolean"){
-		if(this._is_readonly(task) !== this._quick_info_readonly){
+		if(this.isReadonly(task) !== this._quick_info_readonly){
 			gantt.hideQuickInfo(true);
 			this._quick_info_box = null;
 		}
 	}
 
-	this._quick_info_readonly = this._is_readonly(task);
+	this._quick_info_readonly = this.isReadonly(task);
 
 	if (!this._quick_info_box){
 		var qi = this._quick_info_box = document.createElement("div");
@@ -203,26 +289,29 @@ gantt._qi_button_click = function(node){
 	} else
 		gantt._qi_button_click(node.parentNode);
 };
-gantt._get_event_counter_part = function(id){
+gantt._get_event_counter_part = function(id, offset){
 	var domEv = gantt.getTaskNode(id);
+	if (!domEv)
+		return null;
 	var left = 0;
-	var top = 0;
+	var top = offset + domEv.offsetTop + domEv.offsetHeight;
 
 	var node = domEv;
 	while (node && node.className != "gantt_task"){
 		left += node.offsetLeft;
-		top += node.offsetTop;
-		node = node.offsetParent;
+	 	node = node.offsetParent;
 	}
+	
 	var scroll = this.getScrollState();
+
 	if(node){
-		var dx = (left + domEv.offsetWidth/2) - scroll.x > (gantt._x/2) ? 1 : 0;
-		var dy = (top + domEv.offsetHeight/2) - scroll.y > (gantt._y/2) ? 1 : 0;
+		var dx = (left + domEv.offsetWidth/2) - scroll.x > (gantt.$container.offsetWidth/2) ? 1 : 0;
+		var dy = (top + domEv.offsetHeight/2) - scroll.y > (gantt.$container.offsetHeight/2) ? 1 : 0;
 
 		return { left:left, top:top, dx:dx, dy:dy,
 			width:domEv.offsetWidth, height:domEv.offsetHeight };
 	}
-	return 0;
+	return null;
 };
 
 gantt._fill_quick_data  = function(id){
@@ -249,3 +338,8 @@ gantt._fill_quick_data  = function(id){
 	var main = qi.firstChild.nextSibling;
 	main.innerHTML = gantt.templates.quick_info_content(ev.start_date, ev.end_date, ev);
 };
+
+
+/***/ })
+
+/******/ });

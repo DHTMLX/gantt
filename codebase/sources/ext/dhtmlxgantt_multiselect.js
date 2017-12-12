@@ -1,11 +1,90 @@
-/*
-@license
+/*!
+ * @license
+ * 
+ * dhtmlxGantt v.5.0.5 Stardard
+ * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+ * 
+ * (c) Dinamenta, UAB.
+ * 
+ */
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ })
+/************************************************************************/
+/******/ ({
 
-dhtmlxGantt v.4.2.1 Stardard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+/***/ 19:
+/***/ (function(module, exports, __webpack_require__) {
 
-(c) Dinamenta, UAB.
-*/
+module.exports = __webpack_require__(20);
+
+
+/***/ }),
+
+/***/ 20:
+/***/ (function(module, exports) {
+
 gantt.config.multiselect = true;
 gantt.config.multiselect_one_level = false;
 
@@ -13,6 +92,7 @@ gantt._multiselect = {
 	selected: {},
 	one_level: true,
 	active: true,
+	_first_selected_when_shift: null,
 	isActive: function(){
 		this.update_state();
 		return this.active;
@@ -55,9 +135,8 @@ gantt._multiselect = {
 		if(gantt.callEvent("onBeforeTaskMultiSelect", [id, false, e])){
 			this.selected[id] = false;
 			if(this.last_selected == id)
-				this.last_selected = null;
-
-			gantt.callEvent("onTaskMultiSelect", [id, true, e]);
+			 	this.last_selected = null;
+			gantt.callEvent("onTaskMultiSelect", [id, false, e]);
 		}
 	},
 	isSelected: function (id) {
@@ -104,57 +183,66 @@ gantt._multiselect = {
 		/* add onclick handler to gantt container, hook up multiselection */
 		if(!this.isActive())
 			return true;
+		if(!gantt.callEvent("onBeforeMultiSelect", [e]))
+			return true;
+
 		var target_ev = gantt.locate(e);
-		var selected = this.getSelected();
 		if (!target_ev)
 			return true;
 
-		if(!gantt.callEvent("onBeforeMultiSelect", [e])){
-			return true;
-		}
+		var last = this.getLastSelected();
+		var selected = this.getSelected();
 
+		if (e.shiftKey) {
+			if (!gantt.isTaskExists(this._first_selected_when_shift) || this._first_selected_when_shift === null) {
+				this._first_selected_when_shift = target_ev;
+			}
+		} else if (e.ctrlKey || e.metaKey) {
+			if (!this.isSelected(target_ev)) // if the task was selected - it becames unselected now, so _first_selected shouldn't point to it
+				this._first_selected_when_shift = target_ev;
+		} else {
+			this._first_selected_when_shift = target_ev;
+		}
+		
 		if (e.ctrlKey || e.metaKey) {
-			if (target_ev) {
+			if (target_ev && (target_ev !== this._first_selected_when_shift || !this.isSelected(this._first_selected_when_shift))) { // cannot trigger _first_selected task
 				this.toggle(target_ev, e);
 				this._after_select(target_ev);
 			}
-		} else if (e.shiftKey && selected.length) {
-			var last = this.getLastSelected();
+		} else if (e.shiftKey && selected.length) {			
 			if (!last)
-				last = selected[selected.length - 1];
-			if (target_ev && last != target_ev) {
-				var last_si = gantt.getGlobalTaskIndex(last);
-				var cur_si = gantt.getGlobalTaskIndex(target_ev);
-				var tmp = target_ev;
-				while (gantt.getGlobalTaskIndex(tmp) != last_si) {
-					this.select(tmp);
+			 	last = target_ev;			
+			if (target_ev) {
+				var first_indx = gantt.getGlobalTaskIndex(this._first_selected_when_shift);
+				var target_indx = gantt.getGlobalTaskIndex(target_ev);
+				var last_indx = gantt.getGlobalTaskIndex(last);			
+				
+				// clear prev selection
+				var tmp = last;
+				while (gantt.getGlobalTaskIndex(tmp) != first_indx) {
+					this.unselect(tmp);
 					this._after_select(tmp);
-					tmp = (last_si > cur_si) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
+					tmp = (first_indx > last_indx) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
 				}
-				this.forSelected(gantt.bind(function (task_id) {
-					var index = gantt.getGlobalTaskIndex(task_id);
-					if ((index > last_si && index > cur_si) || (index < last_si && index < cur_si)) {
-						this.unselect(task_id);
-						gantt.refreshTask(task_id);
-					}
-				}, this));
+				tmp = target_ev;
+				while (gantt.getGlobalTaskIndex(tmp) != first_indx) {
+					this.select(tmp); 
+					this._after_select(tmp);
+					tmp = (first_indx > target_indx) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
+				}
 			}
-
-		}
-		else {
-			this.forSelected(gantt.bind(function (task_id) {
-				if (task_id != target_ev) {
-					this.unselect(task_id);
-					gantt.refreshTask(task_id);
-				}
-			}, this));
+		} else { // no key press when mouse click
 			if (!this.isSelected(target_ev)) {
-
 				this.select(target_ev);
 				this._after_select(target_ev);
 			}
+			for (var i=0; i<selected.length; i++) {
+				if (selected[i] !== target_ev) {
+					this.unselect(selected[i]);
+					this._after_select(selected[i]);
+				}	
+			}
 		}
-
 		if(!this.isSelected(target_ev)){
 			return false;
 		}
@@ -238,8 +326,13 @@ gantt.attachEvent("onTaskClick", function(id, e){
 	gantt.callEvent("onMultiSelect", [e]);
 	return res;
 });
+
 gantt.attachEvent("onEmptyClick", function (e){
 	gantt._multiselect._do_selection(e);
 	gantt.callEvent("onMultiSelect", [e]);
 	return true;
 });
+
+/***/ })
+
+/******/ });
