@@ -1,7 +1,7 @@
 /*!
  * @license
  * 
- * dhtmlxGantt v.5.0.5 Stardard
+ * dhtmlxGantt v.5.1.0 Stardard
  * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
  * 
  * (c) Dinamenta, UAB.
@@ -234,6 +234,7 @@
 .gantt_grid_data {
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 .gantt_row {
   position: relative;
@@ -601,26 +602,33 @@ div.dhx_modal_cover {
   -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
           box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
   padding: 0px;
-  background-color: #FFF;
+  background-color: #FFFFFF;
   border-radius: 3px;
-  border: 1px solid #ffffff;
+  border: 1px solid #FFFFFF;
 }
 .gantt-info div {
   padding: 5px 10px 5px 10px;
-  background-color: #fff;
+  background-color: #FFFFFF;
   border-radius: 3px;
   border: 1px solid #CECECE;
 }
 .gantt-error {
   background-color: #d81b1b;
   border: 1px solid #ff3c3c;
-  -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
-          box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.07);
 }
 .gantt-error div {
   background-color: #d81b1b;
   border: 1px solid #940000;
-  color: #FFF;
+  color: #FFFFFF;
+}
+.gantt-warning {
+  background-color: #FF9000;
+  border: 1px solid #ffa633;
+}
+.gantt-warning div {
+  background-color: #FF9000;
+  border: 1px solid #b36500;
+  color: #FFFFFF;
 }
 .gantt_grid div,
 .gantt_data_area div {
@@ -802,13 +810,13 @@ div.dhx_modal_cover {
   -webkit-box-shadow: 0px 0px 3px #e87e7b;
           box-shadow: 0px 0px 3px #e87e7b;
 }
-.link_start_allow .gantt_link_control.task_left div,
-.link_finish_allow .gantt_link_control.task_right div {
+.link_start_allow .gantt_link_control.task_start_date div,
+.link_finish_allow .gantt_link_control.task_end_date div {
   background-color: #ffbf5e;
   border-color: #ffa011;
 }
-.link_start_deny .gantt_link_control.task_left div,
-.link_finish_deny .gantt_link_control.task_right div {
+.link_start_deny .gantt_link_control.task_start_date div,
+.link_finish_deny .gantt_link_control.task_end_date div {
   background-color: #e87e7b;
   border-color: #dd3e3a;
 }
@@ -1419,6 +1427,18 @@ div.dhx_modal_cover {
   position: absolute;
   top: 0;
   left: 0;
+}
+.gantt_resource_marker {
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  color: #FFF;
+}
+.gantt_resource_marker_ok {
+  background: rgba(78, 208, 134, 0.75);
+}
+.gantt_resource_marker_overtime {
+  background: rgba(255, 134, 134, 0.69);
 }
 .gantt_layout_content {
   width: 100%;

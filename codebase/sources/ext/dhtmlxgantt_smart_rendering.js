@@ -1,7 +1,7 @@
 /*!
  * @license
  * 
- * dhtmlxGantt v.5.0.5 Stardard
+ * dhtmlxGantt v.5.1.0 Stardard
  * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
  * 
  * (c) Dinamenta, UAB.
@@ -107,11 +107,11 @@ gantt._smart_render = {
 		return !!(item.y < viewPort.y_end && item.y_end > viewPort.y);
 	},
 
-	isTaskDisplayed: function(id){
+	isTaskDisplayed: function(id, task){
 		return this.isInViewPort(this.getTaskPosition(id), this.getViewPort());
 	},
-	isLinkDisplayed: function(id){
-		return this.isInViewPort(this.getLinkPosition(id), this.getViewPort());
+	isLinkDisplayed: function(id, link){
+		return this.isInViewPort(this.getLinkPosition(id, link), this.getViewPort());
 	},
 	getTaskPosition: function(id){
 		var y = gantt.getTaskTop(id);
@@ -120,8 +120,7 @@ gantt._smart_render = {
 			y_end: y + gantt.config.row_height
 		};
 	},
-	getLinkPosition: function(id){
-		var link = gantt.getLink(id);
+	getLinkPosition: function(id, link){
 		var from_pos = gantt.getTaskTop(link.source),
 			to_pos = gantt.getTaskTop(link.target);
 
@@ -147,15 +146,29 @@ gantt._smart_render = {
 		return visibleIds;
 	},
 	_redrawItems: function(renderers, visibleItems){
+		var shouldBeVisible = {};
+		for(var t = 0; t < visibleItems.length; t++){
+			shouldBeVisible[visibleItems[t].id] = true;
+		}
+		var alreadyVisible = {};
+
 		for(var r = 0; r < renderers.length; r++){
 			var render = renderers[r];
 
 			for(var i in render.rendered){
-				render.hide(i);
+				if(!shouldBeVisible[i]){
+					render.hide(i);
+				}else{
+					var node = render.rendered[i];
+					if(node && node.parentNode) {
+						alreadyVisible[i] = true;
+					}
+				}
 			}
 
 			for(var t = 0; t < visibleItems.length; t++){
-				render.restore(visibleItems[t]);
+				if(!alreadyVisible[visibleItems[t].id])
+					render.restore(visibleItems[t]);
 			}
 		}
 	},
@@ -174,10 +187,10 @@ gantt._smart_render = {
 	},
 	_getVisibleLinks: function(){
 		var visible_links = [];
-		var links = gantt.getLinks();
+		var links = gantt.$data.linksStore.getIndexRange();
 
 		for(var i = 0; i < links.length; i++){
-			if(this.isLinkDisplayed(links[i].id)){
+			if(this.isLinkDisplayed(links[i].id, links[i])){
 				visible_links.push(links[i]);
 			}
 		}
@@ -347,19 +360,19 @@ gantt.attachEvent("onDataRender", function() {
 	var attachOnce = gantt.attachEvent("onGanttReady", function(){
 		var layers = gantt.$services.getService("layers");
 		var taskRenderer = layers.getDataRender("task");
-		taskRenderer.filters.push(function(id){
+		taskRenderer.filters.push(function(id, task){
 			if(!gantt.config.smart_rendering)
 				return true;
 			else
-				return !!gantt._smart_render.isTaskDisplayed(id);
+				return !!gantt._smart_render.isTaskDisplayed(id, task);
 		});
 
 		var linkRenderer = layers.getDataRender("link");
-		linkRenderer.filters.push(function(id){
+		linkRenderer.filters.push(function(id, link){
 			if(!gantt.config.smart_rendering)
 				return true;
 			else
-				return !!gantt._smart_render.isLinkDisplayed(id);
+				return !!gantt._smart_render.isLinkDisplayed(id, link);
 		});
 
 		gantt.detachEvent(attachOnce);

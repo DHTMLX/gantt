@@ -1,7 +1,7 @@
 /*!
  * @license
  * 
- * dhtmlxGantt v.5.0.5 Stardard
+ * dhtmlxGantt v.5.1.0 Stardard
  * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
  * 
  * (c) Dinamenta, UAB.
@@ -472,13 +472,13 @@ module.exports = __webpack_require__(6);
 			gantt.attachEvent("onGanttRender", function(){
 				gantt.eventRemove(document, "keydown", keyDownHandler);
 				gantt.eventRemove(gantt.$container, "focus", focusHandler);
-
+				gantt.eventRemove(gantt.$container, "mousedown", mousedownHandler);
 
 				if(gantt.config.keyboard_navigation){
 
 					gantt.event(document, "keydown", keyDownHandler);
 					gantt.event(gantt.$container, "focus", focusHandler);
-
+					gantt.event(gantt.$container, "mousedown", mousedownHandler);
 					gantt.$container.setAttribute("tabindex", "0");
 
 				}else{
@@ -486,39 +486,71 @@ module.exports = __webpack_require__(6);
 				}
 			});
 
+			function mousedownHandler(e){
+				if(!gantt.config.keyboard_navigation) return true;
+
+				var focusNode;
+				if(gantt._locateHTML(e, gantt.config.task_attribute)){
+					focusNode = new gantt.$keyboardNavigation.TaskRow(
+						gantt._locateHTML(e, gantt.config.task_attribute)
+							.getAttribute(gantt.config.task_attribute));
+				}
+
+				if(focusNode) {
+					if (!dispatcher.isEnabled()) {
+						dispatcher.activeNode = focusNode;
+
+					} else {
+						dispatcher.delay(function () {
+							dispatcher.setActiveNode(focusNode);
+						});
+					}
+
+				}
+			}
+
 
 			var onReady = gantt.attachEvent("onGanttReady", function(){
 				// restore focus on repainted tasks
 				gantt.detachEvent(onReady);
 
-				var refreshTask = gantt.refreshTask;
-				gantt.refreshTask = function(id){
-					var res = refreshTask.apply(this, arguments);
+				var skipNext = false;
+				gantt.$data.tasksStore.attachEvent("onStoreUpdated", function(id){
+					if(skipNext){
+						skipNext = false;
+						return;
+					}
+
 					if(gantt.config.keyboard_navigation && dispatcher.isEnabled()){
 						var currentNode = dispatcher.getActiveNode();
 						if(currentNode && currentNode.taskId == id){
+							skipNext = true;
 							dispatcher.focusNode(currentNode);
 						}
 
 					}
-					return res;
-				};
+				});
 
 				if(gantt._smart_render){
 					var updateRender = gantt._smart_render._redrawItems;
 					gantt._smart_render._redrawItems = function(renderers, items){
-						var res = updateRender.apply(this, arguments);
 						if(gantt.config.keyboard_navigation && dispatcher.isEnabled()){
 							var currentNode = dispatcher.getActiveNode();
 							if(currentNode && currentNode.taskId !== undefined){
+								var focusedItemVisible = false;
 								for(var i = 0; i < items.length; i++){
-									if(items[i].id == currentNode.taskId){
-										dispatcher.focusNode(currentNode);
+									if(items[i].id == currentNode.taskId && items[i].start_date){
+										focusedItemVisible = true;
 										break;
 									}
 								}
+								if(!focusedItemVisible){
+									items.push(gantt.getTask(currentNode.taskId));
+								}
 							}
 						}
+						var res = updateRender.apply(this, arguments);
+
 						return res;
 					};
 				}
@@ -533,6 +565,19 @@ module.exports = __webpack_require__(6);
 				}
 			});
 
+			gantt.attachEvent("onTaskIdChange", function(oldId, newId){
+				if(!gantt.config.keyboard_navigation) return true;
+
+				var node = dispatcher.activeNode;
+				if(node instanceof gantt.$keyboardNavigation.TaskRow || node instanceof gantt.$keyboardNavigation.TaskCell){
+					if(node.taskId == oldId){
+						node.taskId = newId;
+					}
+				}
+
+				return true;
+			});
+
 			gantt.attachEvent("onTaskClick", function(id){
 				if(!gantt.config.keyboard_navigation) return true;
 				dispatcher.enable();
@@ -545,7 +590,7 @@ module.exports = __webpack_require__(6);
 				dispatcher.enable();
 			});
 
-			setInterval(function(){
+			var interval = setInterval(function(){
 				if(!gantt.config.keyboard_navigation) return;
 
 				var enable;
@@ -574,6 +619,10 @@ module.exports = __webpack_require__(6);
 				}
 
 			}, 500);
+
+			gantt.attachEvent("onDestroy", function(){
+				clearInterval(interval);
+			});
 
 		})();
 
@@ -1126,7 +1175,7 @@ module.exports = function(gantt) {
 
 					}
 					if (nextIndex > -1) {
-						return new gantt.$keyboardNavigation.TaskRow(gantt.getTaskByIndex(nextIndex));
+						return new gantt.$keyboardNavigation.TaskRow(gantt.getTaskByIndex(nextIndex).id);
 					}
 				}
 			},
@@ -1141,22 +1190,17 @@ module.exports = function(gantt) {
 				}
 			},
 
-
-			_isNodeVisible: function () {
+			focus: function () {
 				var pos = gantt.getTaskPosition(gantt.getTask(this.taskId));
 				var height = gantt.config.row_height;
 				var scroll = gantt.getScrollState();
 				if (pos.top < scroll.y || pos.top + height > (scroll.y + scroll.inner_height)) {
-					return false;
-				} else if (gantt.config.show_chart && (pos.left < scroll.x || pos.left > (scroll.x + scroll.inner_width))) {
-					return false;
-				}
-				return true;
-			},
 
-			focus: function () {
-				if (!this._isNodeVisible()) {
-					gantt.showTask(this.taskId);
+					gantt.scrollTo(null, pos.top - height*5);
+
+				} else if (gantt.config.show_chart && (pos.left < scroll.x || pos.left > (scroll.x + scroll.inner_width))) {
+					gantt.scrollTo(pos.left - gantt.config.task_scroll_offset);
+
 				}
 
 				gantt.$keyboardNavigation.KeyNavNode.prototype.focus.apply(this);
@@ -1165,12 +1209,12 @@ module.exports = function(gantt) {
 			keys: {
 				"pagedown": function () {
 					if (gantt.getVisibleTaskCount()) {
-						this.moveTo(new gantt.$keyboardNavigation.TaskRow(gantt.getTaskByIndex(gantt.getVisibleTaskCount() - 1)));
+						this.moveTo(new gantt.$keyboardNavigation.TaskRow(gantt.getTaskByIndex(gantt.getVisibleTaskCount() - 1).id));
 					}
 				},
 				"pageup": function () {
 					if (gantt.getVisibleTaskCount()) {
-						this.moveTo(new gantt.$keyboardNavigation.TaskRow(gantt.getTaskByIndex(0)));
+						this.moveTo(new gantt.$keyboardNavigation.TaskRow(gantt.getTaskByIndex(0).id));
 					}
 				},
 				"up": function () {
@@ -1542,6 +1586,13 @@ module.exports = function(gantt) {
 			} else if (ganttNode.findHandler(command)) {
 				ganttNode.doAction(command, e);
 			}
+
+		},
+		_timeout: null,
+		delay: function(callback, delay){
+
+			clearTimeout(this._timeout);
+			this._timeout = setTimeout(callback, delay || 1);
 
 		}
 	};

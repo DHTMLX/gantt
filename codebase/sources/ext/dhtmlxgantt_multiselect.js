@@ -1,7 +1,7 @@
 /*!
  * @license
  * 
- * dhtmlxGantt v.5.0.5 Stardard
+ * dhtmlxGantt v.5.1.0 Stardard
  * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
  * 
  * (c) Dinamenta, UAB.
@@ -89,73 +89,93 @@ gantt.config.multiselect = true;
 gantt.config.multiselect_one_level = false;
 
 gantt._multiselect = {
-	selected: {},
-	one_level: true,
-	active: true,
+	_selected: {},
+	_one_level: false,
+	_active: true,
 	_first_selected_when_shift: null,
-	isActive: function(){
-		this.update_state();
-		return this.active;
+	getDefaultSelected: function() {
+		var selected = this.getSelected();
+		return selected.length ? selected[selected.length - 1] : null;
 	},
-	update_state: function(){
-		this.one_level = gantt.config.multiselect_one_level;
-		var active = this.active;
-		this.active = gantt.config.multiselect;
-		if(this.active != active){
+	setFirstSelected: function(id) {
+		this._first_selected_when_shift = id;
+	},
+	getFirstSelected: function() {
+		return this._first_selected_when_shift;
+	},
+	isActive: function() {
+		this.updateState();
+		return this._active;
+	},
+	updateState: function() {
+		this._one_level = gantt.config.multiselect_one_level;
+		var active = this._active;
+		this._active = gantt.config.multiselect;
+		if (this._active != active) {
 			this.reset();
 		}
 	},
 	reset: function () {
-		this.selected = {};
+		this._selected = {};
 	},
-	set_last_selected: function (id) {
-		this.last_selected = id;
+	setLastSelected: function (id) {
+		gantt.$data.tasksStore.silent(function(){
+			var store = gantt.$data.tasksStore;
+			if (id) 
+				store.select(id+""); 
+			else 
+				store.unselect(null);
+		});
 	},
 	getLastSelected: function () {
-		var last = this.last_selected;
-		if(last && gantt.isTaskExists(last))
+		var last = gantt.$data.tasksStore.getSelectedId();
+		if (last && gantt.isTaskExists(last))
 			return last;
 		return null;
 	},
 	select: function (id, e) {
-		if(gantt.callEvent("onBeforeTaskMultiSelect", [id, true, e])){
-			this.selected[id] = true;
-			this.set_last_selected(id);
+		if (id && gantt.callEvent("onBeforeTaskMultiSelect", [id, true, e]) && gantt.callEvent("onBeforeTaskSelected", [id])) {
+			this._selected[id] = true;
+			this.setLastSelected(id);
+			this.afterSelect(id);
 			gantt.callEvent("onTaskMultiSelect", [id, true, e]);
+			gantt.callEvent("onTaskSelected", [id]);
+			return true;
 		}
+		return false;
 	},
 	toggle: function (id, e) {
-		if(this.selected[id]){
+		if (this._selected[id]) {
 			this.unselect(id, e);
-		}else{
+		} else {
 			this.select(id, e);
 		}
 	},
 	unselect: function (id, e) {
-		if(gantt.callEvent("onBeforeTaskMultiSelect", [id, false, e])){
-			this.selected[id] = false;
-			if(this.last_selected == id)
-			 	this.last_selected = null;
+		if (id && gantt.callEvent("onBeforeTaskMultiSelect", [id, false, e])) {
+			this._selected[id] = false;
+			if (this.getLastSelected() == id)
+				this.setLastSelected(this.getDefaultSelected());
+			this.afterSelect(id);
 			gantt.callEvent("onTaskMultiSelect", [id, false, e]);
+			gantt.callEvent("onTaskUnselected", [id]);
 		}
 	},
 	isSelected: function (id) {
-		return !!(gantt.isTaskExists(id) && this.selected[id]);
+		return !!(gantt.isTaskExists(id) && this._selected[id]);
 	},
 	getSelected: function () {
 		var res = [];
-		for (var i in this.selected) {
-			if (this.selected[i] && gantt.isTaskExists(i)) {
+		for (var i in this._selected) {
+			if (this._selected[i] && gantt.isTaskExists(i)) {
 				res.push(i);
-			}else{
-				this.selected[i] = false;
+			} else {
+				this._selected[i] = false;
 			}
 		}
-
-		res.sort(function(a, b){
-			return gantt.calculateTaskLevel(gantt.getTask(a)) > gantt.calculateTaskLevel(gantt.getTask(b)) ? 1 : -1;
-		});
-		
+		res.sort(function(a, b) {
+			return gantt.getGlobalTaskIndex(a) > gantt.getGlobalTaskIndex(b) ? 1 : -1;
+		});		
 		return res;
 	},
 	forSelected: function (callback) {
@@ -164,116 +184,158 @@ gantt._multiselect = {
 			callback(selected[i]);
 		}
 	},
-	is_same_level: function(id){
-		if(!this.one_level)
+	isSameLevel: function(id) {
+		if (!this._one_level)
 			return true;
 		var last = this.getLastSelected();
-		if(!last)
+		if (!last)
 			return true;
-
-		if(!(gantt.isTaskExists(last) && gantt.isTaskExists(id)))
+		if (!(gantt.isTaskExists(last) && gantt.isTaskExists(id)))
 			return true;
-
 		return !!(gantt.calculateTaskLevel(gantt.getTask(last)) == gantt.calculateTaskLevel(gantt.getTask(id)));
 	},
-	_after_select: function(target){
-		gantt.refreshTask(target);
+	afterSelect: function(id) {
+		if (gantt.isTaskExists(id))
+			gantt.refreshTask(id);
 	},
-	_do_selection: function(e) {
-		/* add onclick handler to gantt container, hook up multiselection */
-		if(!this.isActive())
-			return true;
-		if(!gantt.callEvent("onBeforeMultiSelect", [e]))
-			return true;
+	doSelection: function(e) {
+		
+		if (!this.isActive())
+			return false;
+
+		// deny selection when click on 'expand' or 'collapse' icons
+		if (gantt._is_icon_open_click(e))
+			return false;
 
 		var target_ev = gantt.locate(e);
 		if (!target_ev)
-			return true;
+			return false;
 
-		var last = this.getLastSelected();
+		if (!gantt.callEvent("onBeforeMultiSelect", [e]))
+			return false;
+
 		var selected = this.getSelected();
+		var defaultLast = this.getFirstSelected();
+		var isLast = false;
+		var last = this.getLastSelected();
 
 		if (e.shiftKey) {
-			if (!gantt.isTaskExists(this._first_selected_when_shift) || this._first_selected_when_shift === null) {
-				this._first_selected_when_shift = target_ev;
+			if (!gantt.isTaskExists(this.getFirstSelected()) || this.getFirstSelected() === null) {
+				this.setFirstSelected(target_ev);
 			}
 		} else if (e.ctrlKey || e.metaKey) {
-			if (!this.isSelected(target_ev)) // if the task was selected - it becames unselected now, so _first_selected shouldn't point to it
-				this._first_selected_when_shift = target_ev;
+			if (!this.isSelected(target_ev))
+				this.setFirstSelected(target_ev);
 		} else {
-			this._first_selected_when_shift = target_ev;
+			this.setFirstSelected(target_ev);
 		}
 		
 		if (e.ctrlKey || e.metaKey) {
-			if (target_ev && (target_ev !== this._first_selected_when_shift || !this.isSelected(this._first_selected_when_shift))) { // cannot trigger _first_selected task
-				this.toggle(target_ev, e);
-				this._after_select(target_ev);
-			}
-		} else if (e.shiftKey && selected.length) {			
-			if (!last)
-			 	last = target_ev;			
 			if (target_ev) {
-				var first_indx = gantt.getGlobalTaskIndex(this._first_selected_when_shift);
+				this.toggle(target_ev, e);
+			}
+		} else if (e.shiftKey && selected.length) {
+			if (!last)
+				last = target_ev;
+			else if (target_ev) {
+				var first_indx = gantt.getGlobalTaskIndex(this.getFirstSelected());
 				var target_indx = gantt.getGlobalTaskIndex(target_ev);
-				var last_indx = gantt.getGlobalTaskIndex(last);			
+				var last_indx = gantt.getGlobalTaskIndex(last);
 				
 				// clear prev selection
 				var tmp = last;
-				while (gantt.getGlobalTaskIndex(tmp) != first_indx) {
-					this.unselect(tmp);
-					this._after_select(tmp);
+				while (gantt.getGlobalTaskIndex(tmp) !== first_indx) {
+					this.unselect(tmp, e);
 					tmp = (first_indx > last_indx) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
 				}
 				tmp = target_ev;
-				while (gantt.getGlobalTaskIndex(tmp) != first_indx) {
-					this.select(tmp); 
-					this._after_select(tmp);
+				while (gantt.getGlobalTaskIndex(tmp) !== first_indx) {
+					if (this.select(tmp, e) && !isLast) {
+						isLast = true;
+						defaultLast = tmp;
+					} 
 					tmp = (first_indx > target_indx) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
 				}
 			}
 		} else { // no key press when mouse click
 			if (!this.isSelected(target_ev)) {
-				this.select(target_ev);
-				this._after_select(target_ev);
+				this.select(target_ev, e);
 			}
+			selected = this.getSelected();
 			for (var i=0; i<selected.length; i++) {
 				if (selected[i] !== target_ev) {
-					this.unselect(selected[i]);
-					this._after_select(selected[i]);
+					this.unselect(selected[i], e);
 				}	
 			}
 		}
-		if(!this.isSelected(target_ev)){
-			return false;
+
+		if (this.isSelected(target_ev)) {
+			this.setLastSelected(target_ev);
+		} else if (defaultLast) {
+			if (target_ev == last)
+				this.setLastSelected(e.shiftKey ? defaultLast : this.getDefaultSelected());
+		} else {
+			this.setLastSelected(null);
 		}
+
+		if (!this.getSelected().length)
+			this.setLastSelected(null);
+
+		if (!this.getLastSelected() || !this.isSelected(this.getFirstSelected()))
+			this.setFirstSelected(this.getLastSelected());
+
 		return true;
 	}
 };
 
-
 (function(){
+	
 	var old_selectTask = gantt.selectTask;
-	gantt.selectTask = function(id){
-		var res = old_selectTask.call(this, id);
-		if(this.config.multiselect)
-			this._multiselect.select(id);
-
+	gantt.selectTask = function(id) {
+		if (!id)
+			return false;
+		var multiselect = gantt._multiselect;
+		var res = id;
+		if (multiselect.isActive()) {
+			if (multiselect.select(id, null)) {
+				multiselect.setLastSelected(id);
+			}
+			multiselect.setFirstSelected(multiselect.getLastSelected());
+		} else {
+			res = old_selectTask.call(this, id);
+		}
 		return res;
 	};
+
 	var old_unselectTask = gantt.unselectTask;
-	gantt.unselectTask = function(id){
-		if(id !== undefined && this.config.multiselect)
-			this._multiselect.unselect(id);
-		var res = old_unselectTask.call(this, id);
+	gantt.unselectTask = function(id) {
+		var multiselect = gantt._multiselect;
+		var isActive = multiselect.isActive();
+		id = id || multiselect.getLastSelected();
+		if(id && isActive) {
+			multiselect.unselect(id, null);
+			if (id == multiselect.getLastSelected())
+				multiselect.setLastSelected(null);
+			gantt.refreshTask(id);
+			multiselect.setFirstSelected(multiselect.getLastSelected());
+		}
+		var res = id;
+		if (!isActive)
+			res = old_unselectTask.call(this, id);
 		return res;
 	};
 
-	gantt.toggleTaskSelection = function(id){
-		if(this.config.multiselect)
-			this._multiselect.toggle(id);
+	gantt.toggleTaskSelection = function(id) {
+		var multiselect = gantt._multiselect;
+		if (id && multiselect.isActive()) {
+			multiselect.toggle(id);
+			multiselect.setFirstSelected(multiselect.getLastSelected());
+		}
 	};
-	gantt.getSelectedTasks = function(){
-		return this._multiselect.getSelected();
+	gantt.getSelectedTasks = function() {
+		var multiselect = gantt._multiselect;
+		multiselect.isActive();
+		return multiselect.getSelected();
 	};
 	gantt.eachSelectedTask = function(callback){
 		return this._multiselect.forSelected(callback);
@@ -289,23 +351,24 @@ gantt._multiselect = {
 
 gantt.attachEvent("onTaskIdChange", function (id, new_id) {
 	var multiselect = gantt._multiselect;
-	if(!multiselect.isActive())
+	if (!multiselect.isActive())
 		return true;
-
 	if (gantt.isSelectedTask(id)) {
 		multiselect.unselect(id, null);
 		multiselect.select(new_id, null);
-		gantt.refreshTask(new_id);
 	}
 });
 
 gantt.attachEvent("onAfterTaskDelete", function (id, item) {
 	var multiselect = gantt._multiselect;
-	if(!multiselect.isActive())
+	if (!multiselect.isActive())
 		return true;
 
-	if (multiselect.selected[id])
+	if (multiselect._selected[id]) {
 		multiselect.unselect(id, null);
+		multiselect._selected[id] = false;
+		multiselect.setLastSelected(multiselect.getDefaultSelected());
+	}
 
 	multiselect.forSelected(function (task_id) {
 		if (!gantt.isTaskExists(task_id))
@@ -313,23 +376,19 @@ gantt.attachEvent("onAfterTaskDelete", function (id, item) {
 	});
 });
 
-gantt.attachEvent("onBeforeTaskMultiSelect", function(id, select, e){
+gantt.attachEvent("onBeforeTaskMultiSelect", function(id, state, e){
 	var multiselect = gantt._multiselect;
-	if(select && multiselect.isActive()){
-		return multiselect.is_same_level(id);
+	if (state && multiselect.isActive()) {
+		if (multiselect._one_level) {
+			return multiselect.isSameLevel(id);
+		}
 	}
 	return true;
 });
 
-gantt.attachEvent("onTaskClick", function(id, e){
-	var res = gantt._multiselect._do_selection(e);
-	gantt.callEvent("onMultiSelect", [e]);
-	return res;
-});
-
-gantt.attachEvent("onEmptyClick", function (e){
-	gantt._multiselect._do_selection(e);
-	gantt.callEvent("onMultiSelect", [e]);
+gantt.attachEvent("onTaskClick", function(id, e) {
+	if (gantt._multiselect.doSelection(e))
+		gantt.callEvent("onMultiSelect", [e]);
 	return true;
 });
 

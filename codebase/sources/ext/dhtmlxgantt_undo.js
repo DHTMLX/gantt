@@ -1,7 +1,7 @@
 /*!
  * @license
  * 
- * dhtmlxGantt v.5.0.5 Stardard
+ * dhtmlxGantt v.5.1.0 Stardard
  * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
  * 
  * (c) Dinamenta, UAB.
@@ -155,7 +155,7 @@ gantt._undo = {
 			if(action){
 
 				this._applyAction(this.action.invert(action));
-				this._push(this._redoStack, action);
+				this._push(this._redoStack, gantt.copy(action));
 			}
 		}
 		gantt.callEvent("onAfterUndo", []);
@@ -170,7 +170,7 @@ gantt._undo = {
 			if(gantt.callEvent("onBeforeRedo", [action]) !== false){
 				if(action){
 					this._applyAction(action);
-					this._push(this._undoStack, action);
+					this._push(this._undoStack, gantt.copy(action));
 				}
 		}
 		gantt.callEvent("onAfterRedo", []);
