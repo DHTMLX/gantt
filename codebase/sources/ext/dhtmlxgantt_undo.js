@@ -1,12 +1,12 @@
-/*!
- * @license
- * 
- * dhtmlxGantt v.5.1.0 Stardard
- * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
- * 
- * (c) Dinamenta, UAB.
- * 
- */
+/*
+@license
+
+dhtmlxGantt v.5.2.0 Standard
+This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+
+(c) Dinamenta, UAB.
+
+*/
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -45,12 +45,32 @@
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -66,23 +86,20 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/codebase/sources/";
+/******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 27);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/undo.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 27:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(28);
-
-
-/***/ }),
-
-/***/ 28:
+/***/ "./sources/ext/undo.js":
+/*!*****************************!*\
+  !*** ./sources/ext/undo.js ***!
+  \*****************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
 gantt.config.undo_steps = 10;
@@ -99,6 +116,14 @@ gantt.getUndoStack = function(){
 
 gantt.getRedoStack = function(){
 	return this._undo._redoStack;
+};
+
+gantt.clearUndoStack = function(){
+	this._undo._undoStack = [];
+};
+
+gantt.clearRedoStack = function(){
+	this._undo._redoStack = [];
 };
 
 gantt.redo = function(){
@@ -119,9 +144,10 @@ gantt.config.undo_types = {
  * @type {{update: string, remove: string, add: string}}
  */
 gantt.config.undo_actions = {
-	update:"update",
-	remove:"remove",// remove item from datastore
-	add:"add"
+	update: "update",
+	remove: "remove", // remove item from datastore
+	add: "add",
+	move: "move" // move task in grid
 };
 
 gantt._undo = {
@@ -134,6 +160,13 @@ gantt._undo = {
 		if(!action.commands.length)
 			return;
 
+		var event = stack === this._undoStack ? "onBeforeUndoStack" : "onBeforeRedoStack";
+		if(gantt.callEvent(event, [action]) === false){
+			return;
+		}
+		// commands can be removed from event handler
+		if(!action.commands.length)
+			return;
 
 		stack.push(action);
 		while(stack.length > this.maxSteps){
@@ -156,9 +189,11 @@ gantt._undo = {
 
 				this._applyAction(this.action.invert(action));
 				this._push(this._redoStack, gantt.copy(action));
+				gantt.callEvent("onAfterUndo", [action]);
+				return;
 			}
 		}
-		gantt.callEvent("onAfterUndo", []);
+		gantt.callEvent("onAfterUndo", [null]);
 	},
 
 	redo:function(){
@@ -171,9 +206,11 @@ gantt._undo = {
 				if(action){
 					this._applyAction(action);
 					this._push(this._undoStack, gantt.copy(action));
+					gantt.callEvent("onAfterRedo", [action]);
+					return;
 				}
 		}
-		gantt.callEvent("onAfterRedo", []);
+		gantt.callEvent("onAfterRedo", [null]);
 	},
 
 	_applyAction:function(action){
@@ -186,6 +223,7 @@ gantt._undo = {
 			add: "addTask",
 			update: "updateTask",
 			remove: "deleteTask",
+			move: "moveTask",
 			isExists: "isTaskExists"
 		};
 		methods[entities.link] = {
@@ -195,20 +233,21 @@ gantt._undo = {
 			isExists: "isLinkExists"
 		};
 
-		gantt.batchUpdate(function(){
-			for(var i = 0; i < action.commands.length; i++){
+		gantt.batchUpdate(function() {
+			for (var i = 0; i < action.commands.length; i++) {
 				command = action.commands[i];
 				var method = methods[command.entity][command.type],
 					check = methods[command.entity]["isExists"];
 
-				if(command.type == actions.add){
+				if (command.type == actions.add) {
 					gantt[method](command.oldValue, command.oldValue.parent, command.oldValue.$index);
-				}else if(command.type == actions.remove){
-					if(gantt[check](command.value.id))
+				} else if (command.type == actions.remove) {
+					if (gantt[check](command.value.id))
 						gantt[method](command.value.id);
-				}else if(command.type == actions.update){
-
+				} else if (command.type == actions.update) {
 					gantt[method](command.value.id, command.value);
+				} else if (command.type == actions.move) {
+					gantt[method](command.value.id, command.value.index, command.value.parent);
 				}
 			}
 		});
@@ -230,7 +269,7 @@ gantt._undo = {
 
 			for(var i = 0; i < action.commands.length; i++){
 				var command = revert.commands[i] = commands.invert(revert.commands[i]);
-				if(command.type == commands.type.update){
+				if(command.type == commands.type.update || command.type == commands.type.move){
 					var value = command.value;
 					command.value = command.oldValue;
 					command.oldValue = value;
@@ -271,6 +310,8 @@ gantt._undo = {
 					return this.type.clear;
 				case this.type.clear:
 					return this.type.load;
+				case this.type.move:
+					return this.type.move;
 				default:
 					gantt.assert(false, "Invalid command "+ command);
 					return null;
@@ -282,6 +323,13 @@ gantt._undo = {
 		_batchAction: null,
 		_batchMode: false,
 		_ignore: false,
+		_ignoreMoveEvents: false,
+		isMoveEventsIgnored: function() {
+			return this._ignoreMoveEvents;
+		},
+		toggleIgnoreMoveEvents: function(newValue) {
+			this._ignoreMoveEvents = newValue || false;
+		},
 		startIgnore: function(){
 			this._ignore = true;
 		},
@@ -340,8 +388,6 @@ gantt._undo = {
 		_storeLinkCommand: function(obj, type){
 			this._storeEntityCommand(obj, this.getInitialLink(obj.id), type, gantt._undo.command.entity.link);
 		},
-
-
 		onTaskAdded:function(task){
 			if(!this._ignore)
 				this._storeTaskCommand(task, gantt._undo.command.type.add);
@@ -349,6 +395,16 @@ gantt._undo = {
 		onTaskUpdated:function(task){
 			if(!this._ignore)
 				this._storeTaskCommand(task, gantt._undo.command.type.update);
+		},
+		onTaskMoved: function(task){
+			if (!this._ignore) {
+				this._storeEntityCommand(
+					task,
+					this.getInitialTask(task.id),
+					gantt._undo.command.type.move,
+					gantt._undo.command.entity.task
+				);
+			}
 		},
 		onTaskDeleted: function(task){
 			if(!this._ignore){
@@ -412,16 +468,18 @@ gantt._undo = {
 			this._nestedLinks[id] = links;
 		},
 		setInitialTask: function(id){
-			if(!this._initialTasks[id] || !this._batchMode){
-				var task = gantt.copy( gantt.getTask(id));
+			if (!this._initialTasks[id] || !this._batchMode) {
+				var task = gantt.copy(gantt.getTask(id));
 				task.$index = gantt.getTaskIndex(id);
-
-				this._initialTasks[id] = task;
+				this.setInitialTaskObject(id, task);
 			}
 			return this._initialTasks[id];
 		},
 		getInitialTask: function(id){
 			return this._initialTasks[id];
+		},
+		setInitialTaskObject: function(id, object) {
+			this._initialTasks[id] = object;
 		},
 
 		_initialLinks:{},
@@ -480,8 +538,6 @@ gantt._undo.updateConfigs = function(){
 		return true;
 	}
 
-
-
 	gantt.attachEvent("onBeforeTaskDrag", store);
 	gantt.attachEvent("onLightbox", store);
 	gantt.attachEvent("onBeforeTaskAutoSchedule", function(task){ store(task.id);  return true;});
@@ -514,6 +570,50 @@ gantt._undo.updateConfigs = function(){
 	gantt.attachEvent("onAfterLinkDelete", function(id, task){
 		monitor.onLinkDeleted(task);
 	});
+
+	var datastore = gantt.getDatastore("task");
+
+	datastore.attachEvent("onBeforeItemMove", function(id, parent, tindex){
+		if (!monitor.isMoveEventsIgnored()) {
+			var initialObject = getMoveObjectByTaskId(id);
+
+			monitor.setInitialTaskObject(id, initialObject);
+			return true;
+		}
+	});
+
+
+	datastore.attachEvent("onAfterItemMove", function(id, parent, tindex){
+		if (!monitor.isMoveEventsIgnored()) {
+			var newObject = getMoveObjectByTaskId(id);
+			monitor.onTaskMoved(newObject);
+			return true;
+		}
+	});
+
+	gantt.attachEvent("onRowDragStart", function(id, target, e) {
+		var initialObject = getMoveObjectByTaskId(id);
+
+		monitor.toggleIgnoreMoveEvents(true);
+		monitor.setInitialTaskObject(id, initialObject);
+		return true;
+	});
+	
+	gantt.attachEvent("onRowDragEnd", function(id, target) {
+		var newObject = getMoveObjectByTaskId(id);
+
+		monitor.onTaskMoved(newObject);
+		monitor.toggleIgnoreMoveEvents();
+		return true;
+	});
+
+	function getMoveObjectByTaskId(id) {
+		return {
+			id: id,
+			index: gantt.getTaskIndex(id),
+			parent: gantt.getParent(id)
+		};	
+	}
 
 	function updTask(task, oldId, newId){
 		if(!task) return;

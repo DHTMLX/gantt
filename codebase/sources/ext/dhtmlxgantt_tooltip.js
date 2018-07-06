@@ -1,12 +1,12 @@
-/*!
- * @license
- * 
- * dhtmlxGantt v.5.1.0 Stardard
- * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
- * 
- * (c) Dinamenta, UAB.
- * 
- */
+/*
+@license
+
+dhtmlxGantt v.5.2.0 Standard
+This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+
+(c) Dinamenta, UAB.
+
+*/
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -45,12 +45,32 @@
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -66,15 +86,216 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/codebase/sources/";
+/******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 25);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/tooltip.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 0:
+/***/ "./sources/ext/tooltip.js":
+/*!********************************!*\
+  !*** ./sources/ext/tooltip.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+(function(){
+
+function getTooltipContainer(){
+	return gantt.$task_data || gantt.$root;
+}
+
+function getTooltipViewPort(){
+	return gantt.$task || gantt.$root;
+}
+
+gantt._tooltip = {};
+gantt._tooltip_class = "gantt_tooltip";
+gantt.config.tooltip_timeout = 30;//,
+gantt.config.tooltip_offset_y = 20;
+gantt.config.tooltip_offset_x = 10;//,
+	// timeout_to_hide: 50,
+	// delta_x: 15,
+	// delta_y: -20
+
+gantt._create_tooltip = function(){
+	if (!this._tooltip_html){
+		this._tooltip_html = document.createElement('div');
+		this._tooltip_html.className = gantt._tooltip_class;
+
+		this._waiAria.tooltipAttr(this._tooltip_html);
+
+	}
+
+	return this._tooltip_html;
+};
+
+gantt._is_cursor_under_tooltip = function(mouse_pos, tooltip) {
+	if(mouse_pos.x >= tooltip.pos.x && mouse_pos.x <= (tooltip.pos.x + tooltip.width)) return true;
+	if(mouse_pos.y >= tooltip.pos.y && mouse_pos.y <= (tooltip.pos.y + tooltip.height)) return true;
+	return false;
+};
+
+gantt._show_tooltip = function(text, pos) {
+	if (gantt.config.touch && !gantt.config.touch_tooltip) return;
+
+	var tip = this._create_tooltip();
+
+	tip.innerHTML = text;
+	getTooltipContainer().appendChild(tip);
+
+	var width = tip.offsetWidth + 20;
+	var height = tip.offsetHeight + 40;
+	var viewPort = getTooltipViewPort();
+	var max_height = viewPort.offsetHeight;
+	var max_width = viewPort.offsetWidth;
+	var scroll = this.getScrollState();
+
+	if(viewPort === gantt.$root){
+		scroll = {x: 0, y: 0};
+	}
+
+	gantt._waiAria.tooltipVisibleAttr(tip);
+
+	//pos.x += scroll.x;
+	pos.y += scroll.y;
+
+	var mouse_pos = {
+		x: pos.x,
+		y: pos.y
+	};
+
+	pos.x += (gantt.config.tooltip_offset_x*1 || 0);
+	pos.y += (gantt.config.tooltip_offset_y*1 || 0);
+
+	pos.y = Math.min(Math.max(scroll.y, pos.y), scroll.y+max_height - height);
+	pos.x = Math.min(Math.max(scroll.x, pos.x), scroll.x+max_width - width);
+
+	if (gantt._is_cursor_under_tooltip(mouse_pos, {pos: pos, width: width, height: height})) {
+		if((mouse_pos.x+width) > (max_width + scroll.x)) pos.x = mouse_pos.x - (width - 20) - (gantt.config.tooltip_offset_x*1 || 0);
+		if((mouse_pos.y+height) > (max_height + scroll.y)) pos.y = mouse_pos.y - (height - 40) - (gantt.config.tooltip_offset_y*1 || 0);
+	}
+
+	tip.style.left = pos.x + "px";
+	tip.style.top  = pos.y + "px";
+};
+
+gantt._hide_tooltip = function(){
+	if(this._tooltip_html)
+		this._waiAria.tooltipHiddenAttr(this._tooltip_html);
+
+	if (this._tooltip_html && this._tooltip_html.parentNode)
+		this._tooltip_html.parentNode.removeChild(this._tooltip_html);
+	this._tooltip_id = 0;
+
+
+};
+
+gantt._is_tooltip = function(ev) {
+	var node = ev.target || ev.srcElement;
+	return gantt._is_node_child(node, function(node){
+		return (node.className == this._tooltip_class);
+	});
+};
+
+gantt._is_task_line = function(ev){
+	var node = ev.target || ev.srcElement;
+	return gantt._is_node_child(node, function(node){
+		return (node == this.$task_data);
+	});
+};
+
+gantt._is_node_child = function(node, condition){
+	var res = false;
+	while (node && !res) {
+		res = condition.call(gantt, node);
+		node = node.parentNode;
+	}
+	return res;
+};
+
+gantt._tooltip_pos = function(ev) {
+	if (ev.pageX || ev.pageY)
+		var pos = {x:ev.pageX, y:ev.pageY};
+
+	var d = (document.documentElement ||
+		document.body.parentNode ||
+		document.body);
+
+	var pos = {
+		x:ev.clientX + d.scrollLeft - d.clientLeft,
+		y:ev.clientY + d.scrollTop - d.clientTop
+	};
+
+	var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+
+	var box = domHelpers.getNodePosition(getTooltipContainer());
+	pos.x = pos.x - box.x;
+	pos.y = pos.y - box.y;
+	return pos;
+};
+
+gantt.attachEvent("onMouseMove", function(event_id, ev) { // (gantt event_id, browser event)
+	if(this.config.tooltip_timeout){
+		//making events survive timeout in ie
+		if(document.createEventObject && !document.createEvent)
+			ev = document.createEventObject(ev);
+
+		var delay = this.config.tooltip_timeout;
+
+		if(this._tooltip_id && !event_id){
+			if(!isNaN(this.config.tooltip_hide_timeout)){
+				delay = this.config.tooltip_hide_timeout;
+			}
+		}
+
+		clearTimeout(gantt._tooltip_ev_timer);
+		gantt._tooltip_ev_timer = setTimeout(function(){
+			gantt._init_tooltip(event_id, ev);
+		}, delay);
+
+	}else{
+		gantt._init_tooltip(event_id, ev);
+	}
+});
+gantt._init_tooltip = function(event_id, ev){
+	if (this._is_tooltip(ev)) return;
+	if (event_id == this._tooltip_id && !this._is_task_line(ev)) return;
+	if (!event_id)
+		return this._hide_tooltip();
+
+	if(!this.isTaskExists(event_id)){
+		return this._hide_tooltip();
+	}
+
+	this._tooltip_id = event_id;
+
+	var task = this.getTask(event_id);
+	var text = this.templates.tooltip_text(task.start_date, task.end_date, task);
+	if (!text){
+		this._hide_tooltip();
+		return;
+	}
+	this._show_tooltip(text, this._tooltip_pos(ev));
+};
+gantt.attachEvent("onMouseLeave", function(ev){
+	if (gantt._is_tooltip(ev)) return;
+	this._hide_tooltip();
+});
+
+})();
+
+
+/***/ }),
+
+/***/ "./sources/utils/dom_helpers.js":
+/*!**************************************!*\
+  !*** ./sources/utils/dom_helpers.js ***!
+  \**************************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
 //returns position of html element on the page
@@ -325,10 +546,15 @@ function getRelativeEventPosition(ev, node){
 
 
 function isChildOf(child, parent){
+	if(!child || !parent){
+		return false;
+	}
+
 	while(child && child != parent) {
 		child = child.parentNode;
 	}
-	return child == parent;
+
+	return child === parent;
 }
 
 module.exports = {
@@ -348,194 +574,6 @@ module.exports = {
 	getRelativeEventPosition: getRelativeEventPosition,
 	isChildOf: isChildOf,
 };
-
-/***/ }),
-
-/***/ 25:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(26);
-
-
-/***/ }),
-
-/***/ 26:
-/***/ (function(module, exports, __webpack_require__) {
-
-gantt._tooltip = {};
-gantt._tooltip_class = "gantt_tooltip";
-gantt.config.tooltip_timeout = 30;//,
-gantt.config.tooltip_offset_y = 20;
-gantt.config.tooltip_offset_x = 10;//,
-	// timeout_to_hide: 50,
-	// delta_x: 15,
-	// delta_y: -20
-
-gantt._create_tooltip = function(){
-	if (!this._tooltip_html){
-		this._tooltip_html = document.createElement('div');
-		this._tooltip_html.className = gantt._tooltip_class;
-
-		this._waiAria.tooltipAttr(this._tooltip_html);
-
-	}
-
-	return this._tooltip_html;
-};
-
-gantt._is_cursor_under_tooltip = function(mouse_pos, tooltip) {
-	if(mouse_pos.x >= tooltip.pos.x && mouse_pos.x <= (tooltip.pos.x + tooltip.width)) return true;
-	if(mouse_pos.y >= tooltip.pos.y && mouse_pos.y <= (tooltip.pos.y + tooltip.height)) return true;
-	return false;
-};
-
-gantt._show_tooltip = function(text, pos) {
-	if (gantt.config.touch && !gantt.config.touch_tooltip) return;
-
-	var tip = this._create_tooltip();
-
-	tip.innerHTML = text;
-	gantt.$task_data.appendChild(tip);
-
-	var width = tip.offsetWidth + 20;
-	var height = tip.offsetHeight + 40;
-	var max_height = this.$task.offsetHeight;
-	var max_width = this.$task.offsetWidth;
-	var scroll = this.getScrollState();
-
-	gantt._waiAria.tooltipVisibleAttr(tip);
-
-	//pos.x += scroll.x;
-	pos.y += scroll.y;
-
-	var mouse_pos = {
-		x: pos.x,
-		y: pos.y
-	};
-
-	pos.x += (gantt.config.tooltip_offset_x*1 || 0);
-	pos.y += (gantt.config.tooltip_offset_y*1 || 0);
-
-	pos.y = Math.min(Math.max(scroll.y, pos.y), scroll.y+max_height - height);
-	pos.x = Math.min(Math.max(scroll.x, pos.x), scroll.x+max_width - width);
-
-	if (gantt._is_cursor_under_tooltip(mouse_pos, {pos: pos, width: width, height: height})) {
-		if((mouse_pos.x+width) > (max_width + scroll.x)) pos.x = mouse_pos.x - (width - 20) - (gantt.config.tooltip_offset_x*1 || 0);
-		if((mouse_pos.y+height) > (max_height + scroll.y)) pos.y = mouse_pos.y - (height - 40) - (gantt.config.tooltip_offset_y*1 || 0);
-	}
-
-	tip.style.left = pos.x + "px";
-	tip.style.top  = pos.y + "px";
-};
-
-gantt._hide_tooltip = function(){
-	if(this._tooltip_html)
-		this._waiAria.tooltipHiddenAttr(this._tooltip_html);
-
-	if (this._tooltip_html && this._tooltip_html.parentNode)
-		this._tooltip_html.parentNode.removeChild(this._tooltip_html);
-	this._tooltip_id = 0;
-
-
-};
-
-gantt._is_tooltip = function(ev) {
-	var node = ev.target || ev.srcElement;
-	return gantt._is_node_child(node, function(node){
-		return (node.className == this._tooltip_class);
-	});
-};
-
-gantt._is_task_line = function(ev){
-	var node = ev.target || ev.srcElement;
-	return gantt._is_node_child(node, function(node){
-		return (node == this.$task_data);
-	});
-};
-
-gantt._is_node_child = function(node, condition){
-	var res = false;
-	while (node && !res) {
-		res = condition.call(gantt, node);
-		node = node.parentNode;
-	}
-	return res;
-};
-
-gantt._tooltip_pos = function(ev) {
-	if (ev.pageX || ev.pageY)
-		var pos = {x:ev.pageX, y:ev.pageY};
-
-	var d = (document.documentElement ||
-		document.body.parentNode ||
-		document.body);
-
-	var pos = {
-		x:ev.clientX + d.scrollLeft - d.clientLeft,
-		y:ev.clientY + d.scrollTop - d.clientTop
-	};
-
-	var domHelpers = __webpack_require__(0);
-
-	var box = domHelpers.getNodePosition(gantt.$task_data);
-	pos.x = pos.x - box.x;
-	pos.y = pos.y - box.y;
-	return pos;
-};
-
-gantt.attachEvent("onMouseMove", function(event_id, ev) { // (gantt event_id, browser event)
-	if(this.config.tooltip_timeout){
-		//making events survive timeout in ie
-		if(document.createEventObject && !document.createEvent)
-			ev = document.createEventObject(ev);
-
-		var delay = this.config.tooltip_timeout;
-
-		if(this._tooltip_id && !event_id){
-			if(!isNaN(this.config.tooltip_hide_timeout)){
-				delay = this.config.tooltip_hide_timeout;
-			}
-		}
-
-		clearTimeout(gantt._tooltip_ev_timer);
-		gantt._tooltip_ev_timer = setTimeout(function(){
-			gantt._init_tooltip(event_id, ev);
-		}, delay);
-
-	}else{
-		gantt._init_tooltip(event_id, ev);
-	}
-});
-gantt._init_tooltip = function(event_id, ev){
-	if (this._is_tooltip(ev)) return;
-	if (event_id == this._tooltip_id && !this._is_task_line(ev)) return;
-	if (!event_id)
-		return this._hide_tooltip();
-
-	this._tooltip_id = event_id;
-
-	var task = this.getTask(event_id);
-	var text = this.templates.tooltip_text(task.start_date, task.end_date, task);
-	if (!text){
-		this._hide_tooltip();
-		return;
-	}
-	this._show_tooltip(text, this._tooltip_pos(ev));
-};
-gantt.attachEvent("onMouseLeave", function(ev){
-	if (gantt._is_tooltip(ev)) return;
-	this._hide_tooltip();
-});
-
-// gantt.attachEvent("onBeforeDrag", function() {
-// 	gantt._tooltip.hide();
-// 	return true;
-// });
-// gantt.attachEvent("onEventDeleted", function() {
-// 	gantt._tooltip.hide();
-// 	return true;
-// });
-
 
 /***/ })
 

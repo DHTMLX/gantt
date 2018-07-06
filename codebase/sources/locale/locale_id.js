@@ -1,12 +1,12 @@
-/*!
- * @license
- * 
- * dhtmlxGantt v.5.1.0 Stardard
- * This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
- * 
- * (c) Dinamenta, UAB.
- * 
- */
+/*
+@license
+
+dhtmlxGantt v.5.2.0 Standard
+This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+
+(c) Dinamenta, UAB.
+
+*/
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -45,12 +45,32 @@
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -66,23 +86,20 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/codebase/sources/";
+/******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 32);
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/locale/locale_id.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 32:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(33);
-
-
-/***/ }),
-
-/***/ 33:
+/***/ "./sources/locale/locale_id.js":
+/*!*************************************!*\
+  !*** ./sources/locale/locale_id.js ***!
+  \*************************************/
+/*! no static exports found */
 /***/ (function(module, exports) {
 
 gantt.locale = {	date: {		month_full: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],		month_short: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"],		day_full: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],		day_short: ["Ming", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]	},	labels: {		new_task: "Tugas baru",		dhx_cal_today_button: "Hari Ini",		day_tab: "Hari",		week_tab: "Minggu",		month_tab: "Bulan",		new_event: "Acara Baru",		icon_save: "Simpan",		icon_cancel: "Batal",		icon_details: "Detail",		icon_edit: "Edit",		icon_delete: "Hapus",		confirm_closing: "", /*Perubahan tidak akan disimpan ?*/		confirm_deleting: "Acara akan dihapus",		section_description: "Keterangan",		section_time: "Periode",		section_type: "Type",		/* grid columns */		column_wbs : "WBS",		column_text: "Task name",		column_start_date: "Start time",		column_duration: "Duration",		column_add: "",		/* link confirmation */		link: "Link",		confirm_link_deleting: "will be deleted",		link_start: " (start)",		link_end: " (end)",		type_task: "Task",		type_project: "Project",		type_milestone: "Milestone",		minutes: "Minutes",		hours: "Hours",		days: "Days",		weeks: "Week",		months: "Months",		years: "Years",		/* message popup */		message_ok: "OK",		message_cancel: "Batal"	}};

@@ -1,3 +1,15 @@
+### 5.2
+- Inline editing in grid
+- Split task support
+- Updated keyboard navigation
+- Add checkbox and radio controls to the lightbox
+- Add ability to set task types automatically
+- Add ability to use a placeholder row for creating new tasks
+- Auto Scheduling performance improvements
+- New methods and events for Auto scheduling and Undo extension
+- Updated Content Security Policy extension
+- Various bugfixes
+
 ### 5.1
 - Resource load diagram
 - RTL mode
