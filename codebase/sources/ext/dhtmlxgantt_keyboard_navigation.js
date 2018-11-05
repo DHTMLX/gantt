@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.5.2.0 Standard
+dhtmlxGantt v.6.0.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -1758,7 +1758,7 @@ function getClassName(node){
 		className = className.baseVal;
 
 	if(!className.indexOf)
-		className = '';
+		className = "";
 
 	return _trimString(className);
 }
@@ -1772,9 +1772,18 @@ function addClassName(node, className){
 function removeClassName(node, name) {
 	name = name.split(" ");
 	for (var i = 0; i < name.length; i++) {
-		var regEx = new RegExp('\\s?\\b' + name[i] + '\\b(?![-_\.])', "");
+		var regEx = new RegExp("\\s?\\b" + name[i] + "\\b(?![-_\.])", "");
 		node.className = node.className.replace(regEx, "");
 	}
+}
+
+function hasClass(element, className){
+	if ('classList' in element) {
+		return element.classList.contains(className);
+	} else { 
+		return new RegExp("\\b" + className + "\\b").test(element.className);
+	}
+	return false;
 }
 
 function toNode(node) {
@@ -1843,15 +1852,14 @@ function _trimString(str){
 }
 
 function locateClassName(e, classname, strict){
+	var trg = getTargetNode(e);
+	var css = "";
+
 	if(strict === undefined)
 		strict = true;
 
-	var trg = getTargetNode(e);
-	var css = '';
-	var test = false;
 	while (trg){
 		css = getClassName(trg);
-
 		if(css){
 			var ind = css.indexOf(classname);
 			if (ind >= 0){
@@ -1866,7 +1874,6 @@ function locateClassName(e, classname, strict){
 					return trg;
 			}
 		}
-
 		trg=trg.parentNode;
 	}
 	return null;
@@ -1876,19 +1883,13 @@ function locateClassName(e, classname, strict){
 event position relatively to DOM element
  */
 function getRelativeEventPosition(ev, node){
-	if (ev.pageX || ev.pageY)
-		var pos = {x: ev.pageX, y: ev.pageY};
-
 	var d = document.documentElement;
-	var pos = {
-		x: ev.clientX + d.scrollLeft - d.clientLeft,
-		y: ev.clientY + d.scrollTop - d.clientTop
-	};
-
 	var box = elementPosition(node);
-	pos.x = pos.x - box.x + node.scrollLeft;
-	pos.y = pos.y - box.y + node.scrollTop;
-	return pos;
+
+	return {
+		x: ev.clientX + d.scrollLeft - d.clientLeft - box.x + node.scrollLeft,
+		y: ev.clientY + d.scrollTop - d.clientTop - box.y + node.scrollTop
+	};
 }
 
 
@@ -1920,6 +1921,7 @@ module.exports = {
 	getTargetNode: getTargetNode,
 	getRelativeEventPosition: getRelativeEventPosition,
 	isChildOf: isChildOf,
+	hasClass: hasClass
 };
 
 /***/ }),

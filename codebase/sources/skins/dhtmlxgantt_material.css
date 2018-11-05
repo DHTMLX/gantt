@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.5.2.0 Standard
+dhtmlxGantt v.6.0.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -554,6 +554,33 @@ div.gantt_drag_marker .gantt_link_tooltip {
   font-family: Roboto;
   border-width: 0px;
   box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.2), 0 0 3px 1px rgba(0, 0, 0, 0.1);
+}
+.switch_unsetted {
+  display: none;
+}
+.matherial_checkbox_icon {
+  background-size: cover;
+  height: 1.3em;
+  width: 1.3em;
+  display: inline-block;
+  vertical-align: -0.3em;
+}
+.matherial_checkbox_checked,
+.switch_unsetted:checked + .matherial_checkbox_icon,
+label.gantt_resource_row input[type=checkbox]:checked + div.gantt_resource_cell_checkbox .matherial_checkbox_icon {
+  background-image: url(data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20enable-background%3D%22new%200%200%2024%2024%22%20xml%3Aspace%3D%22preserve%22%3E%3Cg%20id%3D%22Bounding_Boxes%22%3E%3Cpath%20fill%3D%22none%22%20d%3D%22M0%2C0h24v24H0V0z%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Outline_1_%22%3E%3Cg%3E%3Cpath%20d%3D%22M19%2C3H5C3.9%2C3%2C3%2C3.9%2C3%2C5v14c0%2C1.1%2C0.9%2C2%2C2%2C2h14c1.1%2C0%2C2-0.9%2C2-2V5C21%2C3.9%2C20.1%2C3%2C19%2C3z%20M19%2C19H5V5h14V19z%22%20fill-opacity%3D%220.8%22%2F%3E%3Cpolygon%20points%3D%2217.99%2C9%2016.58%2C7.58%209.99%2C14.17%207.41%2C11.6%205.99%2C13.01%209.99%2C17%22%20fill-opacity%3D%220.8%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E%0A);
+}
+.matherial_checkbox_unchecked,
+.switch_unsetted + .matherial_checkbox_icon,
+label.gantt_resource_row input[type=checkbox] + div.gantt_resource_cell_checkbox .matherial_checkbox_icon {
+  background-image: url(data:image/svg+xml;charset=utf-8,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22utf-8%22%3F%3E%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20enable-background%3D%22new%200%200%2024%2024%22%20xml%3Aspace%3D%22preserve%22%3E%3Cg%20id%3D%22Bounding_Boxes%22%3E%3Cpath%20fill%3D%22none%22%20d%3D%22M0%2C0h24v24H0V0z%22%2F%3E%3C%2Fg%3E%3Cg%20id%3D%22Outline_1_%22%3E%3Cpath%20d%3D%22M19%2C5v14H5V5H19%20M19%2C3H5C3.9%2C3%2C3%2C3.9%2C3%2C5v14c0%2C1.1%2C0.9%2C2%2C2%2C2h14c1.1%2C0%2C2-0.9%2C2-2V5C21%2C3.9%2C20.1%2C3%2C19%2C3z%22%20fill-opacity%3D%220.8%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E);
+}
+label.gantt_resource_row input[type=checkbox] {
+  display: none;
+}
+label.gantt_resource_row select {
+  height: calc(1.3em + 4px);
+  border-width: 0.5px;
 }
 .gantt_container {
   background-color: #FFFFFF;
@@ -1506,6 +1533,9 @@ div.dhx_modal_cover {
   box-sizing: border-box;
   cursor: pointer;
 }
+.gantt_hidden {
+  display: none;
+}
 .gantt_btn_set div {
   float: left;
   font-size: 14px;
@@ -1701,6 +1731,66 @@ div.dhx_modal_cover {
   border-top-right-radius: 2px;
   border-bottom-right-radius: 2px;
 }
+.gantt_resources {
+  max-height: 150px;
+  height: auto;
+  overflow-y: auto;
+}
+.gantt_resource_row {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid #D7D7D7;
+  cursor: pointer;
+}
+.gantt_resource_row input[type=checkbox]:not(:checked),
+.gantt_resource_row input[type=checkbox]:not(:checked) ~ div {
+  opacity: 0.5;
+}
+.gantt_resource_toggle {
+  vertical-align: middle;
+}
+.gantt_resources_filter .gantt_resources_filter_input {
+  padding: 1px 2px 1px 2px;
+  box-sizing: border-box;
+}
+.gantt_resources_filter .switch_unsetted {
+  vertical-align: middle;
+}
+.gantt_resource_cell {
+  display: inline-block;
+}
+.gantt_resource_cell.gantt_resource_cell_checkbox {
+  width: 24px;
+  max-width: 24px;
+  min-width: 24px;
+  vertical-align: middle;
+}
+.gantt_resource_cell.gantt_resource_cell_label {
+  width: 40%;
+  max-width: 40%;
+  vertical-align: middle;
+}
+.gantt_resource_cell.gantt_resource_cell_value {
+  width: 30%;
+  max-width: 30%;
+  vertical-align: middle;
+}
+.gantt_resource_cell.gantt_resource_cell_value input,
+.gantt_resource_cell.gantt_resource_cell_value select {
+  width: 80%;
+  vertical-align: middle;
+  padding: 1px 2px 1px 2px;
+  box-sizing: border-box;
+}
+.gantt_resource_cell.gantt_resource_cell_unit {
+  width: 10%;
+  max-width: 10%;
+  vertical-align: middle;
+}
+.gantt_resource_early_value {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
 /* Quick info */
 .gantt_cal_quick_info {
   border: 0px;
@@ -1806,6 +1896,51 @@ div.dhx_modal_cover {
   position: absolute;
   z-index: 50;
 }
+.gantt_resource_marker {
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  color: #FFF;
+}
+.gantt_resource_marker_ok {
+  background: rgba(78, 208, 134, 0.75);
+}
+.gantt_resource_marker_overtime {
+  background: rgba(255, 134, 134, 0.69);
+}
+.gantt_histogram_label {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+  font-weight: bold;
+  font-size: 14px;
+}
+.gantt_histogram_fill {
+  background-color: rgba(41, 157, 180, 0.2);
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+.gantt_histogram_hor_bar {
+  height: 1px;
+  position: absolute;
+  background: #299DB4;
+  margin-top: -1px;
+  margin-left: -1px;
+}
+.gantt_histogram_vert_bar {
+  width: 1px;
+  position: absolute;
+  background: #299DB4;
+  margin-left: -1px;
+}
+.gantt_histogram_cell {
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  color: #000000;
+}
 .gantt_marker {
   height: 100%;
   width: 2px;
@@ -1831,18 +1966,6 @@ div.dhx_modal_cover {
   top: 0;
   left: 0;
 }
-.gantt_resource_marker {
-  position: absolute;
-  text-align: center;
-  font-size: 14px;
-  color: #FFF;
-}
-.gantt_resource_marker_ok {
-  background: rgba(78, 208, 134, 0.75);
-}
-.gantt_resource_marker_overtime {
-  background: rgba(255, 134, 134, 0.69);
-}
 .gantt_grid_editor_placeholder {
   position: absolute;
 }
@@ -1859,6 +1982,39 @@ div.dhx_modal_cover {
 .gantt_row_placeholder .gantt_file,
 .gantt_row_placeholder .gantt_add {
   display: none;
+}
+.gantt_drag_marker.gantt_grid_dnd_marker {
+  background-color: transparent;
+  transition: all 0.1s ease ;
+}
+.gantt_grid_dnd_marker_line {
+  height: 4px;
+  width: 100%;
+  background-color: #3498db;
+}
+.gantt_grid_dnd_marker_line::before {
+  background: #fff;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 3px solid #3498db;
+  border-radius: 6px;
+  content: "";
+  line-height: 1px;
+  display: block;
+  position: absolute;
+  margin-left: -11px;
+  margin-top: -4px;
+  pointer-events: none;
+}
+.gantt_grid_dnd_marker_folder {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+  box-shadow: 0 0 0px 2px #3f98db inset;
+  background: transparent;
 }
 .gantt_layout_content {
   width: 100%;
@@ -2097,5 +2253,18 @@ div.dhx_modal_cover {
 .gantt_popup_button.gantt_delete_button {
   background-color: #448AFF;
   color: #FFFFFF;
+}
+.gantt_container_resize_watcher {
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: -1;
+  pointer-events: none;
+  border: 0;
+  box-sizing: border-box;
+  opacity: 0;
 }
 

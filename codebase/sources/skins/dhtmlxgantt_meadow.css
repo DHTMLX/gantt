@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.5.2.0 Standard
+dhtmlxGantt v.6.0.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -1115,6 +1115,9 @@ div.dhx_modal_cover {
   box-sizing: border-box;
   cursor: pointer;
 }
+.gantt_hidden {
+  display: none;
+}
 .gantt_btn_set div {
   float: left;
   font-size: 13px;
@@ -1311,6 +1314,66 @@ div.dhx_modal_cover {
   border-top-right-radius: 4px;
   border-bottom-right-radius: 4px;
 }
+.gantt_resources {
+  max-height: 150px;
+  height: auto;
+  overflow-y: auto;
+}
+.gantt_resource_row {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid #eae9e5;
+  cursor: pointer;
+}
+.gantt_resource_row input[type=checkbox]:not(:checked),
+.gantt_resource_row input[type=checkbox]:not(:checked) ~ div {
+  opacity: 0.5;
+}
+.gantt_resource_toggle {
+  vertical-align: middle;
+}
+.gantt_resources_filter .gantt_resources_filter_input {
+  padding: 1px 2px 1px 2px;
+  box-sizing: border-box;
+}
+.gantt_resources_filter .switch_unsetted {
+  vertical-align: middle;
+}
+.gantt_resource_cell {
+  display: inline-block;
+}
+.gantt_resource_cell.gantt_resource_cell_checkbox {
+  width: 24px;
+  max-width: 24px;
+  min-width: 24px;
+  vertical-align: middle;
+}
+.gantt_resource_cell.gantt_resource_cell_label {
+  width: 40%;
+  max-width: 40%;
+  vertical-align: middle;
+}
+.gantt_resource_cell.gantt_resource_cell_value {
+  width: 30%;
+  max-width: 30%;
+  vertical-align: middle;
+}
+.gantt_resource_cell.gantt_resource_cell_value input,
+.gantt_resource_cell.gantt_resource_cell_value select {
+  width: 80%;
+  vertical-align: middle;
+  padding: 1px 2px 1px 2px;
+  box-sizing: border-box;
+}
+.gantt_resource_cell.gantt_resource_cell_unit {
+  width: 10%;
+  max-width: 10%;
+  vertical-align: middle;
+}
+.gantt_resource_early_value {
+  opacity: 0.8;
+  font-size: 0.9em;
+}
 /* Quick info */
 .gantt_cal_quick_info {
   border: 1px solid #cac8bd;
@@ -1417,6 +1480,51 @@ div.dhx_modal_cover {
   position: absolute;
   z-index: 50;
 }
+.gantt_resource_marker {
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  color: #FFF;
+}
+.gantt_resource_marker_ok {
+  background: rgba(78, 208, 134, 0.75);
+}
+.gantt_resource_marker_overtime {
+  background: rgba(255, 134, 134, 0.69);
+}
+.gantt_histogram_label {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+  font-weight: bold;
+  font-size: 11px;
+}
+.gantt_histogram_fill {
+  background-color: rgba(41, 157, 180, 0.2);
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+.gantt_histogram_hor_bar {
+  height: 1px;
+  position: absolute;
+  background: #299DB4;
+  margin-top: -1px;
+  margin-left: -1px;
+}
+.gantt_histogram_vert_bar {
+  width: 1px;
+  position: absolute;
+  background: #299DB4;
+  margin-left: -1px;
+}
+.gantt_histogram_cell {
+  position: absolute;
+  text-align: center;
+  font-size: 11px;
+  color: #000000;
+}
 .gantt_marker {
   height: 100%;
   width: 2px;
@@ -1442,18 +1550,6 @@ div.dhx_modal_cover {
   top: 0;
   left: 0;
 }
-.gantt_resource_marker {
-  position: absolute;
-  text-align: center;
-  font-size: 14px;
-  color: #FFF;
-}
-.gantt_resource_marker_ok {
-  background: rgba(78, 208, 134, 0.75);
-}
-.gantt_resource_marker_overtime {
-  background: rgba(255, 134, 134, 0.69);
-}
 .gantt_grid_editor_placeholder {
   position: absolute;
 }
@@ -1470,6 +1566,39 @@ div.dhx_modal_cover {
 .gantt_row_placeholder .gantt_file,
 .gantt_row_placeholder .gantt_add {
   display: none;
+}
+.gantt_drag_marker.gantt_grid_dnd_marker {
+  background-color: transparent;
+  transition: all 0.1s ease ;
+}
+.gantt_grid_dnd_marker_line {
+  height: 4px;
+  width: 100%;
+  background-color: #3498db;
+}
+.gantt_grid_dnd_marker_line::before {
+  background: #fff;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 3px solid #3498db;
+  border-radius: 6px;
+  content: "";
+  line-height: 1px;
+  display: block;
+  position: absolute;
+  margin-left: -11px;
+  margin-top: -4px;
+  pointer-events: none;
+}
+.gantt_grid_dnd_marker_folder {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  pointer-events: none;
+  box-sizing: border-box;
+  box-shadow: 0 0 0px 2px #3f98db inset;
+  background: transparent;
 }
 .gantt_layout_content {
   width: 100%;
@@ -1708,5 +1837,18 @@ div.dhx_modal_cover {
 .gantt_popup_button.gantt_delete_button {
   border: 1px solid #98d27e;
   background: #a7d991;
+}
+.gantt_container_resize_watcher {
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: -1;
+  pointer-events: none;
+  border: 0;
+  box-sizing: border-box;
+  opacity: 0;
 }
 

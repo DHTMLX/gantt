@@ -1,3 +1,16 @@
+### 6.0
+- Advanced resource management
+- New lightbox control for resource management
+- Resource histogram
+- Add ability to group by multiple resources
+- Updated branch ordering
+- Public methods for total slack and free slack
+- Add JSON-REST dataprocessor mode
+- Import from Excel added to online service
+- Auto resize when container size changes
+- Performance update for auto_types
+- Performance update for auto scheduling
+
 ### 5.2
 - Inline editing in grid
 - Split task support

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.5.2.0 Standard
+dhtmlxGantt v.6.0.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -178,12 +178,38 @@ gantt._undo = {
 		return stack.pop();
 	},
 
+	_reorderCommands: function(action){
+		// firstly process tasks and only then links
+		// in order to ensure links are added not earlier than their tasks
+		// firstly to 'move' actions and only then updates
+		var weights = {any: 0, link:1, task:2};
+		var actionWeights = {move: 1, any:0};
+		action.commands.sort(function(a, b){
+			if(a.entity == "task" && b.entity == "task"){
+				if(a.type != b.type){
+					return (actionWeights[b.type] || 0) - (actionWeights[a.type] || 0);
+				}else if(a.type == "move" && a.oldValue && b.oldValue && b.oldValue.parent == a.oldValue.parent) {
+					return a.$index - b.$index;
+				}else{
+					return 0
+				}
+
+			}else{
+				var weightA = weights[a.entity] || weights.any;
+				var weightB = weights[b.entity] || weights.any;
+				return weightB - weightA;
+			}
+
+		})
+	},
 	undo:function(){
 		this.updateConfigs();
 		if(!this.undo_enabled)
 			return;
 
 		var action = this._pop(this._undoStack);
+		if(action)
+			this._reorderCommands(action);
 		if(gantt.callEvent("onBeforeUndo", [action]) !== false){
 			if(action){
 
@@ -202,13 +228,16 @@ gantt._undo = {
 			return;
 
 		var action = this._pop(this._redoStack);
-			if(gantt.callEvent("onBeforeRedo", [action]) !== false){
-				if(action){
-					this._applyAction(action);
-					this._push(this._undoStack, gantt.copy(action));
-					gantt.callEvent("onAfterRedo", [action]);
-					return;
-				}
+		if(action)
+			this._reorderCommands(action);
+
+		if(gantt.callEvent("onBeforeRedo", [action]) !== false){
+			if(action){
+				this._applyAction(action);
+				this._push(this._undoStack, gantt.copy(action));
+				gantt.callEvent("onAfterRedo", [action]);
+				return;
+			}
 		}
 		gantt.callEvent("onAfterRedo", [null]);
 	},
@@ -247,7 +276,7 @@ gantt._undo = {
 				} else if (command.type == actions.update) {
 					gantt[method](command.value.id, command.value);
 				} else if (command.type == actions.move) {
-					gantt[method](command.value.id, command.value.index, command.value.parent);
+					gantt[method](command.value.id, command.value.$index, command.value.parent);
 				}
 			}
 		});
@@ -478,6 +507,9 @@ gantt._undo = {
 		getInitialTask: function(id){
 			return this._initialTasks[id];
 		},
+		clearInitialTasks: function(){
+			this._initialTasks = {};
+		},
 		setInitialTaskObject: function(id, object) {
 			this._initialTasks[id] = object;
 		},
@@ -516,14 +548,17 @@ gantt._undo.updateConfigs = function(){
 	for(var i in noTrack){
 		gantt.attachEvent(i, function(){
 			monitor.startIgnore();
+			return true;
 		});
 		gantt.attachEvent(noTrack[i], function(){
 			monitor.stopIgnore();
+			return true;
 		});
 	}
 
 	var batchActions = [
 		"onTaskDragStart",
+		"onAfterTaskUpdate",
 		"onAfterTaskDelete",
 		"onBeforeBatchUpdate"
 	];
@@ -531,25 +566,54 @@ gantt._undo.updateConfigs = function(){
 	for(var i  = 0; i < batchActions.length; i++){
 		gantt.attachEvent(batchActions[i], function(){
 			monitor.startBatchAction();
+			return true;
 		});
 	}
 	function store(id){
 		monitor.setInitialTask(id);
+		gantt.eachTask(function(child){
+			monitor.setInitialTask(child.id);
+		}, id);
 		return true;
 	}
 
 	gantt.attachEvent("onBeforeTaskDrag", store);
 	gantt.attachEvent("onLightbox", store);
 	gantt.attachEvent("onBeforeTaskAutoSchedule", function(task){ store(task.id);  return true;});
+
+	var deleteCacheCooldown = null;
+
+	function saveInitialAll(){
+		if(!deleteCacheCooldown){
+			deleteCacheCooldown = setTimeout(function(){
+				deleteCacheCooldown = null;
+			});
+
+			monitor.clearInitialTasks();
+			gantt.eachTask(function(task){
+				monitor.setInitialTask(task.id);
+			});
+		}
+	}
+
 	gantt.attachEvent("onBeforeTaskDelete", function(id){
 		store(id);
 		var nested = [];
+
+		// remember task indexes in case their being deleted in a loop, so they could be restored in the correct order
+		saveInitialAll();
+
 		gantt.eachTask(function(task){
 			nested.push(task.id);
 		}, id);
 		monitor.setNestedTasks(id, nested);
 		return true;
 	});
+	if(gantt.ext.inlineEditors){
+		gantt.ext.inlineEditors.attachEvent("onEditStart", function(state){
+			store(state.id);
+		});
+	}
 
 	gantt.attachEvent("onAfterTaskAdd", function(id, task){
 		monitor.onTaskAdded(task);
@@ -575,44 +639,34 @@ gantt._undo.updateConfigs = function(){
 
 	datastore.attachEvent("onBeforeItemMove", function(id, parent, tindex){
 		if (!monitor.isMoveEventsIgnored()) {
-			var initialObject = getMoveObjectByTaskId(id);
 
-			monitor.setInitialTaskObject(id, initialObject);
-			return true;
+			saveInitialAll();
 		}
+		return true;
 	});
 
 
 	datastore.attachEvent("onAfterItemMove", function(id, parent, tindex){
 		if (!monitor.isMoveEventsIgnored()) {
-			var newObject = getMoveObjectByTaskId(id);
-			monitor.onTaskMoved(newObject);
-			return true;
+			monitor.onTaskMoved(getMoveObjectByTaskId(id));
 		}
+		return true;
 	});
 
 	gantt.attachEvent("onRowDragStart", function(id, target, e) {
-		var initialObject = getMoveObjectByTaskId(id);
-
 		monitor.toggleIgnoreMoveEvents(true);
-		monitor.setInitialTaskObject(id, initialObject);
+		saveInitialAll();
 		return true;
 	});
 	
 	gantt.attachEvent("onRowDragEnd", function(id, target) {
-		var newObject = getMoveObjectByTaskId(id);
-
-		monitor.onTaskMoved(newObject);
+		monitor.onTaskMoved(getMoveObjectByTaskId(id));
 		monitor.toggleIgnoreMoveEvents();
 		return true;
 	});
 
 	function getMoveObjectByTaskId(id) {
-		return {
-			id: id,
-			index: gantt.getTaskIndex(id),
-			parent: gantt.getParent(id)
-		};	
+		return gantt.copy(gantt.getTask(id));
 	}
 
 	function updTask(task, oldId, newId){

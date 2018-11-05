@@ -1,4 +1,4 @@
-dhtmlxGantt v.5.2
+dhtmlxGantt v.6.0
 =================
 
 [![Join the chat at https://gitter.im/dhtmlx/dhtmlx](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dhtmlx/dhtmlx) 
@@ -24,4 +24,4 @@ Useful links
 	https://docs.dhtmlx.com/gantt/
 	
 - Support forum
-	https://forum.dhtmlx.com/viewforum.php?f=15
+	https://forum.dhtmlx.com/c/gantt
