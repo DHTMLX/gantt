@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.0 Standard
+dhtmlxGantt v.6.0.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -260,7 +260,6 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 				gantt.detachEvent(onReady);
 
 				gantt.$data.tasksStore.attachEvent("onStoreUpdated", function(id){
-					var state = gantt.getState();
 					if(gantt.config.keyboard_navigation && dispatcher.isEnabled()){
 						var currentNode = dispatcher.getActiveNode();
 						if(currentNode && currentNode.taskId == id){
@@ -1772,7 +1771,7 @@ function addClassName(node, className){
 function removeClassName(node, name) {
 	name = name.split(" ");
 	for (var i = 0; i < name.length; i++) {
-		var regEx = new RegExp("\\s?\\b" + name[i] + "\\b(?![-_\.])", "");
+		var regEx = new RegExp("\\s?\\b" + name[i] + "\\b(?![-_.])", "");
 		node.className = node.className.replace(regEx, "");
 	}
 }
@@ -1783,7 +1782,6 @@ function hasClass(element, className){
 	} else { 
 		return new RegExp("\\b" + className + "\\b").test(element.className);
 	}
-	return false;
 }
 
 function toNode(node) {

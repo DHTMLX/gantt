@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.0 Standard
+dhtmlxGantt v.6.0.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -316,7 +316,7 @@ gantt._get_event_counter_part = function(id, offset){
 	var node = domEv;
 	while (node && node.className != "gantt_task"){
 		left += node.offsetLeft;
-	 	node = node.offsetParent;
+		node = node.offsetParent;
 	}
 	
 	var scroll = this.getScrollState();

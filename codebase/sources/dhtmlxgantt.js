@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.0 Standard
+dhtmlxGantt v.6.0.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -415,7 +415,7 @@ module.exports = function(gantt){
 		},
 		_call: function(method, url, postData, async, onLoad, longParams, headers) {
 
-			var t = (window.XMLHttpRequest && !env.isIE ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP"));
+			var t = (window.XMLHttpRequest && !env.isIE ? new XMLHttpRequest() : new window.ActiveXObject("Microsoft.XMLHTTP"));
 			var isQt = (navigator.userAgent.match(/AppleWebKit/) !== null && navigator.userAgent.match(/Qt/) !== null && navigator.userAgent.match(/Safari/) !== null);
 
 			if (!!async) {
@@ -490,10 +490,11 @@ module.exports = function(gantt){
 
 module.exports = function(gantt){
 	return function assert(check, message){
-		//jshint -W087
 		if (!check){
 			if(gantt.config.show_errors && gantt.callEvent("onError",[message]) !== false) {
 				gantt.message({type: "error", text: message, expire: -1});
+
+				// eslint-disable-next-line no-debugger
 				debugger;
 			}
 		}
@@ -1092,7 +1093,7 @@ module.exports = function(gantt){
 			var mousemove = utils.bind(function (e) {
 				return this.dragMove(domElement, e, inputMethod.accessor);
 			}, this);
-			var scroll = utils.bind(function (e) {
+			utils.bind(function (e) {
 				return this.dragScroll(domElement, e);
 			}, this);
 
@@ -1621,8 +1622,7 @@ module.exports = function(gantt) {
 		if (!this.isTaskExists(id))
 			return false;
 
-		var task = this.getTask(id),
-			type = this.getTaskType(task.type);
+		var task = this.getTask(id);
 
 		var taskStart = task.start_date ? task.start_date.valueOf() : null;
 		var taskEnd = task.end_date ? task.end_date.valueOf() : null;
@@ -2385,7 +2385,7 @@ dataProcessor.prototype = {
 				break;
 			case "REST":
 			case "REST-JSON":
-				var url = a3.replace(/(\&|\?)editing\=true/, "");
+				var url = a3.replace(/(&|\?)editing=true/, "");
 				data = "";
 
 				switch (this.getState(rowId)) {
@@ -2450,7 +2450,7 @@ dataProcessor.prototype = {
 					this._beforeSendData(this._getRowData(rowId), rowId);
 					if (this._waitMode && (this.obj.mytype == "tree" || this.obj._h2)) {
 						stop = true; //block send all for tree
-					};
+					}
 				}
 			});
 		}
@@ -3265,7 +3265,7 @@ function deleteCallback(upd, id, parent, mode) {
 
 function patchDataProcessor(gantt, dataprocessor){
 	dataprocessor.attachEvent("insertCallback", utils.bind(insertCallback, gantt));
-	dataprocessor.attachEvent("updateCallback",  utils.bind(deleteCallback, gantt));
+	dataprocessor.attachEvent("updateCallback",  utils.bind(updateCallback, gantt));
 	dataprocessor.attachEvent("deleteCallback",  utils.bind(deleteCallback, gantt));
 }
 
@@ -3796,7 +3796,7 @@ function initDataStores(gantt){
 		var deletedLinks = {};
 
 		gantt.attachEvent("onBeforeTaskDelete", function(id, item){
- 			deletedLinks[id] = treeHelper.getSubtreeLinks(gantt, id);
+			deletedLinks[id] = treeHelper.getSubtreeLinks(gantt, id);
 			return true;
 		});
 
@@ -4232,7 +4232,6 @@ module.exports = createDataStoreSelectMixin;
 
 var powerArray = __webpack_require__(/*! ./power_array */ "./sources/core/datastore/power_array.js");
 var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
 var DataStore = __webpack_require__(/*! ./datastore */ "./sources/core/datastore/datastore.js");
 
 var TreeDataStore = function(config){
@@ -4400,7 +4399,6 @@ TreeDataStore.prototype = utils.mixin({
 			parent = parent || this.$getRootId();
 			var source = this.getItem(sid);
 			var source_pid = this.getParent(source.id);
-			var sbranch = this.getChildren(this.getParent(source.id));
 
 			var tbranch = this.getChildren(parent);
 
@@ -4563,10 +4561,16 @@ TreeDataStore.prototype = utils.mixin({
 						this.eachItem(code, item.id);
 				}
 		},
-		eachParent: function(code, startItem){
+		eachParent: function(code, startItem) {
+			var parentsHash = {};
 			var item = startItem;
 			var parent = this.getParent(item);
+
 			while (this.exists(parent)) {
+				if (parentsHash[parent]) {
+					throw new Error("Invalid tasks tree. Cyclic reference has been detected on task " + parent);
+				}
+				parentsHash[parent] = true;
 				item = this.getItem(parent);
 				code.call(this, item);
 				parent = this.getParent(item);
@@ -4708,6 +4712,9 @@ module.exports = TreeDataStore;
 
 module.exports = function(gantt){
 
+	// no deprecated methods for now
+
+	// eslint-disable-next-line no-unused-vars
 	function deprecated(badCode, goodCode, versionDeprecated, versionDeleted) {
 
 		var formatting = gantt.env.isIE ? "" : "%c";
@@ -5513,7 +5520,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.0.0";
+	this.version = "6.0.2";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -6084,7 +6091,8 @@ module.exports = function(gantt) {
 /***/ (function(module, exports) {
 
 function dummy() {
-	console.log("Method is not implemented."); // jshint ignore:line
+	// eslint-disable-next-line
+	console.log("Method is not implemented."); 
 }
 function BaseControl() {
 }
@@ -7694,7 +7702,6 @@ module.exports = function(gantt) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../utils/utils */ "./sources/utils/utils.js");
 var helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
 
 module.exports = function(gantt) {
@@ -8126,7 +8133,7 @@ module.exports = function(gantt) {
 			modality.cover.className = "dhx_modal_cover";
 			document.body.appendChild(modality.cover);
 		}
-		var height = document.body.scrollHeight;
+
 		modality.cover.style.display = mode ? "inline-block" : "none";
 	}
 
@@ -8185,8 +8192,6 @@ module.exports = function(gantt) {
 
 	function _boxStructure(config, ok, cancel) {
 		var box = document.createElement("div");
-
-		var locale = gantt.locale;
 
 		var contentId = utils.uid();
 		gantt._waiAria.messageModalAttr(box, contentId);
@@ -8334,8 +8339,6 @@ module.exports = function(gantt) {
 			gantt.callEvent("onAfterMessagePopup", [node]);
 		}
 	};
-
-	var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 	modalBox.focus = function (node) {
 		setTimeout(function () {
@@ -8520,7 +8523,7 @@ module.exports = function(gantt) {
 
 	gantt.attachEvent("onAfterTaskAdd",  function() {
 		if (isParsingDone)
-			callIfEnabled(updateParents)
+			callIfEnabled(updateParents);
 	});
 
 	gantt.attachEvent("onAfterTaskUpdate", function() {
@@ -8595,7 +8598,6 @@ module.exports = function(gantt){
 	var interval = null,
 		isMove = false,
 		delayTimeout = null,
-		box = {},
 		startPos = {
 			started: false
 		},
@@ -8625,7 +8627,6 @@ module.exports = function(gantt){
 
 			delayTimeout = setTimeout(function() {
 				interval = setInterval(tick, speed || scrollSpeed);
-				box = domHelpers.getNodePosition(getAutoscrollContainer());
 			}, gantt.config.autoscroll_delay || scrollDelay);
 		}
 	}
@@ -8791,7 +8792,7 @@ function createMethod(gantt){
 			disableMethod.call(this, i, methodsHash[i]);
 		}
 	}
-	 function restoreMethods(){
+	function restoreMethods(){
 		for(var i in methods){
 			restoreMethod.call(this, i);
 		}
@@ -8888,10 +8889,10 @@ module.exports = function(gantt){
 
 if (window.dhtmlx){
 
-	if (!dhtmlx.attaches)
-		dhtmlx.attaches = {};
+	if (!window.dhtmlx.attaches)
+	window.dhtmlx.attaches = {};
 
-	dhtmlx.attaches.attachGantt=function(start, end, gantt){
+	window.dhtmlx.attaches.attachGantt=function(start, end, gantt){
 		var obj = document.createElement("DIV");
 
 		gantt = gantt || window.gantt;
@@ -8922,7 +8923,7 @@ if (window.dhtmlx){
 }
 if (typeof(window.dhtmlXCellObject) != "undefined") {
 
-	dhtmlXCellObject.prototype.attachGantt=function(start, end, gantt){
+	window.dhtmlXCellObject.prototype.attachGantt=function(start, end, gantt){
 		gantt = gantt || window.gantt;
 
 		var obj = document.createElement("DIV");
@@ -8939,7 +8940,7 @@ if (typeof(window.dhtmlXCellObject) != "undefined") {
 
 		gantt.init(obj.id, start, end);
 		obj.firstChild.style.border = "none";
-		var method_name="_viewRestore";
+
 		obj = null;
 		this.callEvent("_onContentAttach",[]);
 
@@ -9025,7 +9026,7 @@ if (window.jQuery){
 			}
 		};
 
-	})(jQuery);
+	})(window.jQuery);
 
 }
 
@@ -9069,7 +9070,7 @@ module.exports = function addPlaceholder(gantt){
 	}
 
 	function insertPlaceholder(){
-		var placeholders = gantt.getTaskBy("type", gantt.config.types.placeholder)
+		var placeholders = gantt.getTaskBy("type", gantt.config.types.placeholder);
 		if(!placeholders.length || !gantt.isTaskExists(placeholders[0].id)){
 			var placeholder = {
 				unscheduled: true,
@@ -9161,12 +9162,10 @@ var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/he
 
 function createResourceMethods(gantt){
 
-	var resourceTaskCache = {},
-		resourceLoadCache = {};
+	var resourceTaskCache = {};
 
 	gantt.$data.tasksStore.attachEvent("onStoreUpdated", function(){
 		resourceTaskCache = {};
-		resourceLoadCache = {};
 	});
 
 	function getTaskBy(propertyName, propertyValue) {
@@ -9390,7 +9389,7 @@ function createResourceMethods(gantt){
 			}
 			var connection = renderConnection(level, nextLevel, timeline.posFromDate(colEnd));
 			if(connection){
-				el.appendChild(connection)
+				el.appendChild(connection);
 			}
 
 		}
@@ -9463,7 +9462,7 @@ function createResourceMethods(gantt){
 				capacityElement.style.top = (sizes.top + 1) + "px";
 				capacityElement.style.height = (config.row_height - 1) + "px";
 				capacityElement.style.left = 0;
-				row.appendChild(capacityElement)
+				row.appendChild(capacityElement);
 			}
 		}
 
@@ -9472,20 +9471,24 @@ function createResourceMethods(gantt){
 
 	function selectAssignments(resourceId, taskId, result){
 		var property = gantt.config.resource_property;
-		var task = gantt.getTask(taskId);
-		var owners = task[property] || [];
-		if(!Array.isArray(owners)){
+		var owners = [];
+		if (gantt.getDatastore("task").exists(taskId)) {
+			var task = gantt.getTask(taskId);
+			owners = task[property] || [];
+		}
+
+		if (!Array.isArray(owners)) {
 			owners = [owners];
 		}
-		for(var i = 0; i < owners.length; i++){
-			if(owners[i].resource_id == resourceId){
+		for (var i = 0; i < owners.length; i++) {
+			if (owners[i].resource_id == resourceId) {
 				result.push({task_id: task.id, resource_id:owners[i].resource_id, value:owners[i].value});
 			}
 		}
 	}
 
-	getResourceAssignments = function(resourceId, taskId){
-		// resource assignment as an independent module: 
+	function getResourceAssignments(resourceId, taskId){
+		// resource assignment as an independent module:
 		// {taskId:, resourceId, value}
 		// TODO: probably should add a separate datastore for these
 		var assignments = [];
@@ -9499,7 +9502,7 @@ function createResourceMethods(gantt){
 			});
 		}
 		return assignments;
-	};
+	}
 
 	return {
 		renderLine: renderResourceLine,
@@ -9688,7 +9691,7 @@ function _get_skin(force, gantt) {
 	if (!skin || force) {
 		var links = document.getElementsByTagName("link");
 		for (var i = 0; i < links.length; i++) {
-			var res = links[i].href.match("dhtmlxgantt_([a-z\_]+).css");
+			var res = links[i].href.match("dhtmlxgantt_([a-z_]+).css");
 			if (res) {
 				if (gantt.skins[res[1]] || !skin) {
 					skin = res[1];
@@ -9876,7 +9879,6 @@ module.exports = function(gantt) {
 		var dblclicktime = 0;
 		var action_mode = false;
 		var scroll_mode = false;
-		var dblclick_timer = 0;
 		var action_start = null;
 		var scroll_state;
 		var long_tap_timer = null;
@@ -10790,10 +10792,11 @@ module.exports = function(gantt) {
 			return true;
 		},
 		get_value: function (id, column, node) {
-			var parsed = null;
+			var parsed;
 			try {
 				parsed = strToDate(this.get_input(node).value || "");
 			} catch (e) {
+				parsed = null;// return null will cancel changes
 			}
 
 			return parsed;
@@ -10835,7 +10838,6 @@ module.exports = function (gantt) {
 			placeholder.innerHTML = html;
 		},
 		get_value: function (id, column, node) {
-			var value = BaseEditor.prototype.get_value(id, column, node);
 			return this.get_input(node).value || "";
 		},
 		is_valid: function (value, id, column, node) {
@@ -11114,6 +11116,7 @@ module.exports = {
 
 			if (cell && controller.getEditorConfig(cell.columnName)) {
 				if(controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName){
+					// do nothing if editor is already active in this cell
 				}else{
 					controller.startEdit(cell.id, cell.columnName);
 				}
@@ -11262,6 +11265,7 @@ module.exports = {
 
 			if (cell && controller.getEditorConfig(cell.columnName)) {
 				if(controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName){
+					// do nothing if editor is already active in this cell
 				}else{
 					controller.startEdit(cell.id, cell.columnName);
 				}
@@ -11398,7 +11402,7 @@ var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./source
 	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
 	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
 	gridResize = __webpack_require__(/*! ./grid_resize */ "./sources/core/ui/grid/grid_resize.gpl.js"),
-	editors = __webpack_require__(/*! ./editors/controller */ "./sources/core/ui/grid/editors/controller.js");
+	topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
 
 var Grid = function(parent, config, factory, gantt){
 	this.$config = utils.mixin({}, config || {});
@@ -11452,6 +11456,7 @@ Grid.prototype = {
 		// check and convert it to number when possible
 		var value = column[property];
 		if (value && value != "*") {
+			var gantt = this.$gantt;
 			var numericWidth = value*1;
 			if(isNaN(numericWidth)){
 				gantt.assert(false, "Wrong " + property + " value of column " + column.name);
@@ -11578,18 +11583,6 @@ Grid.prototype = {
 		}
 	},
 
-	getItemTop: function(id){
-		if(this.$config.rowStore){
-			var store = this.$config.rowStore;
-			if(!store) return 0;
-
-			return store.getIndexById(id) * this.$getConfig().row_height;
-
-		}else{
-			return 0;
-		}
-	},
-
 	getItemHeight: function(){
 		var config = this.$getConfig();
 		return config.row_height;
@@ -11685,6 +11678,7 @@ Grid.prototype = {
 	},
 
 	_initEvents: function(){
+		var gantt = this.$gantt;
 		this._mouseDelegates.delegate("click", "gantt_close", gantt.bind(function (e, id, trg) {
 			var store = this.$config.rowStore;
 			if(!store) return true;
@@ -11987,6 +11981,8 @@ Grid.prototype = {
 	}
 };
 
+utils.mixin(Grid.prototype, topPositionMixin());
+
 module.exports = Grid;
 
 
@@ -12020,7 +12016,7 @@ module.exports = createResizer;
 var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
 var rowDnd = __webpack_require__(/*! ./tasks_grid_dnd */ "./sources/core/ui/grid/tasks_grid_dnd.js");
 var rowDndMarker = __webpack_require__(/*! ./tasks_grid_dnd_marker */ "./sources/core/ui/grid/tasks_grid_dnd_marker.js");
-var editors = __webpack_require__(/*! ./editors/controller */ "./sources/core/ui/grid/editors/controller.js");
+
 var initializer = (function(){
 	return function(gantt){
 		return {
@@ -12936,12 +12932,6 @@ var mainTimelineInitializer = __webpack_require__(/*! ./timeline/main_timeline_i
 var mainLayoutInitializer = __webpack_require__(/*! ./main_layout_initializer */ "./sources/core/ui/main_layout_initializer.js");
 
 function initUI(gantt){
-	function inheritGridConfig(id){
-		return {
-			//width: gantt.config.grid_width
-		};
-	}
-
 	function attachInitializer(view, initializer){
 		var ext = initializer(gantt);
 		if(ext.onCreated)
@@ -13029,7 +13019,6 @@ module.exports = {
 /***/ (function(module, exports, __webpack_require__) {
 
 var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	domEventsScope = __webpack_require__(/*! ../../../utils/dom_event_scope */ "./sources/utils/dom_event_scope.js"),
 	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
 	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
@@ -13115,8 +13104,6 @@ var Cell = (function () {
 			y = topSize.maxHeight;
 		}
 		this.setSize(x, y);
-
-		var self = this;
 
 		if(!this.$preResize){
 		//	self.callEvent("onResize", [x, y]);
@@ -13368,7 +13355,6 @@ module.exports = Cell;
 
 var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
 	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
 	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
 
 var Layout = (function (_super) {
@@ -14147,7 +14133,6 @@ var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/uti
 	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
 	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
 	env = __webpack_require__(/*! ../../../utils/env */ "./sources/utils/env.js"),
-	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
 	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
 
 var ScrollbarCell = (function (_super) {
@@ -14266,7 +14251,6 @@ var ScrollbarCell = (function (_super) {
 	};
 
 	ScrollbarCell.prototype._updateLinkedViews = function(){
-		var root = this._getRootParent();
 	};
 
 	ScrollbarCell.prototype._initMouseWheel = function(){
@@ -15129,7 +15113,6 @@ var createMouseHandler = (function(domHelpers) {
 
 		function onClick(e) {
 			e = e || window.event;
-			var trg = e.target || e.srcElement;
 			var id = gantt.locate(e);
 
 			var handlers = findEventHandlers(e, eventHandlers.click);
@@ -15209,7 +15192,6 @@ var createMouseHandler = (function(domHelpers) {
 
 		function onDoubleClick(e) {
 			e = e || window.event;
-			var trg = e.target || e.srcElement;
 			var id = gantt.locate(e);
 
 			var handlers = findEventHandlers(e, eventHandlers.doubleclick);
@@ -15617,7 +15599,6 @@ var drawer = {
 		var config = view.$getConfig();
 		var res,
 			wrapper_size = config.link_wrapper_width,
-			line_size = config.link_line_width,
 			y = v.y + (config.row_height - wrapper_size) / 2;
 		switch (v.direction) {
 			case this.dirs.left:
@@ -15892,7 +15873,6 @@ var path_builder = {
 
 	get_endpoint: function (link, view) {
 		var config = view.$getConfig();
-		var types = config.links;
 
 		var lineType = this.get_line_type(link, config);
 		var from_start = lineType.from_start,
@@ -16520,7 +16500,6 @@ function createGridLineRender(gantt){
 		}
 
 		var cells = [];
-		var width = 0;
 		var has_child;
 		for (var i = 0; i < columns.length; i++) {
 			var last = i == columns.length - 1;
@@ -16632,8 +16611,7 @@ function createTaskRenderer(gantt){
 
 	return function show_children(task, timeline) {
 		if (gantt.isSplitTask(task)) {
-			var sub_height = gantt.config.row_height - 5,
-				el = document.createElement('div'),
+			var el = document.createElement('div'),
 				sizes = gantt.getTaskPosition(task);
 
 			var sub_tasks = gantt.getChildren(task.id);
@@ -16660,6 +16638,52 @@ function createTaskRenderer(gantt){
 }
 
 module.exports = createTaskRenderer;
+
+/***/ }),
+
+/***/ "./sources/core/ui/row_position_mixin.js":
+/*!***********************************************!*\
+  !*** ./sources/core/ui/row_position_mixin.js ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+function createMixin(){
+	return {
+		/**
+		 * Get top coordinate by row index (order)
+		 * @param {number} index 
+		 */
+		getRowTop: function(index){
+			return index * this.$getConfig().row_height;
+		},
+
+		/**
+		 * Get top coordinate by item id
+		 * @param {*} task_id 
+		 */
+		getItemTop: function (task_id) {
+			if(this.$config.rowStore){
+				var store = this.$config.rowStore;
+				if(!store) return 0;
+
+				if(store.getParent && store.exists(task_id) && store.exists(store.getParent(task_id))){
+					var parent = store.getItem(store.getParent(task_id));
+					if(this.$gantt.isSplitTask(parent)){
+						return this.getRowTop(store.getIndexById(parent.id));
+					}
+				}
+				return this.getRowTop(store.getIndexById(task_id));
+
+			}else{
+				return 0;
+			}
+
+		}
+	};
+}
+
+module.exports = createMixin;
 
 /***/ }),
 
@@ -17244,8 +17268,6 @@ function ScaleHelper(gantt){
 
 			var full = this.getSum(parts, from, to);
 
-			var shared = 0;
-
 			for (var i = from; i <= to; i++) {
 				var share = Math.floor(width * (full ? (parts[i] / full) : (1 / length)));
 
@@ -17254,10 +17276,8 @@ function ScaleHelper(gantt){
 				length--;
 
 				parts[i] += share;
-				shared += share;
 			}
 			parts[parts.length - 1] += width;
-			//parts[parts.length - 1] += width - shared;
 		},
 		sortScales: function (scales) {
 			function cellSize(unit, step) {
@@ -18107,7 +18127,7 @@ module.exports = {
 var ScaleHelper = __webpack_require__(/*! ./scales_ignore */ "./sources/core/ui/timeline/scales.js");
 var eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js");
 var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
-
+var topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
 var canvasRender = __webpack_require__(/*! ./tasks_canvas_render */ "./sources/core/ui/timeline/tasks_canvas_render.gpl.js");
 
 var Timeline = function(parent, config, factory, gantt){
@@ -18676,29 +18696,6 @@ Timeline.prototype = {
 		return Math.max(height, 0);
 	},
 
-	getRowTop: function(index){
-		return index * this.$getConfig().row_height;
-	},
-
-	getItemTop: function (task_id) {
-		if(this.$config.rowStore){
-			var store = this.$config.rowStore;
-			if(!store) return 0;
-
-			if(store.getParent && store.exists(task_id) && store.exists(store.getParent(task_id))){
-				var parent = store.getItem(store.getParent(task_id));
-				if(this.$gantt.isSplitTask(parent)){
-					return store.getIndexById(parent.id) * this.$getConfig().row_height;
-				}
-			}
-			return store.getIndexById(task_id) * this.$getConfig().row_height;
-
-		}else{
-			return 0;
-		}
-
-	},
-
 	getScale: function(){
 		return this._tasks;
 	},
@@ -18755,6 +18752,8 @@ Timeline.prototype = {
 
 	}
 };
+
+utils.mixin(Timeline.prototype, topPositionMixin());
 
 module.exports = Timeline;
 
@@ -18924,7 +18923,8 @@ module.exports = {
 /***/ (function(module, exports) {
 
 module.exports = function(gantt){
-
+	// TODO: why eslint fails on regexp?
+	// eslint-disable-next-line no-control-regex
 	var htmlTags = new RegExp("<(?:.|\n)*?>", "gm");
 	var extraSpaces = new RegExp(" +", "gm");
 
@@ -20186,8 +20186,7 @@ CalendarDisabledTimeStrategy.prototype = {
 		var config = this.argumentsHelper.getDurationArguments.apply(this.argumentsHelper, arguments);
 		var from = config.start_date,
 			to = config.end_date,
-			unit = config.unit,
-			step = config.step;
+			unit = config.unit;
 
 		if (!unit) {
 			return false;
@@ -20815,7 +20814,7 @@ function addClassName(node, className){
 function removeClassName(node, name) {
 	name = name.split(" ");
 	for (var i = 0; i < name.length; i++) {
-		var regEx = new RegExp("\\s?\\b" + name[i] + "\\b(?![-_\.])", "");
+		var regEx = new RegExp("\\s?\\b" + name[i] + "\\b(?![-_.])", "");
 		node.className = node.className.replace(regEx, "");
 	}
 }
@@ -20826,7 +20825,6 @@ function hasClass(element, className){
 	} else { 
 		return new RegExp("\\b" + className + "\\b").test(element.className);
 	}
-	return false;
 }
 
 function toNode(node) {
@@ -21214,7 +21212,7 @@ function arrayFilter(arr, callback) {
 function hashToArray(hash) {
 	var result = [];
 
-	for (key in hash) {
+	for (var key in hash) {
 		if (hash.hasOwnProperty(key)) {
 			result.push(hash[key]);
 		}
@@ -21251,8 +21249,8 @@ function throttle (callback, timeout) {
 				wait = false;
 			}, timeout);
 		}
-	}
-};
+	};
+}
 
 function delay (callback, timeout){
 	var timer;
@@ -21261,8 +21259,8 @@ function delay (callback, timeout){
 		timer = setTimeout(function(){
 			callback();
 		}, timeout);
-	}
-};
+	};
+}
 
 function sortArrayOfHash(arr, field, desc) {
 	var compare = function(a, b) {

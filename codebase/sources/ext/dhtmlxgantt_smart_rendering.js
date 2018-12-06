@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.0 Standard
+dhtmlxGantt v.6.0.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -366,7 +366,7 @@ gantt.attachEvent("onGanttScroll", function(oldLeft, oldTop, left, top){
 
 		if((oldTop != top) || (oldLeft == left)){
 
-			var visibleTasks = gantt._smart_render.getRange();
+			//var visibleTasks = gantt._smart_render.getRange();
 			gantt._smart_render.updateRender();
 
 		}
