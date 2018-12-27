@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.2 Standard
+dhtmlxGantt v.6.0.4 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -4157,18 +4157,31 @@ module.exports = $powerArray;
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
 function createDataStoreSelectMixin(store){
 	var selectedId = null;
 
 	var deleteItem = store._removeItemInner;
+	
+	function unselect(id){
+		selectedId = null;
+		this.callEvent("onAfterUnselect", [id]);
+	}
+
 	store._removeItemInner = function(id){
 		if(selectedId == id){
-			selectedId = null;
+			unselect.call(this, id);
 		}
+
+		if(selectedId && this.eachItem){
+			this.eachItem(function(subItem){
+				if(subItem.id == selectedId){
+					unselect.call(this, subItem.id);
+				}
+			}, id);
+		}
+
 		return deleteItem.apply(this, arguments);
 	};
-
 
 	store.attachEvent("onIdChange", function(oldId, newId) {
 		if (store.getSelectedId() == oldId) {
@@ -4213,7 +4226,7 @@ function createDataStoreSelectMixin(store){
 			selectedId = null;
 			if(!this._skip_refresh){
 				this.refresh(id);
-				this.callEvent("onAfterUnselect", [id]);
+				unselect.call(this, id);
 			}
 		}
 	};
@@ -5520,7 +5533,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.0.2";
+	this.version = "6.0.4";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -12514,9 +12527,9 @@ function _init_dnd(gantt, grid) {
 
 		var result;
 		if(!lockLevel){
-			result = getMultiLevelTarget(targetTaskId, relTargetPos, eventTop, store);
+			result = getMultiLevelTarget(dnd.config.id, targetTaskId, relTargetPos, eventTop, store);
 		}else{
-			result = getLockedLevelTarget(targetTaskId, relTargetPos, eventTop, store, dnd.config.level);
+			result = getLockedLevelTarget(dnd.config.id, targetTaskId, relTargetPos, eventTop, store, dnd.config.level);
 		}
 
 		return result;
@@ -12592,35 +12605,41 @@ module.exports = {
 		}
 		return res;
 	},
-	nextSiblingTarget: function nextSiblingTarget(taskId, store) {
+	nextSiblingTarget: function nextSiblingTarget(dndTaskId, targetTaskId, store) {
 		var result = this.createDropTargetObject();
-		result.targetId = taskId;
+		result.targetId = targetTaskId;
 		result.nextSibling = true;
 		result.targetParent = store.getParent(result.targetId);
-		result.targetIndex = store.getBranchIndex(result.targetId) + 1;
+		result.targetIndex = store.getBranchIndex(result.targetId);
+		if(store.getParent(dndTaskId) == result.targetParent && result.targetIndex < store.getBranchIndex(dndTaskId)){
+			result.targetIndex += 1;
+		}
 		return result;
 	},
-	prevSiblingTarget: function prevSiblingTarget(taskId, store) {
+	prevSiblingTarget: function prevSiblingTarget(dndTaskId, targetTaskId, store) {
 		var result = this.createDropTargetObject();
-		result.targetId = taskId;
+		result.targetId = targetTaskId;
 		result.prevSibling = true;
 		result.targetParent = store.getParent(result.targetId);
 		result.targetIndex = store.getBranchIndex(result.targetId);
+		if(store.getParent(dndTaskId) == result.targetParent && result.targetIndex > store.getBranchIndex(dndTaskId)){
+			result.targetIndex -= 1;
+		}
 		return result;
 	},
-	firstChildTarget: function firstChildTarget(taskId, store) {
+	firstChildTarget: function firstChildTarget(dndTaskId, targetTaskId, store) {
 		var result = this.createDropTargetObject();
-		result.targetId = taskId;
+		result.targetId = targetTaskId;
 		result.targetParent = result.targetId;
 		result.targetIndex = 0;
 		result.child = true;
 		return result;
 	},
-	lastChildTarget: function lastChildTarget(taskId, store) {
-		var children = store.getChildren(taskId);
+	lastChildTarget: function lastChildTarget(dndTaskId, targetTaskId, store) {
+		var children = store.getChildren(targetTaskId);
 		var result = this.createDropTargetObject();
 		result.targetId = children[children.length - 1];
-		result.targetParent = taskId;
+		result.targetParent = targetTaskId;
 		result.targetIndex = children.length;
 		result.nextSibling = true;
 		return result;
@@ -12790,7 +12809,7 @@ function getLast(store){
 	return null;
 }
 
-function findClosesTarget(taskId, allowedLevel, store, up){
+function findClosesTarget(dndTaskId, taskId, allowedLevel, store, up){
 	var prev = taskId;
 	while(store.exists(prev)){
 		var targetLevel = store.calculateItemLevel(store.getItem(prev));
@@ -12803,40 +12822,44 @@ function findClosesTarget(taskId, allowedLevel, store, up){
 
 	if(store.exists(prev)){
 		if(store.calculateItemLevel(store.getItem(prev)) === allowedLevel){
-			return up ? dropTarget.nextSiblingTarget(prev, store) : dropTarget.prevSiblingTarget(prev, store);
+			return up ? dropTarget.nextSiblingTarget(dndTaskId, prev, store) : dropTarget.prevSiblingTarget(dndTaskId, prev, store);
 		}else{
-			return dropTarget.firstChildTarget(prev, store);
+			return dropTarget.firstChildTarget(dndTaskId, prev, store);
 		}
 	}
 	return null;
 }
 
-function findTargetAbove(taskId, allowedLevel, store){
-	return findClosesTarget(taskId, allowedLevel, store, true);
+function findTargetAbove(dndTaskId, taskId, allowedLevel, store){
+	return findClosesTarget(dndTaskId, taskId, allowedLevel, store, true);
 }
-function findTargetBelow(taskId, allowedLevel, store){
-	return findClosesTarget(taskId, allowedLevel, store, false);
+function findTargetBelow(dndTaskId, taskId, allowedLevel, store){
+	return findClosesTarget(dndTaskId, taskId, allowedLevel, store, false);
 }
 
-module.exports = function getSameLevelDropPosition(targetTaskId, relTargetPos, eventTop, store, level){
+module.exports = function getSameLevelDropPosition(dndTaskId, targetTaskId, relTargetPos, eventTop, store, level){
 	var result;
 	if(targetTaskId !== store.$getRootId()) {
 		if (relTargetPos < 0.5) {
 			if (store.calculateItemLevel(store.getItem(targetTaskId)) === level) {
-				result = dropTarget.prevSiblingTarget(targetTaskId, store);
+				if(store.getPrevSibling(targetTaskId)){
+					result = dropTarget.nextSiblingTarget(dndTaskId, store.getPrevSibling(targetTaskId), store);
+				}else{
+					result = dropTarget.prevSiblingTarget(dndTaskId, targetTaskId, store);
+				}
 			} else {
-				result = findTargetAbove(targetTaskId, level, store);
+				result = findTargetAbove(dndTaskId, targetTaskId, level, store);
 				if (result) {
-					result = findTargetBelow(targetTaskId, level, store);
+					result = findTargetBelow(dndTaskId, targetTaskId, level, store);
 				}
 			}
 		} else {
 			if (store.calculateItemLevel(store.getItem(targetTaskId)) === level) {
-				result = dropTarget.nextSiblingTarget(targetTaskId, store);
+				result = dropTarget.nextSiblingTarget(dndTaskId, targetTaskId, store);
 			} else {
-				result = findTargetBelow(targetTaskId, level, store);
+				result = findTargetBelow(dndTaskId, targetTaskId, level, store);
 				if (result) {
-					result = findTargetAbove(targetTaskId, level, store);
+					result = findTargetAbove(dndTaskId, targetTaskId, level, store);
 				}
 			}
 		}
@@ -12845,9 +12868,9 @@ module.exports = function getSameLevelDropPosition(targetTaskId, relTargetPos, e
 		var rootLevel = store.getChildren(rootId);
 		result = dropTarget.createDropTargetObject();
 		if(rootLevel.length && eventTop >= 0){
-			result = findTargetAbove(getLast(store), level, store);
+			result = findTargetAbove(dndTaskId, getLast(store), level, store);
 		}else{
-			result = findTargetBelow(rootId, level, store);
+			result = findTargetBelow(dndTaskId, rootId, level, store);
 		}
 	}
 
@@ -12870,23 +12893,23 @@ module.exports = function getSameLevelDropPosition(targetTaskId, relTargetPos, e
 
 var dropTarget = __webpack_require__(/*! ./drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
 
-module.exports = function getMultiLevelDropPosition(targetTaskId, relTargetPos, eventTop, store){
+module.exports = function getMultiLevelDropPosition(dndTaskId, targetTaskId, relTargetPos, eventTop, store){
 	var result;
 
 	if(targetTaskId !== store.$getRootId()){
 		if(relTargetPos < 0.25){
-			result = dropTarget.prevSiblingTarget(targetTaskId, store);
+			result = dropTarget.prevSiblingTarget(dndTaskId, targetTaskId, store);
 		}else if(relTargetPos > 0.60 && !(store.hasChild(targetTaskId) && store.getItem(targetTaskId).$open)){
-			result = dropTarget.nextSiblingTarget(targetTaskId, store);
+			result = dropTarget.nextSiblingTarget(dndTaskId, targetTaskId, store);
 		}else {
-			result = dropTarget.firstChildTarget(targetTaskId, store);
+			result = dropTarget.firstChildTarget(dndTaskId, targetTaskId, store);
 		}
 	}else{
 		var rootId = store.$getRootId();
 		if(store.hasChild(rootId) && eventTop >= 0){
-			result = dropTarget.lastChildTarget(rootId, store);
+			result = dropTarget.lastChildTarget(dndTaskId, rootId, store);
 		}else{
-			result = dropTarget.firstChildTarget(rootId, store);
+			result = dropTarget.firstChildTarget(dndTaskId, rootId, store);
 		}
 	}
 

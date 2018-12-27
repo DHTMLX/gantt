@@ -1,9 +1,14 @@
+### 6.0.4
+- fix incorrect task position after task vertical dnd in order_branch='marker' mode
+- fix script error after deleting a sub-tree which contains selected task
+- fix script error on Save/Cancel lightbox containing resource filters
+
 ### 6.0.2
-- (fixed) ReferenceError: getResourceAssignments is not defined when importing Gantt into Vue.js project
-- (fixed) Script error on deleting task after assigning resource to it via resource form
-- (fixed) JS error in resource diagram after second initialization of Gantt
-- (fixed) Script error on toggle timeline visibility when marker extension is used
-- (fixed) Page freeze on gantt.parse if tasks tree contains cyclic references, script error is thrown instead
+- Fix referenceError: getResourceAssignments is not defined when importing Gantt into Vue.js project
+- Fix script error on deleting task after assigning resource to it via resource form
+- Fix JS error in resource diagram after second initialization of Gantt
+- Fix script error on toggle timeline visibility when marker extension is used
+- Fix page freeze on gantt.parse if tasks tree contains cyclic references, script error is thrown instead
 
 ### 6.0
 - Advanced resource management
