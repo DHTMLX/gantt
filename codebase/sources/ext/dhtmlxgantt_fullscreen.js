@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.4 Standard
+dhtmlxGantt v.6.0.7 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -103,198 +103,144 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /***/ (function(module, exports) {
 
 (function() {
-	//Array of objects to run after fullscreen change
-	// {
-	//      confition: function() {}, // Condition to check screen changed
-	//      callback: function() {} // Screen change callback
-	// }
-	gantt._fs_change = [];
-
 	var getState = gantt.getState;
 	gantt.getState = function () {
 		var state = getState.apply(this, arguments);
-		state.fullscreen = !!this._expanded;
+		state.fullscreen = isExpanded();
 		return state;
 	};
 
-	//For fullscreen closing via ESC button
-	gantt._onFullScreenChange = function () {
+	function isExpanded(){
+		var element = (document.fullscreenElement ||
+			document.mozFullScreenElement ||
+			document.webkitFullscreenElement ||
+			document.msFullscreenElement);
+		
+		return element && element === gantt.$root;
+	}
+
+	function isFullscreenAvailable(){
+		return document.fullscreenEnabled ||
+		document.webkitFullscreenEnabled ||
+		document.mozFullScreenEnabled ||
+		document.msFullscreenEnabled;
+	}
+
+	var expanded = false; 
+
+	var backupElementSizes = {
+		width:null,
+		height:null,
+		modified: false
+	};
+
+	// ie11 doesn't expand gantt root element to fullscreen automatically
+	function workaroundIESizing(){
+		var root = gantt.$root;
+		if(root.offsetWidth < window.innerWidth){
+			backupElementSizes.width = root.style.width;
+			backupElementSizes.height = root.style.height;
+			root.style.width = '100vw';
+			root.style.height = '100vh';
+			backupElementSizes.modified = true;
+		}
+	}
+
+	function workaroundIESizingEnd(){
+		var root = gantt.$root;
+		if(backupElementSizes.modified){
+			root.style.width = backupElementSizes.width;
+			root.style.height = backupElementSizes.height;
+			backupElementSizes.modified = false;
+		}
+	}
+
+	function onFullScreenChange() {
 		if(!gantt.$container){
 			// do nothing if gantt is not yet initialized
 			return;
 		}
 
-		var isFullScreen = gantt.getState().fullscreen;
-		if (isFullScreen) {
-			if (!gantt._isFullScreenActive()) {
-				gantt.collapse();
-			}
+		var isGanttExpanded = isExpanded();
+		if(isGanttExpanded){
+			expanded = true;
+			workaroundIESizing();
+			setTimeout(function(){
+				gantt.callEvent("onExpand");
+			});
+		}else if (expanded){
+			expanded = false;
+			workaroundIESizingEnd();
+			setTimeout(function(){
+				gantt.callEvent("onCollapse");
+			});
 		}
-		var fsChange = gantt._fs_change.length ? gantt._fs_change.pop() : null;
+	}
 
-		gantt._expanded = !gantt._expanded;
-		if (!fsChange) {
-			gantt.render();
-		}
-		else {
-			if (fsChange.condition()) {
-				fsChange.callback();
-			}
-			else {
-				var interval = setInterval(function () {
-					if (fsChange.condition()) {
-						clearInterval(interval);
-						interval = null;
-						fsChange.callback();
-					}
-				}, 10);
-
-				setTimeout(function () {
-					if (!interval) return;
-					clearInterval(interval);
-					fsChange.callback();
-				}, 100);
-			}
-		}
-	};
-
-	gantt._isFullScreenActive = function () {
-		return (document.fullscreenElement ||
-		document.mozFullScreenElement ||
-		document.webkitFullscreenElement ||
-		document.msFullscreenElement);
-	};
-
-	gantt._isFullScreenAvailable = function () {
-		return document.fullscreenEnabled ||
-			document.webkitFullscreenEnabled ||
-			document.mozFullScreenEnabled ||
-			document.msFullscreenEnabled;
-	};
-
-	gantt.event(document, "webkitfullscreenchange", gantt._onFullScreenChange);
-	gantt.event(document, "mozfullscreenchange", gantt._onFullScreenChange);
-	gantt.event(document, "MSFullscreenChange", gantt._onFullScreenChange);
+	gantt.event(document, "webkitfullscreenchange", onFullScreenChange);
+	gantt.event(document, "mozfullscreenchange", onFullScreenChange);
+	gantt.event(document, "MSFullscreenChange", onFullScreenChange);
 //For IE on Win 10
-	gantt.event(document, "fullscreenChange", gantt._onFullScreenChange);
-	gantt.event(document, "fullscreenchange", gantt._onFullScreenChange);
+	gantt.event(document, "fullscreenChange", onFullScreenChange);
+	gantt.event(document, "fullscreenchange", onFullScreenChange);
+
+	function cantFullscreen(){
+		if(!gantt.$container){
+			return true;
+		}
+		if(!isFullscreenAvailable()){
+			// eslint-disable-next-line no-console
+			var method = console.warning || console.log;
+			method("The `fullscreen` feature not being allowed, or full-screen mode not being supported");
+			return true;
+		}
+
+		return false;
+	}
 
 	gantt.expand = function () {
+		if(cantFullscreen()){
+			return;
+		}
+
 		if (!gantt.callEvent("onBeforeExpand", []))
 			return;
-		gantt._toggleFullScreen(true);
-		var ganttBlock = gantt.$root;
+		var element = gantt.$root;
 
-		do {
-			ganttBlock._position = ganttBlock.style.position || "";
-			ganttBlock.style.position = "static";
-		} while ((ganttBlock = ganttBlock.parentNode) && ganttBlock.style);
-		ganttBlock = gantt.$root;
-		ganttBlock.style.position = "absolute";
-		ganttBlock._width = ganttBlock.style.width;
-		ganttBlock._height = ganttBlock.style.height;
-		ganttBlock.style.width = ganttBlock.style.height = "100%";
-		ganttBlock.style.top = ganttBlock.style.left = "0px";
-
-		var top = document.body;
-		top.scrollTop = 0;
-
-		top = top.parentNode;
-		if (top)
-			top.scrollTop = 0;
-		document.body._overflow = document.body.style.overflow || "";
-		document.body.style.overflow = "hidden";
-		document.body._width = document.body.style.width;
-		document.body._height = document.body.style.height;
-
-		var callback = function () {
-			//IE11 Full screen Hack
-			if (document.documentElement.msRequestFullscreen && gantt.$root) {
-				gantt.$root.style.width = document.body.style.width = window.outerWidth + "px";
-				gantt.$root.style.height = document.body.style.height = window.outerHeight + "px";
-			}
-
-			gantt.render();
-			gantt.callEvent("onExpand", []);
-		};
-
-		if (!gantt._isFullScreenAvailable()) {
-			gantt._expanded = !gantt._expanded;
-			callback();
-		}
-		else {
-			var oldGanttHeight = window.outerHeight;
-			var oldGanttWidth = window.outerWidth;
-			gantt._fs_change.push({
-				condition: function () {
-					return oldGanttHeight < window.outerHeight && oldGanttWidth <= window.outerWidth;
-				},
-				callback: callback
-			});
+		if (element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if (element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		} else if (element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if (element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 		}
 	};
 
 	gantt.collapse = function () {
+		if(cantFullscreen()){
+			return;
+		}
+
+		if(!isExpanded()){
+			return;
+		}
+
 		if (!gantt.callEvent("onBeforeCollapse", []))
 			return;
-		var ganttBlock = gantt.$root;
-		do {
-			ganttBlock.style.position = ganttBlock._position;
-		} while ((ganttBlock = ganttBlock.parentNode) && ganttBlock.style);
-		ganttBlock = gantt.$root;
-		ganttBlock.style.width = ganttBlock._width;
-		ganttBlock.style.height = ganttBlock._height;
-		document.body.style.overflow = document.body._overflow;
-		document.body.style.width = document.body._width;
-		document.body.style.height = document.body._height;
 
-		gantt._toggleFullScreen(false);
-
-		var callback = function () {
-			gantt.render();
-			gantt.callEvent("onCollapse", []);
-		};
-
-		if (!gantt._isFullScreenAvailable()) {
-			gantt._expanded = !gantt._expanded;
-			callback();
-		}
-		else {
-			var oldGanttHeight = window.outerHeight;
-			var oldGanttWidth = window.outerWidth;
-			gantt._fs_change.push({
-				condition: function () {
-					return oldGanttHeight > window.outerHeight && oldGanttWidth >= window.outerWidth;
-				},
-				callback: callback
-			});
+		if (document.exitFullscreen) {
+			document.exitFullscreen();
+		} else if (document.msExitFullscreen) {
+			document.msExitFullscreen();
+		} else if (document.mozCancelFullScreen) {
+			document.mozCancelFullScreen();
+		} else if (document.webkitExitFullscreen) {
+			document.webkitExitFullscreen();
 		}
 	};
 
-	gantt._toggleFullScreen = function (on) {
-		if (on || (!document.fullscreenElement &&    // alternative standard method
-			!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement)) {  // current working methods
-			if (document.documentElement.requestFullscreen) {
-				document.documentElement.requestFullscreen();
-			} else if (document.documentElement.msRequestFullscreen) {
-				document.documentElement.msRequestFullscreen();
-			} else if (document.documentElement.mozRequestFullScreen) {
-				document.documentElement.mozRequestFullScreen();
-			} else if (document.documentElement.webkitRequestFullscreen) {
-				document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-			}
-		} else {
-			if (document.exitFullscreen) {
-				document.exitFullscreen();
-			} else if (document.msExitFullscreen) {
-				document.msExitFullscreen();
-			} else if (document.mozCancelFullScreen) {
-				document.mozCancelFullScreen();
-			} else if (document.webkitExitFullscreen) {
-				document.webkitExitFullscreen();
-			}
-		}
-	};
 })();
 
 /***/ })

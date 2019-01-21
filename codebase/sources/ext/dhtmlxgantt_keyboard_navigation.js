@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.4 Standard
+dhtmlxGantt v.6.0.7 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -388,11 +388,17 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 					}
 				},
 				getShortcutHandler: function(shortcut, scope){
+					var commands = gantt.$keyboardNavigation.shortcuts.parse(shortcut);
+					if(commands.length){
+						return this.getCommandHandler(commands[0], scope);
+					}
+					
+				},
+				getCommandHandler: function(command, scope){
 					var scopeObject = getScope(scope);
 					if(scopeObject){
-						var commands = gantt.$keyboardNavigation.shortcuts.parse(shortcut);
-						if(commands.length){
-							return scopeObject.prototype.findHandler(commands[0]);
+						if(command){
+							return scopeObject.prototype.findHandler(command);
 						}
 					}
 				},
@@ -1370,7 +1376,7 @@ module.exports = function(gantt) {
 					} else {
 						var index = this.index;
 						while (index >= 0) {
-							if (gantt.getTaskByIndex(index) !== undefined) {
+							if (gantt.getTaskByIndex(index)) {
 								nextIndex = index;
 								break;
 							}

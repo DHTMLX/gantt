@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.4 Standard
+dhtmlxGantt v.6.0.7 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -3513,6 +3513,17 @@ DataStore.prototype = {
 	refresh: function(id, quick){
 		if (this._skip_refresh) return;
 
+		var args;
+		if (id){
+			args = [id, this.pull[id], "paint"];
+		}else{
+			args = [null,null,null];
+		}
+
+		if(this.callEvent("onBeforeStoreUpdate", args) === false){
+			return;
+		}
+
 		if(id){
 			// if item changes visible order (e.g. expand-collapse branch) - do a complete repaint
 			if(!quick){
@@ -3527,10 +3538,13 @@ DataStore.prototype = {
 			this.filter();
 		}
 
-		if (id)
-			this.callEvent("onStoreUpdated",[id, this.pull[id], "paint"]);
-		else
-			this.callEvent("onStoreUpdated",[null,null,null]);
+		if (id){
+			args = [id, this.pull[id], "paint"];
+		}else{
+			args = [null,null,null];
+		}
+
+		this.callEvent("onStoreUpdated",args);
 	},
 
 	count: function(){
@@ -5533,7 +5547,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.0.4";
+	this.version = "6.0.7";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -11373,7 +11387,14 @@ module.exports = {
 							(keyCode > 185 && keyCode < 193) || //;=-,etc
 							(keyCode > 218  && keyCode < 223)
 						){
-							if(hasEditor && !controller.isVisible()){
+							var modifiers = command.modifiers;
+
+							var anyModifier = modifiers.alt || modifiers.ctrl || modifiers.meta || modifiers.shift;
+							if(modifiers.alt){
+								// don't start editing on alt+key
+							}else if (anyModifier && keyNav.getCommandHandler(command, "taskCell")){
+								// don't start editing if command already have a keyboard shortcut
+							}else if(hasEditor && !controller.isVisible()){
 								self.startEdit(activeCell.id, activeCell.columnName);
 								preventKeyNav = true;
 							}
@@ -16861,6 +16882,14 @@ var initLinksDND = function(timeline, gantt) {
 
 		var targ = gantt.locate(e),
 			to_start = true;
+		
+		// can drag and drop link to another gantt on the page, such links are not supported
+		var sameGantt = domHelpers.isChildOf(e.target || e.srcElement, gantt.$root);
+		if(!sameGantt){
+			landing = false;
+			targ = null;
+		}
+
 		if(landing){
 			//refreshTask
 			to_start = !domHelpers.locateClassName(e, end_marker);
@@ -21277,12 +21306,28 @@ function throttle (callback, timeout) {
 
 function delay (callback, timeout){
 	var timer;
-	return function() {
-		clearTimeout(timer);
+	
+
+	var result = function() {
+		result.$cancelTimeout();
+		callback.$pending = true;
 		timer = setTimeout(function(){
 			callback();
+			result.$pending = false;
 		}, timeout);
 	};
+	
+	result.$pending = false;
+	result.$cancelTimeout = function(){
+		clearTimeout(timer);
+		callback.$pending = false;
+	};
+	result.$execute = function(){
+		callback();
+		callback.$cancelTimeout();
+	};
+
+	return result;
 }
 
 function sortArrayOfHash(arr, field, desc) {

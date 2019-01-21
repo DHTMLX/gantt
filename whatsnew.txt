@@ -1,3 +1,11 @@
+### 6.0.7
+- reduce the number of redundant repaints of the resource diagram
+- fix script error from the resource diagram after deleting a task
+- fix script error from the fullscreen extension after exiting fullscreen mode on the `Esc` key
+- fix incorrect state of links drag and drop when dragging a link between multiple charts on the page. Creating links between gantts is not supported
+- fix script error after deleting multiple selected tasks using keyboard navigation extension
+- fix default mapping of inline editors. Inline editors shouldn't block keyboard shortcuts on task cells
+
 ### 6.0.4
 - fix incorrect task position after task vertical dnd in order_branch='marker' mode
 - fix script error after deleting a sub-tree which contains selected task
