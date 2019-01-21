@@ -8,11 +8,12 @@
     "url": "git+https://github.com/DHTMLX/gantt.git"
   },
   "keywords": [
+    "gantt",
+    "chart",
     "calendar",
     "scheduler",
     "dhtmlx",
     "timeline",
-    "gantt",
     "browser"
   ],
   "author": "DHTMLX",

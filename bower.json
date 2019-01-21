@@ -8,15 +8,13 @@
     "codebase/dhtmlxgantt.css"
   ],
   "keywords": [
+    "gantt",
+    "chart",
     "calendar",
     "scheduler",
     "dhtmlx",
     "timeline",
-    "agenda",
-    "month",
-    "day",
-    "week",
-    "year"
+    "browser"
   ],
   "license": "GPL"  
 }
