@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/locale/locale_fr.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\locale\\locale_fr.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/locale/locale_fr.js":
-/*!*************************************!*\
-  !*** ./sources/locale/locale_fr.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale_fr.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/locale/locale_fr.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -109,33 +119,33 @@ gantt.locale = {
 		day_full: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
 		day_short: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
 	},
-	labels:{
-		new_task:"Nouvelle tâche",
+	labels: {
+		new_task: "Nouvelle tâche",
 		new_event: "Nouvel évènement",
-		icon_save:"Enregistrer",
-		icon_cancel:"Annuler",
-		icon_details:"Détails",
-		icon_edit:"Modifier",
-		icon_delete:"Effacer",
-		confirm_closing:"",//Vos modifications seront perdus, êtes-vous sûr ?
-		confirm_deleting:"L'événement sera effacé sans appel, êtes-vous sûr ?",
+		icon_save: "Enregistrer",
+		icon_cancel: "Annuler",
+		icon_details: "Détails",
+		icon_edit: "Modifier",
+		icon_delete: "Effacer",
+		confirm_closing: "",//Vos modifications seront perdus, êtes-vous sûr ?
+		confirm_deleting: "L'événement sera effacé sans appel, êtes-vous sûr ?",
 
-		section_description:"Description",
-		section_time:"Période",
-		section_type:"Type",
+		section_description: "Description",
+		section_time: "Période",
+		section_type: "Type",
 
 		/* grid columns */
 
-		column_wbs : "OTP",
-		column_text : "Nom de la tâche",
-		column_start_date : "Date initiale",
-		column_duration : "Durée",
-		column_add : "",
+		column_wbs: "OTP",
+		column_text: "Nom de la tâche",
+		column_start_date: "Date initiale",
+		column_duration: "Durée",
+		column_add: "",
 
 
 		/* link confirmation */
 		link: "Le lien",
-		confirm_link_deleting:"sera supprimé",
+		confirm_link_deleting: "sera supprimé",
 		link_start: "(début)",
 		link_end: "(fin)",
 
@@ -153,7 +163,24 @@ gantt.locale = {
 
 		/* message popup */
 		message_ok: "OK",
-		message_cancel: "Annuler"
+		message_cancel: "Annuler",
+
+		/* constraints */
+		section_constraint: "Constraint",
+		constraint_type: "Constraint type",
+		constraint_date: "Constraint date",
+		asap: "As Soon As Possible",
+		alap: "As Late As Possible",
+		snet: "Start No Earlier Than",
+		snlt: "Start No Later Than",
+		fnet: "Finish No Earlier Than",
+		fnlt: "Finish No Later Than",
+		mso: "Must Start On",
+		mfo: "Must Finish On",
+
+		/* resource control */
+		resources_filter_placeholder: "type to filter",
+		resources_filter_label: "hide empty"
 	}
 };
 
@@ -161,3 +188,4 @@ gantt.locale = {
 /***/ })
 
 /******/ });
+});

@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/locale/locale_pt.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\locale\\locale_pt.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/locale/locale_pt.js":
-/*!*************************************!*\
-  !*** ./sources/locale/locale_pt.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale_pt.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/locale/locale_pt.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -135,18 +145,18 @@ gantt.locale = {
 		confirm_deleting: "Tem certeza que deseja excluir?",
 		section_description: "Descrição",
 		section_time: "Período de tempo",
-		section_type:"Type",
-        /* grid columns */
+		section_type: "Type",
+		/* grid columns */
 
-        column_wbs : "EAP",
-		column_text : "Nome tarefa",
-		column_start_date : "Data início",
-		column_duration : "Duração",
-		column_add : "",
+		column_wbs: "EAP",
+		column_text: "Nome tarefa",
+		column_start_date: "Data início",
+		column_duration: "Duração",
+		column_add: "",
 
 		/* link confirmation */
 		link: "Link",
-		confirm_link_deleting:"será apagado",
+		confirm_link_deleting: "será apagado",
 		link_start: " (início)",
 		link_end: " (fim)",
 
@@ -164,10 +174,28 @@ gantt.locale = {
 
 		/* message popup */
 		message_ok: "OK",
-		message_cancel: "Cancelar"
+		message_cancel: "Cancelar",
+
+		/* constraints */
+		section_constraint: "Constraint",
+		constraint_type: "Constraint type",
+		constraint_date: "Constraint date",
+		asap: "As Soon As Possible",
+		alap: "As Late As Possible",
+		snet: "Start No Earlier Than",
+		snlt: "Start No Later Than",
+		fnet: "Finish No Earlier Than",
+		fnlt: "Finish No Later Than",
+		mso: "Must Start On",
+		mfo: "Must Finish On",
+
+		/* resource control */
+		resources_filter_placeholder: "type to filter",
+		resources_filter_label: "hide empty"
 	}
 };
 
 /***/ })
 
 /******/ });
+});

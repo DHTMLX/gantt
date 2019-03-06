@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -1082,6 +1082,9 @@ div.dhx_modal_cover {
   outline: none !important;
   resize: none;
 }
+.gantt_section_constraint [data-constraint-time-select] {
+  margin-left: 20px;
+}
 .gantt_time {
   font-weight: bold;
 }
@@ -1479,6 +1482,7 @@ div.dhx_modal_cover {
   padding: 10px;
   position: absolute;
   z-index: 50;
+  white-space: nowrap;
 }
 .gantt_resource_marker {
   position: absolute;
@@ -1599,6 +1603,21 @@ div.dhx_modal_cover {
   box-sizing: border-box;
   box-shadow: 0 0 0px 2px #3f98db inset;
   background: transparent;
+}
+.gantt_overlay_area {
+  position: absolute;
+  height: inherit;
+  width: inherit;
+  top: 0;
+  left: 0;
+  display: none;
+}
+.gantt_overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: inherit;
+  width: inherit;
 }
 .gantt_layout_content {
   width: 100%;

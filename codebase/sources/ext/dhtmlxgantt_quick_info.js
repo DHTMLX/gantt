@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/quick_info.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\ext\\quick_info.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/ext/quick_info.js":
-/*!***********************************!*\
-  !*** ./sources/ext/quick_info.js ***!
-  \***********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\ext\\quick_info.js":
+/*!*****************************************************!*\
+  !*** c:/www-recent/gantt/sources/ext/quick_info.js ***!
+  \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -360,3 +370,4 @@ gantt._fill_quick_data  = function(id){
 /***/ })
 
 /******/ });
+});

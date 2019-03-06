@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/fullscreen.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\ext\\fullscreen.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/ext/fullscreen.js":
-/*!***********************************!*\
-  !*** ./sources/ext/fullscreen.js ***!
-  \***********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\ext\\fullscreen.js":
+/*!*****************************************************!*\
+  !*** c:/www-recent/gantt/sources/ext/fullscreen.js ***!
+  \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -115,8 +125,8 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 			document.mozFullScreenElement ||
 			document.webkitFullscreenElement ||
 			document.msFullscreenElement);
-		
-		return element && element === gantt.$root;
+
+		return element && element === document.body;
 	}
 
 	function isFullscreenAvailable(){
@@ -126,7 +136,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 		document.msFullscreenEnabled;
 	}
 
-	var expanded = false; 
+	var expanded = false;
 
 	var backupElementSizes = {
 		width:null,
@@ -205,7 +215,7 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 
 		if (!gantt.callEvent("onBeforeExpand", []))
 			return;
-		var element = gantt.$root;
+		var element = document.body;
 
 		if (element.requestFullscreen) {
 			element.requestFullscreen();
@@ -246,3 +256,4 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /***/ })
 
 /******/ });
+});

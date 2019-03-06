@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/locale/locale_be.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\locale\\locale_be.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/locale/locale_be.js":
-/*!*************************************!*\
-  !*** ./sources/locale/locale_be.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale_be.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/locale/locale_be.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -106,7 +116,7 @@ gantt.locale = {
 	date: {
 		month_full: ["Студзень", "Люты", "Сакавік", "Красавік", "Maй", "Чэрвень", "Ліпень", "Жнівень", "Верасень", "Кастрычнік", "Лістапад", "Снежань"],
 		month_short: ["Студз", "Лют", "Сак", "Крас", "Maй", "Чэр", "Ліп", "Жнів", "Вер", "Каст", "Ліст", "Снеж"],
-		day_full: [ "Нядзеля", "Панядзелак", "Аўторак", "Серада", "Чацвер", "Пятніца", "Субота"],
+		day_full: ["Нядзеля", "Панядзелак", "Аўторак", "Серада", "Чацвер", "Пятніца", "Субота"],
 		day_short: ["Нд", "Пн", "Аўт", "Ср", "Чцв", "Пт", "Сб"]
 	},
 	labels: {
@@ -125,18 +135,18 @@ gantt.locale = {
 		confirm_deleting: "Падзея будзе выдалена незваротна, працягнуць?",
 		section_description: "Апісанне",
 		section_time: "Перыяд часу",
-		section_type:"Тып",
+		section_type: "Тып",
 		/* grid columns */
 
-		column_wbs : "ІСР",
-		column_text : "Задача",
-		column_start_date : "Пачатак",
-		column_duration : "Працяг",
-		column_add : "",
+		column_wbs: "ІСР",
+		column_text: "Задача",
+		column_start_date: "Пачатак",
+		column_duration: "Працяг",
+		column_add: "",
 
 		/* link confirmation */
 		link: "Сувязь",
-		confirm_link_deleting:"будзе выдалена",
+		confirm_link_deleting: "будзе выдалена",
 		link_start: "(пачатак)",
 		link_end: "(канец)",
 
@@ -154,7 +164,24 @@ gantt.locale = {
 
 		/* message popup */
 		message_ok: "OK",
-		message_cancel: "Адмяніць"
+		message_cancel: "Адмяніць",
+
+		/* constraints */
+		section_constraint: "Constraint",
+		constraint_type: "Constraint type",
+		constraint_date: "Constraint date",
+		asap: "As Soon As Possible",
+		alap: "As Late As Possible",
+		snet: "Start No Earlier Than",
+		snlt: "Start No Later Than",
+		fnet: "Finish No Earlier Than",
+		fnlt: "Finish No Later Than",
+		mso: "Must Start On",
+		mfo: "Must Finish On",
+
+		/* resource control */
+		resources_filter_placeholder: "type to filter",
+		resources_filter_label: "hide empty"
 	}
 };
 
@@ -163,3 +190,4 @@ gantt.locale = {
 /***/ })
 
 /******/ });
+});

@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,20 +100,94 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/locale/locale_id.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\locale\\locale_id.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/locale/locale_id.js":
-/*!*************************************!*\
-  !*** ./sources/locale/locale_id.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale_id.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/locale/locale_id.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-gantt.locale = {	date: {		month_full: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],		month_short: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"],		day_full: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],		day_short: ["Ming", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]	},	labels: {		new_task: "Tugas baru",		dhx_cal_today_button: "Hari Ini",		day_tab: "Hari",		week_tab: "Minggu",		month_tab: "Bulan",		new_event: "Acara Baru",		icon_save: "Simpan",		icon_cancel: "Batal",		icon_details: "Detail",		icon_edit: "Edit",		icon_delete: "Hapus",		confirm_closing: "", /*Perubahan tidak akan disimpan ?*/		confirm_deleting: "Acara akan dihapus",		section_description: "Keterangan",		section_time: "Periode",		section_type: "Type",		/* grid columns */		column_wbs : "WBS",		column_text: "Task name",		column_start_date: "Start time",		column_duration: "Duration",		column_add: "",		/* link confirmation */		link: "Link",		confirm_link_deleting: "will be deleted",		link_start: " (start)",		link_end: " (end)",		type_task: "Task",		type_project: "Project",		type_milestone: "Milestone",		minutes: "Minutes",		hours: "Hours",		days: "Days",		weeks: "Week",		months: "Months",		years: "Years",		/* message popup */		message_ok: "OK",		message_cancel: "Batal"	}};
+gantt.locale = {
+	date: {
+		month_full: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+		month_short: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"],
+		day_full: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+		day_short: ["Ming", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
+	},
+	labels: {
+		new_task: "Tugas baru",
+		dhx_cal_today_button: "Hari Ini",
+		day_tab: "Hari",
+		week_tab: "Minggu",
+		month_tab: "Bulan",
+		new_event: "Acara Baru",
+		icon_save: "Simpan",
+		icon_cancel: "Batal",
+		icon_details: "Detail",
+		icon_edit: "Edit",
+		icon_delete: "Hapus",
+		confirm_closing: "", /*Perubahan tidak akan disimpan ?*/
+		confirm_deleting: "Acara akan dihapus",
+		section_description: "Keterangan",
+		section_time: "Periode",
+		section_type: "Type",
+		/* grid columns */
+
+		column_wbs: "WBS",
+		column_text: "Task name",
+		column_start_date: "Start time",
+		column_duration: "Duration",
+		column_add: "",
+
+		/* link confirmation */
+		link: "Link",
+		confirm_link_deleting: "will be deleted",
+		link_start: " (start)",
+		link_end: " (end)",
+
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
+
+
+		minutes: "Minutes",
+		hours: "Hours",
+		days: "Days",
+		weeks: "Week",
+		months: "Months",
+		years: "Years",
+
+		/* message popup */
+		message_ok: "OK",
+		message_cancel: "Batal",
+
+		/* constraints */
+		section_constraint: "Constraint",
+		constraint_type: "Constraint type",
+		constraint_date: "Constraint date",
+		asap: "As Soon As Possible",
+		alap: "As Late As Possible",
+		snet: "Start No Earlier Than",
+		snlt: "Start No Later Than",
+		fnet: "Finish No Earlier Than",
+		fnlt: "Finish No Later Than",
+		mso: "Must Start On",
+		mfo: "Must Finish On",
+
+		/* resource control */
+		resources_filter_placeholder: "type to filter",
+		resources_filter_label: "hide empty"
+	}
+};
+
+
 
 /***/ })
 
 /******/ });
+});

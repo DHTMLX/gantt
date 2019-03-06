@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,5851 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/dhtmlxgantt.gpl.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\dhtmlxgantt.gpl.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/constants/index.js":
-/*!************************************!*\
-  !*** ./sources/constants/index.js ***!
-  \************************************/
+/***/ "c:\\www-recent\\gantt\\node_modules\\bluebird\\js\\browser\\bluebird.js":
+/*!************************************************************************!*\
+  !*** c:/www-recent/gantt/node_modules/bluebird/js/browser/bluebird.js ***!
+  \************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(process, global, setImmediate) {/* @preserve
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2013-2018 Petka Antonov
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+/**
+ * bluebird build version 3.5.3
+ * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, using, timers, filter, any, each
+*/
+!function(e){if(true)module.exports=e();else { var f; }}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise) {
+var SomePromiseArray = Promise._SomePromiseArray;
+function any(promises) {
+    var ret = new SomePromiseArray(promises);
+    var promise = ret.promise();
+    ret.setHowMany(1);
+    ret.setUnwrap();
+    ret.init();
+    return promise;
+}
+
+Promise.any = function (promises) {
+    return any(promises);
+};
+
+Promise.prototype.any = function () {
+    return any(this);
+};
+
+};
+
+},{}],2:[function(_dereq_,module,exports){
+"use strict";
+var firstLineError;
+try {throw new Error(); } catch (e) {firstLineError = e;}
+var schedule = _dereq_("./schedule");
+var Queue = _dereq_("./queue");
+var util = _dereq_("./util");
+
+function Async() {
+    this._customScheduler = false;
+    this._isTickUsed = false;
+    this._lateQueue = new Queue(16);
+    this._normalQueue = new Queue(16);
+    this._haveDrainedQueues = false;
+    this._trampolineEnabled = true;
+    var self = this;
+    this.drainQueues = function () {
+        self._drainQueues();
+    };
+    this._schedule = schedule;
+}
+
+Async.prototype.setScheduler = function(fn) {
+    var prev = this._schedule;
+    this._schedule = fn;
+    this._customScheduler = true;
+    return prev;
+};
+
+Async.prototype.hasCustomScheduler = function() {
+    return this._customScheduler;
+};
+
+Async.prototype.enableTrampoline = function() {
+    this._trampolineEnabled = true;
+};
+
+Async.prototype.disableTrampolineIfNecessary = function() {
+    if (util.hasDevTools) {
+        this._trampolineEnabled = false;
+    }
+};
+
+Async.prototype.haveItemsQueued = function () {
+    return this._isTickUsed || this._haveDrainedQueues;
+};
+
+
+Async.prototype.fatalError = function(e, isNode) {
+    if (isNode) {
+        process.stderr.write("Fatal " + (e instanceof Error ? e.stack : e) +
+            "\n");
+        process.exit(2);
+    } else {
+        this.throwLater(e);
+    }
+};
+
+Async.prototype.throwLater = function(fn, arg) {
+    if (arguments.length === 1) {
+        arg = fn;
+        fn = function () { throw arg; };
+    }
+    if (typeof setTimeout !== "undefined") {
+        setTimeout(function() {
+            fn(arg);
+        }, 0);
+    } else try {
+        this._schedule(function() {
+            fn(arg);
+        });
+    } catch (e) {
+        throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+};
+
+function AsyncInvokeLater(fn, receiver, arg) {
+    this._lateQueue.push(fn, receiver, arg);
+    this._queueTick();
+}
+
+function AsyncInvoke(fn, receiver, arg) {
+    this._normalQueue.push(fn, receiver, arg);
+    this._queueTick();
+}
+
+function AsyncSettlePromises(promise) {
+    this._normalQueue._pushOne(promise);
+    this._queueTick();
+}
+
+if (!util.hasDevTools) {
+    Async.prototype.invokeLater = AsyncInvokeLater;
+    Async.prototype.invoke = AsyncInvoke;
+    Async.prototype.settlePromises = AsyncSettlePromises;
+} else {
+    Async.prototype.invokeLater = function (fn, receiver, arg) {
+        if (this._trampolineEnabled) {
+            AsyncInvokeLater.call(this, fn, receiver, arg);
+        } else {
+            this._schedule(function() {
+                setTimeout(function() {
+                    fn.call(receiver, arg);
+                }, 100);
+            });
+        }
+    };
+
+    Async.prototype.invoke = function (fn, receiver, arg) {
+        if (this._trampolineEnabled) {
+            AsyncInvoke.call(this, fn, receiver, arg);
+        } else {
+            this._schedule(function() {
+                fn.call(receiver, arg);
+            });
+        }
+    };
+
+    Async.prototype.settlePromises = function(promise) {
+        if (this._trampolineEnabled) {
+            AsyncSettlePromises.call(this, promise);
+        } else {
+            this._schedule(function() {
+                promise._settlePromises();
+            });
+        }
+    };
+}
+
+function _drainQueue(queue) {
+    while (queue.length() > 0) {
+        _drainQueueStep(queue);
+    }
+}
+
+function _drainQueueStep(queue) {
+    var fn = queue.shift();
+    if (typeof fn !== "function") {
+        fn._settlePromises();
+    } else {
+        var receiver = queue.shift();
+        var arg = queue.shift();
+        fn.call(receiver, arg);
+    }
+}
+
+Async.prototype._drainQueues = function () {
+    _drainQueue(this._normalQueue);
+    this._reset();
+    this._haveDrainedQueues = true;
+    _drainQueue(this._lateQueue);
+};
+
+Async.prototype._queueTick = function () {
+    if (!this._isTickUsed) {
+        this._isTickUsed = true;
+        this._schedule(this.drainQueues);
+    }
+};
+
+Async.prototype._reset = function () {
+    this._isTickUsed = false;
+};
+
+module.exports = Async;
+module.exports.firstLineError = firstLineError;
+
+},{"./queue":26,"./schedule":29,"./util":36}],3:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL, tryConvertToPromise, debug) {
+var calledBind = false;
+var rejectThis = function(_, e) {
+    this._reject(e);
+};
+
+var targetRejected = function(e, context) {
+    context.promiseRejectionQueued = true;
+    context.bindingPromise._then(rejectThis, rejectThis, null, this, e);
+};
+
+var bindingResolved = function(thisArg, context) {
+    if (((this._bitField & 50397184) === 0)) {
+        this._resolveCallback(context.target);
+    }
+};
+
+var bindingRejected = function(e, context) {
+    if (!context.promiseRejectionQueued) this._reject(e);
+};
+
+Promise.prototype.bind = function (thisArg) {
+    if (!calledBind) {
+        calledBind = true;
+        Promise.prototype._propagateFrom = debug.propagateFromFunction();
+        Promise.prototype._boundValue = debug.boundValueFunction();
+    }
+    var maybePromise = tryConvertToPromise(thisArg);
+    var ret = new Promise(INTERNAL);
+    ret._propagateFrom(this, 1);
+    var target = this._target();
+    ret._setBoundTo(maybePromise);
+    if (maybePromise instanceof Promise) {
+        var context = {
+            promiseRejectionQueued: false,
+            promise: ret,
+            target: target,
+            bindingPromise: maybePromise
+        };
+        target._then(INTERNAL, targetRejected, undefined, ret, context);
+        maybePromise._then(
+            bindingResolved, bindingRejected, undefined, ret, context);
+        ret._setOnCancel(maybePromise);
+    } else {
+        ret._resolveCallback(target);
+    }
+    return ret;
+};
+
+Promise.prototype._setBoundTo = function (obj) {
+    if (obj !== undefined) {
+        this._bitField = this._bitField | 2097152;
+        this._boundTo = obj;
+    } else {
+        this._bitField = this._bitField & (~2097152);
+    }
+};
+
+Promise.prototype._isBound = function () {
+    return (this._bitField & 2097152) === 2097152;
+};
+
+Promise.bind = function (thisArg, value) {
+    return Promise.resolve(value).bind(thisArg);
+};
+};
+
+},{}],4:[function(_dereq_,module,exports){
+"use strict";
+var old;
+if (typeof Promise !== "undefined") old = Promise;
+function noConflict() {
+    try { if (Promise === bluebird) Promise = old; }
+    catch (e) {}
+    return bluebird;
+}
+var bluebird = _dereq_("./promise")();
+bluebird.noConflict = noConflict;
+module.exports = bluebird;
+
+},{"./promise":22}],5:[function(_dereq_,module,exports){
+"use strict";
+var cr = Object.create;
+if (cr) {
+    var callerCache = cr(null);
+    var getterCache = cr(null);
+    callerCache[" size"] = getterCache[" size"] = 0;
+}
+
+module.exports = function(Promise) {
+var util = _dereq_("./util");
+var canEvaluate = util.canEvaluate;
+var isIdentifier = util.isIdentifier;
+
+var getMethodCaller;
+var getGetter;
+if (false) { var getCompiled, makeGetter, makeMethodCaller; }
+
+function ensureMethod(obj, methodName) {
+    var fn;
+    if (obj != null) fn = obj[methodName];
+    if (typeof fn !== "function") {
+        var message = "Object " + util.classString(obj) + " has no method '" +
+            util.toString(methodName) + "'";
+        throw new Promise.TypeError(message);
+    }
+    return fn;
+}
+
+function caller(obj) {
+    var methodName = this.pop();
+    var fn = ensureMethod(obj, methodName);
+    return fn.apply(obj, this);
+}
+Promise.prototype.call = function (methodName) {
+    var args = [].slice.call(arguments, 1);;
+    if (false) { var maybeCaller; }
+    args.push(methodName);
+    return this._then(caller, undefined, undefined, args, undefined);
+};
+
+function namedGetter(obj) {
+    return obj[this];
+}
+function indexedGetter(obj) {
+    var index = +this;
+    if (index < 0) index = Math.max(0, index + obj.length);
+    return obj[index];
+}
+Promise.prototype.get = function (propertyName) {
+    var isIndex = (typeof propertyName === "number");
+    var getter;
+    if (!isIndex) {
+        if (canEvaluate) {
+            var maybeGetter = getGetter(propertyName);
+            getter = maybeGetter !== null ? maybeGetter : namedGetter;
+        } else {
+            getter = namedGetter;
+        }
+    } else {
+        getter = indexedGetter;
+    }
+    return this._then(getter, undefined, undefined, propertyName, undefined);
+};
+};
+
+},{"./util":36}],6:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, PromiseArray, apiRejection, debug) {
+var util = _dereq_("./util");
+var tryCatch = util.tryCatch;
+var errorObj = util.errorObj;
+var async = Promise._async;
+
+Promise.prototype["break"] = Promise.prototype.cancel = function() {
+    if (!debug.cancellation()) return this._warn("cancellation is disabled");
+
+    var promise = this;
+    var child = promise;
+    while (promise._isCancellable()) {
+        if (!promise._cancelBy(child)) {
+            if (child._isFollowing()) {
+                child._followee().cancel();
+            } else {
+                child._cancelBranched();
+            }
+            break;
+        }
+
+        var parent = promise._cancellationParent;
+        if (parent == null || !parent._isCancellable()) {
+            if (promise._isFollowing()) {
+                promise._followee().cancel();
+            } else {
+                promise._cancelBranched();
+            }
+            break;
+        } else {
+            if (promise._isFollowing()) promise._followee().cancel();
+            promise._setWillBeCancelled();
+            child = promise;
+            promise = parent;
+        }
+    }
+};
+
+Promise.prototype._branchHasCancelled = function() {
+    this._branchesRemainingToCancel--;
+};
+
+Promise.prototype._enoughBranchesHaveCancelled = function() {
+    return this._branchesRemainingToCancel === undefined ||
+           this._branchesRemainingToCancel <= 0;
+};
+
+Promise.prototype._cancelBy = function(canceller) {
+    if (canceller === this) {
+        this._branchesRemainingToCancel = 0;
+        this._invokeOnCancel();
+        return true;
+    } else {
+        this._branchHasCancelled();
+        if (this._enoughBranchesHaveCancelled()) {
+            this._invokeOnCancel();
+            return true;
+        }
+    }
+    return false;
+};
+
+Promise.prototype._cancelBranched = function() {
+    if (this._enoughBranchesHaveCancelled()) {
+        this._cancel();
+    }
+};
+
+Promise.prototype._cancel = function() {
+    if (!this._isCancellable()) return;
+    this._setCancelled();
+    async.invoke(this._cancelPromises, this, undefined);
+};
+
+Promise.prototype._cancelPromises = function() {
+    if (this._length() > 0) this._settlePromises();
+};
+
+Promise.prototype._unsetOnCancel = function() {
+    this._onCancelField = undefined;
+};
+
+Promise.prototype._isCancellable = function() {
+    return this.isPending() && !this._isCancelled();
+};
+
+Promise.prototype.isCancellable = function() {
+    return this.isPending() && !this.isCancelled();
+};
+
+Promise.prototype._doInvokeOnCancel = function(onCancelCallback, internalOnly) {
+    if (util.isArray(onCancelCallback)) {
+        for (var i = 0; i < onCancelCallback.length; ++i) {
+            this._doInvokeOnCancel(onCancelCallback[i], internalOnly);
+        }
+    } else if (onCancelCallback !== undefined) {
+        if (typeof onCancelCallback === "function") {
+            if (!internalOnly) {
+                var e = tryCatch(onCancelCallback).call(this._boundValue());
+                if (e === errorObj) {
+                    this._attachExtraTrace(e.e);
+                    async.throwLater(e.e);
+                }
+            }
+        } else {
+            onCancelCallback._resultCancelled(this);
+        }
+    }
+};
+
+Promise.prototype._invokeOnCancel = function() {
+    var onCancelCallback = this._onCancel();
+    this._unsetOnCancel();
+    async.invoke(this._doInvokeOnCancel, this, onCancelCallback);
+};
+
+Promise.prototype._invokeInternalOnCancel = function() {
+    if (this._isCancellable()) {
+        this._doInvokeOnCancel(this._onCancel(), true);
+        this._unsetOnCancel();
+    }
+};
+
+Promise.prototype._resultCancelled = function() {
+    this.cancel();
+};
+
+};
+
+},{"./util":36}],7:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(NEXT_FILTER) {
+var util = _dereq_("./util");
+var getKeys = _dereq_("./es5").keys;
+var tryCatch = util.tryCatch;
+var errorObj = util.errorObj;
+
+function catchFilter(instances, cb, promise) {
+    return function(e) {
+        var boundTo = promise._boundValue();
+        predicateLoop: for (var i = 0; i < instances.length; ++i) {
+            var item = instances[i];
+
+            if (item === Error ||
+                (item != null && item.prototype instanceof Error)) {
+                if (e instanceof item) {
+                    return tryCatch(cb).call(boundTo, e);
+                }
+            } else if (typeof item === "function") {
+                var matchesPredicate = tryCatch(item).call(boundTo, e);
+                if (matchesPredicate === errorObj) {
+                    return matchesPredicate;
+                } else if (matchesPredicate) {
+                    return tryCatch(cb).call(boundTo, e);
+                }
+            } else if (util.isObject(e)) {
+                var keys = getKeys(item);
+                for (var j = 0; j < keys.length; ++j) {
+                    var key = keys[j];
+                    if (item[key] != e[key]) {
+                        continue predicateLoop;
+                    }
+                }
+                return tryCatch(cb).call(boundTo, e);
+            }
+        }
+        return NEXT_FILTER;
+    };
+}
+
+return catchFilter;
+};
+
+},{"./es5":13,"./util":36}],8:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise) {
+var longStackTraces = false;
+var contextStack = [];
+
+Promise.prototype._promiseCreated = function() {};
+Promise.prototype._pushContext = function() {};
+Promise.prototype._popContext = function() {return null;};
+Promise._peekContext = Promise.prototype._peekContext = function() {};
+
+function Context() {
+    this._trace = new Context.CapturedTrace(peekContext());
+}
+Context.prototype._pushContext = function () {
+    if (this._trace !== undefined) {
+        this._trace._promiseCreated = null;
+        contextStack.push(this._trace);
+    }
+};
+
+Context.prototype._popContext = function () {
+    if (this._trace !== undefined) {
+        var trace = contextStack.pop();
+        var ret = trace._promiseCreated;
+        trace._promiseCreated = null;
+        return ret;
+    }
+    return null;
+};
+
+function createContext() {
+    if (longStackTraces) return new Context();
+}
+
+function peekContext() {
+    var lastIndex = contextStack.length - 1;
+    if (lastIndex >= 0) {
+        return contextStack[lastIndex];
+    }
+    return undefined;
+}
+Context.CapturedTrace = null;
+Context.create = createContext;
+Context.deactivateLongStackTraces = function() {};
+Context.activateLongStackTraces = function() {
+    var Promise_pushContext = Promise.prototype._pushContext;
+    var Promise_popContext = Promise.prototype._popContext;
+    var Promise_PeekContext = Promise._peekContext;
+    var Promise_peekContext = Promise.prototype._peekContext;
+    var Promise_promiseCreated = Promise.prototype._promiseCreated;
+    Context.deactivateLongStackTraces = function() {
+        Promise.prototype._pushContext = Promise_pushContext;
+        Promise.prototype._popContext = Promise_popContext;
+        Promise._peekContext = Promise_PeekContext;
+        Promise.prototype._peekContext = Promise_peekContext;
+        Promise.prototype._promiseCreated = Promise_promiseCreated;
+        longStackTraces = false;
+    };
+    longStackTraces = true;
+    Promise.prototype._pushContext = Context.prototype._pushContext;
+    Promise.prototype._popContext = Context.prototype._popContext;
+    Promise._peekContext = Promise.prototype._peekContext = peekContext;
+    Promise.prototype._promiseCreated = function() {
+        var ctx = this._peekContext();
+        if (ctx && ctx._promiseCreated == null) ctx._promiseCreated = this;
+    };
+};
+return Context;
+};
+
+},{}],9:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, Context) {
+var getDomain = Promise._getDomain;
+var async = Promise._async;
+var Warning = _dereq_("./errors").Warning;
+var util = _dereq_("./util");
+var es5 = _dereq_("./es5");
+var canAttachTrace = util.canAttachTrace;
+var unhandledRejectionHandled;
+var possiblyUnhandledRejection;
+var bluebirdFramePattern =
+    /[\\\/]bluebird[\\\/]js[\\\/](release|debug|instrumented)/;
+var nodeFramePattern = /\((?:timers\.js):\d+:\d+\)/;
+var parseLinePattern = /[\/<\(](.+?):(\d+):(\d+)\)?\s*$/;
+var stackFramePattern = null;
+var formatStack = null;
+var indentStackFrames = false;
+var printWarning;
+var debugging = !!(util.env("BLUEBIRD_DEBUG") != 0 &&
+                        (true ||
+                         util.env("BLUEBIRD_DEBUG") ||
+                         util.env("NODE_ENV") === "development"));
+
+var warnings = !!(util.env("BLUEBIRD_WARNINGS") != 0 &&
+    (debugging || util.env("BLUEBIRD_WARNINGS")));
+
+var longStackTraces = !!(util.env("BLUEBIRD_LONG_STACK_TRACES") != 0 &&
+    (debugging || util.env("BLUEBIRD_LONG_STACK_TRACES")));
+
+var wForgottenReturn = util.env("BLUEBIRD_W_FORGOTTEN_RETURN") != 0 &&
+    (warnings || !!util.env("BLUEBIRD_W_FORGOTTEN_RETURN"));
+
+Promise.prototype.suppressUnhandledRejections = function() {
+    var target = this._target();
+    target._bitField = ((target._bitField & (~1048576)) |
+                      524288);
+};
+
+Promise.prototype._ensurePossibleRejectionHandled = function () {
+    if ((this._bitField & 524288) !== 0) return;
+    this._setRejectionIsUnhandled();
+    var self = this;
+    setTimeout(function() {
+        self._notifyUnhandledRejection();
+    }, 1);
+};
+
+Promise.prototype._notifyUnhandledRejectionIsHandled = function () {
+    fireRejectionEvent("rejectionHandled",
+                                  unhandledRejectionHandled, undefined, this);
+};
+
+Promise.prototype._setReturnedNonUndefined = function() {
+    this._bitField = this._bitField | 268435456;
+};
+
+Promise.prototype._returnedNonUndefined = function() {
+    return (this._bitField & 268435456) !== 0;
+};
+
+Promise.prototype._notifyUnhandledRejection = function () {
+    if (this._isRejectionUnhandled()) {
+        var reason = this._settledValue();
+        this._setUnhandledRejectionIsNotified();
+        fireRejectionEvent("unhandledRejection",
+                                      possiblyUnhandledRejection, reason, this);
+    }
+};
+
+Promise.prototype._setUnhandledRejectionIsNotified = function () {
+    this._bitField = this._bitField | 262144;
+};
+
+Promise.prototype._unsetUnhandledRejectionIsNotified = function () {
+    this._bitField = this._bitField & (~262144);
+};
+
+Promise.prototype._isUnhandledRejectionNotified = function () {
+    return (this._bitField & 262144) > 0;
+};
+
+Promise.prototype._setRejectionIsUnhandled = function () {
+    this._bitField = this._bitField | 1048576;
+};
+
+Promise.prototype._unsetRejectionIsUnhandled = function () {
+    this._bitField = this._bitField & (~1048576);
+    if (this._isUnhandledRejectionNotified()) {
+        this._unsetUnhandledRejectionIsNotified();
+        this._notifyUnhandledRejectionIsHandled();
+    }
+};
+
+Promise.prototype._isRejectionUnhandled = function () {
+    return (this._bitField & 1048576) > 0;
+};
+
+Promise.prototype._warn = function(message, shouldUseOwnTrace, promise) {
+    return warn(message, shouldUseOwnTrace, promise || this);
+};
+
+Promise.onPossiblyUnhandledRejection = function (fn) {
+    var domain = getDomain();
+    possiblyUnhandledRejection =
+        typeof fn === "function" ? (domain === null ?
+                                            fn : util.domainBind(domain, fn))
+                                 : undefined;
+};
+
+Promise.onUnhandledRejectionHandled = function (fn) {
+    var domain = getDomain();
+    unhandledRejectionHandled =
+        typeof fn === "function" ? (domain === null ?
+                                            fn : util.domainBind(domain, fn))
+                                 : undefined;
+};
+
+var disableLongStackTraces = function() {};
+Promise.longStackTraces = function () {
+    if (async.haveItemsQueued() && !config.longStackTraces) {
+        throw new Error("cannot enable long stack traces after promises have been created\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    if (!config.longStackTraces && longStackTracesIsSupported()) {
+        var Promise_captureStackTrace = Promise.prototype._captureStackTrace;
+        var Promise_attachExtraTrace = Promise.prototype._attachExtraTrace;
+        var Promise_dereferenceTrace = Promise.prototype._dereferenceTrace;
+        config.longStackTraces = true;
+        disableLongStackTraces = function() {
+            if (async.haveItemsQueued() && !config.longStackTraces) {
+                throw new Error("cannot enable long stack traces after promises have been created\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+            }
+            Promise.prototype._captureStackTrace = Promise_captureStackTrace;
+            Promise.prototype._attachExtraTrace = Promise_attachExtraTrace;
+            Promise.prototype._dereferenceTrace = Promise_dereferenceTrace;
+            Context.deactivateLongStackTraces();
+            async.enableTrampoline();
+            config.longStackTraces = false;
+        };
+        Promise.prototype._captureStackTrace = longStackTracesCaptureStackTrace;
+        Promise.prototype._attachExtraTrace = longStackTracesAttachExtraTrace;
+        Promise.prototype._dereferenceTrace = longStackTracesDereferenceTrace;
+        Context.activateLongStackTraces();
+        async.disableTrampolineIfNecessary();
+    }
+};
+
+Promise.hasLongStackTraces = function () {
+    return config.longStackTraces && longStackTracesIsSupported();
+};
+
+var fireDomEvent = (function() {
+    try {
+        if (typeof CustomEvent === "function") {
+            var event = new CustomEvent("CustomEvent");
+            util.global.dispatchEvent(event);
+            return function(name, event) {
+                var eventData = {
+                    detail: event,
+                    cancelable: true
+                };
+                es5.defineProperty(
+                    eventData, "promise", {value: event.promise});
+                es5.defineProperty(eventData, "reason", {value: event.reason});
+                var domEvent = new CustomEvent(name.toLowerCase(), eventData);
+                return !util.global.dispatchEvent(domEvent);
+            };
+        } else if (typeof Event === "function") {
+            var event = new Event("CustomEvent");
+            util.global.dispatchEvent(event);
+            return function(name, event) {
+                var domEvent = new Event(name.toLowerCase(), {
+                    cancelable: true
+                });
+                domEvent.detail = event;
+                es5.defineProperty(domEvent, "promise", {value: event.promise});
+                es5.defineProperty(domEvent, "reason", {value: event.reason});
+                return !util.global.dispatchEvent(domEvent);
+            };
+        } else {
+            var event = document.createEvent("CustomEvent");
+            event.initCustomEvent("testingtheevent", false, true, {});
+            util.global.dispatchEvent(event);
+            return function(name, event) {
+                var domEvent = document.createEvent("CustomEvent");
+                domEvent.initCustomEvent(name.toLowerCase(), false, true,
+                    event);
+                return !util.global.dispatchEvent(domEvent);
+            };
+        }
+    } catch (e) {}
+    return function() {
+        return false;
+    };
+})();
+
+var fireGlobalEvent = (function() {
+    if (util.isNode) {
+        return function() {
+            return process.emit.apply(process, arguments);
+        };
+    } else {
+        if (!util.global) {
+            return function() {
+                return false;
+            };
+        }
+        return function(name) {
+            var methodName = "on" + name.toLowerCase();
+            var method = util.global[methodName];
+            if (!method) return false;
+            method.apply(util.global, [].slice.call(arguments, 1));
+            return true;
+        };
+    }
+})();
+
+function generatePromiseLifecycleEventObject(name, promise) {
+    return {promise: promise};
+}
+
+var eventToObjectGenerator = {
+    promiseCreated: generatePromiseLifecycleEventObject,
+    promiseFulfilled: generatePromiseLifecycleEventObject,
+    promiseRejected: generatePromiseLifecycleEventObject,
+    promiseResolved: generatePromiseLifecycleEventObject,
+    promiseCancelled: generatePromiseLifecycleEventObject,
+    promiseChained: function(name, promise, child) {
+        return {promise: promise, child: child};
+    },
+    warning: function(name, warning) {
+        return {warning: warning};
+    },
+    unhandledRejection: function (name, reason, promise) {
+        return {reason: reason, promise: promise};
+    },
+    rejectionHandled: generatePromiseLifecycleEventObject
+};
+
+var activeFireEvent = function (name) {
+    var globalEventFired = false;
+    try {
+        globalEventFired = fireGlobalEvent.apply(null, arguments);
+    } catch (e) {
+        async.throwLater(e);
+        globalEventFired = true;
+    }
+
+    var domEventFired = false;
+    try {
+        domEventFired = fireDomEvent(name,
+                    eventToObjectGenerator[name].apply(null, arguments));
+    } catch (e) {
+        async.throwLater(e);
+        domEventFired = true;
+    }
+
+    return domEventFired || globalEventFired;
+};
+
+Promise.config = function(opts) {
+    opts = Object(opts);
+    if ("longStackTraces" in opts) {
+        if (opts.longStackTraces) {
+            Promise.longStackTraces();
+        } else if (!opts.longStackTraces && Promise.hasLongStackTraces()) {
+            disableLongStackTraces();
+        }
+    }
+    if ("warnings" in opts) {
+        var warningsOption = opts.warnings;
+        config.warnings = !!warningsOption;
+        wForgottenReturn = config.warnings;
+
+        if (util.isObject(warningsOption)) {
+            if ("wForgottenReturn" in warningsOption) {
+                wForgottenReturn = !!warningsOption.wForgottenReturn;
+            }
+        }
+    }
+    if ("cancellation" in opts && opts.cancellation && !config.cancellation) {
+        if (async.haveItemsQueued()) {
+            throw new Error(
+                "cannot enable cancellation after promises are in use");
+        }
+        Promise.prototype._clearCancellationData =
+            cancellationClearCancellationData;
+        Promise.prototype._propagateFrom = cancellationPropagateFrom;
+        Promise.prototype._onCancel = cancellationOnCancel;
+        Promise.prototype._setOnCancel = cancellationSetOnCancel;
+        Promise.prototype._attachCancellationCallback =
+            cancellationAttachCancellationCallback;
+        Promise.prototype._execute = cancellationExecute;
+        propagateFromFunction = cancellationPropagateFrom;
+        config.cancellation = true;
+    }
+    if ("monitoring" in opts) {
+        if (opts.monitoring && !config.monitoring) {
+            config.monitoring = true;
+            Promise.prototype._fireEvent = activeFireEvent;
+        } else if (!opts.monitoring && config.monitoring) {
+            config.monitoring = false;
+            Promise.prototype._fireEvent = defaultFireEvent;
+        }
+    }
+    return Promise;
+};
+
+function defaultFireEvent() { return false; }
+
+Promise.prototype._fireEvent = defaultFireEvent;
+Promise.prototype._execute = function(executor, resolve, reject) {
+    try {
+        executor(resolve, reject);
+    } catch (e) {
+        return e;
+    }
+};
+Promise.prototype._onCancel = function () {};
+Promise.prototype._setOnCancel = function (handler) { ; };
+Promise.prototype._attachCancellationCallback = function(onCancel) {
+    ;
+};
+Promise.prototype._captureStackTrace = function () {};
+Promise.prototype._attachExtraTrace = function () {};
+Promise.prototype._dereferenceTrace = function () {};
+Promise.prototype._clearCancellationData = function() {};
+Promise.prototype._propagateFrom = function (parent, flags) {
+    ;
+    ;
+};
+
+function cancellationExecute(executor, resolve, reject) {
+    var promise = this;
+    try {
+        executor(resolve, reject, function(onCancel) {
+            if (typeof onCancel !== "function") {
+                throw new TypeError("onCancel must be a function, got: " +
+                                    util.toString(onCancel));
+            }
+            promise._attachCancellationCallback(onCancel);
+        });
+    } catch (e) {
+        return e;
+    }
+}
+
+function cancellationAttachCancellationCallback(onCancel) {
+    if (!this._isCancellable()) return this;
+
+    var previousOnCancel = this._onCancel();
+    if (previousOnCancel !== undefined) {
+        if (util.isArray(previousOnCancel)) {
+            previousOnCancel.push(onCancel);
+        } else {
+            this._setOnCancel([previousOnCancel, onCancel]);
+        }
+    } else {
+        this._setOnCancel(onCancel);
+    }
+}
+
+function cancellationOnCancel() {
+    return this._onCancelField;
+}
+
+function cancellationSetOnCancel(onCancel) {
+    this._onCancelField = onCancel;
+}
+
+function cancellationClearCancellationData() {
+    this._cancellationParent = undefined;
+    this._onCancelField = undefined;
+}
+
+function cancellationPropagateFrom(parent, flags) {
+    if ((flags & 1) !== 0) {
+        this._cancellationParent = parent;
+        var branchesRemainingToCancel = parent._branchesRemainingToCancel;
+        if (branchesRemainingToCancel === undefined) {
+            branchesRemainingToCancel = 0;
+        }
+        parent._branchesRemainingToCancel = branchesRemainingToCancel + 1;
+    }
+    if ((flags & 2) !== 0 && parent._isBound()) {
+        this._setBoundTo(parent._boundTo);
+    }
+}
+
+function bindingPropagateFrom(parent, flags) {
+    if ((flags & 2) !== 0 && parent._isBound()) {
+        this._setBoundTo(parent._boundTo);
+    }
+}
+var propagateFromFunction = bindingPropagateFrom;
+
+function boundValueFunction() {
+    var ret = this._boundTo;
+    if (ret !== undefined) {
+        if (ret instanceof Promise) {
+            if (ret.isFulfilled()) {
+                return ret.value();
+            } else {
+                return undefined;
+            }
+        }
+    }
+    return ret;
+}
+
+function longStackTracesCaptureStackTrace() {
+    this._trace = new CapturedTrace(this._peekContext());
+}
+
+function longStackTracesAttachExtraTrace(error, ignoreSelf) {
+    if (canAttachTrace(error)) {
+        var trace = this._trace;
+        if (trace !== undefined) {
+            if (ignoreSelf) trace = trace._parent;
+        }
+        if (trace !== undefined) {
+            trace.attachExtraTrace(error);
+        } else if (!error.__stackCleaned__) {
+            var parsed = parseStackAndMessage(error);
+            util.notEnumerableProp(error, "stack",
+                parsed.message + "\n" + parsed.stack.join("\n"));
+            util.notEnumerableProp(error, "__stackCleaned__", true);
+        }
+    }
+}
+
+function longStackTracesDereferenceTrace() {
+    this._trace = undefined;
+}
+
+function checkForgottenReturns(returnValue, promiseCreated, name, promise,
+                               parent) {
+    if (returnValue === undefined && promiseCreated !== null &&
+        wForgottenReturn) {
+        if (parent !== undefined && parent._returnedNonUndefined()) return;
+        if ((promise._bitField & 65535) === 0) return;
+
+        if (name) name = name + " ";
+        var handlerLine = "";
+        var creatorLine = "";
+        if (promiseCreated._trace) {
+            var traceLines = promiseCreated._trace.stack.split("\n");
+            var stack = cleanStack(traceLines);
+            for (var i = stack.length - 1; i >= 0; --i) {
+                var line = stack[i];
+                if (!nodeFramePattern.test(line)) {
+                    var lineMatches = line.match(parseLinePattern);
+                    if (lineMatches) {
+                        handlerLine  = "at " + lineMatches[1] +
+                            ":" + lineMatches[2] + ":" + lineMatches[3] + " ";
+                    }
+                    break;
+                }
+            }
+
+            if (stack.length > 0) {
+                var firstUserLine = stack[0];
+                for (var i = 0; i < traceLines.length; ++i) {
+
+                    if (traceLines[i] === firstUserLine) {
+                        if (i > 0) {
+                            creatorLine = "\n" + traceLines[i - 1];
+                        }
+                        break;
+                    }
+                }
+
+            }
+        }
+        var msg = "a promise was created in a " + name +
+            "handler " + handlerLine + "but was not returned from it, " +
+            "see http://goo.gl/rRqMUw" +
+            creatorLine;
+        promise._warn(msg, true, promiseCreated);
+    }
+}
+
+function deprecated(name, replacement) {
+    var message = name +
+        " is deprecated and will be removed in a future version.";
+    if (replacement) message += " Use " + replacement + " instead.";
+    return warn(message);
+}
+
+function warn(message, shouldUseOwnTrace, promise) {
+    if (!config.warnings) return;
+    var warning = new Warning(message);
+    var ctx;
+    if (shouldUseOwnTrace) {
+        promise._attachExtraTrace(warning);
+    } else if (config.longStackTraces && (ctx = Promise._peekContext())) {
+        ctx.attachExtraTrace(warning);
+    } else {
+        var parsed = parseStackAndMessage(warning);
+        warning.stack = parsed.message + "\n" + parsed.stack.join("\n");
+    }
+
+    if (!activeFireEvent("warning", warning)) {
+        formatAndLogError(warning, "", true);
+    }
+}
+
+function reconstructStack(message, stacks) {
+    for (var i = 0; i < stacks.length - 1; ++i) {
+        stacks[i].push("From previous event:");
+        stacks[i] = stacks[i].join("\n");
+    }
+    if (i < stacks.length) {
+        stacks[i] = stacks[i].join("\n");
+    }
+    return message + "\n" + stacks.join("\n");
+}
+
+function removeDuplicateOrEmptyJumps(stacks) {
+    for (var i = 0; i < stacks.length; ++i) {
+        if (stacks[i].length === 0 ||
+            ((i + 1 < stacks.length) && stacks[i][0] === stacks[i+1][0])) {
+            stacks.splice(i, 1);
+            i--;
+        }
+    }
+}
+
+function removeCommonRoots(stacks) {
+    var current = stacks[0];
+    for (var i = 1; i < stacks.length; ++i) {
+        var prev = stacks[i];
+        var currentLastIndex = current.length - 1;
+        var currentLastLine = current[currentLastIndex];
+        var commonRootMeetPoint = -1;
+
+        for (var j = prev.length - 1; j >= 0; --j) {
+            if (prev[j] === currentLastLine) {
+                commonRootMeetPoint = j;
+                break;
+            }
+        }
+
+        for (var j = commonRootMeetPoint; j >= 0; --j) {
+            var line = prev[j];
+            if (current[currentLastIndex] === line) {
+                current.pop();
+                currentLastIndex--;
+            } else {
+                break;
+            }
+        }
+        current = prev;
+    }
+}
+
+function cleanStack(stack) {
+    var ret = [];
+    for (var i = 0; i < stack.length; ++i) {
+        var line = stack[i];
+        var isTraceLine = "    (No stack trace)" === line ||
+            stackFramePattern.test(line);
+        var isInternalFrame = isTraceLine && shouldIgnore(line);
+        if (isTraceLine && !isInternalFrame) {
+            if (indentStackFrames && line.charAt(0) !== " ") {
+                line = "    " + line;
+            }
+            ret.push(line);
+        }
+    }
+    return ret;
+}
+
+function stackFramesAsArray(error) {
+    var stack = error.stack.replace(/\s+$/g, "").split("\n");
+    for (var i = 0; i < stack.length; ++i) {
+        var line = stack[i];
+        if ("    (No stack trace)" === line || stackFramePattern.test(line)) {
+            break;
+        }
+    }
+    if (i > 0 && error.name != "SyntaxError") {
+        stack = stack.slice(i);
+    }
+    return stack;
+}
+
+function parseStackAndMessage(error) {
+    var stack = error.stack;
+    var message = error.toString();
+    stack = typeof stack === "string" && stack.length > 0
+                ? stackFramesAsArray(error) : ["    (No stack trace)"];
+    return {
+        message: message,
+        stack: error.name == "SyntaxError" ? stack : cleanStack(stack)
+    };
+}
+
+function formatAndLogError(error, title, isSoft) {
+    if (typeof console !== "undefined") {
+        var message;
+        if (util.isObject(error)) {
+            var stack = error.stack;
+            message = title + formatStack(stack, error);
+        } else {
+            message = title + String(error);
+        }
+        if (typeof printWarning === "function") {
+            printWarning(message, isSoft);
+        } else if (typeof console.log === "function" ||
+            typeof console.log === "object") {
+            console.log(message);
+        }
+    }
+}
+
+function fireRejectionEvent(name, localHandler, reason, promise) {
+    var localEventFired = false;
+    try {
+        if (typeof localHandler === "function") {
+            localEventFired = true;
+            if (name === "rejectionHandled") {
+                localHandler(promise);
+            } else {
+                localHandler(reason, promise);
+            }
+        }
+    } catch (e) {
+        async.throwLater(e);
+    }
+
+    if (name === "unhandledRejection") {
+        if (!activeFireEvent(name, reason, promise) && !localEventFired) {
+            formatAndLogError(reason, "Unhandled rejection ");
+        }
+    } else {
+        activeFireEvent(name, promise);
+    }
+}
+
+function formatNonError(obj) {
+    var str;
+    if (typeof obj === "function") {
+        str = "[function " +
+            (obj.name || "anonymous") +
+            "]";
+    } else {
+        str = obj && typeof obj.toString === "function"
+            ? obj.toString() : util.toString(obj);
+        var ruselessToString = /\[object [a-zA-Z0-9$_]+\]/;
+        if (ruselessToString.test(str)) {
+            try {
+                var newStr = JSON.stringify(obj);
+                str = newStr;
+            }
+            catch(e) {
+
+            }
+        }
+        if (str.length === 0) {
+            str = "(empty array)";
+        }
+    }
+    return ("(<" + snip(str) + ">, no stack trace)");
+}
+
+function snip(str) {
+    var maxChars = 41;
+    if (str.length < maxChars) {
+        return str;
+    }
+    return str.substr(0, maxChars - 3) + "...";
+}
+
+function longStackTracesIsSupported() {
+    return typeof captureStackTrace === "function";
+}
+
+var shouldIgnore = function() { return false; };
+var parseLineInfoRegex = /[\/<\(]([^:\/]+):(\d+):(?:\d+)\)?\s*$/;
+function parseLineInfo(line) {
+    var matches = line.match(parseLineInfoRegex);
+    if (matches) {
+        return {
+            fileName: matches[1],
+            line: parseInt(matches[2], 10)
+        };
+    }
+}
+
+function setBounds(firstLineError, lastLineError) {
+    if (!longStackTracesIsSupported()) return;
+    var firstStackLines = firstLineError.stack.split("\n");
+    var lastStackLines = lastLineError.stack.split("\n");
+    var firstIndex = -1;
+    var lastIndex = -1;
+    var firstFileName;
+    var lastFileName;
+    for (var i = 0; i < firstStackLines.length; ++i) {
+        var result = parseLineInfo(firstStackLines[i]);
+        if (result) {
+            firstFileName = result.fileName;
+            firstIndex = result.line;
+            break;
+        }
+    }
+    for (var i = 0; i < lastStackLines.length; ++i) {
+        var result = parseLineInfo(lastStackLines[i]);
+        if (result) {
+            lastFileName = result.fileName;
+            lastIndex = result.line;
+            break;
+        }
+    }
+    if (firstIndex < 0 || lastIndex < 0 || !firstFileName || !lastFileName ||
+        firstFileName !== lastFileName || firstIndex >= lastIndex) {
+        return;
+    }
+
+    shouldIgnore = function(line) {
+        if (bluebirdFramePattern.test(line)) return true;
+        var info = parseLineInfo(line);
+        if (info) {
+            if (info.fileName === firstFileName &&
+                (firstIndex <= info.line && info.line <= lastIndex)) {
+                return true;
+            }
+        }
+        return false;
+    };
+}
+
+function CapturedTrace(parent) {
+    this._parent = parent;
+    this._promisesCreated = 0;
+    var length = this._length = 1 + (parent === undefined ? 0 : parent._length);
+    captureStackTrace(this, CapturedTrace);
+    if (length > 32) this.uncycle();
+}
+util.inherits(CapturedTrace, Error);
+Context.CapturedTrace = CapturedTrace;
+
+CapturedTrace.prototype.uncycle = function() {
+    var length = this._length;
+    if (length < 2) return;
+    var nodes = [];
+    var stackToIndex = {};
+
+    for (var i = 0, node = this; node !== undefined; ++i) {
+        nodes.push(node);
+        node = node._parent;
+    }
+    length = this._length = i;
+    for (var i = length - 1; i >= 0; --i) {
+        var stack = nodes[i].stack;
+        if (stackToIndex[stack] === undefined) {
+            stackToIndex[stack] = i;
+        }
+    }
+    for (var i = 0; i < length; ++i) {
+        var currentStack = nodes[i].stack;
+        var index = stackToIndex[currentStack];
+        if (index !== undefined && index !== i) {
+            if (index > 0) {
+                nodes[index - 1]._parent = undefined;
+                nodes[index - 1]._length = 1;
+            }
+            nodes[i]._parent = undefined;
+            nodes[i]._length = 1;
+            var cycleEdgeNode = i > 0 ? nodes[i - 1] : this;
+
+            if (index < length - 1) {
+                cycleEdgeNode._parent = nodes[index + 1];
+                cycleEdgeNode._parent.uncycle();
+                cycleEdgeNode._length =
+                    cycleEdgeNode._parent._length + 1;
+            } else {
+                cycleEdgeNode._parent = undefined;
+                cycleEdgeNode._length = 1;
+            }
+            var currentChildLength = cycleEdgeNode._length + 1;
+            for (var j = i - 2; j >= 0; --j) {
+                nodes[j]._length = currentChildLength;
+                currentChildLength++;
+            }
+            return;
+        }
+    }
+};
+
+CapturedTrace.prototype.attachExtraTrace = function(error) {
+    if (error.__stackCleaned__) return;
+    this.uncycle();
+    var parsed = parseStackAndMessage(error);
+    var message = parsed.message;
+    var stacks = [parsed.stack];
+
+    var trace = this;
+    while (trace !== undefined) {
+        stacks.push(cleanStack(trace.stack.split("\n")));
+        trace = trace._parent;
+    }
+    removeCommonRoots(stacks);
+    removeDuplicateOrEmptyJumps(stacks);
+    util.notEnumerableProp(error, "stack", reconstructStack(message, stacks));
+    util.notEnumerableProp(error, "__stackCleaned__", true);
+};
+
+var captureStackTrace = (function stackDetection() {
+    var v8stackFramePattern = /^\s*at\s*/;
+    var v8stackFormatter = function(stack, error) {
+        if (typeof stack === "string") return stack;
+
+        if (error.name !== undefined &&
+            error.message !== undefined) {
+            return error.toString();
+        }
+        return formatNonError(error);
+    };
+
+    if (typeof Error.stackTraceLimit === "number" &&
+        typeof Error.captureStackTrace === "function") {
+        Error.stackTraceLimit += 6;
+        stackFramePattern = v8stackFramePattern;
+        formatStack = v8stackFormatter;
+        var captureStackTrace = Error.captureStackTrace;
+
+        shouldIgnore = function(line) {
+            return bluebirdFramePattern.test(line);
+        };
+        return function(receiver, ignoreUntil) {
+            Error.stackTraceLimit += 6;
+            captureStackTrace(receiver, ignoreUntil);
+            Error.stackTraceLimit -= 6;
+        };
+    }
+    var err = new Error();
+
+    if (typeof err.stack === "string" &&
+        err.stack.split("\n")[0].indexOf("stackDetection@") >= 0) {
+        stackFramePattern = /@/;
+        formatStack = v8stackFormatter;
+        indentStackFrames = true;
+        return function captureStackTrace(o) {
+            o.stack = new Error().stack;
+        };
+    }
+
+    var hasStackAfterThrow;
+    try { throw new Error(); }
+    catch(e) {
+        hasStackAfterThrow = ("stack" in e);
+    }
+    if (!("stack" in err) && hasStackAfterThrow &&
+        typeof Error.stackTraceLimit === "number") {
+        stackFramePattern = v8stackFramePattern;
+        formatStack = v8stackFormatter;
+        return function captureStackTrace(o) {
+            Error.stackTraceLimit += 6;
+            try { throw new Error(); }
+            catch(e) { o.stack = e.stack; }
+            Error.stackTraceLimit -= 6;
+        };
+    }
+
+    formatStack = function(stack, error) {
+        if (typeof stack === "string") return stack;
+
+        if ((typeof error === "object" ||
+            typeof error === "function") &&
+            error.name !== undefined &&
+            error.message !== undefined) {
+            return error.toString();
+        }
+        return formatNonError(error);
+    };
+
+    return null;
+
+})([]);
+
+if (typeof console !== "undefined" && typeof console.warn !== "undefined") {
+    printWarning = function (message) {
+        console.warn(message);
+    };
+    if (util.isNode && process.stderr.isTTY) {
+        printWarning = function(message, isSoft) {
+            var color = isSoft ? "\u001b[33m" : "\u001b[31m";
+            console.warn(color + message + "\u001b[0m\n");
+        };
+    } else if (!util.isNode && typeof (new Error().stack) === "string") {
+        printWarning = function(message, isSoft) {
+            console.warn("%c" + message,
+                        isSoft ? "color: darkorange" : "color: red");
+        };
+    }
+}
+
+var config = {
+    warnings: warnings,
+    longStackTraces: false,
+    cancellation: false,
+    monitoring: false
+};
+
+if (longStackTraces) Promise.longStackTraces();
+
+return {
+    longStackTraces: function() {
+        return config.longStackTraces;
+    },
+    warnings: function() {
+        return config.warnings;
+    },
+    cancellation: function() {
+        return config.cancellation;
+    },
+    monitoring: function() {
+        return config.monitoring;
+    },
+    propagateFromFunction: function() {
+        return propagateFromFunction;
+    },
+    boundValueFunction: function() {
+        return boundValueFunction;
+    },
+    checkForgottenReturns: checkForgottenReturns,
+    setBounds: setBounds,
+    warn: warn,
+    deprecated: deprecated,
+    CapturedTrace: CapturedTrace,
+    fireDomEvent: fireDomEvent,
+    fireGlobalEvent: fireGlobalEvent
+};
+};
+
+},{"./errors":12,"./es5":13,"./util":36}],10:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise) {
+function returner() {
+    return this.value;
+}
+function thrower() {
+    throw this.reason;
+}
+
+Promise.prototype["return"] =
+Promise.prototype.thenReturn = function (value) {
+    if (value instanceof Promise) value.suppressUnhandledRejections();
+    return this._then(
+        returner, undefined, undefined, {value: value}, undefined);
+};
+
+Promise.prototype["throw"] =
+Promise.prototype.thenThrow = function (reason) {
+    return this._then(
+        thrower, undefined, undefined, {reason: reason}, undefined);
+};
+
+Promise.prototype.catchThrow = function (reason) {
+    if (arguments.length <= 1) {
+        return this._then(
+            undefined, thrower, undefined, {reason: reason}, undefined);
+    } else {
+        var _reason = arguments[1];
+        var handler = function() {throw _reason;};
+        return this.caught(reason, handler);
+    }
+};
+
+Promise.prototype.catchReturn = function (value) {
+    if (arguments.length <= 1) {
+        if (value instanceof Promise) value.suppressUnhandledRejections();
+        return this._then(
+            undefined, returner, undefined, {value: value}, undefined);
+    } else {
+        var _value = arguments[1];
+        if (_value instanceof Promise) _value.suppressUnhandledRejections();
+        var handler = function() {return _value;};
+        return this.caught(value, handler);
+    }
+};
+};
+
+},{}],11:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL) {
+var PromiseReduce = Promise.reduce;
+var PromiseAll = Promise.all;
+
+function promiseAllThis() {
+    return PromiseAll(this);
+}
+
+function PromiseMapSeries(promises, fn) {
+    return PromiseReduce(promises, fn, INTERNAL, INTERNAL);
+}
+
+Promise.prototype.each = function (fn) {
+    return PromiseReduce(this, fn, INTERNAL, 0)
+              ._then(promiseAllThis, undefined, undefined, this, undefined);
+};
+
+Promise.prototype.mapSeries = function (fn) {
+    return PromiseReduce(this, fn, INTERNAL, INTERNAL);
+};
+
+Promise.each = function (promises, fn) {
+    return PromiseReduce(promises, fn, INTERNAL, 0)
+              ._then(promiseAllThis, undefined, undefined, promises, undefined);
+};
+
+Promise.mapSeries = PromiseMapSeries;
+};
+
+
+},{}],12:[function(_dereq_,module,exports){
+"use strict";
+var es5 = _dereq_("./es5");
+var Objectfreeze = es5.freeze;
+var util = _dereq_("./util");
+var inherits = util.inherits;
+var notEnumerableProp = util.notEnumerableProp;
+
+function subError(nameProperty, defaultMessage) {
+    function SubError(message) {
+        if (!(this instanceof SubError)) return new SubError(message);
+        notEnumerableProp(this, "message",
+            typeof message === "string" ? message : defaultMessage);
+        notEnumerableProp(this, "name", nameProperty);
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, this.constructor);
+        } else {
+            Error.call(this);
+        }
+    }
+    inherits(SubError, Error);
+    return SubError;
+}
+
+var _TypeError, _RangeError;
+var Warning = subError("Warning", "warning");
+var CancellationError = subError("CancellationError", "cancellation error");
+var TimeoutError = subError("TimeoutError", "timeout error");
+var AggregateError = subError("AggregateError", "aggregate error");
+try {
+    _TypeError = TypeError;
+    _RangeError = RangeError;
+} catch(e) {
+    _TypeError = subError("TypeError", "type error");
+    _RangeError = subError("RangeError", "range error");
+}
+
+var methods = ("join pop push shift unshift slice filter forEach some " +
+    "every map indexOf lastIndexOf reduce reduceRight sort reverse").split(" ");
+
+for (var i = 0; i < methods.length; ++i) {
+    if (typeof Array.prototype[methods[i]] === "function") {
+        AggregateError.prototype[methods[i]] = Array.prototype[methods[i]];
+    }
+}
+
+es5.defineProperty(AggregateError.prototype, "length", {
+    value: 0,
+    configurable: false,
+    writable: true,
+    enumerable: true
+});
+AggregateError.prototype["isOperational"] = true;
+var level = 0;
+AggregateError.prototype.toString = function() {
+    var indent = Array(level * 4 + 1).join(" ");
+    var ret = "\n" + indent + "AggregateError of:" + "\n";
+    level++;
+    indent = Array(level * 4 + 1).join(" ");
+    for (var i = 0; i < this.length; ++i) {
+        var str = this[i] === this ? "[Circular AggregateError]" : this[i] + "";
+        var lines = str.split("\n");
+        for (var j = 0; j < lines.length; ++j) {
+            lines[j] = indent + lines[j];
+        }
+        str = lines.join("\n");
+        ret += str + "\n";
+    }
+    level--;
+    return ret;
+};
+
+function OperationalError(message) {
+    if (!(this instanceof OperationalError))
+        return new OperationalError(message);
+    notEnumerableProp(this, "name", "OperationalError");
+    notEnumerableProp(this, "message", message);
+    this.cause = message;
+    this["isOperational"] = true;
+
+    if (message instanceof Error) {
+        notEnumerableProp(this, "message", message.message);
+        notEnumerableProp(this, "stack", message.stack);
+    } else if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, this.constructor);
+    }
+
+}
+inherits(OperationalError, Error);
+
+var errorTypes = Error["__BluebirdErrorTypes__"];
+if (!errorTypes) {
+    errorTypes = Objectfreeze({
+        CancellationError: CancellationError,
+        TimeoutError: TimeoutError,
+        OperationalError: OperationalError,
+        RejectionError: OperationalError,
+        AggregateError: AggregateError
+    });
+    es5.defineProperty(Error, "__BluebirdErrorTypes__", {
+        value: errorTypes,
+        writable: false,
+        enumerable: false,
+        configurable: false
+    });
+}
+
+module.exports = {
+    Error: Error,
+    TypeError: _TypeError,
+    RangeError: _RangeError,
+    CancellationError: errorTypes.CancellationError,
+    OperationalError: errorTypes.OperationalError,
+    TimeoutError: errorTypes.TimeoutError,
+    AggregateError: errorTypes.AggregateError,
+    Warning: Warning
+};
+
+},{"./es5":13,"./util":36}],13:[function(_dereq_,module,exports){
+var isES5 = (function(){
+    "use strict";
+    return this === undefined;
+})();
+
+if (isES5) {
+    module.exports = {
+        freeze: Object.freeze,
+        defineProperty: Object.defineProperty,
+        getDescriptor: Object.getOwnPropertyDescriptor,
+        keys: Object.keys,
+        names: Object.getOwnPropertyNames,
+        getPrototypeOf: Object.getPrototypeOf,
+        isArray: Array.isArray,
+        isES5: isES5,
+        propertyIsWritable: function(obj, prop) {
+            var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+            return !!(!descriptor || descriptor.writable || descriptor.set);
+        }
+    };
+} else {
+    var has = {}.hasOwnProperty;
+    var str = {}.toString;
+    var proto = {}.constructor.prototype;
+
+    var ObjectKeys = function (o) {
+        var ret = [];
+        for (var key in o) {
+            if (has.call(o, key)) {
+                ret.push(key);
+            }
+        }
+        return ret;
+    };
+
+    var ObjectGetDescriptor = function(o, key) {
+        return {value: o[key]};
+    };
+
+    var ObjectDefineProperty = function (o, key, desc) {
+        o[key] = desc.value;
+        return o;
+    };
+
+    var ObjectFreeze = function (obj) {
+        return obj;
+    };
+
+    var ObjectGetPrototypeOf = function (obj) {
+        try {
+            return Object(obj).constructor.prototype;
+        }
+        catch (e) {
+            return proto;
+        }
+    };
+
+    var ArrayIsArray = function (obj) {
+        try {
+            return str.call(obj) === "[object Array]";
+        }
+        catch(e) {
+            return false;
+        }
+    };
+
+    module.exports = {
+        isArray: ArrayIsArray,
+        keys: ObjectKeys,
+        names: ObjectKeys,
+        defineProperty: ObjectDefineProperty,
+        getDescriptor: ObjectGetDescriptor,
+        freeze: ObjectFreeze,
+        getPrototypeOf: ObjectGetPrototypeOf,
+        isES5: isES5,
+        propertyIsWritable: function() {
+            return true;
+        }
+    };
+}
+
+},{}],14:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL) {
+var PromiseMap = Promise.map;
+
+Promise.prototype.filter = function (fn, options) {
+    return PromiseMap(this, fn, options, INTERNAL);
+};
+
+Promise.filter = function (promises, fn, options) {
+    return PromiseMap(promises, fn, options, INTERNAL);
+};
+};
+
+},{}],15:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, tryConvertToPromise, NEXT_FILTER) {
+var util = _dereq_("./util");
+var CancellationError = Promise.CancellationError;
+var errorObj = util.errorObj;
+var catchFilter = _dereq_("./catch_filter")(NEXT_FILTER);
+
+function PassThroughHandlerContext(promise, type, handler) {
+    this.promise = promise;
+    this.type = type;
+    this.handler = handler;
+    this.called = false;
+    this.cancelPromise = null;
+}
+
+PassThroughHandlerContext.prototype.isFinallyHandler = function() {
+    return this.type === 0;
+};
+
+function FinallyHandlerCancelReaction(finallyHandler) {
+    this.finallyHandler = finallyHandler;
+}
+
+FinallyHandlerCancelReaction.prototype._resultCancelled = function() {
+    checkCancel(this.finallyHandler);
+};
+
+function checkCancel(ctx, reason) {
+    if (ctx.cancelPromise != null) {
+        if (arguments.length > 1) {
+            ctx.cancelPromise._reject(reason);
+        } else {
+            ctx.cancelPromise._cancel();
+        }
+        ctx.cancelPromise = null;
+        return true;
+    }
+    return false;
+}
+
+function succeed() {
+    return finallyHandler.call(this, this.promise._target()._settledValue());
+}
+function fail(reason) {
+    if (checkCancel(this, reason)) return;
+    errorObj.e = reason;
+    return errorObj;
+}
+function finallyHandler(reasonOrValue) {
+    var promise = this.promise;
+    var handler = this.handler;
+
+    if (!this.called) {
+        this.called = true;
+        var ret = this.isFinallyHandler()
+            ? handler.call(promise._boundValue())
+            : handler.call(promise._boundValue(), reasonOrValue);
+        if (ret === NEXT_FILTER) {
+            return ret;
+        } else if (ret !== undefined) {
+            promise._setReturnedNonUndefined();
+            var maybePromise = tryConvertToPromise(ret, promise);
+            if (maybePromise instanceof Promise) {
+                if (this.cancelPromise != null) {
+                    if (maybePromise._isCancelled()) {
+                        var reason =
+                            new CancellationError("late cancellation observer");
+                        promise._attachExtraTrace(reason);
+                        errorObj.e = reason;
+                        return errorObj;
+                    } else if (maybePromise.isPending()) {
+                        maybePromise._attachCancellationCallback(
+                            new FinallyHandlerCancelReaction(this));
+                    }
+                }
+                return maybePromise._then(
+                    succeed, fail, undefined, this, undefined);
+            }
+        }
+    }
+
+    if (promise.isRejected()) {
+        checkCancel(this);
+        errorObj.e = reasonOrValue;
+        return errorObj;
+    } else {
+        checkCancel(this);
+        return reasonOrValue;
+    }
+}
+
+Promise.prototype._passThrough = function(handler, type, success, fail) {
+    if (typeof handler !== "function") return this.then();
+    return this._then(success,
+                      fail,
+                      undefined,
+                      new PassThroughHandlerContext(this, type, handler),
+                      undefined);
+};
+
+Promise.prototype.lastly =
+Promise.prototype["finally"] = function (handler) {
+    return this._passThrough(handler,
+                             0,
+                             finallyHandler,
+                             finallyHandler);
+};
+
+
+Promise.prototype.tap = function (handler) {
+    return this._passThrough(handler, 1, finallyHandler);
+};
+
+Promise.prototype.tapCatch = function (handlerOrPredicate) {
+    var len = arguments.length;
+    if(len === 1) {
+        return this._passThrough(handlerOrPredicate,
+                                 1,
+                                 undefined,
+                                 finallyHandler);
+    } else {
+         var catchInstances = new Array(len - 1),
+            j = 0, i;
+        for (i = 0; i < len - 1; ++i) {
+            var item = arguments[i];
+            if (util.isObject(item)) {
+                catchInstances[j++] = item;
+            } else {
+                return Promise.reject(new TypeError(
+                    "tapCatch statement predicate: "
+                    + "expecting an object but got " + util.classString(item)
+                ));
+            }
+        }
+        catchInstances.length = j;
+        var handler = arguments[i];
+        return this._passThrough(catchFilter(catchInstances, handler, this),
+                                 1,
+                                 undefined,
+                                 finallyHandler);
+    }
+
+};
+
+return PassThroughHandlerContext;
+};
+
+},{"./catch_filter":7,"./util":36}],16:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise,
+                          apiRejection,
+                          INTERNAL,
+                          tryConvertToPromise,
+                          Proxyable,
+                          debug) {
+var errors = _dereq_("./errors");
+var TypeError = errors.TypeError;
+var util = _dereq_("./util");
+var errorObj = util.errorObj;
+var tryCatch = util.tryCatch;
+var yieldHandlers = [];
+
+function promiseFromYieldHandler(value, yieldHandlers, traceParent) {
+    for (var i = 0; i < yieldHandlers.length; ++i) {
+        traceParent._pushContext();
+        var result = tryCatch(yieldHandlers[i])(value);
+        traceParent._popContext();
+        if (result === errorObj) {
+            traceParent._pushContext();
+            var ret = Promise.reject(errorObj.e);
+            traceParent._popContext();
+            return ret;
+        }
+        var maybePromise = tryConvertToPromise(result, traceParent);
+        if (maybePromise instanceof Promise) return maybePromise;
+    }
+    return null;
+}
+
+function PromiseSpawn(generatorFunction, receiver, yieldHandler, stack) {
+    if (debug.cancellation()) {
+        var internal = new Promise(INTERNAL);
+        var _finallyPromise = this._finallyPromise = new Promise(INTERNAL);
+        this._promise = internal.lastly(function() {
+            return _finallyPromise;
+        });
+        internal._captureStackTrace();
+        internal._setOnCancel(this);
+    } else {
+        var promise = this._promise = new Promise(INTERNAL);
+        promise._captureStackTrace();
+    }
+    this._stack = stack;
+    this._generatorFunction = generatorFunction;
+    this._receiver = receiver;
+    this._generator = undefined;
+    this._yieldHandlers = typeof yieldHandler === "function"
+        ? [yieldHandler].concat(yieldHandlers)
+        : yieldHandlers;
+    this._yieldedPromise = null;
+    this._cancellationPhase = false;
+}
+util.inherits(PromiseSpawn, Proxyable);
+
+PromiseSpawn.prototype._isResolved = function() {
+    return this._promise === null;
+};
+
+PromiseSpawn.prototype._cleanup = function() {
+    this._promise = this._generator = null;
+    if (debug.cancellation() && this._finallyPromise !== null) {
+        this._finallyPromise._fulfill();
+        this._finallyPromise = null;
+    }
+};
+
+PromiseSpawn.prototype._promiseCancelled = function() {
+    if (this._isResolved()) return;
+    var implementsReturn = typeof this._generator["return"] !== "undefined";
+
+    var result;
+    if (!implementsReturn) {
+        var reason = new Promise.CancellationError(
+            "generator .return() sentinel");
+        Promise.coroutine.returnSentinel = reason;
+        this._promise._attachExtraTrace(reason);
+        this._promise._pushContext();
+        result = tryCatch(this._generator["throw"]).call(this._generator,
+                                                         reason);
+        this._promise._popContext();
+    } else {
+        this._promise._pushContext();
+        result = tryCatch(this._generator["return"]).call(this._generator,
+                                                          undefined);
+        this._promise._popContext();
+    }
+    this._cancellationPhase = true;
+    this._yieldedPromise = null;
+    this._continue(result);
+};
+
+PromiseSpawn.prototype._promiseFulfilled = function(value) {
+    this._yieldedPromise = null;
+    this._promise._pushContext();
+    var result = tryCatch(this._generator.next).call(this._generator, value);
+    this._promise._popContext();
+    this._continue(result);
+};
+
+PromiseSpawn.prototype._promiseRejected = function(reason) {
+    this._yieldedPromise = null;
+    this._promise._attachExtraTrace(reason);
+    this._promise._pushContext();
+    var result = tryCatch(this._generator["throw"])
+        .call(this._generator, reason);
+    this._promise._popContext();
+    this._continue(result);
+};
+
+PromiseSpawn.prototype._resultCancelled = function() {
+    if (this._yieldedPromise instanceof Promise) {
+        var promise = this._yieldedPromise;
+        this._yieldedPromise = null;
+        promise.cancel();
+    }
+};
+
+PromiseSpawn.prototype.promise = function () {
+    return this._promise;
+};
+
+PromiseSpawn.prototype._run = function () {
+    this._generator = this._generatorFunction.call(this._receiver);
+    this._receiver =
+        this._generatorFunction = undefined;
+    this._promiseFulfilled(undefined);
+};
+
+PromiseSpawn.prototype._continue = function (result) {
+    var promise = this._promise;
+    if (result === errorObj) {
+        this._cleanup();
+        if (this._cancellationPhase) {
+            return promise.cancel();
+        } else {
+            return promise._rejectCallback(result.e, false);
+        }
+    }
+
+    var value = result.value;
+    if (result.done === true) {
+        this._cleanup();
+        if (this._cancellationPhase) {
+            return promise.cancel();
+        } else {
+            return promise._resolveCallback(value);
+        }
+    } else {
+        var maybePromise = tryConvertToPromise(value, this._promise);
+        if (!(maybePromise instanceof Promise)) {
+            maybePromise =
+                promiseFromYieldHandler(maybePromise,
+                                        this._yieldHandlers,
+                                        this._promise);
+            if (maybePromise === null) {
+                this._promiseRejected(
+                    new TypeError(
+                        "A value %s was yielded that could not be treated as a promise\u000a\u000a    See http://goo.gl/MqrFmX\u000a\u000a".replace("%s", String(value)) +
+                        "From coroutine:\u000a" +
+                        this._stack.split("\n").slice(1, -7).join("\n")
+                    )
+                );
+                return;
+            }
+        }
+        maybePromise = maybePromise._target();
+        var bitField = maybePromise._bitField;
+        ;
+        if (((bitField & 50397184) === 0)) {
+            this._yieldedPromise = maybePromise;
+            maybePromise._proxy(this, null);
+        } else if (((bitField & 33554432) !== 0)) {
+            Promise._async.invoke(
+                this._promiseFulfilled, this, maybePromise._value()
+            );
+        } else if (((bitField & 16777216) !== 0)) {
+            Promise._async.invoke(
+                this._promiseRejected, this, maybePromise._reason()
+            );
+        } else {
+            this._promiseCancelled();
+        }
+    }
+};
+
+Promise.coroutine = function (generatorFunction, options) {
+    if (typeof generatorFunction !== "function") {
+        throw new TypeError("generatorFunction must be a function\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    var yieldHandler = Object(options).yieldHandler;
+    var PromiseSpawn$ = PromiseSpawn;
+    var stack = new Error().stack;
+    return function () {
+        var generator = generatorFunction.apply(this, arguments);
+        var spawn = new PromiseSpawn$(undefined, undefined, yieldHandler,
+                                      stack);
+        var ret = spawn.promise();
+        spawn._generator = generator;
+        spawn._promiseFulfilled(undefined);
+        return ret;
+    };
+};
+
+Promise.coroutine.addYieldHandler = function(fn) {
+    if (typeof fn !== "function") {
+        throw new TypeError("expecting a function but got " + util.classString(fn));
+    }
+    yieldHandlers.push(fn);
+};
+
+Promise.spawn = function (generatorFunction) {
+    debug.deprecated("Promise.spawn()", "Promise.coroutine()");
+    if (typeof generatorFunction !== "function") {
+        return apiRejection("generatorFunction must be a function\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    var spawn = new PromiseSpawn(generatorFunction, this);
+    var ret = spawn.promise();
+    spawn._run(Promise.spawn);
+    return ret;
+};
+};
+
+},{"./errors":12,"./util":36}],17:[function(_dereq_,module,exports){
+"use strict";
+module.exports =
+function(Promise, PromiseArray, tryConvertToPromise, INTERNAL, async,
+         getDomain) {
+var util = _dereq_("./util");
+var canEvaluate = util.canEvaluate;
+var tryCatch = util.tryCatch;
+var errorObj = util.errorObj;
+var reject;
+
+if (false) { var i, promiseSetters, thenCallbacks, holderClasses, generateHolderClass, promiseSetter, thenCallback; }
+
+Promise.join = function () {
+    var last = arguments.length - 1;
+    var fn;
+    if (last > 0 && typeof arguments[last] === "function") {
+        fn = arguments[last];
+        if (false) { var domain, bitField, maybePromise, i, callbacks, holder, HolderClass, ret; }
+    }
+    var args = [].slice.call(arguments);;
+    if (fn) args.pop();
+    var ret = new PromiseArray(args).promise();
+    return fn !== undefined ? ret.spread(fn) : ret;
+};
+
+};
+
+},{"./util":36}],18:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise,
+                          PromiseArray,
+                          apiRejection,
+                          tryConvertToPromise,
+                          INTERNAL,
+                          debug) {
+var getDomain = Promise._getDomain;
+var util = _dereq_("./util");
+var tryCatch = util.tryCatch;
+var errorObj = util.errorObj;
+var async = Promise._async;
+
+function MappingPromiseArray(promises, fn, limit, _filter) {
+    this.constructor$(promises);
+    this._promise._captureStackTrace();
+    var domain = getDomain();
+    this._callback = domain === null ? fn : util.domainBind(domain, fn);
+    this._preservedValues = _filter === INTERNAL
+        ? new Array(this.length())
+        : null;
+    this._limit = limit;
+    this._inFlight = 0;
+    this._queue = [];
+    async.invoke(this._asyncInit, this, undefined);
+}
+util.inherits(MappingPromiseArray, PromiseArray);
+
+MappingPromiseArray.prototype._asyncInit = function() {
+    this._init$(undefined, -2);
+};
+
+MappingPromiseArray.prototype._init = function () {};
+
+MappingPromiseArray.prototype._promiseFulfilled = function (value, index) {
+    var values = this._values;
+    var length = this.length();
+    var preservedValues = this._preservedValues;
+    var limit = this._limit;
+
+    if (index < 0) {
+        index = (index * -1) - 1;
+        values[index] = value;
+        if (limit >= 1) {
+            this._inFlight--;
+            this._drainQueue();
+            if (this._isResolved()) return true;
+        }
+    } else {
+        if (limit >= 1 && this._inFlight >= limit) {
+            values[index] = value;
+            this._queue.push(index);
+            return false;
+        }
+        if (preservedValues !== null) preservedValues[index] = value;
+
+        var promise = this._promise;
+        var callback = this._callback;
+        var receiver = promise._boundValue();
+        promise._pushContext();
+        var ret = tryCatch(callback).call(receiver, value, index, length);
+        var promiseCreated = promise._popContext();
+        debug.checkForgottenReturns(
+            ret,
+            promiseCreated,
+            preservedValues !== null ? "Promise.filter" : "Promise.map",
+            promise
+        );
+        if (ret === errorObj) {
+            this._reject(ret.e);
+            return true;
+        }
+
+        var maybePromise = tryConvertToPromise(ret, this._promise);
+        if (maybePromise instanceof Promise) {
+            maybePromise = maybePromise._target();
+            var bitField = maybePromise._bitField;
+            ;
+            if (((bitField & 50397184) === 0)) {
+                if (limit >= 1) this._inFlight++;
+                values[index] = maybePromise;
+                maybePromise._proxy(this, (index + 1) * -1);
+                return false;
+            } else if (((bitField & 33554432) !== 0)) {
+                ret = maybePromise._value();
+            } else if (((bitField & 16777216) !== 0)) {
+                this._reject(maybePromise._reason());
+                return true;
+            } else {
+                this._cancel();
+                return true;
+            }
+        }
+        values[index] = ret;
+    }
+    var totalResolved = ++this._totalResolved;
+    if (totalResolved >= length) {
+        if (preservedValues !== null) {
+            this._filter(values, preservedValues);
+        } else {
+            this._resolve(values);
+        }
+        return true;
+    }
+    return false;
+};
+
+MappingPromiseArray.prototype._drainQueue = function () {
+    var queue = this._queue;
+    var limit = this._limit;
+    var values = this._values;
+    while (queue.length > 0 && this._inFlight < limit) {
+        if (this._isResolved()) return;
+        var index = queue.pop();
+        this._promiseFulfilled(values[index], index);
+    }
+};
+
+MappingPromiseArray.prototype._filter = function (booleans, values) {
+    var len = values.length;
+    var ret = new Array(len);
+    var j = 0;
+    for (var i = 0; i < len; ++i) {
+        if (booleans[i]) ret[j++] = values[i];
+    }
+    ret.length = j;
+    this._resolve(ret);
+};
+
+MappingPromiseArray.prototype.preservedValues = function () {
+    return this._preservedValues;
+};
+
+function map(promises, fn, options, _filter) {
+    if (typeof fn !== "function") {
+        return apiRejection("expecting a function but got " + util.classString(fn));
+    }
+
+    var limit = 0;
+    if (options !== undefined) {
+        if (typeof options === "object" && options !== null) {
+            if (typeof options.concurrency !== "number") {
+                return Promise.reject(
+                    new TypeError("'concurrency' must be a number but it is " +
+                                    util.classString(options.concurrency)));
+            }
+            limit = options.concurrency;
+        } else {
+            return Promise.reject(new TypeError(
+                            "options argument must be an object but it is " +
+                             util.classString(options)));
+        }
+    }
+    limit = typeof limit === "number" &&
+        isFinite(limit) && limit >= 1 ? limit : 0;
+    return new MappingPromiseArray(promises, fn, limit, _filter).promise();
+}
+
+Promise.prototype.map = function (fn, options) {
+    return map(this, fn, options, null);
+};
+
+Promise.map = function (promises, fn, options, _filter) {
+    return map(promises, fn, options, _filter);
+};
+
+
+};
+
+},{"./util":36}],19:[function(_dereq_,module,exports){
+"use strict";
+module.exports =
+function(Promise, INTERNAL, tryConvertToPromise, apiRejection, debug) {
+var util = _dereq_("./util");
+var tryCatch = util.tryCatch;
+
+Promise.method = function (fn) {
+    if (typeof fn !== "function") {
+        throw new Promise.TypeError("expecting a function but got " + util.classString(fn));
+    }
+    return function () {
+        var ret = new Promise(INTERNAL);
+        ret._captureStackTrace();
+        ret._pushContext();
+        var value = tryCatch(fn).apply(this, arguments);
+        var promiseCreated = ret._popContext();
+        debug.checkForgottenReturns(
+            value, promiseCreated, "Promise.method", ret);
+        ret._resolveFromSyncValue(value);
+        return ret;
+    };
+};
+
+Promise.attempt = Promise["try"] = function (fn) {
+    if (typeof fn !== "function") {
+        return apiRejection("expecting a function but got " + util.classString(fn));
+    }
+    var ret = new Promise(INTERNAL);
+    ret._captureStackTrace();
+    ret._pushContext();
+    var value;
+    if (arguments.length > 1) {
+        debug.deprecated("calling Promise.try with more than 1 argument");
+        var arg = arguments[1];
+        var ctx = arguments[2];
+        value = util.isArray(arg) ? tryCatch(fn).apply(ctx, arg)
+                                  : tryCatch(fn).call(ctx, arg);
+    } else {
+        value = tryCatch(fn)();
+    }
+    var promiseCreated = ret._popContext();
+    debug.checkForgottenReturns(
+        value, promiseCreated, "Promise.try", ret);
+    ret._resolveFromSyncValue(value);
+    return ret;
+};
+
+Promise.prototype._resolveFromSyncValue = function (value) {
+    if (value === util.errorObj) {
+        this._rejectCallback(value.e, false);
+    } else {
+        this._resolveCallback(value, true);
+    }
+};
+};
+
+},{"./util":36}],20:[function(_dereq_,module,exports){
+"use strict";
+var util = _dereq_("./util");
+var maybeWrapAsError = util.maybeWrapAsError;
+var errors = _dereq_("./errors");
+var OperationalError = errors.OperationalError;
+var es5 = _dereq_("./es5");
+
+function isUntypedError(obj) {
+    return obj instanceof Error &&
+        es5.getPrototypeOf(obj) === Error.prototype;
+}
+
+var rErrorKey = /^(?:name|message|stack|cause)$/;
+function wrapAsOperationalError(obj) {
+    var ret;
+    if (isUntypedError(obj)) {
+        ret = new OperationalError(obj);
+        ret.name = obj.name;
+        ret.message = obj.message;
+        ret.stack = obj.stack;
+        var keys = es5.keys(obj);
+        for (var i = 0; i < keys.length; ++i) {
+            var key = keys[i];
+            if (!rErrorKey.test(key)) {
+                ret[key] = obj[key];
+            }
+        }
+        return ret;
+    }
+    util.markAsOriginatingFromRejection(obj);
+    return obj;
+}
+
+function nodebackForPromise(promise, multiArgs) {
+    return function(err, value) {
+        if (promise === null) return;
+        if (err) {
+            var wrapped = wrapAsOperationalError(maybeWrapAsError(err));
+            promise._attachExtraTrace(wrapped);
+            promise._reject(wrapped);
+        } else if (!multiArgs) {
+            promise._fulfill(value);
+        } else {
+            var args = [].slice.call(arguments, 1);;
+            promise._fulfill(args);
+        }
+        promise = null;
+    };
+}
+
+module.exports = nodebackForPromise;
+
+},{"./errors":12,"./es5":13,"./util":36}],21:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise) {
+var util = _dereq_("./util");
+var async = Promise._async;
+var tryCatch = util.tryCatch;
+var errorObj = util.errorObj;
+
+function spreadAdapter(val, nodeback) {
+    var promise = this;
+    if (!util.isArray(val)) return successAdapter.call(promise, val, nodeback);
+    var ret =
+        tryCatch(nodeback).apply(promise._boundValue(), [null].concat(val));
+    if (ret === errorObj) {
+        async.throwLater(ret.e);
+    }
+}
+
+function successAdapter(val, nodeback) {
+    var promise = this;
+    var receiver = promise._boundValue();
+    var ret = val === undefined
+        ? tryCatch(nodeback).call(receiver, null)
+        : tryCatch(nodeback).call(receiver, null, val);
+    if (ret === errorObj) {
+        async.throwLater(ret.e);
+    }
+}
+function errorAdapter(reason, nodeback) {
+    var promise = this;
+    if (!reason) {
+        var newReason = new Error(reason + "");
+        newReason.cause = reason;
+        reason = newReason;
+    }
+    var ret = tryCatch(nodeback).call(promise._boundValue(), reason);
+    if (ret === errorObj) {
+        async.throwLater(ret.e);
+    }
+}
+
+Promise.prototype.asCallback = Promise.prototype.nodeify = function (nodeback,
+                                                                     options) {
+    if (typeof nodeback == "function") {
+        var adapter = successAdapter;
+        if (options !== undefined && Object(options).spread) {
+            adapter = spreadAdapter;
+        }
+        this._then(
+            adapter,
+            errorAdapter,
+            undefined,
+            this,
+            nodeback
+        );
+    }
+    return this;
+};
+};
+
+},{"./util":36}],22:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function() {
+var makeSelfResolutionError = function () {
+    return new TypeError("circular promise resolution chain\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+};
+var reflectHandler = function() {
+    return new Promise.PromiseInspection(this._target());
+};
+var apiRejection = function(msg) {
+    return Promise.reject(new TypeError(msg));
+};
+function Proxyable() {}
+var UNDEFINED_BINDING = {};
+var util = _dereq_("./util");
+
+var getDomain;
+if (util.isNode) {
+    getDomain = function() {
+        var ret = process.domain;
+        if (ret === undefined) ret = null;
+        return ret;
+    };
+} else {
+    getDomain = function() {
+        return null;
+    };
+}
+util.notEnumerableProp(Promise, "_getDomain", getDomain);
+
+var es5 = _dereq_("./es5");
+var Async = _dereq_("./async");
+var async = new Async();
+es5.defineProperty(Promise, "_async", {value: async});
+var errors = _dereq_("./errors");
+var TypeError = Promise.TypeError = errors.TypeError;
+Promise.RangeError = errors.RangeError;
+var CancellationError = Promise.CancellationError = errors.CancellationError;
+Promise.TimeoutError = errors.TimeoutError;
+Promise.OperationalError = errors.OperationalError;
+Promise.RejectionError = errors.OperationalError;
+Promise.AggregateError = errors.AggregateError;
+var INTERNAL = function(){};
+var APPLY = {};
+var NEXT_FILTER = {};
+var tryConvertToPromise = _dereq_("./thenables")(Promise, INTERNAL);
+var PromiseArray =
+    _dereq_("./promise_array")(Promise, INTERNAL,
+                               tryConvertToPromise, apiRejection, Proxyable);
+var Context = _dereq_("./context")(Promise);
+ /*jshint unused:false*/
+var createContext = Context.create;
+var debug = _dereq_("./debuggability")(Promise, Context);
+var CapturedTrace = debug.CapturedTrace;
+var PassThroughHandlerContext =
+    _dereq_("./finally")(Promise, tryConvertToPromise, NEXT_FILTER);
+var catchFilter = _dereq_("./catch_filter")(NEXT_FILTER);
+var nodebackForPromise = _dereq_("./nodeback");
+var errorObj = util.errorObj;
+var tryCatch = util.tryCatch;
+function check(self, executor) {
+    if (self == null || self.constructor !== Promise) {
+        throw new TypeError("the promise constructor cannot be invoked directly\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    if (typeof executor !== "function") {
+        throw new TypeError("expecting a function but got " + util.classString(executor));
+    }
+
+}
+
+function Promise(executor) {
+    if (executor !== INTERNAL) {
+        check(this, executor);
+    }
+    this._bitField = 0;
+    this._fulfillmentHandler0 = undefined;
+    this._rejectionHandler0 = undefined;
+    this._promise0 = undefined;
+    this._receiver0 = undefined;
+    this._resolveFromExecutor(executor);
+    this._promiseCreated();
+    this._fireEvent("promiseCreated", this);
+}
+
+Promise.prototype.toString = function () {
+    return "[object Promise]";
+};
+
+Promise.prototype.caught = Promise.prototype["catch"] = function (fn) {
+    var len = arguments.length;
+    if (len > 1) {
+        var catchInstances = new Array(len - 1),
+            j = 0, i;
+        for (i = 0; i < len - 1; ++i) {
+            var item = arguments[i];
+            if (util.isObject(item)) {
+                catchInstances[j++] = item;
+            } else {
+                return apiRejection("Catch statement predicate: " +
+                    "expecting an object but got " + util.classString(item));
+            }
+        }
+        catchInstances.length = j;
+        fn = arguments[i];
+        return this.then(undefined, catchFilter(catchInstances, fn, this));
+    }
+    return this.then(undefined, fn);
+};
+
+Promise.prototype.reflect = function () {
+    return this._then(reflectHandler,
+        reflectHandler, undefined, this, undefined);
+};
+
+Promise.prototype.then = function (didFulfill, didReject) {
+    if (debug.warnings() && arguments.length > 0 &&
+        typeof didFulfill !== "function" &&
+        typeof didReject !== "function") {
+        var msg = ".then() only accepts functions but was passed: " +
+                util.classString(didFulfill);
+        if (arguments.length > 1) {
+            msg += ", " + util.classString(didReject);
+        }
+        this._warn(msg);
+    }
+    return this._then(didFulfill, didReject, undefined, undefined, undefined);
+};
+
+Promise.prototype.done = function (didFulfill, didReject) {
+    var promise =
+        this._then(didFulfill, didReject, undefined, undefined, undefined);
+    promise._setIsFinal();
+};
+
+Promise.prototype.spread = function (fn) {
+    if (typeof fn !== "function") {
+        return apiRejection("expecting a function but got " + util.classString(fn));
+    }
+    return this.all()._then(fn, undefined, undefined, APPLY, undefined);
+};
+
+Promise.prototype.toJSON = function () {
+    var ret = {
+        isFulfilled: false,
+        isRejected: false,
+        fulfillmentValue: undefined,
+        rejectionReason: undefined
+    };
+    if (this.isFulfilled()) {
+        ret.fulfillmentValue = this.value();
+        ret.isFulfilled = true;
+    } else if (this.isRejected()) {
+        ret.rejectionReason = this.reason();
+        ret.isRejected = true;
+    }
+    return ret;
+};
+
+Promise.prototype.all = function () {
+    if (arguments.length > 0) {
+        this._warn(".all() was passed arguments but it does not take any");
+    }
+    return new PromiseArray(this).promise();
+};
+
+Promise.prototype.error = function (fn) {
+    return this.caught(util.originatesFromRejection, fn);
+};
+
+Promise.getNewLibraryCopy = module.exports;
+
+Promise.is = function (val) {
+    return val instanceof Promise;
+};
+
+Promise.fromNode = Promise.fromCallback = function(fn) {
+    var ret = new Promise(INTERNAL);
+    ret._captureStackTrace();
+    var multiArgs = arguments.length > 1 ? !!Object(arguments[1]).multiArgs
+                                         : false;
+    var result = tryCatch(fn)(nodebackForPromise(ret, multiArgs));
+    if (result === errorObj) {
+        ret._rejectCallback(result.e, true);
+    }
+    if (!ret._isFateSealed()) ret._setAsyncGuaranteed();
+    return ret;
+};
+
+Promise.all = function (promises) {
+    return new PromiseArray(promises).promise();
+};
+
+Promise.cast = function (obj) {
+    var ret = tryConvertToPromise(obj);
+    if (!(ret instanceof Promise)) {
+        ret = new Promise(INTERNAL);
+        ret._captureStackTrace();
+        ret._setFulfilled();
+        ret._rejectionHandler0 = obj;
+    }
+    return ret;
+};
+
+Promise.resolve = Promise.fulfilled = Promise.cast;
+
+Promise.reject = Promise.rejected = function (reason) {
+    var ret = new Promise(INTERNAL);
+    ret._captureStackTrace();
+    ret._rejectCallback(reason, true);
+    return ret;
+};
+
+Promise.setScheduler = function(fn) {
+    if (typeof fn !== "function") {
+        throw new TypeError("expecting a function but got " + util.classString(fn));
+    }
+    return async.setScheduler(fn);
+};
+
+Promise.prototype._then = function (
+    didFulfill,
+    didReject,
+    _,    receiver,
+    internalData
+) {
+    var haveInternalData = internalData !== undefined;
+    var promise = haveInternalData ? internalData : new Promise(INTERNAL);
+    var target = this._target();
+    var bitField = target._bitField;
+
+    if (!haveInternalData) {
+        promise._propagateFrom(this, 3);
+        promise._captureStackTrace();
+        if (receiver === undefined &&
+            ((this._bitField & 2097152) !== 0)) {
+            if (!((bitField & 50397184) === 0)) {
+                receiver = this._boundValue();
+            } else {
+                receiver = target === this ? undefined : this._boundTo;
+            }
+        }
+        this._fireEvent("promiseChained", this, promise);
+    }
+
+    var domain = getDomain();
+    if (!((bitField & 50397184) === 0)) {
+        var handler, value, settler = target._settlePromiseCtx;
+        if (((bitField & 33554432) !== 0)) {
+            value = target._rejectionHandler0;
+            handler = didFulfill;
+        } else if (((bitField & 16777216) !== 0)) {
+            value = target._fulfillmentHandler0;
+            handler = didReject;
+            target._unsetRejectionIsUnhandled();
+        } else {
+            settler = target._settlePromiseLateCancellationObserver;
+            value = new CancellationError("late cancellation observer");
+            target._attachExtraTrace(value);
+            handler = didReject;
+        }
+
+        async.invoke(settler, target, {
+            handler: domain === null ? handler
+                : (typeof handler === "function" &&
+                    util.domainBind(domain, handler)),
+            promise: promise,
+            receiver: receiver,
+            value: value
+        });
+    } else {
+        target._addCallbacks(didFulfill, didReject, promise, receiver, domain);
+    }
+
+    return promise;
+};
+
+Promise.prototype._length = function () {
+    return this._bitField & 65535;
+};
+
+Promise.prototype._isFateSealed = function () {
+    return (this._bitField & 117506048) !== 0;
+};
+
+Promise.prototype._isFollowing = function () {
+    return (this._bitField & 67108864) === 67108864;
+};
+
+Promise.prototype._setLength = function (len) {
+    this._bitField = (this._bitField & -65536) |
+        (len & 65535);
+};
+
+Promise.prototype._setFulfilled = function () {
+    this._bitField = this._bitField | 33554432;
+    this._fireEvent("promiseFulfilled", this);
+};
+
+Promise.prototype._setRejected = function () {
+    this._bitField = this._bitField | 16777216;
+    this._fireEvent("promiseRejected", this);
+};
+
+Promise.prototype._setFollowing = function () {
+    this._bitField = this._bitField | 67108864;
+    this._fireEvent("promiseResolved", this);
+};
+
+Promise.prototype._setIsFinal = function () {
+    this._bitField = this._bitField | 4194304;
+};
+
+Promise.prototype._isFinal = function () {
+    return (this._bitField & 4194304) > 0;
+};
+
+Promise.prototype._unsetCancelled = function() {
+    this._bitField = this._bitField & (~65536);
+};
+
+Promise.prototype._setCancelled = function() {
+    this._bitField = this._bitField | 65536;
+    this._fireEvent("promiseCancelled", this);
+};
+
+Promise.prototype._setWillBeCancelled = function() {
+    this._bitField = this._bitField | 8388608;
+};
+
+Promise.prototype._setAsyncGuaranteed = function() {
+    if (async.hasCustomScheduler()) return;
+    this._bitField = this._bitField | 134217728;
+};
+
+Promise.prototype._receiverAt = function (index) {
+    var ret = index === 0 ? this._receiver0 : this[
+            index * 4 - 4 + 3];
+    if (ret === UNDEFINED_BINDING) {
+        return undefined;
+    } else if (ret === undefined && this._isBound()) {
+        return this._boundValue();
+    }
+    return ret;
+};
+
+Promise.prototype._promiseAt = function (index) {
+    return this[
+            index * 4 - 4 + 2];
+};
+
+Promise.prototype._fulfillmentHandlerAt = function (index) {
+    return this[
+            index * 4 - 4 + 0];
+};
+
+Promise.prototype._rejectionHandlerAt = function (index) {
+    return this[
+            index * 4 - 4 + 1];
+};
+
+Promise.prototype._boundValue = function() {};
+
+Promise.prototype._migrateCallback0 = function (follower) {
+    var bitField = follower._bitField;
+    var fulfill = follower._fulfillmentHandler0;
+    var reject = follower._rejectionHandler0;
+    var promise = follower._promise0;
+    var receiver = follower._receiverAt(0);
+    if (receiver === undefined) receiver = UNDEFINED_BINDING;
+    this._addCallbacks(fulfill, reject, promise, receiver, null);
+};
+
+Promise.prototype._migrateCallbackAt = function (follower, index) {
+    var fulfill = follower._fulfillmentHandlerAt(index);
+    var reject = follower._rejectionHandlerAt(index);
+    var promise = follower._promiseAt(index);
+    var receiver = follower._receiverAt(index);
+    if (receiver === undefined) receiver = UNDEFINED_BINDING;
+    this._addCallbacks(fulfill, reject, promise, receiver, null);
+};
+
+Promise.prototype._addCallbacks = function (
+    fulfill,
+    reject,
+    promise,
+    receiver,
+    domain
+) {
+    var index = this._length();
+
+    if (index >= 65535 - 4) {
+        index = 0;
+        this._setLength(0);
+    }
+
+    if (index === 0) {
+        this._promise0 = promise;
+        this._receiver0 = receiver;
+        if (typeof fulfill === "function") {
+            this._fulfillmentHandler0 =
+                domain === null ? fulfill : util.domainBind(domain, fulfill);
+        }
+        if (typeof reject === "function") {
+            this._rejectionHandler0 =
+                domain === null ? reject : util.domainBind(domain, reject);
+        }
+    } else {
+        var base = index * 4 - 4;
+        this[base + 2] = promise;
+        this[base + 3] = receiver;
+        if (typeof fulfill === "function") {
+            this[base + 0] =
+                domain === null ? fulfill : util.domainBind(domain, fulfill);
+        }
+        if (typeof reject === "function") {
+            this[base + 1] =
+                domain === null ? reject : util.domainBind(domain, reject);
+        }
+    }
+    this._setLength(index + 1);
+    return index;
+};
+
+Promise.prototype._proxy = function (proxyable, arg) {
+    this._addCallbacks(undefined, undefined, arg, proxyable, null);
+};
+
+Promise.prototype._resolveCallback = function(value, shouldBind) {
+    if (((this._bitField & 117506048) !== 0)) return;
+    if (value === this)
+        return this._rejectCallback(makeSelfResolutionError(), false);
+    var maybePromise = tryConvertToPromise(value, this);
+    if (!(maybePromise instanceof Promise)) return this._fulfill(value);
+
+    if (shouldBind) this._propagateFrom(maybePromise, 2);
+
+    var promise = maybePromise._target();
+
+    if (promise === this) {
+        this._reject(makeSelfResolutionError());
+        return;
+    }
+
+    var bitField = promise._bitField;
+    if (((bitField & 50397184) === 0)) {
+        var len = this._length();
+        if (len > 0) promise._migrateCallback0(this);
+        for (var i = 1; i < len; ++i) {
+            promise._migrateCallbackAt(this, i);
+        }
+        this._setFollowing();
+        this._setLength(0);
+        this._setFollowee(promise);
+    } else if (((bitField & 33554432) !== 0)) {
+        this._fulfill(promise._value());
+    } else if (((bitField & 16777216) !== 0)) {
+        this._reject(promise._reason());
+    } else {
+        var reason = new CancellationError("late cancellation observer");
+        promise._attachExtraTrace(reason);
+        this._reject(reason);
+    }
+};
+
+Promise.prototype._rejectCallback =
+function(reason, synchronous, ignoreNonErrorWarnings) {
+    var trace = util.ensureErrorObject(reason);
+    var hasStack = trace === reason;
+    if (!hasStack && !ignoreNonErrorWarnings && debug.warnings()) {
+        var message = "a promise was rejected with a non-error: " +
+            util.classString(reason);
+        this._warn(message, true);
+    }
+    this._attachExtraTrace(trace, synchronous ? hasStack : false);
+    this._reject(reason);
+};
+
+Promise.prototype._resolveFromExecutor = function (executor) {
+    if (executor === INTERNAL) return;
+    var promise = this;
+    this._captureStackTrace();
+    this._pushContext();
+    var synchronous = true;
+    var r = this._execute(executor, function(value) {
+        promise._resolveCallback(value);
+    }, function (reason) {
+        promise._rejectCallback(reason, synchronous);
+    });
+    synchronous = false;
+    this._popContext();
+
+    if (r !== undefined) {
+        promise._rejectCallback(r, true);
+    }
+};
+
+Promise.prototype._settlePromiseFromHandler = function (
+    handler, receiver, value, promise
+) {
+    var bitField = promise._bitField;
+    if (((bitField & 65536) !== 0)) return;
+    promise._pushContext();
+    var x;
+    if (receiver === APPLY) {
+        if (!value || typeof value.length !== "number") {
+            x = errorObj;
+            x.e = new TypeError("cannot .spread() a non-array: " +
+                                    util.classString(value));
+        } else {
+            x = tryCatch(handler).apply(this._boundValue(), value);
+        }
+    } else {
+        x = tryCatch(handler).call(receiver, value);
+    }
+    var promiseCreated = promise._popContext();
+    bitField = promise._bitField;
+    if (((bitField & 65536) !== 0)) return;
+
+    if (x === NEXT_FILTER) {
+        promise._reject(value);
+    } else if (x === errorObj) {
+        promise._rejectCallback(x.e, false);
+    } else {
+        debug.checkForgottenReturns(x, promiseCreated, "",  promise, this);
+        promise._resolveCallback(x);
+    }
+};
+
+Promise.prototype._target = function() {
+    var ret = this;
+    while (ret._isFollowing()) ret = ret._followee();
+    return ret;
+};
+
+Promise.prototype._followee = function() {
+    return this._rejectionHandler0;
+};
+
+Promise.prototype._setFollowee = function(promise) {
+    this._rejectionHandler0 = promise;
+};
+
+Promise.prototype._settlePromise = function(promise, handler, receiver, value) {
+    var isPromise = promise instanceof Promise;
+    var bitField = this._bitField;
+    var asyncGuaranteed = ((bitField & 134217728) !== 0);
+    if (((bitField & 65536) !== 0)) {
+        if (isPromise) promise._invokeInternalOnCancel();
+
+        if (receiver instanceof PassThroughHandlerContext &&
+            receiver.isFinallyHandler()) {
+            receiver.cancelPromise = promise;
+            if (tryCatch(handler).call(receiver, value) === errorObj) {
+                promise._reject(errorObj.e);
+            }
+        } else if (handler === reflectHandler) {
+            promise._fulfill(reflectHandler.call(receiver));
+        } else if (receiver instanceof Proxyable) {
+            receiver._promiseCancelled(promise);
+        } else if (isPromise || promise instanceof PromiseArray) {
+            promise._cancel();
+        } else {
+            receiver.cancel();
+        }
+    } else if (typeof handler === "function") {
+        if (!isPromise) {
+            handler.call(receiver, value, promise);
+        } else {
+            if (asyncGuaranteed) promise._setAsyncGuaranteed();
+            this._settlePromiseFromHandler(handler, receiver, value, promise);
+        }
+    } else if (receiver instanceof Proxyable) {
+        if (!receiver._isResolved()) {
+            if (((bitField & 33554432) !== 0)) {
+                receiver._promiseFulfilled(value, promise);
+            } else {
+                receiver._promiseRejected(value, promise);
+            }
+        }
+    } else if (isPromise) {
+        if (asyncGuaranteed) promise._setAsyncGuaranteed();
+        if (((bitField & 33554432) !== 0)) {
+            promise._fulfill(value);
+        } else {
+            promise._reject(value);
+        }
+    }
+};
+
+Promise.prototype._settlePromiseLateCancellationObserver = function(ctx) {
+    var handler = ctx.handler;
+    var promise = ctx.promise;
+    var receiver = ctx.receiver;
+    var value = ctx.value;
+    if (typeof handler === "function") {
+        if (!(promise instanceof Promise)) {
+            handler.call(receiver, value, promise);
+        } else {
+            this._settlePromiseFromHandler(handler, receiver, value, promise);
+        }
+    } else if (promise instanceof Promise) {
+        promise._reject(value);
+    }
+};
+
+Promise.prototype._settlePromiseCtx = function(ctx) {
+    this._settlePromise(ctx.promise, ctx.handler, ctx.receiver, ctx.value);
+};
+
+Promise.prototype._settlePromise0 = function(handler, value, bitField) {
+    var promise = this._promise0;
+    var receiver = this._receiverAt(0);
+    this._promise0 = undefined;
+    this._receiver0 = undefined;
+    this._settlePromise(promise, handler, receiver, value);
+};
+
+Promise.prototype._clearCallbackDataAtIndex = function(index) {
+    var base = index * 4 - 4;
+    this[base + 2] =
+    this[base + 3] =
+    this[base + 0] =
+    this[base + 1] = undefined;
+};
+
+Promise.prototype._fulfill = function (value) {
+    var bitField = this._bitField;
+    if (((bitField & 117506048) >>> 16)) return;
+    if (value === this) {
+        var err = makeSelfResolutionError();
+        this._attachExtraTrace(err);
+        return this._reject(err);
+    }
+    this._setFulfilled();
+    this._rejectionHandler0 = value;
+
+    if ((bitField & 65535) > 0) {
+        if (((bitField & 134217728) !== 0)) {
+            this._settlePromises();
+        } else {
+            async.settlePromises(this);
+        }
+        this._dereferenceTrace();
+    }
+};
+
+Promise.prototype._reject = function (reason) {
+    var bitField = this._bitField;
+    if (((bitField & 117506048) >>> 16)) return;
+    this._setRejected();
+    this._fulfillmentHandler0 = reason;
+
+    if (this._isFinal()) {
+        return async.fatalError(reason, util.isNode);
+    }
+
+    if ((bitField & 65535) > 0) {
+        async.settlePromises(this);
+    } else {
+        this._ensurePossibleRejectionHandled();
+    }
+};
+
+Promise.prototype._fulfillPromises = function (len, value) {
+    for (var i = 1; i < len; i++) {
+        var handler = this._fulfillmentHandlerAt(i);
+        var promise = this._promiseAt(i);
+        var receiver = this._receiverAt(i);
+        this._clearCallbackDataAtIndex(i);
+        this._settlePromise(promise, handler, receiver, value);
+    }
+};
+
+Promise.prototype._rejectPromises = function (len, reason) {
+    for (var i = 1; i < len; i++) {
+        var handler = this._rejectionHandlerAt(i);
+        var promise = this._promiseAt(i);
+        var receiver = this._receiverAt(i);
+        this._clearCallbackDataAtIndex(i);
+        this._settlePromise(promise, handler, receiver, reason);
+    }
+};
+
+Promise.prototype._settlePromises = function () {
+    var bitField = this._bitField;
+    var len = (bitField & 65535);
+
+    if (len > 0) {
+        if (((bitField & 16842752) !== 0)) {
+            var reason = this._fulfillmentHandler0;
+            this._settlePromise0(this._rejectionHandler0, reason, bitField);
+            this._rejectPromises(len, reason);
+        } else {
+            var value = this._rejectionHandler0;
+            this._settlePromise0(this._fulfillmentHandler0, value, bitField);
+            this._fulfillPromises(len, value);
+        }
+        this._setLength(0);
+    }
+    this._clearCancellationData();
+};
+
+Promise.prototype._settledValue = function() {
+    var bitField = this._bitField;
+    if (((bitField & 33554432) !== 0)) {
+        return this._rejectionHandler0;
+    } else if (((bitField & 16777216) !== 0)) {
+        return this._fulfillmentHandler0;
+    }
+};
+
+function deferResolve(v) {this.promise._resolveCallback(v);}
+function deferReject(v) {this.promise._rejectCallback(v, false);}
+
+Promise.defer = Promise.pending = function() {
+    debug.deprecated("Promise.defer", "new Promise");
+    var promise = new Promise(INTERNAL);
+    return {
+        promise: promise,
+        resolve: deferResolve,
+        reject: deferReject
+    };
+};
+
+util.notEnumerableProp(Promise,
+                       "_makeSelfResolutionError",
+                       makeSelfResolutionError);
+
+_dereq_("./method")(Promise, INTERNAL, tryConvertToPromise, apiRejection,
+    debug);
+_dereq_("./bind")(Promise, INTERNAL, tryConvertToPromise, debug);
+_dereq_("./cancel")(Promise, PromiseArray, apiRejection, debug);
+_dereq_("./direct_resolve")(Promise);
+_dereq_("./synchronous_inspection")(Promise);
+_dereq_("./join")(
+    Promise, PromiseArray, tryConvertToPromise, INTERNAL, async, getDomain);
+Promise.Promise = Promise;
+Promise.version = "3.5.3";
+_dereq_('./map.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
+_dereq_('./call_get.js')(Promise);
+_dereq_('./using.js')(Promise, apiRejection, tryConvertToPromise, createContext, INTERNAL, debug);
+_dereq_('./timers.js')(Promise, INTERNAL, debug);
+_dereq_('./generators.js')(Promise, apiRejection, INTERNAL, tryConvertToPromise, Proxyable, debug);
+_dereq_('./nodeify.js')(Promise);
+_dereq_('./promisify.js')(Promise, INTERNAL);
+_dereq_('./props.js')(Promise, PromiseArray, tryConvertToPromise, apiRejection);
+_dereq_('./race.js')(Promise, INTERNAL, tryConvertToPromise, apiRejection);
+_dereq_('./reduce.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
+_dereq_('./settle.js')(Promise, PromiseArray, debug);
+_dereq_('./some.js')(Promise, PromiseArray, apiRejection);
+_dereq_('./filter.js')(Promise, INTERNAL);
+_dereq_('./each.js')(Promise, INTERNAL);
+_dereq_('./any.js')(Promise);
+                                                         
+    util.toFastProperties(Promise);                                          
+    util.toFastProperties(Promise.prototype);                                
+    function fillTypes(value) {                                              
+        var p = new Promise(INTERNAL);                                       
+        p._fulfillmentHandler0 = value;                                      
+        p._rejectionHandler0 = value;                                        
+        p._promise0 = value;                                                 
+        p._receiver0 = value;                                                
+    }                                                                        
+    // Complete slack tracking, opt out of field-type tracking and           
+    // stabilize map                                                         
+    fillTypes({a: 1});                                                       
+    fillTypes({b: 2});                                                       
+    fillTypes({c: 3});                                                       
+    fillTypes(1);                                                            
+    fillTypes(function(){});                                                 
+    fillTypes(undefined);                                                    
+    fillTypes(false);                                                        
+    fillTypes(new Promise(INTERNAL));                                        
+    debug.setBounds(Async.firstLineError, util.lastLineError);               
+    return Promise;                                                          
+
+};
+
+},{"./any.js":1,"./async":2,"./bind":3,"./call_get.js":5,"./cancel":6,"./catch_filter":7,"./context":8,"./debuggability":9,"./direct_resolve":10,"./each.js":11,"./errors":12,"./es5":13,"./filter.js":14,"./finally":15,"./generators.js":16,"./join":17,"./map.js":18,"./method":19,"./nodeback":20,"./nodeify.js":21,"./promise_array":23,"./promisify.js":24,"./props.js":25,"./race.js":27,"./reduce.js":28,"./settle.js":30,"./some.js":31,"./synchronous_inspection":32,"./thenables":33,"./timers.js":34,"./using.js":35,"./util":36}],23:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL, tryConvertToPromise,
+    apiRejection, Proxyable) {
+var util = _dereq_("./util");
+var isArray = util.isArray;
+
+function toResolutionValue(val) {
+    switch(val) {
+    case -2: return [];
+    case -3: return {};
+    case -6: return new Map();
+    }
+}
+
+function PromiseArray(values) {
+    var promise = this._promise = new Promise(INTERNAL);
+    if (values instanceof Promise) {
+        promise._propagateFrom(values, 3);
+    }
+    promise._setOnCancel(this);
+    this._values = values;
+    this._length = 0;
+    this._totalResolved = 0;
+    this._init(undefined, -2);
+}
+util.inherits(PromiseArray, Proxyable);
+
+PromiseArray.prototype.length = function () {
+    return this._length;
+};
+
+PromiseArray.prototype.promise = function () {
+    return this._promise;
+};
+
+PromiseArray.prototype._init = function init(_, resolveValueIfEmpty) {
+    var values = tryConvertToPromise(this._values, this._promise);
+    if (values instanceof Promise) {
+        values = values._target();
+        var bitField = values._bitField;
+        ;
+        this._values = values;
+
+        if (((bitField & 50397184) === 0)) {
+            this._promise._setAsyncGuaranteed();
+            return values._then(
+                init,
+                this._reject,
+                undefined,
+                this,
+                resolveValueIfEmpty
+           );
+        } else if (((bitField & 33554432) !== 0)) {
+            values = values._value();
+        } else if (((bitField & 16777216) !== 0)) {
+            return this._reject(values._reason());
+        } else {
+            return this._cancel();
+        }
+    }
+    values = util.asArray(values);
+    if (values === null) {
+        var err = apiRejection(
+            "expecting an array or an iterable object but got " + util.classString(values)).reason();
+        this._promise._rejectCallback(err, false);
+        return;
+    }
+
+    if (values.length === 0) {
+        if (resolveValueIfEmpty === -5) {
+            this._resolveEmptyArray();
+        }
+        else {
+            this._resolve(toResolutionValue(resolveValueIfEmpty));
+        }
+        return;
+    }
+    this._iterate(values);
+};
+
+PromiseArray.prototype._iterate = function(values) {
+    var len = this.getActualLength(values.length);
+    this._length = len;
+    this._values = this.shouldCopyValues() ? new Array(len) : this._values;
+    var result = this._promise;
+    var isResolved = false;
+    var bitField = null;
+    for (var i = 0; i < len; ++i) {
+        var maybePromise = tryConvertToPromise(values[i], result);
+
+        if (maybePromise instanceof Promise) {
+            maybePromise = maybePromise._target();
+            bitField = maybePromise._bitField;
+        } else {
+            bitField = null;
+        }
+
+        if (isResolved) {
+            if (bitField !== null) {
+                maybePromise.suppressUnhandledRejections();
+            }
+        } else if (bitField !== null) {
+            if (((bitField & 50397184) === 0)) {
+                maybePromise._proxy(this, i);
+                this._values[i] = maybePromise;
+            } else if (((bitField & 33554432) !== 0)) {
+                isResolved = this._promiseFulfilled(maybePromise._value(), i);
+            } else if (((bitField & 16777216) !== 0)) {
+                isResolved = this._promiseRejected(maybePromise._reason(), i);
+            } else {
+                isResolved = this._promiseCancelled(i);
+            }
+        } else {
+            isResolved = this._promiseFulfilled(maybePromise, i);
+        }
+    }
+    if (!isResolved) result._setAsyncGuaranteed();
+};
+
+PromiseArray.prototype._isResolved = function () {
+    return this._values === null;
+};
+
+PromiseArray.prototype._resolve = function (value) {
+    this._values = null;
+    this._promise._fulfill(value);
+};
+
+PromiseArray.prototype._cancel = function() {
+    if (this._isResolved() || !this._promise._isCancellable()) return;
+    this._values = null;
+    this._promise._cancel();
+};
+
+PromiseArray.prototype._reject = function (reason) {
+    this._values = null;
+    this._promise._rejectCallback(reason, false);
+};
+
+PromiseArray.prototype._promiseFulfilled = function (value, index) {
+    this._values[index] = value;
+    var totalResolved = ++this._totalResolved;
+    if (totalResolved >= this._length) {
+        this._resolve(this._values);
+        return true;
+    }
+    return false;
+};
+
+PromiseArray.prototype._promiseCancelled = function() {
+    this._cancel();
+    return true;
+};
+
+PromiseArray.prototype._promiseRejected = function (reason) {
+    this._totalResolved++;
+    this._reject(reason);
+    return true;
+};
+
+PromiseArray.prototype._resultCancelled = function() {
+    if (this._isResolved()) return;
+    var values = this._values;
+    this._cancel();
+    if (values instanceof Promise) {
+        values.cancel();
+    } else {
+        for (var i = 0; i < values.length; ++i) {
+            if (values[i] instanceof Promise) {
+                values[i].cancel();
+            }
+        }
+    }
+};
+
+PromiseArray.prototype.shouldCopyValues = function () {
+    return true;
+};
+
+PromiseArray.prototype.getActualLength = function (len) {
+    return len;
+};
+
+return PromiseArray;
+};
+
+},{"./util":36}],24:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL) {
+var THIS = {};
+var util = _dereq_("./util");
+var nodebackForPromise = _dereq_("./nodeback");
+var withAppended = util.withAppended;
+var maybeWrapAsError = util.maybeWrapAsError;
+var canEvaluate = util.canEvaluate;
+var TypeError = _dereq_("./errors").TypeError;
+var defaultSuffix = "Async";
+var defaultPromisified = {__isPromisified__: true};
+var noCopyProps = [
+    "arity",    "length",
+    "name",
+    "arguments",
+    "caller",
+    "callee",
+    "prototype",
+    "__isPromisified__"
+];
+var noCopyPropsPattern = new RegExp("^(?:" + noCopyProps.join("|") + ")$");
+
+var defaultFilter = function(name) {
+    return util.isIdentifier(name) &&
+        name.charAt(0) !== "_" &&
+        name !== "constructor";
+};
+
+function propsFilter(key) {
+    return !noCopyPropsPattern.test(key);
+}
+
+function isPromisified(fn) {
+    try {
+        return fn.__isPromisified__ === true;
+    }
+    catch (e) {
+        return false;
+    }
+}
+
+function hasPromisified(obj, key, suffix) {
+    var val = util.getDataPropertyOrDefault(obj, key + suffix,
+                                            defaultPromisified);
+    return val ? isPromisified(val) : false;
+}
+function checkValid(ret, suffix, suffixRegexp) {
+    for (var i = 0; i < ret.length; i += 2) {
+        var key = ret[i];
+        if (suffixRegexp.test(key)) {
+            var keyWithoutAsyncSuffix = key.replace(suffixRegexp, "");
+            for (var j = 0; j < ret.length; j += 2) {
+                if (ret[j] === keyWithoutAsyncSuffix) {
+                    throw new TypeError("Cannot promisify an API that has normal methods with '%s'-suffix\u000a\u000a    See http://goo.gl/MqrFmX\u000a"
+                        .replace("%s", suffix));
+                }
+            }
+        }
+    }
+}
+
+function promisifiableMethods(obj, suffix, suffixRegexp, filter) {
+    var keys = util.inheritedDataKeys(obj);
+    var ret = [];
+    for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var value = obj[key];
+        var passesDefaultFilter = filter === defaultFilter
+            ? true : defaultFilter(key, value, obj);
+        if (typeof value === "function" &&
+            !isPromisified(value) &&
+            !hasPromisified(obj, key, suffix) &&
+            filter(key, value, obj, passesDefaultFilter)) {
+            ret.push(key, value);
+        }
+    }
+    checkValid(ret, suffix, suffixRegexp);
+    return ret;
+}
+
+var escapeIdentRegex = function(str) {
+    return str.replace(/([$])/, "\\$");
+};
+
+var makeNodePromisifiedEval;
+if (false) { var parameterCount, parameterDeclaration, argumentSequence, switchCaseArgumentOrder; }
+
+function makeNodePromisifiedClosure(callback, receiver, _, fn, __, multiArgs) {
+    var defaultThis = (function() {return this;})();
+    var method = callback;
+    if (typeof method === "string") {
+        callback = fn;
+    }
+    function promisified() {
+        var _receiver = receiver;
+        if (receiver === THIS) _receiver = this;
+        var promise = new Promise(INTERNAL);
+        promise._captureStackTrace();
+        var cb = typeof method === "string" && this !== defaultThis
+            ? this[method] : callback;
+        var fn = nodebackForPromise(promise, multiArgs);
+        try {
+            cb.apply(_receiver, withAppended(arguments, fn));
+        } catch(e) {
+            promise._rejectCallback(maybeWrapAsError(e), true, true);
+        }
+        if (!promise._isFateSealed()) promise._setAsyncGuaranteed();
+        return promise;
+    }
+    util.notEnumerableProp(promisified, "__isPromisified__", true);
+    return promisified;
+}
+
+var makeNodePromisified = canEvaluate
+    ? makeNodePromisifiedEval
+    : makeNodePromisifiedClosure;
+
+function promisifyAll(obj, suffix, filter, promisifier, multiArgs) {
+    var suffixRegexp = new RegExp(escapeIdentRegex(suffix) + "$");
+    var methods =
+        promisifiableMethods(obj, suffix, suffixRegexp, filter);
+
+    for (var i = 0, len = methods.length; i < len; i+= 2) {
+        var key = methods[i];
+        var fn = methods[i+1];
+        var promisifiedKey = key + suffix;
+        if (promisifier === makeNodePromisified) {
+            obj[promisifiedKey] =
+                makeNodePromisified(key, THIS, key, fn, suffix, multiArgs);
+        } else {
+            var promisified = promisifier(fn, function() {
+                return makeNodePromisified(key, THIS, key,
+                                           fn, suffix, multiArgs);
+            });
+            util.notEnumerableProp(promisified, "__isPromisified__", true);
+            obj[promisifiedKey] = promisified;
+        }
+    }
+    util.toFastProperties(obj);
+    return obj;
+}
+
+function promisify(callback, receiver, multiArgs) {
+    return makeNodePromisified(callback, receiver, undefined,
+                                callback, null, multiArgs);
+}
+
+Promise.promisify = function (fn, options) {
+    if (typeof fn !== "function") {
+        throw new TypeError("expecting a function but got " + util.classString(fn));
+    }
+    if (isPromisified(fn)) {
+        return fn;
+    }
+    options = Object(options);
+    var receiver = options.context === undefined ? THIS : options.context;
+    var multiArgs = !!options.multiArgs;
+    var ret = promisify(fn, receiver, multiArgs);
+    util.copyDescriptors(fn, ret, propsFilter);
+    return ret;
+};
+
+Promise.promisifyAll = function (target, options) {
+    if (typeof target !== "function" && typeof target !== "object") {
+        throw new TypeError("the target of promisifyAll must be an object or a function\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    options = Object(options);
+    var multiArgs = !!options.multiArgs;
+    var suffix = options.suffix;
+    if (typeof suffix !== "string") suffix = defaultSuffix;
+    var filter = options.filter;
+    if (typeof filter !== "function") filter = defaultFilter;
+    var promisifier = options.promisifier;
+    if (typeof promisifier !== "function") promisifier = makeNodePromisified;
+
+    if (!util.isIdentifier(suffix)) {
+        throw new RangeError("suffix must be a valid identifier\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+
+    var keys = util.inheritedDataKeys(target);
+    for (var i = 0; i < keys.length; ++i) {
+        var value = target[keys[i]];
+        if (keys[i] !== "constructor" &&
+            util.isClass(value)) {
+            promisifyAll(value.prototype, suffix, filter, promisifier,
+                multiArgs);
+            promisifyAll(value, suffix, filter, promisifier, multiArgs);
+        }
+    }
+
+    return promisifyAll(target, suffix, filter, promisifier, multiArgs);
+};
+};
+
+
+},{"./errors":12,"./nodeback":20,"./util":36}],25:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(
+    Promise, PromiseArray, tryConvertToPromise, apiRejection) {
+var util = _dereq_("./util");
+var isObject = util.isObject;
+var es5 = _dereq_("./es5");
+var Es6Map;
+if (typeof Map === "function") Es6Map = Map;
+
+var mapToEntries = (function() {
+    var index = 0;
+    var size = 0;
+
+    function extractEntry(value, key) {
+        this[index] = value;
+        this[index + size] = key;
+        index++;
+    }
+
+    return function mapToEntries(map) {
+        size = map.size;
+        index = 0;
+        var ret = new Array(map.size * 2);
+        map.forEach(extractEntry, ret);
+        return ret;
+    };
+})();
+
+var entriesToMap = function(entries) {
+    var ret = new Es6Map();
+    var length = entries.length / 2 | 0;
+    for (var i = 0; i < length; ++i) {
+        var key = entries[length + i];
+        var value = entries[i];
+        ret.set(key, value);
+    }
+    return ret;
+};
+
+function PropertiesPromiseArray(obj) {
+    var isMap = false;
+    var entries;
+    if (Es6Map !== undefined && obj instanceof Es6Map) {
+        entries = mapToEntries(obj);
+        isMap = true;
+    } else {
+        var keys = es5.keys(obj);
+        var len = keys.length;
+        entries = new Array(len * 2);
+        for (var i = 0; i < len; ++i) {
+            var key = keys[i];
+            entries[i] = obj[key];
+            entries[i + len] = key;
+        }
+    }
+    this.constructor$(entries);
+    this._isMap = isMap;
+    this._init$(undefined, isMap ? -6 : -3);
+}
+util.inherits(PropertiesPromiseArray, PromiseArray);
+
+PropertiesPromiseArray.prototype._init = function () {};
+
+PropertiesPromiseArray.prototype._promiseFulfilled = function (value, index) {
+    this._values[index] = value;
+    var totalResolved = ++this._totalResolved;
+    if (totalResolved >= this._length) {
+        var val;
+        if (this._isMap) {
+            val = entriesToMap(this._values);
+        } else {
+            val = {};
+            var keyOffset = this.length();
+            for (var i = 0, len = this.length(); i < len; ++i) {
+                val[this._values[i + keyOffset]] = this._values[i];
+            }
+        }
+        this._resolve(val);
+        return true;
+    }
+    return false;
+};
+
+PropertiesPromiseArray.prototype.shouldCopyValues = function () {
+    return false;
+};
+
+PropertiesPromiseArray.prototype.getActualLength = function (len) {
+    return len >> 1;
+};
+
+function props(promises) {
+    var ret;
+    var castValue = tryConvertToPromise(promises);
+
+    if (!isObject(castValue)) {
+        return apiRejection("cannot await properties of a non-object\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    } else if (castValue instanceof Promise) {
+        ret = castValue._then(
+            Promise.props, undefined, undefined, undefined, undefined);
+    } else {
+        ret = new PropertiesPromiseArray(castValue).promise();
+    }
+
+    if (castValue instanceof Promise) {
+        ret._propagateFrom(castValue, 2);
+    }
+    return ret;
+}
+
+Promise.prototype.props = function () {
+    return props(this);
+};
+
+Promise.props = function (promises) {
+    return props(promises);
+};
+};
+
+},{"./es5":13,"./util":36}],26:[function(_dereq_,module,exports){
+"use strict";
+function arrayMove(src, srcIndex, dst, dstIndex, len) {
+    for (var j = 0; j < len; ++j) {
+        dst[j + dstIndex] = src[j + srcIndex];
+        src[j + srcIndex] = void 0;
+    }
+}
+
+function Queue(capacity) {
+    this._capacity = capacity;
+    this._length = 0;
+    this._front = 0;
+}
+
+Queue.prototype._willBeOverCapacity = function (size) {
+    return this._capacity < size;
+};
+
+Queue.prototype._pushOne = function (arg) {
+    var length = this.length();
+    this._checkCapacity(length + 1);
+    var i = (this._front + length) & (this._capacity - 1);
+    this[i] = arg;
+    this._length = length + 1;
+};
+
+Queue.prototype.push = function (fn, receiver, arg) {
+    var length = this.length() + 3;
+    if (this._willBeOverCapacity(length)) {
+        this._pushOne(fn);
+        this._pushOne(receiver);
+        this._pushOne(arg);
+        return;
+    }
+    var j = this._front + length - 3;
+    this._checkCapacity(length);
+    var wrapMask = this._capacity - 1;
+    this[(j + 0) & wrapMask] = fn;
+    this[(j + 1) & wrapMask] = receiver;
+    this[(j + 2) & wrapMask] = arg;
+    this._length = length;
+};
+
+Queue.prototype.shift = function () {
+    var front = this._front,
+        ret = this[front];
+
+    this[front] = undefined;
+    this._front = (front + 1) & (this._capacity - 1);
+    this._length--;
+    return ret;
+};
+
+Queue.prototype.length = function () {
+    return this._length;
+};
+
+Queue.prototype._checkCapacity = function (size) {
+    if (this._capacity < size) {
+        this._resizeTo(this._capacity << 1);
+    }
+};
+
+Queue.prototype._resizeTo = function (capacity) {
+    var oldCapacity = this._capacity;
+    this._capacity = capacity;
+    var front = this._front;
+    var length = this._length;
+    var moveItemsCount = (front + length) & (oldCapacity - 1);
+    arrayMove(this, 0, this, oldCapacity, moveItemsCount);
+};
+
+module.exports = Queue;
+
+},{}],27:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(
+    Promise, INTERNAL, tryConvertToPromise, apiRejection) {
+var util = _dereq_("./util");
+
+var raceLater = function (promise) {
+    return promise.then(function(array) {
+        return race(array, promise);
+    });
+};
+
+function race(promises, parent) {
+    var maybePromise = tryConvertToPromise(promises);
+
+    if (maybePromise instanceof Promise) {
+        return raceLater(maybePromise);
+    } else {
+        promises = util.asArray(promises);
+        if (promises === null)
+            return apiRejection("expecting an array or an iterable object but got " + util.classString(promises));
+    }
+
+    var ret = new Promise(INTERNAL);
+    if (parent !== undefined) {
+        ret._propagateFrom(parent, 3);
+    }
+    var fulfill = ret._fulfill;
+    var reject = ret._reject;
+    for (var i = 0, len = promises.length; i < len; ++i) {
+        var val = promises[i];
+
+        if (val === undefined && !(i in promises)) {
+            continue;
+        }
+
+        Promise.cast(val)._then(fulfill, reject, undefined, ret, null);
+    }
+    return ret;
+}
+
+Promise.race = function (promises) {
+    return race(promises, undefined);
+};
+
+Promise.prototype.race = function () {
+    return race(this, undefined);
+};
+
+};
+
+},{"./util":36}],28:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise,
+                          PromiseArray,
+                          apiRejection,
+                          tryConvertToPromise,
+                          INTERNAL,
+                          debug) {
+var getDomain = Promise._getDomain;
+var util = _dereq_("./util");
+var tryCatch = util.tryCatch;
+
+function ReductionPromiseArray(promises, fn, initialValue, _each) {
+    this.constructor$(promises);
+    var domain = getDomain();
+    this._fn = domain === null ? fn : util.domainBind(domain, fn);
+    if (initialValue !== undefined) {
+        initialValue = Promise.resolve(initialValue);
+        initialValue._attachCancellationCallback(this);
+    }
+    this._initialValue = initialValue;
+    this._currentCancellable = null;
+    if(_each === INTERNAL) {
+        this._eachValues = Array(this._length);
+    } else if (_each === 0) {
+        this._eachValues = null;
+    } else {
+        this._eachValues = undefined;
+    }
+    this._promise._captureStackTrace();
+    this._init$(undefined, -5);
+}
+util.inherits(ReductionPromiseArray, PromiseArray);
+
+ReductionPromiseArray.prototype._gotAccum = function(accum) {
+    if (this._eachValues !== undefined && 
+        this._eachValues !== null && 
+        accum !== INTERNAL) {
+        this._eachValues.push(accum);
+    }
+};
+
+ReductionPromiseArray.prototype._eachComplete = function(value) {
+    if (this._eachValues !== null) {
+        this._eachValues.push(value);
+    }
+    return this._eachValues;
+};
+
+ReductionPromiseArray.prototype._init = function() {};
+
+ReductionPromiseArray.prototype._resolveEmptyArray = function() {
+    this._resolve(this._eachValues !== undefined ? this._eachValues
+                                                 : this._initialValue);
+};
+
+ReductionPromiseArray.prototype.shouldCopyValues = function () {
+    return false;
+};
+
+ReductionPromiseArray.prototype._resolve = function(value) {
+    this._promise._resolveCallback(value);
+    this._values = null;
+};
+
+ReductionPromiseArray.prototype._resultCancelled = function(sender) {
+    if (sender === this._initialValue) return this._cancel();
+    if (this._isResolved()) return;
+    this._resultCancelled$();
+    if (this._currentCancellable instanceof Promise) {
+        this._currentCancellable.cancel();
+    }
+    if (this._initialValue instanceof Promise) {
+        this._initialValue.cancel();
+    }
+};
+
+ReductionPromiseArray.prototype._iterate = function (values) {
+    this._values = values;
+    var value;
+    var i;
+    var length = values.length;
+    if (this._initialValue !== undefined) {
+        value = this._initialValue;
+        i = 0;
+    } else {
+        value = Promise.resolve(values[0]);
+        i = 1;
+    }
+
+    this._currentCancellable = value;
+
+    if (!value.isRejected()) {
+        for (; i < length; ++i) {
+            var ctx = {
+                accum: null,
+                value: values[i],
+                index: i,
+                length: length,
+                array: this
+            };
+            value = value._then(gotAccum, undefined, undefined, ctx, undefined);
+        }
+    }
+
+    if (this._eachValues !== undefined) {
+        value = value
+            ._then(this._eachComplete, undefined, undefined, this, undefined);
+    }
+    value._then(completed, completed, undefined, value, this);
+};
+
+Promise.prototype.reduce = function (fn, initialValue) {
+    return reduce(this, fn, initialValue, null);
+};
+
+Promise.reduce = function (promises, fn, initialValue, _each) {
+    return reduce(promises, fn, initialValue, _each);
+};
+
+function completed(valueOrReason, array) {
+    if (this.isFulfilled()) {
+        array._resolve(valueOrReason);
+    } else {
+        array._reject(valueOrReason);
+    }
+}
+
+function reduce(promises, fn, initialValue, _each) {
+    if (typeof fn !== "function") {
+        return apiRejection("expecting a function but got " + util.classString(fn));
+    }
+    var array = new ReductionPromiseArray(promises, fn, initialValue, _each);
+    return array.promise();
+}
+
+function gotAccum(accum) {
+    this.accum = accum;
+    this.array._gotAccum(accum);
+    var value = tryConvertToPromise(this.value, this.array._promise);
+    if (value instanceof Promise) {
+        this.array._currentCancellable = value;
+        return value._then(gotValue, undefined, undefined, this, undefined);
+    } else {
+        return gotValue.call(this, value);
+    }
+}
+
+function gotValue(value) {
+    var array = this.array;
+    var promise = array._promise;
+    var fn = tryCatch(array._fn);
+    promise._pushContext();
+    var ret;
+    if (array._eachValues !== undefined) {
+        ret = fn.call(promise._boundValue(), value, this.index, this.length);
+    } else {
+        ret = fn.call(promise._boundValue(),
+                              this.accum, value, this.index, this.length);
+    }
+    if (ret instanceof Promise) {
+        array._currentCancellable = ret;
+    }
+    var promiseCreated = promise._popContext();
+    debug.checkForgottenReturns(
+        ret,
+        promiseCreated,
+        array._eachValues !== undefined ? "Promise.each" : "Promise.reduce",
+        promise
+    );
+    return ret;
+}
+};
+
+},{"./util":36}],29:[function(_dereq_,module,exports){
+"use strict";
+var util = _dereq_("./util");
+var schedule;
+var noAsyncScheduler = function() {
+    throw new Error("No async scheduler available\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+};
+var NativePromise = util.getNativePromise();
+if (util.isNode && typeof MutationObserver === "undefined") {
+    var GlobalSetImmediate = global.setImmediate;
+    var ProcessNextTick = process.nextTick;
+    schedule = util.isRecentNode
+                ? function(fn) { GlobalSetImmediate.call(global, fn); }
+                : function(fn) { ProcessNextTick.call(process, fn); };
+} else if (typeof NativePromise === "function" &&
+           typeof NativePromise.resolve === "function") {
+    var nativePromise = NativePromise.resolve();
+    schedule = function(fn) {
+        nativePromise.then(fn);
+    };
+} else if ((typeof MutationObserver !== "undefined") &&
+          !(typeof window !== "undefined" &&
+            window.navigator &&
+            (window.navigator.standalone || window.cordova))) {
+    schedule = (function() {
+        var div = document.createElement("div");
+        var opts = {attributes: true};
+        var toggleScheduled = false;
+        var div2 = document.createElement("div");
+        var o2 = new MutationObserver(function() {
+            div.classList.toggle("foo");
+            toggleScheduled = false;
+        });
+        o2.observe(div2, opts);
+
+        var scheduleToggle = function() {
+            if (toggleScheduled) return;
+            toggleScheduled = true;
+            div2.classList.toggle("foo");
+        };
+
+        return function schedule(fn) {
+            var o = new MutationObserver(function() {
+                o.disconnect();
+                fn();
+            });
+            o.observe(div, opts);
+            scheduleToggle();
+        };
+    })();
+} else if (typeof setImmediate !== "undefined") {
+    schedule = function (fn) {
+        setImmediate(fn);
+    };
+} else if (typeof setTimeout !== "undefined") {
+    schedule = function (fn) {
+        setTimeout(fn, 0);
+    };
+} else {
+    schedule = noAsyncScheduler;
+}
+module.exports = schedule;
+
+},{"./util":36}],30:[function(_dereq_,module,exports){
+"use strict";
+module.exports =
+    function(Promise, PromiseArray, debug) {
+var PromiseInspection = Promise.PromiseInspection;
+var util = _dereq_("./util");
+
+function SettledPromiseArray(values) {
+    this.constructor$(values);
+}
+util.inherits(SettledPromiseArray, PromiseArray);
+
+SettledPromiseArray.prototype._promiseResolved = function (index, inspection) {
+    this._values[index] = inspection;
+    var totalResolved = ++this._totalResolved;
+    if (totalResolved >= this._length) {
+        this._resolve(this._values);
+        return true;
+    }
+    return false;
+};
+
+SettledPromiseArray.prototype._promiseFulfilled = function (value, index) {
+    var ret = new PromiseInspection();
+    ret._bitField = 33554432;
+    ret._settledValueField = value;
+    return this._promiseResolved(index, ret);
+};
+SettledPromiseArray.prototype._promiseRejected = function (reason, index) {
+    var ret = new PromiseInspection();
+    ret._bitField = 16777216;
+    ret._settledValueField = reason;
+    return this._promiseResolved(index, ret);
+};
+
+Promise.settle = function (promises) {
+    debug.deprecated(".settle()", ".reflect()");
+    return new SettledPromiseArray(promises).promise();
+};
+
+Promise.prototype.settle = function () {
+    return Promise.settle(this);
+};
+};
+
+},{"./util":36}],31:[function(_dereq_,module,exports){
+"use strict";
+module.exports =
+function(Promise, PromiseArray, apiRejection) {
+var util = _dereq_("./util");
+var RangeError = _dereq_("./errors").RangeError;
+var AggregateError = _dereq_("./errors").AggregateError;
+var isArray = util.isArray;
+var CANCELLATION = {};
+
+
+function SomePromiseArray(values) {
+    this.constructor$(values);
+    this._howMany = 0;
+    this._unwrap = false;
+    this._initialized = false;
+}
+util.inherits(SomePromiseArray, PromiseArray);
+
+SomePromiseArray.prototype._init = function () {
+    if (!this._initialized) {
+        return;
+    }
+    if (this._howMany === 0) {
+        this._resolve([]);
+        return;
+    }
+    this._init$(undefined, -5);
+    var isArrayResolved = isArray(this._values);
+    if (!this._isResolved() &&
+        isArrayResolved &&
+        this._howMany > this._canPossiblyFulfill()) {
+        this._reject(this._getRangeError(this.length()));
+    }
+};
+
+SomePromiseArray.prototype.init = function () {
+    this._initialized = true;
+    this._init();
+};
+
+SomePromiseArray.prototype.setUnwrap = function () {
+    this._unwrap = true;
+};
+
+SomePromiseArray.prototype.howMany = function () {
+    return this._howMany;
+};
+
+SomePromiseArray.prototype.setHowMany = function (count) {
+    this._howMany = count;
+};
+
+SomePromiseArray.prototype._promiseFulfilled = function (value) {
+    this._addFulfilled(value);
+    if (this._fulfilled() === this.howMany()) {
+        this._values.length = this.howMany();
+        if (this.howMany() === 1 && this._unwrap) {
+            this._resolve(this._values[0]);
+        } else {
+            this._resolve(this._values);
+        }
+        return true;
+    }
+    return false;
+
+};
+SomePromiseArray.prototype._promiseRejected = function (reason) {
+    this._addRejected(reason);
+    return this._checkOutcome();
+};
+
+SomePromiseArray.prototype._promiseCancelled = function () {
+    if (this._values instanceof Promise || this._values == null) {
+        return this._cancel();
+    }
+    this._addRejected(CANCELLATION);
+    return this._checkOutcome();
+};
+
+SomePromiseArray.prototype._checkOutcome = function() {
+    if (this.howMany() > this._canPossiblyFulfill()) {
+        var e = new AggregateError();
+        for (var i = this.length(); i < this._values.length; ++i) {
+            if (this._values[i] !== CANCELLATION) {
+                e.push(this._values[i]);
+            }
+        }
+        if (e.length > 0) {
+            this._reject(e);
+        } else {
+            this._cancel();
+        }
+        return true;
+    }
+    return false;
+};
+
+SomePromiseArray.prototype._fulfilled = function () {
+    return this._totalResolved;
+};
+
+SomePromiseArray.prototype._rejected = function () {
+    return this._values.length - this.length();
+};
+
+SomePromiseArray.prototype._addRejected = function (reason) {
+    this._values.push(reason);
+};
+
+SomePromiseArray.prototype._addFulfilled = function (value) {
+    this._values[this._totalResolved++] = value;
+};
+
+SomePromiseArray.prototype._canPossiblyFulfill = function () {
+    return this.length() - this._rejected();
+};
+
+SomePromiseArray.prototype._getRangeError = function (count) {
+    var message = "Input array must contain at least " +
+            this._howMany + " items but contains only " + count + " items";
+    return new RangeError(message);
+};
+
+SomePromiseArray.prototype._resolveEmptyArray = function () {
+    this._reject(this._getRangeError(0));
+};
+
+function some(promises, howMany) {
+    if ((howMany | 0) !== howMany || howMany < 0) {
+        return apiRejection("expecting a positive integer\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    var ret = new SomePromiseArray(promises);
+    var promise = ret.promise();
+    ret.setHowMany(howMany);
+    ret.init();
+    return promise;
+}
+
+Promise.some = function (promises, howMany) {
+    return some(promises, howMany);
+};
+
+Promise.prototype.some = function (howMany) {
+    return some(this, howMany);
+};
+
+Promise._SomePromiseArray = SomePromiseArray;
+};
+
+},{"./errors":12,"./util":36}],32:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise) {
+function PromiseInspection(promise) {
+    if (promise !== undefined) {
+        promise = promise._target();
+        this._bitField = promise._bitField;
+        this._settledValueField = promise._isFateSealed()
+            ? promise._settledValue() : undefined;
+    }
+    else {
+        this._bitField = 0;
+        this._settledValueField = undefined;
+    }
+}
+
+PromiseInspection.prototype._settledValue = function() {
+    return this._settledValueField;
+};
+
+var value = PromiseInspection.prototype.value = function () {
+    if (!this.isFulfilled()) {
+        throw new TypeError("cannot get fulfillment value of a non-fulfilled promise\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    return this._settledValue();
+};
+
+var reason = PromiseInspection.prototype.error =
+PromiseInspection.prototype.reason = function () {
+    if (!this.isRejected()) {
+        throw new TypeError("cannot get rejection reason of a non-rejected promise\u000a\u000a    See http://goo.gl/MqrFmX\u000a");
+    }
+    return this._settledValue();
+};
+
+var isFulfilled = PromiseInspection.prototype.isFulfilled = function() {
+    return (this._bitField & 33554432) !== 0;
+};
+
+var isRejected = PromiseInspection.prototype.isRejected = function () {
+    return (this._bitField & 16777216) !== 0;
+};
+
+var isPending = PromiseInspection.prototype.isPending = function () {
+    return (this._bitField & 50397184) === 0;
+};
+
+var isResolved = PromiseInspection.prototype.isResolved = function () {
+    return (this._bitField & 50331648) !== 0;
+};
+
+PromiseInspection.prototype.isCancelled = function() {
+    return (this._bitField & 8454144) !== 0;
+};
+
+Promise.prototype.__isCancelled = function() {
+    return (this._bitField & 65536) === 65536;
+};
+
+Promise.prototype._isCancelled = function() {
+    return this._target().__isCancelled();
+};
+
+Promise.prototype.isCancelled = function() {
+    return (this._target()._bitField & 8454144) !== 0;
+};
+
+Promise.prototype.isPending = function() {
+    return isPending.call(this._target());
+};
+
+Promise.prototype.isRejected = function() {
+    return isRejected.call(this._target());
+};
+
+Promise.prototype.isFulfilled = function() {
+    return isFulfilled.call(this._target());
+};
+
+Promise.prototype.isResolved = function() {
+    return isResolved.call(this._target());
+};
+
+Promise.prototype.value = function() {
+    return value.call(this._target());
+};
+
+Promise.prototype.reason = function() {
+    var target = this._target();
+    target._unsetRejectionIsUnhandled();
+    return reason.call(target);
+};
+
+Promise.prototype._value = function() {
+    return this._settledValue();
+};
+
+Promise.prototype._reason = function() {
+    this._unsetRejectionIsUnhandled();
+    return this._settledValue();
+};
+
+Promise.PromiseInspection = PromiseInspection;
+};
+
+},{}],33:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL) {
+var util = _dereq_("./util");
+var errorObj = util.errorObj;
+var isObject = util.isObject;
+
+function tryConvertToPromise(obj, context) {
+    if (isObject(obj)) {
+        if (obj instanceof Promise) return obj;
+        var then = getThen(obj);
+        if (then === errorObj) {
+            if (context) context._pushContext();
+            var ret = Promise.reject(then.e);
+            if (context) context._popContext();
+            return ret;
+        } else if (typeof then === "function") {
+            if (isAnyBluebirdPromise(obj)) {
+                var ret = new Promise(INTERNAL);
+                obj._then(
+                    ret._fulfill,
+                    ret._reject,
+                    undefined,
+                    ret,
+                    null
+                );
+                return ret;
+            }
+            return doThenable(obj, then, context);
+        }
+    }
+    return obj;
+}
+
+function doGetThen(obj) {
+    return obj.then;
+}
+
+function getThen(obj) {
+    try {
+        return doGetThen(obj);
+    } catch (e) {
+        errorObj.e = e;
+        return errorObj;
+    }
+}
+
+var hasProp = {}.hasOwnProperty;
+function isAnyBluebirdPromise(obj) {
+    try {
+        return hasProp.call(obj, "_promise0");
+    } catch (e) {
+        return false;
+    }
+}
+
+function doThenable(x, then, context) {
+    var promise = new Promise(INTERNAL);
+    var ret = promise;
+    if (context) context._pushContext();
+    promise._captureStackTrace();
+    if (context) context._popContext();
+    var synchronous = true;
+    var result = util.tryCatch(then).call(x, resolve, reject);
+    synchronous = false;
+
+    if (promise && result === errorObj) {
+        promise._rejectCallback(result.e, true, true);
+        promise = null;
+    }
+
+    function resolve(value) {
+        if (!promise) return;
+        promise._resolveCallback(value);
+        promise = null;
+    }
+
+    function reject(reason) {
+        if (!promise) return;
+        promise._rejectCallback(reason, synchronous, true);
+        promise = null;
+    }
+    return ret;
+}
+
+return tryConvertToPromise;
+};
+
+},{"./util":36}],34:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function(Promise, INTERNAL, debug) {
+var util = _dereq_("./util");
+var TimeoutError = Promise.TimeoutError;
+
+function HandleWrapper(handle)  {
+    this.handle = handle;
+}
+
+HandleWrapper.prototype._resultCancelled = function() {
+    clearTimeout(this.handle);
+};
+
+var afterValue = function(value) { return delay(+this).thenReturn(value); };
+var delay = Promise.delay = function (ms, value) {
+    var ret;
+    var handle;
+    if (value !== undefined) {
+        ret = Promise.resolve(value)
+                ._then(afterValue, null, null, ms, undefined);
+        if (debug.cancellation() && value instanceof Promise) {
+            ret._setOnCancel(value);
+        }
+    } else {
+        ret = new Promise(INTERNAL);
+        handle = setTimeout(function() { ret._fulfill(); }, +ms);
+        if (debug.cancellation()) {
+            ret._setOnCancel(new HandleWrapper(handle));
+        }
+        ret._captureStackTrace();
+    }
+    ret._setAsyncGuaranteed();
+    return ret;
+};
+
+Promise.prototype.delay = function (ms) {
+    return delay(ms, this);
+};
+
+var afterTimeout = function (promise, message, parent) {
+    var err;
+    if (typeof message !== "string") {
+        if (message instanceof Error) {
+            err = message;
+        } else {
+            err = new TimeoutError("operation timed out");
+        }
+    } else {
+        err = new TimeoutError(message);
+    }
+    util.markAsOriginatingFromRejection(err);
+    promise._attachExtraTrace(err);
+    promise._reject(err);
+
+    if (parent != null) {
+        parent.cancel();
+    }
+};
+
+function successClear(value) {
+    clearTimeout(this.handle);
+    return value;
+}
+
+function failureClear(reason) {
+    clearTimeout(this.handle);
+    throw reason;
+}
+
+Promise.prototype.timeout = function (ms, message) {
+    ms = +ms;
+    var ret, parent;
+
+    var handleWrapper = new HandleWrapper(setTimeout(function timeoutTimeout() {
+        if (ret.isPending()) {
+            afterTimeout(ret, message, parent);
+        }
+    }, ms));
+
+    if (debug.cancellation()) {
+        parent = this.then();
+        ret = parent._then(successClear, failureClear,
+                            undefined, handleWrapper, undefined);
+        ret._setOnCancel(handleWrapper);
+    } else {
+        ret = this._then(successClear, failureClear,
+                            undefined, handleWrapper, undefined);
+    }
+
+    return ret;
+};
+
+};
+
+},{"./util":36}],35:[function(_dereq_,module,exports){
+"use strict";
+module.exports = function (Promise, apiRejection, tryConvertToPromise,
+    createContext, INTERNAL, debug) {
+    var util = _dereq_("./util");
+    var TypeError = _dereq_("./errors").TypeError;
+    var inherits = _dereq_("./util").inherits;
+    var errorObj = util.errorObj;
+    var tryCatch = util.tryCatch;
+    var NULL = {};
+
+    function thrower(e) {
+        setTimeout(function(){throw e;}, 0);
+    }
+
+    function castPreservingDisposable(thenable) {
+        var maybePromise = tryConvertToPromise(thenable);
+        if (maybePromise !== thenable &&
+            typeof thenable._isDisposable === "function" &&
+            typeof thenable._getDisposer === "function" &&
+            thenable._isDisposable()) {
+            maybePromise._setDisposable(thenable._getDisposer());
+        }
+        return maybePromise;
+    }
+    function dispose(resources, inspection) {
+        var i = 0;
+        var len = resources.length;
+        var ret = new Promise(INTERNAL);
+        function iterator() {
+            if (i >= len) return ret._fulfill();
+            var maybePromise = castPreservingDisposable(resources[i++]);
+            if (maybePromise instanceof Promise &&
+                maybePromise._isDisposable()) {
+                try {
+                    maybePromise = tryConvertToPromise(
+                        maybePromise._getDisposer().tryDispose(inspection),
+                        resources.promise);
+                } catch (e) {
+                    return thrower(e);
+                }
+                if (maybePromise instanceof Promise) {
+                    return maybePromise._then(iterator, thrower,
+                                              null, null, null);
+                }
+            }
+            iterator();
+        }
+        iterator();
+        return ret;
+    }
+
+    function Disposer(data, promise, context) {
+        this._data = data;
+        this._promise = promise;
+        this._context = context;
+    }
+
+    Disposer.prototype.data = function () {
+        return this._data;
+    };
+
+    Disposer.prototype.promise = function () {
+        return this._promise;
+    };
+
+    Disposer.prototype.resource = function () {
+        if (this.promise().isFulfilled()) {
+            return this.promise().value();
+        }
+        return NULL;
+    };
+
+    Disposer.prototype.tryDispose = function(inspection) {
+        var resource = this.resource();
+        var context = this._context;
+        if (context !== undefined) context._pushContext();
+        var ret = resource !== NULL
+            ? this.doDispose(resource, inspection) : null;
+        if (context !== undefined) context._popContext();
+        this._promise._unsetDisposable();
+        this._data = null;
+        return ret;
+    };
+
+    Disposer.isDisposer = function (d) {
+        return (d != null &&
+                typeof d.resource === "function" &&
+                typeof d.tryDispose === "function");
+    };
+
+    function FunctionDisposer(fn, promise, context) {
+        this.constructor$(fn, promise, context);
+    }
+    inherits(FunctionDisposer, Disposer);
+
+    FunctionDisposer.prototype.doDispose = function (resource, inspection) {
+        var fn = this.data();
+        return fn.call(resource, resource, inspection);
+    };
+
+    function maybeUnwrapDisposer(value) {
+        if (Disposer.isDisposer(value)) {
+            this.resources[this.index]._setDisposable(value);
+            return value.promise();
+        }
+        return value;
+    }
+
+    function ResourceList(length) {
+        this.length = length;
+        this.promise = null;
+        this[length-1] = null;
+    }
+
+    ResourceList.prototype._resultCancelled = function() {
+        var len = this.length;
+        for (var i = 0; i < len; ++i) {
+            var item = this[i];
+            if (item instanceof Promise) {
+                item.cancel();
+            }
+        }
+    };
+
+    Promise.using = function () {
+        var len = arguments.length;
+        if (len < 2) return apiRejection(
+                        "you must pass at least 2 arguments to Promise.using");
+        var fn = arguments[len - 1];
+        if (typeof fn !== "function") {
+            return apiRejection("expecting a function but got " + util.classString(fn));
+        }
+        var input;
+        var spreadArgs = true;
+        if (len === 2 && Array.isArray(arguments[0])) {
+            input = arguments[0];
+            len = input.length;
+            spreadArgs = false;
+        } else {
+            input = arguments;
+            len--;
+        }
+        var resources = new ResourceList(len);
+        for (var i = 0; i < len; ++i) {
+            var resource = input[i];
+            if (Disposer.isDisposer(resource)) {
+                var disposer = resource;
+                resource = resource.promise();
+                resource._setDisposable(disposer);
+            } else {
+                var maybePromise = tryConvertToPromise(resource);
+                if (maybePromise instanceof Promise) {
+                    resource =
+                        maybePromise._then(maybeUnwrapDisposer, null, null, {
+                            resources: resources,
+                            index: i
+                    }, undefined);
+                }
+            }
+            resources[i] = resource;
+        }
+
+        var reflectedResources = new Array(resources.length);
+        for (var i = 0; i < reflectedResources.length; ++i) {
+            reflectedResources[i] = Promise.resolve(resources[i]).reflect();
+        }
+
+        var resultPromise = Promise.all(reflectedResources)
+            .then(function(inspections) {
+                for (var i = 0; i < inspections.length; ++i) {
+                    var inspection = inspections[i];
+                    if (inspection.isRejected()) {
+                        errorObj.e = inspection.error();
+                        return errorObj;
+                    } else if (!inspection.isFulfilled()) {
+                        resultPromise.cancel();
+                        return;
+                    }
+                    inspections[i] = inspection.value();
+                }
+                promise._pushContext();
+
+                fn = tryCatch(fn);
+                var ret = spreadArgs
+                    ? fn.apply(undefined, inspections) : fn(inspections);
+                var promiseCreated = promise._popContext();
+                debug.checkForgottenReturns(
+                    ret, promiseCreated, "Promise.using", promise);
+                return ret;
+            });
+
+        var promise = resultPromise.lastly(function() {
+            var inspection = new Promise.PromiseInspection(resultPromise);
+            return dispose(resources, inspection);
+        });
+        resources.promise = promise;
+        promise._setOnCancel(resources);
+        return promise;
+    };
+
+    Promise.prototype._setDisposable = function (disposer) {
+        this._bitField = this._bitField | 131072;
+        this._disposer = disposer;
+    };
+
+    Promise.prototype._isDisposable = function () {
+        return (this._bitField & 131072) > 0;
+    };
+
+    Promise.prototype._getDisposer = function () {
+        return this._disposer;
+    };
+
+    Promise.prototype._unsetDisposable = function () {
+        this._bitField = this._bitField & (~131072);
+        this._disposer = undefined;
+    };
+
+    Promise.prototype.disposer = function (fn) {
+        if (typeof fn === "function") {
+            return new FunctionDisposer(fn, this, createContext());
+        }
+        throw new TypeError();
+    };
+
+};
+
+},{"./errors":12,"./util":36}],36:[function(_dereq_,module,exports){
+"use strict";
+var es5 = _dereq_("./es5");
+var canEvaluate = typeof navigator == "undefined";
+
+var errorObj = {e: {}};
+var tryCatchTarget;
+var globalObject = typeof self !== "undefined" ? self :
+    typeof window !== "undefined" ? window :
+    typeof global !== "undefined" ? global :
+    this !== undefined ? this : null;
+
+function tryCatcher() {
+    try {
+        var target = tryCatchTarget;
+        tryCatchTarget = null;
+        return target.apply(this, arguments);
+    } catch (e) {
+        errorObj.e = e;
+        return errorObj;
+    }
+}
+function tryCatch(fn) {
+    tryCatchTarget = fn;
+    return tryCatcher;
+}
+
+var inherits = function(Child, Parent) {
+    var hasProp = {}.hasOwnProperty;
+
+    function T() {
+        this.constructor = Child;
+        this.constructor$ = Parent;
+        for (var propertyName in Parent.prototype) {
+            if (hasProp.call(Parent.prototype, propertyName) &&
+                propertyName.charAt(propertyName.length-1) !== "$"
+           ) {
+                this[propertyName + "$"] = Parent.prototype[propertyName];
+            }
+        }
+    }
+    T.prototype = Parent.prototype;
+    Child.prototype = new T();
+    return Child.prototype;
+};
+
+
+function isPrimitive(val) {
+    return val == null || val === true || val === false ||
+        typeof val === "string" || typeof val === "number";
+
+}
+
+function isObject(value) {
+    return typeof value === "function" ||
+           typeof value === "object" && value !== null;
+}
+
+function maybeWrapAsError(maybeError) {
+    if (!isPrimitive(maybeError)) return maybeError;
+
+    return new Error(safeToString(maybeError));
+}
+
+function withAppended(target, appendee) {
+    var len = target.length;
+    var ret = new Array(len + 1);
+    var i;
+    for (i = 0; i < len; ++i) {
+        ret[i] = target[i];
+    }
+    ret[i] = appendee;
+    return ret;
+}
+
+function getDataPropertyOrDefault(obj, key, defaultValue) {
+    if (es5.isES5) {
+        var desc = Object.getOwnPropertyDescriptor(obj, key);
+
+        if (desc != null) {
+            return desc.get == null && desc.set == null
+                    ? desc.value
+                    : defaultValue;
+        }
+    } else {
+        return {}.hasOwnProperty.call(obj, key) ? obj[key] : undefined;
+    }
+}
+
+function notEnumerableProp(obj, name, value) {
+    if (isPrimitive(obj)) return obj;
+    var descriptor = {
+        value: value,
+        configurable: true,
+        enumerable: false,
+        writable: true
+    };
+    es5.defineProperty(obj, name, descriptor);
+    return obj;
+}
+
+function thrower(r) {
+    throw r;
+}
+
+var inheritedDataKeys = (function() {
+    var excludedPrototypes = [
+        Array.prototype,
+        Object.prototype,
+        Function.prototype
+    ];
+
+    var isExcludedProto = function(val) {
+        for (var i = 0; i < excludedPrototypes.length; ++i) {
+            if (excludedPrototypes[i] === val) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    if (es5.isES5) {
+        var getKeys = Object.getOwnPropertyNames;
+        return function(obj) {
+            var ret = [];
+            var visitedKeys = Object.create(null);
+            while (obj != null && !isExcludedProto(obj)) {
+                var keys;
+                try {
+                    keys = getKeys(obj);
+                } catch (e) {
+                    return ret;
+                }
+                for (var i = 0; i < keys.length; ++i) {
+                    var key = keys[i];
+                    if (visitedKeys[key]) continue;
+                    visitedKeys[key] = true;
+                    var desc = Object.getOwnPropertyDescriptor(obj, key);
+                    if (desc != null && desc.get == null && desc.set == null) {
+                        ret.push(key);
+                    }
+                }
+                obj = es5.getPrototypeOf(obj);
+            }
+            return ret;
+        };
+    } else {
+        var hasProp = {}.hasOwnProperty;
+        return function(obj) {
+            if (isExcludedProto(obj)) return [];
+            var ret = [];
+
+            /*jshint forin:false */
+            enumeration: for (var key in obj) {
+                if (hasProp.call(obj, key)) {
+                    ret.push(key);
+                } else {
+                    for (var i = 0; i < excludedPrototypes.length; ++i) {
+                        if (hasProp.call(excludedPrototypes[i], key)) {
+                            continue enumeration;
+                        }
+                    }
+                    ret.push(key);
+                }
+            }
+            return ret;
+        };
+    }
+
+})();
+
+var thisAssignmentPattern = /this\s*\.\s*\S+\s*=/;
+function isClass(fn) {
+    try {
+        if (typeof fn === "function") {
+            var keys = es5.names(fn.prototype);
+
+            var hasMethods = es5.isES5 && keys.length > 1;
+            var hasMethodsOtherThanConstructor = keys.length > 0 &&
+                !(keys.length === 1 && keys[0] === "constructor");
+            var hasThisAssignmentAndStaticMethods =
+                thisAssignmentPattern.test(fn + "") && es5.names(fn).length > 0;
+
+            if (hasMethods || hasMethodsOtherThanConstructor ||
+                hasThisAssignmentAndStaticMethods) {
+                return true;
+            }
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
+function toFastProperties(obj) {
+    /*jshint -W027,-W055,-W031*/
+    function FakeConstructor() {}
+    FakeConstructor.prototype = obj;
+    var receiver = new FakeConstructor();
+    function ic() {
+        return typeof receiver.foo;
+    }
+    ic();
+    ic();
+    return obj;
+    eval(obj);
+}
+
+var rident = /^[a-z$_][a-z$_0-9]*$/i;
+function isIdentifier(str) {
+    return rident.test(str);
+}
+
+function filledRange(count, prefix, suffix) {
+    var ret = new Array(count);
+    for(var i = 0; i < count; ++i) {
+        ret[i] = prefix + i + suffix;
+    }
+    return ret;
+}
+
+function safeToString(obj) {
+    try {
+        return obj + "";
+    } catch (e) {
+        return "[no string representation]";
+    }
+}
+
+function isError(obj) {
+    return obj instanceof Error ||
+        (obj !== null &&
+           typeof obj === "object" &&
+           typeof obj.message === "string" &&
+           typeof obj.name === "string");
+}
+
+function markAsOriginatingFromRejection(e) {
+    try {
+        notEnumerableProp(e, "isOperational", true);
+    }
+    catch(ignore) {}
+}
+
+function originatesFromRejection(e) {
+    if (e == null) return false;
+    return ((e instanceof Error["__BluebirdErrorTypes__"].OperationalError) ||
+        e["isOperational"] === true);
+}
+
+function canAttachTrace(obj) {
+    return isError(obj) && es5.propertyIsWritable(obj, "stack");
+}
+
+var ensureErrorObject = (function() {
+    if (!("stack" in new Error())) {
+        return function(value) {
+            if (canAttachTrace(value)) return value;
+            try {throw new Error(safeToString(value));}
+            catch(err) {return err;}
+        };
+    } else {
+        return function(value) {
+            if (canAttachTrace(value)) return value;
+            return new Error(safeToString(value));
+        };
+    }
+})();
+
+function classString(obj) {
+    return {}.toString.call(obj);
+}
+
+function copyDescriptors(from, to, filter) {
+    var keys = es5.names(from);
+    for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        if (filter(key)) {
+            try {
+                es5.defineProperty(to, key, es5.getDescriptor(from, key));
+            } catch (ignore) {}
+        }
+    }
+}
+
+var asArray = function(v) {
+    if (es5.isArray(v)) {
+        return v;
+    }
+    return null;
+};
+
+if (typeof Symbol !== "undefined" && Symbol.iterator) {
+    var ArrayFrom = typeof Array.from === "function" ? function(v) {
+        return Array.from(v);
+    } : function(v) {
+        var ret = [];
+        var it = v[Symbol.iterator]();
+        var itResult;
+        while (!((itResult = it.next()).done)) {
+            ret.push(itResult.value);
+        }
+        return ret;
+    };
+
+    asArray = function(v) {
+        if (es5.isArray(v)) {
+            return v;
+        } else if (v != null && typeof v[Symbol.iterator] === "function") {
+            return ArrayFrom(v);
+        }
+        return null;
+    };
+}
+
+var isNode = typeof process !== "undefined" &&
+        classString(process).toLowerCase() === "[object process]";
+
+var hasEnvVariables = typeof process !== "undefined" &&
+    typeof process.env !== "undefined";
+
+function env(key) {
+    return hasEnvVariables ? process.env[key] : undefined;
+}
+
+function getNativePromise() {
+    if (typeof Promise === "function") {
+        try {
+            var promise = new Promise(function(){});
+            if ({}.toString.call(promise) === "[object Promise]") {
+                return Promise;
+            }
+        } catch (e) {}
+    }
+}
+
+function domainBind(self, cb) {
+    return self.bind(cb);
+}
+
+var ret = {
+    isClass: isClass,
+    isIdentifier: isIdentifier,
+    inheritedDataKeys: inheritedDataKeys,
+    getDataPropertyOrDefault: getDataPropertyOrDefault,
+    thrower: thrower,
+    isArray: es5.isArray,
+    asArray: asArray,
+    notEnumerableProp: notEnumerableProp,
+    isPrimitive: isPrimitive,
+    isObject: isObject,
+    isError: isError,
+    canEvaluate: canEvaluate,
+    errorObj: errorObj,
+    tryCatch: tryCatch,
+    inherits: inherits,
+    withAppended: withAppended,
+    maybeWrapAsError: maybeWrapAsError,
+    toFastProperties: toFastProperties,
+    filledRange: filledRange,
+    toString: safeToString,
+    canAttachTrace: canAttachTrace,
+    ensureErrorObject: ensureErrorObject,
+    originatesFromRejection: originatesFromRejection,
+    markAsOriginatingFromRejection: markAsOriginatingFromRejection,
+    classString: classString,
+    copyDescriptors: copyDescriptors,
+    hasDevTools: typeof chrome !== "undefined" && chrome &&
+                 typeof chrome.loadTimes === "function",
+    isNode: isNode,
+    hasEnvVariables: hasEnvVariables,
+    env: env,
+    global: globalObject,
+    getNativePromise: getNativePromise,
+    domainBind: domainBind
+};
+ret.isRecentNode = ret.isNode && (function() {
+    var version = process.versions.node.split(".").map(Number);
+    return (version[0] === 0 && version[1] > 10) || (version[0] > 0);
+})();
+
+if (ret.isNode) ret.toFastProperties(process);
+
+try {throw new Error(); } catch (e) {ret.lastLineError = e;}
+module.exports = ret;
+
+},{"./es5":13}]},{},[4])(4)
+});                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../process/browser.js */ "c:\\www-recent\\gantt\\node_modules\\process\\browser.js"), __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js"), __webpack_require__(/*! ./../../../timers-browserify/main.js */ "c:\\www-recent\\gantt\\node_modules\\timers-browserify\\main.js").setImmediate))
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\node_modules\\process\\browser.js":
+/*!***********************************************************!*\
+  !*** c:/www-recent/gantt/node_modules/process/browser.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\node_modules\\setimmediate\\setImmediate.js":
+/*!*********************************************************************!*\
+  !*** c:/www-recent/gantt/node_modules/setimmediate/setImmediate.js ***!
+  \*********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js"), __webpack_require__(/*! ./../process/browser.js */ "c:\\www-recent\\gantt\\node_modules\\process\\browser.js")))
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\node_modules\\timers-browserify\\main.js":
+/*!******************************************************************!*\
+  !*** c:/www-recent/gantt/node_modules/timers-browserify/main.js ***!
+  \******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+            (typeof self !== "undefined" && self) ||
+            window;
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(scope, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(/*! setimmediate */ "c:\\www-recent\\gantt\\node_modules\\setimmediate\\setImmediate.js");
+// On some exotic environments, it's not clear which object `setimmediate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js")))
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js":
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\sources\\constants\\index.js":
+/*!******************************************************!*\
+  !*** c:/www-recent/gantt/sources/constants/index.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -118,10 +5964,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/cached_functions.js":
-/*!******************************************!*\
-  !*** ./sources/core/cached_functions.js ***!
-  \******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\cached_functions.js":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/cached_functions.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -301,16 +6147,74 @@ gantt.attachEvent("onBeforeGanttReady", function(){
 
 /***/ }),
 
-/***/ "./sources/core/common/ajax.js":
-/*!*************************************!*\
-  !*** ./sources/core/common/ajax.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\ajax.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/ajax.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var env = __webpack_require__(/*! ../../utils/env */ "./sources/utils/env.js");
+var env = __webpack_require__(/*! ../../utils/env */ "c:\\www-recent\\gantt\\sources\\utils\\env.js");
+var serialize = __webpack_require__(/*! ./serialize */ "c:\\www-recent\\gantt\\sources\\core\\common\\serialize.ts").default;
 
-module.exports = function(gantt){
+function createConfig(method, args) {
+	var result = {
+		method: method
+	};
+
+	if (args.length === 0) {
+		throw new Error("Arguments list of query is wrong.");
+	}
+	if (args.length === 1) {
+		if (typeof args[0] === "string") {
+			result.url = args[0];
+			result.async = true;
+		} else {
+			result.url = args[0].url;
+			result.async = (args[0].async || true);
+			result.callback = args[0].callback;
+			result.headers = args[0].headers;
+		}
+		if (method === "POST" || "PUT") {
+			if (args[0].data) {
+				if (typeof args[0].data !== "string") {
+					result.data = serialize(args[0].data);
+				} else {
+					result.data = args[0].data;
+				}
+			} else {
+				result.data = "";
+			}
+		}
+		return result;
+	}
+
+	result.url = args[0];
+	switch(method) {
+		case "GET":
+		case "DELETE":
+			result.callback = args[1];
+			result.headers = args[2];
+		break;
+		case "POST":
+		case "PUT":
+			if (args[1]) {
+				if (typeof args[1] !== "string") {
+					result.data = serialize(args[1]);
+				} else {
+					result.data = args[1];
+				}
+			} else {
+				result.data = "";
+			}
+			result.callback = args[2];
+			result.headers = args[3];
+		break;
+	}
+	return result;
+}
+
+module.exports = function(gantt) {
 	return {
 
 		// if false - dhxr param will added to prevent caching on client side (default),
@@ -366,103 +6270,101 @@ module.exports = function(gantt){
 			}
 		},
 		query: function(config) {
-			this._call(
+			return this._call(
 				(config.method || "GET"),
 				config.url,
 				config.data || "",
 				(config.async || true),
 				config.callback,
-				null,
 				config.headers
 			);
 		},
-		get: function(url, onLoad) {
-			this._call("GET", url, null, true, onLoad);
+		get: function(url, onLoad, headers) {
+			var config = createConfig("GET", arguments);
+			return this.query(config);
 		},
-		getSync: function(url) {
-			return this._call("GET", url, null, false);
+		getSync: function(url, headers) {
+			var config = createConfig("GET", arguments);
+			config.async = false;
+			return this.query(config);
 		},
-		put: function(url, postData, onLoad) {
-			this._call("PUT", url, postData, true, onLoad);
+		put: function(url, postData, onLoad, headers) {
+			var config = createConfig("PUT", arguments);
+			return this.query(config);
 		},
-		del: function(url, postData, onLoad) {
-			this._call("DELETE", url, postData, true, onLoad);
+		del: function(url, onLoad, headers) {
+			/**
+			 * https://tools.ietf.org/html/rfc7231#section-4.3.5
+			 * A payload within a DELETE request message has no defined semantics;
+			 * sending a payload body on a DELETE request might cause some existing
+			 * implementations to reject the request.
+			 */
+			var config = createConfig("DELETE", arguments);
+			return this.query(config);
 		},
-		post: function(url, postData, onLoad) {
+		post: function(url, postData, onLoad, headers) {
 			if (arguments.length == 1) {
 				postData = "";
 			} else if (arguments.length == 2 && (typeof(postData) == "function" || typeof(window[postData]) == "function")) {
 				onLoad = postData;
 				postData = "";
-			} else {
-				postData = String(postData);
 			}
-			this._call("POST", url, postData, true, onLoad);
+			var config = createConfig("POST", arguments);
+			return this.query(config);
 		},
-		postSync: function(url, postData) {
+		postSync: function(url, postData, headers) {
 			postData = (postData === null ? "" : String(postData));
-			return this._call("POST", url, postData, false);
-		},
-		getLong: function(url, onLoad) {
-			this._call("GET", url, null, true, onLoad, {url:url});
-		},
-		postLong: function(url, postData, onLoad) {
-			if (arguments.length == 2 && (typeof(postData) == "function" || typeof(window[postData]))) {
-				onLoad = postData;
-				postData = "";
-			}
-			this._call("POST", url, postData, true, onLoad, {url:url, postData:postData});
-		},
-		_call: function(method, url, postData, async, onLoad, longParams, headers) {
 
-			var t = (window.XMLHttpRequest && !env.isIE ? new XMLHttpRequest() : new window.ActiveXObject("Microsoft.XMLHTTP"));
-			var isQt = (navigator.userAgent.match(/AppleWebKit/) !== null && navigator.userAgent.match(/Qt/) !== null && navigator.userAgent.match(/Safari/) !== null);
+			var config = createConfig("POST", arguments);
+			config.async = false;
+			return this.query(config);
+		},
+		_call: function(method, url, postData, async, onLoad, headers) {
+			return new gantt.Promise(function(resolve, reject) {
+				var t = (window.XMLHttpRequest && !env.isIE ? new XMLHttpRequest() : new window.ActiveXObject("Microsoft.XMLHTTP"));
+				var isQt = (navigator.userAgent.match(/AppleWebKit/) !== null && navigator.userAgent.match(/Qt/) !== null && navigator.userAgent.match(/Safari/) !== null);
 
-			if (!!async) {
-				t.onreadystatechange = function() {
-					if ((t.readyState == 4) || (isQt && t.readyState == 3)) { // what for long response and status 404?
-						if (t.status != 200 || t.responseText === "")
-							if (!gantt.callEvent("onAjaxError", [t])) return;
+				if (!!async) {
+					t.onreadystatechange = function() {
+						if ((t.readyState == 4) || (isQt && t.readyState == 3)) { // what for long response and status 404?
+							if (t.status != 200 || t.responseText === "")
+								if (!gantt.callEvent("onAjaxError", [t])) return;
 
-						window.setTimeout(function(){
-							if (typeof(onLoad) == "function") {
-								onLoad.apply(window, [{xmlDoc:t, filePath:url}]); // dhtmlx-compat, response.xmlDoc.responseXML/responseText
-							}
-							if (longParams) {
-								if (typeof(longParams.postData) != "undefined") {
-									this.postLong(longParams.url, longParams.postData, onLoad);
-								} else {
-									this.getLong(longParams.url, onLoad);
+							window.setTimeout(function() {
+								if (typeof(onLoad) == "function") {
+									onLoad.apply(window, [{xmlDoc:t, filePath:url}]); // dhtmlx-compat, response.xmlDoc.responseXML/responseText
 								}
-							}
-							onLoad = null;
-							t = null;
-						},1);
-					}
-				};
-			}
+								resolve(t);
+								if (typeof(onLoad) == "function") {
+									onLoad = null;
+									t = null;
+								}
+							}, 0);
+						}
+					};
+				}
 
-			if (method == "GET" && !this.cache) {
-				url += (url.indexOf("?")>=0?"&":"?")+"dhxr"+new Date().getTime()+"=1";
-			}
+				if (method == "GET" && !this.cache) {
+					url += (url.indexOf("?")>=0?"&":"?")+"dhxr"+new Date().getTime()+"=1";
+				}
 
-			t.open(method, url, async);
+				t.open(method, url, async);
 
-			if (headers){
-				for (var key in headers)
-					t.setRequestHeader(key, headers[key]);
-			} else if (method.toUpperCase() == "POST" || method == "PUT" || method == "DELETE") {
-				t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-			} else if (method == "GET") {
-				postData = null;
-			}
+				if (headers){
+					for (var key in headers)
+						t.setRequestHeader(key, headers[key]);
+				} else if (method.toUpperCase() == "POST" || method == "PUT" || method == "DELETE") {
+					t.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				} else if (method == "GET") {
+					postData = null;
+				}
 
-			t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+				t.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 
-			t.send(postData);
+				t.send(postData);
 
-			if (!async) return {xmlDoc:t, filePath:url}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
-
+				if (!async) return {xmlDoc:t, filePath:url}; // dhtmlx-compat, response.xmlDoc.responseXML/responseText
+			});
 		},
 		urlSeparator: function(str){
 			if (str.indexOf("?") != -1)
@@ -476,10 +6378,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/common/assert.js":
-/*!***************************************!*\
-  !*** ./sources/core/common/assert.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\assert.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/assert.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -503,10 +6405,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/common/config.js":
-/*!***************************************!*\
-  !*** ./sources/core/common/config.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\config.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/config.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -675,7 +6577,7 @@ module.exports = function() {
 		editable_property: "editable",
 		calendar_property: "calendar_id",
 		resource_calendars: {},
-
+		inherit_calendar: false,
 		type_renderers: {},
 
 		open_tree_initially: false,
@@ -692,10 +6594,10 @@ module.exports = function() {
 
 /***/ }),
 
-/***/ "./sources/core/common/date.js":
-/*!*************************************!*\
-  !*** ./sources/core/common/date.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\date.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/date.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1016,16 +6918,16 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/common/dnd.js":
-/*!************************************!*\
-  !*** ./sources/core/common/dnd.js ***!
-  \************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\dnd.js":
+/*!******************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/dnd.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var timeout = __webpack_require__(/*! ../../utils/timeout */ "./sources/utils/timeout.js");
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var timeout = __webpack_require__(/*! ../../utils/timeout */ "c:\\www-recent\\gantt\\sources\\utils\\timeout.js");
 
 module.exports = function(gantt){
 
@@ -1323,10 +7225,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/common/import.js":
-/*!***************************************!*\
-  !*** ./sources/core/common/import.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\import.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/import.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1338,10 +7240,51 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/common/services.js":
-/*!*****************************************!*\
-  !*** ./sources/core/common/services.js ***!
-  \*****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\serialize.ts":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/serialize.ts ***!
+  \************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function serialize(data) {
+    if (typeof data === "string" || typeof data === "number") {
+        return data;
+    }
+    var result = "";
+    for (var key in data) {
+        var serialized = "";
+        if (data.hasOwnProperty(key)) {
+            if (typeof data[key] === "string") {
+                serialized = encodeURIComponent(data[key]);
+            }
+            else if (typeof data[key] === "number") {
+                serialized = data[key];
+            }
+            else {
+                serialized = encodeURIComponent(JSON.stringify(data[key]));
+            }
+            serialized = key + "=" + serialized;
+            if (result.length) {
+                serialized = "&" + serialized;
+            }
+            result += serialized;
+        }
+    }
+    return result;
+}
+exports.default = serialize;
+
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\services.js":
+/*!***********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/services.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1394,14 +7337,14 @@ module.exports = function(){
 
 /***/ }),
 
-/***/ "./sources/core/common/state.js":
-/*!**************************************!*\
-  !*** ./sources/core/common/state.js ***!
-  \**************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\state.js":
+/*!********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/state.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 var StateService = (function(){
 	var stateProviders = {};
@@ -1440,10 +7383,10 @@ module.exports = StateService;
 
 /***/ }),
 
-/***/ "./sources/core/common/templates.js":
-/*!******************************************!*\
-  !*** ./sources/core/common/templates.js ***!
-  \******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\templates.js":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/common/templates.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1598,14 +7541,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/data.js":
-/*!******************************!*\
-  !*** ./sources/core/data.js ***!
-  \******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\data.js":
+/*!************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/data.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
+var helpers = __webpack_require__(/*! ../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 module.exports = function(gantt) {
 
@@ -1634,26 +7577,74 @@ module.exports = function(gantt) {
 		return !!(gantt.getGlobalTaskIndex(id) >= 0);
 	};
 
+	gantt._getProjectEnd = function() {
+		if(gantt.config.project_end){
+			return gantt.config.project_end;
+		}else{
+			var tasks = gantt.getTaskByTime();
+			tasks = tasks.sort(function (a, b) {
+				return +a.end_date > +b.end_date ? 1 : -1;
+			});
+			return tasks.length ? tasks[tasks.length - 1].end_date : null;
+		}
+	};
+	gantt._getProjectStart = function() {
+		if (gantt.config.project_start) {
+			return gantt.config.project_start;
+		}
+
+		// use timeline start if project start is not specified
+		if (gantt.config.start_date) {
+			return gantt.config.start_date;
+		}
+		if (gantt.getState().min_date) {
+			return gantt.getState().min_date;
+		}
+
+		// earliest task start if neither project start nor timeline are specified
+		var tasks = gantt.getTaskByTime();
+		tasks = tasks.sort(function (a, b) {
+			return +a.start_date > +b.start_date ? 1 : -1;
+		});
+		return tasks.length ? tasks[0].start_date : null;
+	};
+
 	gantt._defaultTaskDate = function (item, parent_id) {
-		var parent = (parent_id && parent_id != this.config.root_id) ? this.getTask(parent_id) : false,
-			startDate = '';
+		var parent = (parent_id && parent_id != gantt.config.root_id) ? gantt.getTask(parent_id) : false,
+			startDate = null;
 		if (parent) {
-			startDate = parent.start_date;
+			if(gantt.config.schedule_from_end){
+				startDate = gantt.calculateEndDate({
+					start_date: parent.end_date,
+					duration: - gantt.config.duration_step,
+					task:item
+				});
+			}else{
+				startDate = parent.start_date;
+			}
+
+		} else if(gantt.config.schedule_from_end) {
+			startDate = gantt.calculateEndDate({
+				start_date: gantt._getProjectEnd(),
+				duration: - gantt.config.duration_step,
+				task:item
+			});
 		} else {
-			var first = this.getTaskByIndex(0);
-			startDate = first ? (first.start_date ? first.start_date : (first.end_date ? this.calculateEndDate({
+			var first = gantt.getTaskByIndex(0);
+			startDate = first ? (first.start_date ? first.start_date : (first.end_date ? gantt.calculateEndDate({
 				start_date: first.end_date,
-				duration: -this.config.duration_step
-			}) : '')) : this.config.start_date || this.getState().min_date;
+				duration: -gantt.config.duration_step,
+				task:item
+			}) : null)) : gantt.config.start_date || gantt.getState().min_date;
 		}
 		gantt.assert(startDate, "Invalid dates");
 		return new Date(startDate);
 	};
 
 	gantt._set_default_task_timing = function (task) {
-		task.start_date = task.start_date || gantt._defaultTaskDate(task, this.getParent(task));
-		task.duration = task.duration || this.config.duration_step;
-		task.end_date = task.end_date || this.calculateEndDate(task);
+		task.start_date = task.start_date || gantt._defaultTaskDate(task, gantt.getParent(task));
+		task.duration = task.duration || gantt.config.duration_step;
+		task.end_date = task.end_date || gantt.calculateEndDate(task);
 	};
 
 	gantt.createTask = function (item, parent, index) {
@@ -1794,7 +7785,7 @@ module.exports = function(gantt) {
 
 	gantt.isSummaryTask = function (task) {
 		gantt.assert(task && task instanceof Object, "Invalid argument <b>task</b>="+task+" of gantt.isSummaryTask. Task object was expected");
-		
+
 		var mode = gantt._get_task_timing_mode(task);
 
 		return !!(mode.$no_end || mode.$no_start);
@@ -1993,10 +7984,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/data_task_layers.gpl.js":
-/*!**********************************************!*\
-  !*** ./sources/core/data_task_layers.gpl.js ***!
-  \**********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\data_task_layers.gpl.js":
+/*!****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/data_task_layers.gpl.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -2007,10 +7998,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/data_task_types.gpl.js":
-/*!*********************************************!*\
-  !*** ./sources/core/data_task_types.gpl.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\data_task_types.gpl.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/data_task_types.gpl.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -2023,1266 +8014,1351 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/dataprocessor/dataprocessor.js":
-/*!*****************************************************!*\
-  !*** ./sources/core/dataprocessor/dataprocessor.js ***!
-  \*****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor.ts":
+/*!************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/dataprocessor/data_processor.ts ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
+"use strict";
 
-/**
-	* 	@desc: constructor, data processor object 
-	*	@param: serverProcessorURL - url used for update
-	*	@type: public
-	*/
-var dataProcessor = function (serverProcessorURL) {
-	this.serverProcessor = serverProcessorURL;
-	this.action_param = "!nativeeditor_status";
+Object.defineProperty(exports, "__esModule", { value: true });
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var data_processor_events_1 = __webpack_require__(/*! ./data_processor_events */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor_events.ts");
+var extend_gantt_1 = __webpack_require__(/*! ./extend_gantt */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\extend_gantt.ts");
+function createDataProcessor(config) {
+    var router;
+    var tMode;
+    if (config instanceof Function) {
+        router = config;
+    }
+    else if (config.hasOwnProperty("router")) {
+        router = config.router;
+    }
+    else if (config.hasOwnProperty("link") && config.hasOwnProperty("task")) {
+        router = config;
+    }
+    if (router) {
+        tMode = "CUSTOM";
+    }
+    else {
+        tMode = config.mode || "REST-JSON";
+    }
+    var gantt = this; // tslint:disable-line
+    var dp = new DataProcessor(config.url);
+    dp.init(gantt);
+    dp.setTransactionMode({
+        mode: tMode,
+        router: router
+    }, config.batchUpdate);
+    return dp;
+}
+exports.createDataProcessor = createDataProcessor;
+var DataProcessor = /** @class */ (function () {
+    function DataProcessor(serverProcessorURL) {
+        this.serverProcessor = serverProcessorURL;
+        this.action_param = "!nativeeditor_status";
+        this.object = null;
+        this.updatedRows = []; // ids of updated rows
+        this.autoUpdate = true;
+        this.updateMode = "cell";
+        this._headers = null;
+        this._payload = null;
+        this._postDelim = "_";
+        this._waitMode = 0;
+        this._in_progress = {}; // ?
+        this._invalid = {};
+        this.mandatoryFields = [];
+        this.messages = [];
+        this.styles = {
+            updated: "font-weight:bold;",
+            inserted: "font-weight:bold;",
+            deleted: "text-decoration : line-through;",
+            invalid: "background-color:FFE0E0;",
+            invalid_cell: "border-bottom:2px solid red;",
+            error: "color:red;",
+            clear: "font-weight:normal;text-decoration:none;"
+        };
+        this.enableUTFencoding(true);
+        eventable(this);
+    }
+    DataProcessor.prototype.setTransactionMode = function (mode, total) {
+        if (typeof mode === "object") {
+            this._tMode = mode.mode || this._tMode;
+            if (utils.defined(mode.headers)) {
+                this._headers = mode.headers;
+            }
+            if (utils.defined(mode.payload)) {
+                this._payload = mode.payload;
+            }
+        }
+        else {
+            this._tMode = mode;
+            this._tSend = total;
+        }
+        if (this._tMode === "REST") {
+            this._tSend = false;
+            this._endnm = true;
+        }
+        if (this._tMode === "JSON" || this._tMode === "REST-JSON") {
+            this._tSend = false;
+            this._endnm = true;
+            this._serializeAsJson = true;
+            this._headers = this._headers || {};
+            this._headers["Content-type"] = "application/json";
+        }
+        if (this._tMode === "CUSTOM") {
+            this._tSend = false;
+            this._endnm = true;
+            this._router = mode.router;
+        }
+    };
+    DataProcessor.prototype.escape = function (data) {
+        if (this._utf) {
+            return encodeURIComponent(data);
+        }
+        else {
+            return escape(data);
+        }
+    };
+    /**
+     * @desc: allows to set escaping mode
+     * @param: true - utf based escaping, simple - use current page encoding
+     * @type: public
+     */
+    DataProcessor.prototype.enableUTFencoding = function (mode) {
+        this._utf = !!mode;
+    };
+    /**
+     * @desc: allows to define, which column may trigger update
+     * @param: val - array or list of true/false values
+     * @type: public
+     */
+    DataProcessor.prototype.setDataColumns = function (val) {
+        this._columns = (typeof val === "string") ? val.split(",") : val;
+    };
+    /**
+     * @desc: get state of updating
+     * @returns:   true - all in sync with server, false - some items not updated yet.
+     * @type: public
+     */
+    DataProcessor.prototype.getSyncState = function () {
+        return !this.updatedRows.length;
+    };
+    /**
+     * @desc: enable/disable named field for data syncing, will use column ids for grid
+     * @param:   mode - true/false
+     * @type: public
+     */
+    DataProcessor.prototype.enableDataNames = function (mode) {
+        this._endnm = !!mode;
+    };
+    /**
+     * @desc: enable/disable mode , when only changed fields and row id send to the server side, instead of all fields in default mode
+     * @param:   mode - true/false
+     * @type: public
+     */
+    DataProcessor.prototype.enablePartialDataSend = function (mode) {
+        this._changed = !!mode;
+    };
+    /**
+     * @desc: set if rows should be send to server automaticaly
+     * @param: mode - "row" - based on row selection changed, "cell" - based on cell editing finished, "off" - manual data sending
+     * @type: public
+     */
+    DataProcessor.prototype.setUpdateMode = function (mode, dnd) {
+        this.autoUpdate = (mode === "cell");
+        this.updateMode = mode;
+        this.dnd = dnd;
+    };
+    DataProcessor.prototype.ignore = function (code, master) {
+        this._silent_mode = true;
+        code.call(master || window);
+        this._silent_mode = false;
+    };
+    /**
+     * @desc: mark row as updated/normal. check mandatory fields,initiate autoupdate (if turned on)
+     * @param: rowId - id of row to set update-status for
+     * @param: state - true for "updated", false for "not updated"
+     * @param: mode - update mode name
+     * @type: public
+     */
+    DataProcessor.prototype.setUpdated = function (rowId, state, mode) {
+        if (this._silent_mode) {
+            return;
+        }
+        var ind = this.findRow(rowId);
+        mode = mode || "updated";
+        var existing = this.$gantt.getUserData(rowId, this.action_param);
+        if (existing && mode === "updated") {
+            mode = existing;
+        }
+        if (state) {
+            this.set_invalid(rowId, false); // clear previous error flag
+            this.updatedRows[ind] = rowId;
+            this.$gantt.setUserData(rowId, this.action_param, mode);
+            if (this._in_progress[rowId]) {
+                this._in_progress[rowId] = "wait";
+            }
+        }
+        else {
+            if (!this.is_invalid(rowId)) {
+                this.updatedRows.splice(ind, 1);
+                this.$gantt.setUserData(rowId, this.action_param, "");
+            }
+        }
+        this.markRow(rowId, state, mode);
+        if (state && this.autoUpdate) {
+            this.sendData(rowId);
+        }
+    };
+    DataProcessor.prototype.markRow = function (id, state, mode) {
+        var str = "";
+        var invalid = this.is_invalid(id);
+        if (invalid) {
+            str = this.styles[invalid];
+            state = true;
+        }
+        if (this.callEvent("onRowMark", [id, state, mode, invalid])) {
+            // default logic
+            str = this.styles[state ? mode : "clear"] + str;
+            this.$gantt[this._methods[0]](id, str);
+            if (invalid && invalid.details) {
+                str += this.styles[invalid + "_cell"];
+                for (var i = 0; i < invalid.details.length; i++) {
+                    if (invalid.details[i]) {
+                        this.$gantt[this._methods[1]](id, i, str);
+                    }
+                }
+            }
+        }
+    };
+    DataProcessor.prototype.getActionByState = function (state) {
+        if (state === "inserted") {
+            return "create";
+        }
+        if (state === "updated") {
+            return "update";
+        }
+        if (state === "deleted") {
+            return "delete";
+        }
+    };
+    DataProcessor.prototype.getState = function (id) {
+        return this.$gantt.getUserData(id, this.action_param);
+    };
+    DataProcessor.prototype.is_invalid = function (id) {
+        return this._invalid[id];
+    };
+    DataProcessor.prototype.set_invalid = function (id, mode, details) {
+        if (details) {
+            mode = {
+                value: mode,
+                details: details,
+                toString: function () {
+                    return this.value.toString();
+                }
+            };
+        }
+        this._invalid[id] = mode;
+    };
+    /**
+     * @desc: check mandatory fields and varify values of cells, initiate update (if specified)
+     * @param: rowId - id of row to set update-status for
+     * @type: public
+     */
+    // tslint:disable-next-line
+    DataProcessor.prototype.checkBeforeUpdate = function (rowId) {
+        return true;
+    };
+    /**
+     * @desc: send row(s) values to server
+     * @param: rowId - id of row which data to send. If not specified, then all "updated" rows will be send
+     * @type: public
+     */
+    DataProcessor.prototype.sendData = function (rowId) {
+        if (this._waitMode && (this.$gantt.mytype === "tree" || this.$gantt._h2)) {
+            return;
+        }
+        if (this.$gantt.editStop) {
+            this.$gantt.editStop();
+        }
+        if (typeof rowId === "undefined" || this._tSend) {
+            return this.sendAllData();
+        }
+        if (this._in_progress[rowId]) {
+            return false;
+        }
+        this.messages = [];
+        if (!this.checkBeforeUpdate(rowId) && this.callEvent("onValidationError", [rowId, this.messages])) {
+            return false; // ??? unreachable code, drop it?
+        }
+        this._beforeSendData(this._getRowData(rowId), rowId);
+    };
+    DataProcessor.prototype._beforeSendData = function (data, rowId) {
+        if (!this.callEvent("onBeforeUpdate", [rowId, this.getState(rowId), data])) {
+            return false;
+        }
+        this._sendData(data, rowId);
+    };
+    DataProcessor.prototype.serialize = function (data, id) {
+        if (this._serializeAsJson) {
+            return this._serializeAsJSON(data);
+        }
+        if (typeof data === "string") {
+            return data;
+        }
+        if (typeof id !== "undefined") {
+            return this.serialize_one(data, "");
+        }
+        else {
+            var stack = [];
+            var keys = [];
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    stack.push(this.serialize_one(data[key], key + this._postDelim));
+                    keys.push(key);
+                }
+            }
+            stack.push("ids=" + this.escape(keys.join(",")));
+            if (this.$gantt.security_key) {
+                stack.push("dhx_security=" + this.$gantt.security_key);
+            }
+            return stack.join("&");
+        }
+    };
+    DataProcessor.prototype._serializeAsJSON = function (data) {
+        if (typeof data === "string") {
+            return data;
+        }
+        var copy = utils.copy(data);
+        if (this._tMode === "REST-JSON") {
+            delete copy.id;
+            delete copy[this.action_param];
+        }
+        return JSON.stringify(copy);
+    };
+    DataProcessor.prototype.serialize_one = function (data, pref) {
+        if (typeof data === "string") {
+            return data;
+        }
+        var stack = [];
+        var serialized = "";
+        for (var key in data)
+            if (data.hasOwnProperty(key)) {
+                if ((key === "id" ||
+                    key == this.action_param) && // tslint:disable-line
+                    this._tMode === "REST") {
+                    continue;
+                }
+                if (typeof data[key] === "string" || typeof data[key] === "number") {
+                    serialized = data[key];
+                }
+                else {
+                    serialized = JSON.stringify(data[key]);
+                }
+                stack.push(this.escape((pref || "") + key) + "=" + this.escape(serialized));
+            }
+        return stack.join("&");
+    };
+    DataProcessor.prototype._applyPayload = function (url) {
+        var ajax = this.$gantt.ajax;
+        if (this._payload) {
+            for (var key in this._payload) {
+                url = url + ajax.urlSeparator(url) + this.escape(key) + "=" + this.escape(this._payload[key]);
+            }
+        }
+        return url;
+    };
+    DataProcessor.prototype._sendData = function (dataToSend, rowId) {
+        var _this = this;
+        if (!dataToSend) {
+            return; // nothing to send
+        }
+        if (!this.callEvent("onBeforeDataSending", rowId ? [rowId, this.getState(rowId), dataToSend] : [null, null, dataToSend])) {
+            return false;
+        }
+        if (rowId) {
+            this._in_progress[rowId] = (new Date()).valueOf();
+        }
+        var ajax = this.$gantt.ajax;
+        if (this._tMode === "CUSTOM") {
+            var taskState_1 = this.getState(rowId);
+            var taskAction = this.getActionByState(taskState_1);
+            var ganttMode = this.getGanttMode();
+            var _onResolvedCreateUpdate = function (tag) {
+                var action = taskState_1 || "updated";
+                var sid = rowId;
+                var tid = rowId;
+                if (tag) {
+                    action = tag.action || taskState_1;
+                    sid = tag.sid || sid;
+                    tid = tag.id || tag.tid || tid;
+                }
+                _this.afterUpdateCallback(sid, tid, action, tag);
+            };
+            var actionPromise = void 0;
+            if (this._router instanceof Function) {
+                actionPromise = this._router(ganttMode, taskAction, dataToSend, rowId);
+            }
+            else if (this._router[ganttMode] instanceof Function) {
+                actionPromise = this._router[ganttMode](taskAction, dataToSend, rowId);
+            }
+            else {
+                switch (taskState_1) {
+                    case "inserted":
+                        actionPromise = this._router[ganttMode].create(dataToSend);
+                        break;
+                    case "deleted":
+                        actionPromise = this._router[ganttMode].delete(rowId);
+                        break;
+                    default:
+                        actionPromise = this._router[ganttMode].update(dataToSend, rowId);
+                        break;
+                }
+            }
+            if (actionPromise) {
+                // neither promise nor {tid: newId} response object
+                if (!actionPromise.then &&
+                    (actionPromise.id === undefined && actionPromise.tid === undefined)) {
+                    throw new Error("Incorrect router return value. A Promise or a response object is expected");
+                }
+                if (actionPromise.then) {
+                    actionPromise.then(_onResolvedCreateUpdate);
+                }
+                else {
+                    // custom method may return a response object in case of sync action
+                    _onResolvedCreateUpdate(actionPromise);
+                }
+            }
+            else {
+                _onResolvedCreateUpdate(null);
+            }
+            return;
+        }
+        var queryParams;
+        queryParams = {
+            callback: function (xml) {
+                var ids = [];
+                if (rowId) {
+                    ids.push(rowId);
+                }
+                else if (dataToSend) {
+                    for (var key in dataToSend) {
+                        ids.push(key);
+                    }
+                }
+                return _this.afterUpdate(_this, xml, ids);
+            },
+            headers: this._headers
+        };
+        var urlParams = this.serverProcessor + (this._user ? (ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + this.$gantt.getUserData(0, "version")].join("&")) : "");
+        var url = this._applyPayload(urlParams);
+        var data;
+        switch (this._tMode) {
+            case "GET":
+                queryParams.url = url + ajax.urlSeparator(url) + this.serialize(dataToSend, rowId);
+                queryParams.method = "GET";
+                break;
+            case "POST":
+                queryParams.url = url;
+                queryParams.method = "POST";
+                queryParams.data = this.serialize(dataToSend, rowId);
+                break;
+            case "JSON":
+                data = {};
+                for (var key in dataToSend) {
+                    if (key === this.action_param || key === "id" || key === "gr_id") {
+                        continue;
+                    }
+                    data[key] = dataToSend[key];
+                }
+                queryParams.url = url;
+                queryParams.method = "POST";
+                queryParams.data = JSON.stringify({
+                    id: rowId,
+                    action: dataToSend[this.action_param],
+                    data: data
+                });
+                break;
+            case "REST":
+            case "REST-JSON":
+                url = urlParams.replace(/(&|\?)editing=true/, "");
+                data = "";
+                switch (this.getState(rowId)) {
+                    case "inserted":
+                        queryParams.method = "POST";
+                        queryParams.data = this.serialize(dataToSend, rowId);
+                        break;
+                    case "deleted":
+                        queryParams.method = "DELETE";
+                        url = url + (url.slice(-1) === "/" ? "" : "/") + rowId;
+                        break;
+                    default:
+                        queryParams.method = "PUT";
+                        queryParams.data = this.serialize(dataToSend, rowId);
+                        url = url + (url.slice(-1) === "/" ? "" : "/") + rowId;
+                        break;
+                }
+                queryParams.url = this._applyPayload(url);
+                break;
+        }
+        this._waitMode++;
+        return ajax.query(queryParams);
+    };
+    DataProcessor.prototype._forEachUpdatedRow = function (code) {
+        var updatedRows = this.updatedRows.slice();
+        for (var i = 0; i < updatedRows.length; i++) {
+            var rowId = updatedRows[i];
+            if (this.$gantt.getUserData(rowId, this.action_param)) {
+                code.call(this, rowId);
+            }
+        }
+    };
+    DataProcessor.prototype.sendAllData = function () {
+        if (!this.updatedRows.length) {
+            return;
+        }
+        this.messages = [];
+        var valid = true;
+        this._forEachUpdatedRow(function (rowId) {
+            valid = valid && this.checkBeforeUpdate(rowId); // ??? checkBeforeUpdate() always is true
+        });
+        if (!valid && !this.callEvent("onValidationError", ["", this.messages])) {
+            return false;
+        }
+        if (this._tSend) {
+            this._sendData(this._getAllData());
+        }
+        else {
+            var stop_1 = false;
+            // this.updatedRows can be spliced from onBeforeUpdate via dp.setUpdated false
+            // use an iterator instead of for(var i = 0; i < this.updatedRows; i++) then
+            this._forEachUpdatedRow(function (rowId) {
+                if (stop_1) {
+                    return;
+                }
+                if (!this._in_progress[rowId]) {
+                    if (this.is_invalid(rowId)) {
+                        return;
+                    }
+                    this._beforeSendData(this._getRowData(rowId), rowId);
+                    if (this._waitMode && (this.$gantt.mytype === "tree" || this.$gantt._h2)) {
+                        stop_1 = true; // block send all for tree
+                    }
+                }
+            });
+        }
+    };
+    DataProcessor.prototype._getAllData = function () {
+        var out = {};
+        var hasOne = false;
+        this._forEachUpdatedRow(function (id) {
+            if (this._in_progress[id] || this.is_invalid(id)) {
+                return;
+            }
+            var row = this._getRowData(id);
+            if (!this.callEvent("onBeforeUpdate", [id, this.getState(id), row])) {
+                return;
+            }
+            out[id] = row;
+            hasOne = true;
+            this._in_progress[id] = (new Date()).valueOf();
+        });
+        return hasOne ? out : null;
+    };
+    /**
+     * @desc: specify column which value should be verified before sending to server
+     * @param: ind - column index (0 based)
+     * @param: verifFunction - function(object) which should verify cell value (if not specified, then value will be compared to empty string). Two arguments will be passed into it: value and column name
+     * @type: public
+     */
+    DataProcessor.prototype.setVerificator = function (ind, verifFunction) {
+        this.mandatoryFields[ind] = verifFunction || (function (value) { return (value !== ""); });
+    };
+    /**
+     * @desc: remove column from list of those which should be verified
+     * @param: ind - column Index (0 based)
+     * @type: public
+     */
+    DataProcessor.prototype.clearVerificator = function (ind) {
+        this.mandatoryFields[ind] = false;
+    };
+    DataProcessor.prototype.findRow = function (pattern) {
+        var i = 0;
+        for (i = 0; i < this.updatedRows.length; i++) {
+            if (pattern == this.updatedRows[i]) { // tslint:disable-line
+                break;
+            }
+        }
+        return i;
+    };
+    /**
+     * @desc: define custom actions
+     * @param: name - name of action, same as value of action attribute
+     * @param: handler - custom function, which receives a XMl response content for action
+     * @type: private
+     */
+    DataProcessor.prototype.defineAction = function (name, handler) {
+        if (!this._uActions) {
+            this._uActions = {};
+        }
+        this._uActions[name] = handler;
+    };
+    /**
+     * @desc: used in combination with setOnBeforeUpdateHandler to create custom client-server transport system
+     * @param: sid - id of item before update
+     * @param: tid - id of item after up0ate
+     * @param: action - action name
+     * @type: public
+     * @topic: 0
+     */
+    DataProcessor.prototype.afterUpdateCallback = function (sid, tid, action, btag) {
+        var marker = sid;
+        var correct = (action !== "error" && action !== "invalid");
+        if (!correct) {
+            this.set_invalid(sid, action);
+        }
+        if ((this._uActions) && (this._uActions[action]) && (!this._uActions[action](btag))) {
+            return (delete this._in_progress[marker]);
+        }
+        if (this._in_progress[marker] !== "wait") {
+            this.setUpdated(sid, false);
+        }
+        var originalSid = sid;
+        switch (action) {
+            case "inserted":
+            case "insert":
+                if (tid != sid) { // tslint:disable-line
+                    this.setUpdated(sid, false);
+                    this.$gantt[this._methods[2]](sid, tid);
+                    sid = tid;
+                }
+                break;
+            case "delete":
+            case "deleted":
+                this.$gantt.setUserData(sid, this.action_param, "true_deleted");
+                this.$gantt[this._methods[3]](sid);
+                delete this._in_progress[marker];
+                return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
+        }
+        if (this._in_progress[marker] !== "wait") {
+            if (correct) {
+                this.$gantt.setUserData(sid, this.action_param, "");
+            }
+            delete this._in_progress[marker];
+        }
+        else {
+            delete this._in_progress[marker];
+            this.setUpdated(tid, true, this.$gantt.getUserData(sid, this.action_param));
+        }
+        this.callEvent("onAfterUpdate", [originalSid, action, tid, btag]);
+    };
+    /**
+     * @desc: response from server
+     * @param: xml - XMLLoader object with response XML
+     * @type: private
+     */
+    DataProcessor.prototype.afterUpdate = function (that, xml, id) {
+        var _xml;
+        if (arguments.length === 3) {
+            _xml = arguments[1];
+        }
+        else {
+            // old dataprocessor
+            _xml = arguments[4];
+        }
+        var mode = this.getGanttMode();
+        var reqUrl = _xml.filePath || _xml.url;
+        if (this._tMode !== "REST" && this._tMode !== "REST-JSON") {
+            if (reqUrl.indexOf("gantt_mode=links") !== -1) {
+                mode = "link";
+            }
+            else {
+                mode = "task";
+            }
+        }
+        else {
+            if (reqUrl.indexOf("/link") > reqUrl.indexOf("/task")) {
+                mode = "link";
+            }
+            else {
+                mode = "task";
+            }
+        }
+        this.setGanttMode(mode);
+        var ajax = this.$gantt.ajax;
+        // try to use json first
+        if (window.JSON) {
+            var tag = void 0;
+            try {
+                tag = JSON.parse(xml.xmlDoc.responseText);
+            }
+            catch (e) {
+                // empty response also can be processed by json handler
+                if (!xml.xmlDoc.responseText.length) {
+                    tag = {};
+                }
+            }
+            if (tag) {
+                var action = tag.action || this.getState(id) || "updated";
+                var sid = tag.sid || id[0];
+                var tid = tag.tid || id[0];
+                that.afterUpdateCallback(sid, tid, action, tag);
+                that.finalizeUpdate();
+                this.setGanttMode(mode);
+                return;
+            }
+        }
+        // xml response
+        var top = ajax.xmltop("data", xml.xmlDoc); // fix incorrect content type in IE
+        if (!top) {
+            return this.cleanUpdate(id);
+        }
+        var atag = ajax.xpath("//data/action", top);
+        if (!atag.length) {
+            return this.cleanUpdate(id);
+        }
+        for (var i = 0; i < atag.length; i++) {
+            var btag = atag[i];
+            var action = btag.getAttribute("type");
+            var sid = btag.getAttribute("sid");
+            var tid = btag.getAttribute("tid");
+            that.afterUpdateCallback(sid, tid, action, btag);
+        }
+        that.finalizeUpdate();
+    };
+    DataProcessor.prototype.cleanUpdate = function (id) {
+        if (id) {
+            for (var i = 0; i < id.length; i++) {
+                delete this._in_progress[id[i]];
+            }
+        }
+    };
+    DataProcessor.prototype.finalizeUpdate = function () {
+        if (this._waitMode) {
+            this._waitMode--;
+        }
+        if ((this.$gantt.mytype === "tree" || this.$gantt._h2) && this.updatedRows.length) {
+            this.sendData();
+        }
+        this.callEvent("onAfterUpdateFinish", []);
+        if (!this.updatedRows.length) {
+            this.callEvent("onFullSync", []);
+        }
+    };
+    /**
+     * @desc: initializes data-processor
+     * @param: anObj - dhtmlxGrid object to attach this data-processor to
+     * @type: public
+     */
+    DataProcessor.prototype.init = function (anObj) {
+        if (this._initialized) {
+            return;
+        }
+        this.$gantt = anObj;
+        if (this.$gantt._dp_init) {
+            this.$gantt._dp_init(this);
+        }
+        this._setDefaultTransactionMode();
+        this.styles = {
+            updated: "gantt_updated",
+            order: "gantt_updated",
+            inserted: "gantt_inserted",
+            deleted: "gantt_deleted",
+            invalid: "gantt_invalid",
+            error: "gantt_error",
+            clear: ""
+        };
+        this._methods = ["_row_style", "setCellTextStyle", "_change_id", "_delete_task"];
+        extend_gantt_1.default(this.$gantt, this);
+        var dataProcessorEvents = new data_processor_events_1.default(this.$gantt, this);
+        dataProcessorEvents.attach();
+        this.attachEvent("onDestroy", function () {
+            delete this.setGanttMode;
+            delete this._getRowData;
+            delete this.$gantt._dp;
+            delete this.$gantt._change_id;
+            delete this.$gantt._row_style;
+            delete this.$gantt._delete_task;
+            delete this.$gantt._sendTaskOrder;
+            delete this.$gantt;
+            dataProcessorEvents.detach();
+        });
+        this.$gantt.callEvent("onDataProcessorReady", [this]);
+        this._initialized = true;
+    };
+    DataProcessor.prototype._setDefaultTransactionMode = function () {
+        if (this.serverProcessor) {
+            this.setTransactionMode("POST", true);
+            this.serverProcessor += (this.serverProcessor.indexOf("?") !== -1 ? "&" : "?") + "editing=true";
+            this._serverProcessor = this.serverProcessor;
+        }
+    };
+    DataProcessor.prototype.setOnAfterUpdate = function (handler) {
+        this.attachEvent("onAfterUpdate", handler);
+    };
+    DataProcessor.prototype.enableDebug = function (mode) { }; // tslint:disable-line
+    DataProcessor.prototype.setOnBeforeUpdateHandler = function (handler) {
+        this.attachEvent("onBeforeDataSending", handler);
+    };
+    /* starts autoupdate mode
+        @param interval time interval for sending update requests
+    */
+    DataProcessor.prototype.setAutoUpdate = function (interval, user) {
+        var _this = this;
+        interval = interval || 2000;
+        this._user = user || (new Date()).valueOf();
+        this._needUpdate = false;
+        // this._loader = null;
+        this._updateBusy = false;
+        this.attachEvent("onAfterUpdate", this.afterAutoUpdate); // arguments sid, action, tid, xml_node;
+        this.attachEvent("onFullSync", this.fullSync);
+        window.setInterval(function () {
+            _this.loadUpdate();
+        }, interval);
+    };
+    /* process updating request answer
+        if status == collision version is depricated
+        set flag for autoupdating immidiatly
+    */
+    DataProcessor.prototype.afterAutoUpdate = function (sid, action, tid, xml_node) {
+        if (action === "collision") {
+            this._needUpdate = true;
+            return false;
+        }
+        else {
+            return true;
+        }
+    };
+    /* callback function for onFillSync event
+        call update function if it's need
+    */
+    DataProcessor.prototype.fullSync = function () {
+        if (this._needUpdate) {
+            this._needUpdate = false;
+            this.loadUpdate();
+        }
+        return true;
+    };
+    /* sends query to the server and call callback function
+    */
+    DataProcessor.prototype.getUpdates = function (url, callback) {
+        var ajax = this.$gantt.ajax;
+        if (this._updateBusy) {
+            return false;
+        }
+        else {
+            this._updateBusy = true;
+        }
+        // this._loader = this._loader || new dtmlXMLLoaderObject(true);
+        // this._loader.async=true;
+        // this._loader.waitCall=callback;
+        // this._loader.loadXML(url);
+        ajax.get(url, callback);
+    };
+    // I didn't found some use of _v and _a functions
+    /* returns xml node value
+        @param node
+            xml node
+    */
+    DataProcessor.prototype._v = function (node) {
+        if (node.firstChild) {
+            return node.firstChild.nodeValue;
+        }
+        return "";
+    };
+    /* returns values array of xml nodes array
+        @param arr
+            array of xml nodes
+    */
+    DataProcessor.prototype._a = function (arr) {
+        var res = [];
+        for (var i = 0; i < arr.length; i++) {
+            res[i] = this._v(arr[i]);
+        }
+        return res;
+    };
+    /* loads updates and processes them
+    */
+    DataProcessor.prototype.loadUpdate = function () {
+        var _this = this;
+        var ajax = this.$gantt.ajax;
+        var version = this.$gantt.getUserData(0, "version");
+        var url = this.serverProcessor + ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + version].join("&");
+        url = url.replace("editing=true&", "");
+        this.getUpdates(url, function (xml) {
+            var vers = ajax.xpath("//userdata", xml);
+            _this.obj.setUserData(0, "version", _this._v(vers[0]));
+            var upds = ajax.xpath("//update", xml);
+            if (upds.length) {
+                _this._silent_mode = true;
+                for (var i = 0; i < upds.length; i++) {
+                    var status_1 = upds[i].getAttribute("status");
+                    var id = upds[i].getAttribute("id");
+                    var parent_1 = upds[i].getAttribute("parent");
+                    switch (status_1) {
+                        case "inserted":
+                            _this.callEvent("insertCallback", [upds[i], id, parent_1]);
+                            break;
+                        case "updated":
+                            _this.callEvent("updateCallback", [upds[i], id, parent_1]);
+                            break;
+                        case "deleted":
+                            _this.callEvent("deleteCallback", [upds[i], id, parent_1]);
+                            break;
+                    }
+                }
+                _this._silent_mode = false;
+            }
+            _this._updateBusy = false;
+        });
+    };
+    DataProcessor.prototype.destructor = function () {
+        this.callEvent("onDestroy", []);
+        this.detachAllEvents();
+        this.updatedRows = [];
+        this._in_progress = {}; // ?
+        this._invalid = {};
+        this._headers = null;
+        this._payload = null;
+        delete this._initialized;
+    };
+    DataProcessor.prototype.setGanttMode = function (mode) {
+        if (mode === "tasks") {
+            mode = "task";
+        }
+        else if (mode === "links") {
+            mode = "link";
+        }
+        var modes = this.modes || {};
+        var ganttMode = this.getGanttMode();
+        if (ganttMode) {
+            modes[ganttMode] = {
+                _in_progress: this._in_progress,
+                _invalid: this._invalid,
+                updatedRows: this.updatedRows
+            };
+        }
+        var newState = modes[mode];
+        if (!newState) {
+            newState = modes[mode] = {
+                _in_progress: {},
+                _invalid: {},
+                updatedRows: []
+            };
+        }
+        this._in_progress = newState._in_progress;
+        this._invalid = newState._invalid;
+        this.updatedRows = newState.updatedRows;
+        this.modes = modes;
+        this._ganttMode = mode;
+    };
+    DataProcessor.prototype.getGanttMode = function () {
+        return this._ganttMode;
+    };
+    DataProcessor.prototype._getRowData = function (id) {
+        var task;
+        if (this.getGanttMode() === "task") {
+            task = this.$gantt.isTaskExists(id) ? this.$gantt.getTask(id) : { id: id };
+        }
+        else {
+            task = this.$gantt.isLinkExists(id) ? this.$gantt.getLink(id) : { id: id };
+        }
+        task = this.$gantt.copy(task);
+        var data = {};
+        for (var key in task) {
+            if (key.substr(0, 1) === "$") {
+                continue;
+            }
+            var value = task[key];
+            if (helpers.isDate(value)) {
+                data[key] = this.$gantt.templates.xml_format(value);
+            }
+            else if (value === null) {
+                data[key] = "";
+            }
+            else {
+                data[key] = value;
+            }
+        }
+        var taskTiming = this.$gantt._get_task_timing_mode(task);
+        if (taskTiming.$no_start) {
+            task.start_date = "";
+            task.duration = "";
+        }
+        if (taskTiming.$no_end) {
+            task.end_date = "";
+            task.duration = "";
+        }
+        data[this.action_param] = this.$gantt.getUserData(id, this.action_param);
+        return data;
+    };
+    DataProcessor.prototype._isFetchResult = function (result) {
+        return result.body instanceof ReadableStream;
+    };
+    DataProcessor.prototype.setSerializeAsJSON = function (flag) {
+        this._serializeAsJson = flag;
+    };
+    return DataProcessor;
+}());
+exports.DataProcessor = DataProcessor;
 
-	this.object = null;
-	this.updatedRows = []; //ids of updated rows
 
-	this.autoUpdate = true;
-	this.updateMode = "cell";
-	this._tMode = "GET";
-	this._headers = null;
-	this._payload = null;
-	this.post_delim = "_";
+/***/ }),
 
-	this._waitMode = 0;
-	this._in_progress = {};//?
-	this._invalid = {};
-	this.mandatoryFields = [];
-	this.messages = [];
+/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor_events.ts":
+/*!*******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/dataprocessor/data_processor_events.ts ***!
+  \*******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
 
-	this.styles = {
-		updated: "font-weight:bold;",
-		inserted: "font-weight:bold;",
-		deleted: "text-decoration : line-through;",
-		invalid: "background-color:FFE0E0;",
-		invalid_cell: "border-bottom:2px solid red;",
-		error: "color:red;",
-		clear: "font-weight:normal;text-decoration:none;"
-	};
+"use strict";
 
-	this.enableUTFencoding(true);
-	eventable(this);
+Object.defineProperty(exports, "__esModule", { value: true });
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var DataProcessorEvents = /** @class */ (function () {
+    function DataProcessorEvents(gantt, dp) {
+        this.$gantt = gantt;
+        this.$dp = dp;
+        this._dataProcessorHandlers = [];
+    }
+    DataProcessorEvents.prototype.attach = function () {
+        var dp = this.$dp;
+        var gantt = this.$gantt;
+        var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\task_tree_helpers.js");
+        var cascadeDelete = {};
+        function clientSideDelete(id) {
+            var updated = dp.updatedRows.slice();
+            var clientOnly = false;
+            for (var i = 0; i < updated.length && !dp._in_progress[id]; i++) {
+                if (updated[i] === id) {
+                    if (gantt.getUserData(id, "!nativeeditor_status") === "inserted") {
+                        clientOnly = true;
+                    }
+                    dp.setUpdated(id, false);
+                }
+            }
+            return clientOnly;
+        }
+        function getTaskLinks(task) {
+            var _links = [];
+            if (task.$source) {
+                _links = _links.concat(task.$source);
+            }
+            if (task.$target) {
+                _links = _links.concat(task.$target);
+            }
+            return _links;
+        }
+        this._dataProcessorHandlers.push(gantt.attachEvent("onAfterTaskAdd", function (id, item) {
+            if (gantt.isTaskExists(id)) {
+                dp.setGanttMode("tasks");
+                dp.setUpdated(id, true, "inserted");
+            }
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onAfterTaskUpdate", function (id, item) {
+            if (gantt.isTaskExists(id)) {
+                dp.setGanttMode("tasks");
+                dp.setUpdated(id, true);
+                gantt._sendTaskOrder(id, item);
+            }
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onBeforeTaskDelete", function (id, item) {
+            if (!gantt.config.cascade_delete) {
+                return true;
+            }
+            cascadeDelete[id] = {
+                tasks: treeHelper.getSubtreeTasks(gantt, id),
+                links: treeHelper.getSubtreeLinks(gantt, id)
+            };
+            return true;
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onAfterTaskDelete", function (id, item) {
+            dp.setGanttMode("tasks");
+            // not send delete request if item is not inserted into the db - just remove it from the client
+            var needDbDelete = !clientSideDelete(id);
+            if (!needDbDelete) {
+                return;
+            }
+            if (gantt.config.cascade_delete && cascadeDelete[id]) {
+                var dpMode = dp.updateMode;
+                dp.setUpdateMode("off");
+                var cascade = cascadeDelete[id];
+                for (var i in cascade.tasks) {
+                    if (!clientSideDelete(i)) {
+                        dp.setUpdated(i, true, "deleted");
+                    }
+                }
+                dp.setGanttMode("links");
+                for (var i in cascade.links) {
+                    if (!clientSideDelete(i)) {
+                        dp.setUpdated(i, true, "deleted");
+                    }
+                }
+                cascadeDelete[id] = null;
+                if (dpMode !== "off") {
+                    dp.sendAllData();
+                }
+                dp.setGanttMode("tasks");
+                dp.setUpdateMode(dpMode);
+            }
+            dp.setUpdated(id, true, "deleted");
+            if (dp.updateMode !== "off" && !dp._tSend) {
+                dp.sendAllData();
+            }
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onAfterLinkUpdate", function (id, item) {
+            if (gantt.isLinkExists(id)) {
+                dp.setGanttMode("links");
+                dp.setUpdated(id, true);
+            }
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onAfterLinkAdd", function (id, item) {
+            if (gantt.isLinkExists(id)) {
+                dp.setGanttMode("links");
+                dp.setUpdated(id, true, "inserted");
+            }
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onAfterLinkDelete", function (id, item) {
+            dp.setGanttMode("links");
+            var needDbDelete = !clientSideDelete(id);
+            if (!needDbDelete) {
+                return;
+            }
+            dp.setUpdated(id, true, "deleted");
+        }));
+        this._dataProcessorHandlers.push(gantt.attachEvent("onRowDragEnd", function (id, target) {
+            gantt._sendTaskOrder(id, gantt.getTask(id));
+        }));
+        var tasks = null;
+        var links = null;
+        this._dataProcessorHandlers.push(gantt.attachEvent("onTaskIdChange", function (oldId, newId) {
+            if (!dp._waitMode) {
+                return;
+            }
+            var children = gantt.getChildren(newId);
+            if (children.length) {
+                tasks = tasks || {};
+                for (var i = 0; i < children.length; i++) {
+                    var ch = this.getTask(children[i]);
+                    tasks[ch.id] = ch;
+                }
+            }
+            var item = this.getTask(newId);
+            var itemLinks = getTaskLinks(item);
+            if (itemLinks.length) {
+                links = links || {};
+                for (var i = 0; i < itemLinks.length; i++) {
+                    var link = this.getLink(itemLinks[i]);
+                    links[link.id] = link;
+                }
+            }
+        }));
+        dp.attachEvent("onAfterUpdateFinish", function () {
+            if (tasks || links) {
+                gantt.batchUpdate(function () {
+                    for (var id in tasks) {
+                        gantt.updateTask(tasks[id].id);
+                    }
+                    for (var id in links) {
+                        gantt.updateLink(links[id].id);
+                    }
+                    tasks = null;
+                    links = null;
+                });
+                if (tasks) {
+                    gantt._dp.setGanttMode("tasks");
+                }
+                else {
+                    gantt._dp.setGanttMode("links");
+                }
+            }
+        });
+        dp.attachEvent("onBeforeDataSending", function () {
+            if (this._tMode === "CUSTOM") {
+                return true;
+            }
+            var url = this._serverProcessor;
+            if (this._tMode === "REST-JSON" || this._tMode === "REST") {
+                var mode = this._ganttMode;
+                url = url.substring(0, url.indexOf("?") > -1 ? url.indexOf("?") : url.length);
+                // editing=true&
+                this.serverProcessor = url + (url.slice(-1) === "/" ? "" : "/") + mode;
+            }
+            else {
+                this.serverProcessor = url + gantt.ajax.urlSeparator(url) + "gantt_mode=" + this._ganttMode;
+            }
+            return true;
+        });
+        dp.attachEvent("insertCallback", function insertCallback(upd, id, parent, mode) {
+            var data = upd.data || gantt.xml._xmlNodeToJSON(upd.firstChild);
+            var methods = {
+                add: gantt.addTask,
+                isExist: gantt.isTaskExists
+            };
+            if (mode === "links") {
+                methods.add = gantt.addLink;
+                methods.isExist = gantt.isLinkExists;
+            }
+            if (methods.isExist.call(gantt, id)) {
+                return;
+            }
+            data.id = id;
+            methods.add.call(gantt, data);
+        });
+        dp.attachEvent("updateCallback", function updateCallback(upd, id) {
+            var data = upd.data || gantt.xml._xmlNodeToJSON(upd.firstChild);
+            if (!gantt.isTaskExists(id)) {
+                return;
+            }
+            var objData = gantt.getTask(id);
+            for (var key in data) {
+                var property = data[key];
+                switch (key) {
+                    case "id":
+                        continue;
+                    case "start_date":
+                    case "end_date":
+                        property = gantt.templates.xml_date(property);
+                        break;
+                    case "duration":
+                        objData.end_date = gantt.calculateEndDate({ start_date: objData.start_date, duration: property, task: objData });
+                        break;
+                }
+                objData[key] = property;
+            }
+            gantt.updateTask(id);
+            gantt.refreshData();
+        });
+        dp.attachEvent("deleteCallback", function deleteCallback(upd, id, parent, mode) {
+            var methods = {
+                delete: gantt.deleteTask,
+                isExist: gantt.isTaskExists
+            };
+            if (mode === "links") {
+                methods.delete = gantt.deleteLink;
+                methods.isExist = gantt.isLinkExists;
+            }
+            if (methods.isExist.call(gantt, id)) {
+                methods.delete.call(gantt, id);
+            }
+        });
+    };
+    DataProcessorEvents.prototype.detach = function () {
+        var _this = this;
+        helpers.forEach(this._dataProcessorHandlers, function (e) {
+            _this.$gantt.detachEvent(e);
+        });
+        this._dataProcessorHandlers = [];
+    };
+    return DataProcessorEvents;
+}());
+exports.default = DataProcessorEvents;
 
-	return this;
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\extend_gantt.ts":
+/*!**********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/dataprocessor/extend_gantt.ts ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function extendGantt(gantt, dp) {
+    gantt.getUserData = function (id, name) {
+        if (!this.userdata) {
+            this.userdata = {};
+        }
+        if (this.userdata[id] && this.userdata[id][name]) {
+            return this.userdata[id][name];
+        }
+        return "";
+    };
+    gantt.setUserData = function (id, name, value) {
+        if (!this.userdata) {
+            this.userdata = {};
+        }
+        if (!this.userdata[id]) {
+            this.userdata[id] = {};
+        }
+        this.userdata[id][name] = value;
+    };
+    gantt._change_id = function (oldId, newId) {
+        if (this._dp._ganttMode !== "task") {
+            this.changeLinkId(oldId, newId);
+        }
+        else {
+            this.changeTaskId(oldId, newId);
+        }
+    };
+    gantt._row_style = function (rowId, classname) {
+        if (this._dp._ganttMode !== "task") {
+            return;
+        }
+        if (!gantt.isTaskExists(rowId)) {
+            return;
+        }
+        var task = gantt.getTask(rowId);
+        task.$dataprocessor_class = classname;
+        gantt.refreshTask(rowId);
+    };
+    // fake method for dataprocessor
+    gantt._delete_task = function (rowId, node) { }; // tslint:disable-line
+    gantt._sendTaskOrder = function (id, item) {
+        if (item.$drop_target) {
+            this._dp.setGanttMode("task");
+            this.getTask(id).target = item.$drop_target;
+            this._dp.setUpdated(id, true, "order");
+            delete this.getTask(id).$drop_target;
+        }
+    };
+    gantt.setDp = function () {
+        this._dp = dp;
+    };
+    gantt.setDp();
+}
+exports.default = extendGantt;
+
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\index.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/dataprocessor/index.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DataProcessor = __webpack_require__(/*! ./data_processor */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor.ts");
+module.exports = {
+	DEPRECATED_api: function(server) {
+		return new (DataProcessor.DataProcessor)(server);
+	},
+	createDataProcessor: DataProcessor.createDataProcessor,
+	getDataProcessorModes: DataProcessor.getAvailableModes
 };
 
-dataProcessor.prototype = {
-	setTransactionMode: function (mode, total) {
-		if (typeof mode == "object") {
-			this._tMode = mode.mode || this._tMode;
-
-			if (utils.defined(mode.headers)) {
-				this._headers = mode.headers;
-			}
-
-			if (utils.defined(mode.payload)) {
-				this._payload = mode.payload;
-			}
-
-		} else {
-			this._tMode = mode;
-			this._tSend = total;
-		}
-
-		if (this._tMode == "REST") {
-			this._tSend = false;
-			this._endnm = true;
-		}
-
-		if (this._tMode == "JSON" || this._tMode == "REST-JSON") {
-			this._tSend = false;
-			this._endnm = true;
-			this._serialize_as_json = true;
-			this._headers = this._headers || {};
-			this._headers["Content-type"] = "application/json";
-		}
-	},
-	escape: function (data) {
-		if (this._utf)
-			return encodeURIComponent(data);
-		else
-			return escape(data);
-	},
-    /**
-	* 	@desc: allows to set escaping mode
-	*	@param: true - utf based escaping, simple - use current page encoding
-	*	@type: public
-	*/
-	enableUTFencoding: function (mode) {
-		this._utf = !!mode;
-	},
-    /**
-	* 	@desc: allows to define, which column may trigger update
-	*	@param: val - array or list of true/false values
-	*	@type: public
-	*/
-	setDataColumns: function (val) {
-		this._columns = (typeof val == "string") ? val.split(",") : val;
-	},
-    /**
-	* 	@desc: get state of updating
-	*	@returns:   true - all in sync with server, false - some items not updated yet.
-	*	@type: public
-	*/
-	getSyncState: function () {
-		return !this.updatedRows.length;
-	},
-	/**
-	* 	@desc: enable/disable named field for data syncing, will use column ids for grid
-	*	@param:   mode - true/false
-	*	@type: public
-	*/
-	enableDataNames: function (mode) {
-		this._endnm = !!mode;
-	},
-	/**
-	* 	@desc: enable/disable mode , when only changed fields and row id send to the server side, instead of all fields in default mode
-	*	@param:   mode - true/false
-	*	@type: public
-	*/
-	enablePartialDataSend: function (mode) {
-		this._changed = !!mode;
-	},
-	/**
-	* 	@desc: set if rows should be send to server automaticaly
-	*	@param: mode - "row" - based on row selection changed, "cell" - based on cell editing finished, "off" - manual data sending
-	*	@type: public
-	*/
-	setUpdateMode: function (mode, dnd) {
-		this.autoUpdate = (mode == "cell");
-		this.updateMode = mode;
-		this.dnd = dnd;
-	},
-	ignore: function (code, master) {
-		this._silent_mode = true;
-		code.call(master || window);
-		this._silent_mode = false;
-	},
-	/**
-	* 	@desc: mark row as updated/normal. check mandatory fields,initiate autoupdate (if turned on)
-	*	@param: rowId - id of row to set update-status for
-	*	@param: state - true for "updated", false for "not updated"
-	*	@param: mode - update mode name
-	*	@type: public
-	*/
-	setUpdated: function (rowId, state, mode) {
-		if (this._silent_mode) return;
-		var ind = this.findRow(rowId);
-
-		mode = mode || "updated";
-		var existing = this.obj.getUserData(rowId, this.action_param);
-		if (existing && mode == "updated") mode = existing;
-		if (state) {
-			this.set_invalid(rowId, false); //clear previous error flag
-			this.updatedRows[ind] = rowId;
-			this.obj.setUserData(rowId, this.action_param, mode);
-			if (this._in_progress[rowId])
-				this._in_progress[rowId] = "wait";
-		} else {
-			if (!this.is_invalid(rowId)) {
-				this.updatedRows.splice(ind, 1);
-				this.obj.setUserData(rowId, this.action_param, "");
-			}
-		}
-
-		//clear changed flag
-		if (!state)
-			this._clearUpdateFlag(rowId);
-
-		this.markRow(rowId, state, mode);
-		if (state && this.autoUpdate) this.sendData(rowId);
-	},
-	_clearUpdateFlag: function (id) { },
-	markRow: function (id, state, mode) {
-		var str = "";
-		var invalid = this.is_invalid(id);
-		if (invalid) {
-			str = this.styles[invalid];
-			state = true;
-		}
-		if (this.callEvent("onRowMark", [id, state, mode, invalid])) {
-			//default logic
-			str = this.styles[state ? mode : "clear"] + str;
-
-			this.obj[this._methods[0]](id, str);
-
-			if (invalid && invalid.details) {
-				str += this.styles[invalid + "_cell"];
-				for (var i = 0; i < invalid.details.length; i++)
-					if (invalid.details[i])
-						this.obj[this._methods[1]](id, i, str);
-			}
-		}
-	},
-	getState: function (id) {
-		return this.obj.getUserData(id, this.action_param);
-	},
-	is_invalid: function (id) {
-		return this._invalid[id];
-	},
-	set_invalid: function (id, mode, details) {
-		if (details) mode = {
-			value: mode,
-			details: details,
-			toString: function () {
-				return this.value.toString();
-			}
-		};
-		this._invalid[id] = mode;
-	},
-	/**
-	* 	@desc: check mandatory fields and varify values of cells, initiate update (if specified)
-	*	@param: rowId - id of row to set update-status for
-	*	@type: public
-	*/
-	checkBeforeUpdate: function (rowId) {
-		return true;
-	},
-	/**
-	* 	@desc: send row(s) values to server
-	*	@param: rowId - id of row which data to send. If not specified, then all "updated" rows will be send
-	*	@type: public
-	*/
-	sendData: function (rowId) {
-		if (this._waitMode && (this.obj.mytype == "tree" || this.obj._h2)) return;
-		if (this.obj.editStop) this.obj.editStop();
-
-
-		if (typeof rowId == "undefined" || this._tSend) return this.sendAllData();
-		if (this._in_progress[rowId]) return false;
-
-		this.messages = [];
-		if (!this.checkBeforeUpdate(rowId) && this.callEvent("onValidationError", [rowId, this.messages])) return false;
-		this._beforeSendData(this._getRowData(rowId), rowId);
-	},
-	_beforeSendData: function (data, rowId) {
-		if (!this.callEvent("onBeforeUpdate", [rowId, this.getState(rowId), data])) return false;
-		this._sendData(data, rowId);
-	},
-	serialize: function (data, id) {
-		if (this._serialize_as_json) {
-			return  this._serializeAsJSON(data);
-		}
-
-		if (typeof data == "string")
-			return data;
-		if (typeof id != "undefined")
-			return this.serialize_one(data, "");
-		else {
-			var stack = [];
-			var keys = [];
-			for (var key in data)
-				if (data.hasOwnProperty(key)) {
-					stack.push(this.serialize_one(data[key], key + this.post_delim));
-					keys.push(key);
-				}
-			stack.push("ids=" + this.escape(keys.join(",")));
-			if (this.$gantt.security_key)
-				stack.push("dhx_security=" + this.$gantt.security_key);
-			return stack.join("&");
-		}
-	},
-
-	_serializeAsJSON: function (data) {
-		if (typeof data == "string")
-			return data;
-
-		var copy = utils.copy(data);
-		if(this._tMode == "REST-JSON"){
-			delete copy.id;
-			delete copy[this.action_param];
-		}
-
-		return JSON.stringify(copy);
-	},
-
-	serialize_one: function (data, pref) {
-		if (typeof data == "string")
-			return data;
-		var stack = [];
-		var serialized = "";
-		for (var key in data)
-			if (data.hasOwnProperty(key)) {
-				if ((key == "id" || key == this.action_param) && this._tMode == "REST") continue;
-				if (typeof data[key] === "string" || typeof data[key] === "number") {
-					serialized = data[key];
-				} else {
-					serialized = JSON.stringify(data[key]);
-				}
-				stack.push(this.escape((pref || "") + key) + "=" + this.escape(serialized));
-			}
-		return stack.join("&");
-	},
-	_applyPayload: function (url) {
-		var ajax = this.$gantt.ajax;
-		if (this._payload)
-			for (var key in this._payload)
-				url = url + ajax.urlSeparator(url) + this.escape(key) + "=" + this.escape(this._payload[key]);
-		return url;
-	},
-	_sendData: function (a1, rowId) {
-		if (!a1) return; //nothing to send
-		if (!this.callEvent("onBeforeDataSending", rowId ? [rowId, this.getState(rowId), a1] : [null, null, a1])) return false;
-
-		if (rowId)
-			this._in_progress[rowId] = (new Date()).valueOf();
-
-		var _this = this;
-
-		var ajax = this.$gantt.ajax;
-
-		var queryParams = {
-			callback: function (xml) {
-				var ids = [];
-				var key;
-
-				if (rowId)
-					ids.push(rowId);
-				else if (a1)
-					for (key in a1)
-						ids.push(key);
-
-				return _this.afterUpdate(_this, xml, ids);
-			},
-			headers: this._headers
-		};
-
-		var a3 = this.serverProcessor + (this._user ? (ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + this.obj.getUserData(0, "version")].join("&")) : "");
-		var a4 = this._applyPayload(a3);
-
-		switch (this._tMode) {
-			case "GET":
-				queryParams.url = a4 + ajax.urlSeparator(a4) + this.serialize(a1, rowId);
-				queryParams.method = "GET";
-				break;
-			case "POST":
-				queryParams.url = a4;
-				queryParams.method = "POST";
-				queryParams.data = this.serialize(a1, rowId);
-				break;
-			case "JSON":
-				var data = {};
-				for (var key in a1) {
-					if (key === this.action_param || key === "id" || key === "gr_id") continue;
-					data[key] = a1[key];
-				}
-
-				queryParams.url = a4;
-				queryParams.method = "POST";
-				queryParams.data = JSON.stringify({
-					id: rowId,
-					action: a1[this.action_param],
-					data: data
-				});
-				break;
-			case "REST":
-			case "REST-JSON":
-				var url = a3.replace(/(&|\?)editing=true/, "");
-				data = "";
-
-				switch (this.getState(rowId)) {
-					case "inserted":
-						queryParams.method = "POST";
-						queryParams.data = this.serialize(a1, rowId);
-						break;
-					case "deleted":
-						queryParams.method = "DELETE";
-						url = url + (url.slice(-1) == "/" ? "" : "/") + rowId;
-						break;
-					default:
-						queryParams.method = "PUT";
-						queryParams.data = this.serialize(a1, rowId);
-						url = url + (url.slice(-1) == "/" ? "" : "/") + rowId;
-						break;
-				}
-				queryParams.url = this._applyPayload(url);
-				break;
-		}
-
-		ajax.query(queryParams);
-		this._waitMode++;
-	},
-
-	_forEachUpdatedRow: function (code) {
-		var updatedRows = this.updatedRows.slice();
-		for (var i = 0; i < updatedRows.length; i++) {
-			var rowId = updatedRows[i];
-			if (this.obj.getUserData(rowId, this.action_param)) {
-				code.call(this, rowId);
-			}
-		}
-	},
-
-	sendAllData: function () {
-		if (!this.updatedRows.length) return;
-
-		this.messages = [];
-		var valid = true;
-
-		this._forEachUpdatedRow(function (rowId) {
-			valid &= this.checkBeforeUpdate(rowId);
-		});
-
-		if (!valid && !this.callEvent("onValidationError", ["", this.messages])) return false;
-
-		if (this._tSend) {
-			this._sendData(this._getAllData());
-		} else {
-			var stop = false;
-
-			// this.updatedRows can be spliced from onBeforeUpdate via dp.setUpdated false
-			// use an iterator instead of for(var i = 0; i < this.updatedRows; i++) then
-			this._forEachUpdatedRow(function (rowId) {
-				if (stop) {
-					return;
-				}
-
-				if (!this._in_progress[rowId]) {
-					if (this.is_invalid(rowId)) return;
-					this._beforeSendData(this._getRowData(rowId), rowId);
-					if (this._waitMode && (this.obj.mytype == "tree" || this.obj._h2)) {
-						stop = true; //block send all for tree
-					}
-				}
-			});
-		}
-	},
-
-	_getAllData: function (rowId) {
-		var out = {};
-		var has_one = false;
-
-		this._forEachUpdatedRow(function (id) {
-			if (this._in_progress[id] || this.is_invalid(id)) return;
-			var row = this._getRowData(id);
-			if (!this.callEvent("onBeforeUpdate", [id, this.getState(id), row])) return;
-			out[id] = row;
-			has_one = true;
-			this._in_progress[id] = (new Date()).valueOf();
-		});
-
-		return has_one ? out : null;
-	},
-
-
-	/**
-	* 	@desc: specify column which value should be varified before sending to server
-	*	@param: ind - column index (0 based)
-	*	@param: verifFunction - function (object) which should verify cell value (if not specified, then value will be compared to empty string). Two arguments will be passed into it: value and column name
-	*	@type: public
-	*/
-	setVerificator: function (ind, verifFunction) {
-		this.mandatoryFields[ind] = verifFunction || (function (value) { return (value !== ""); });
-	},
-	/**
-	* 	@desc: remove column from list of those which should be verified
-	*	@param: ind - column Index (0 based)
-	*	@type: public
-	*/
-	clearVerificator: function (ind) {
-		this.mandatoryFields[ind] = false;
-	},
-
-
-
-
-
-	findRow: function (pattern) {
-		var i = 0;
-		for (i = 0; i < this.updatedRows.length; i++)
-			if (pattern == this.updatedRows[i]) break;
-		return i;
-	},
-
-	/**
-	* 	@desc: define custom actions
-	*	@param: name - name of action, same as value of action attribute
-	*	@param: handler - custom function, which receives a XMl response content for action
-	*	@type: private
-	*/
-	defineAction: function (name, handler) {
-		if (!this._uActions) this._uActions = [];
-		this._uActions[name] = handler;
-	},
-
-	/**
-*     @desc: used in combination with setOnBeforeUpdateHandler to create custom client-server transport system
-*     @param: sid - id of item before update
-*     @param: tid - id of item after up0ate
-*     @param: action - action name
-*     @type: public
-*     @topic: 0
-*/
-	afterUpdateCallback: function (sid, tid, action, btag) {
-		var marker = sid;
-		var correct = (action != "error" && action != "invalid");
-		if (!correct) this.set_invalid(sid, action);
-		if ((this._uActions) && (this._uActions[action]) && (!this._uActions[action](btag)))
-			return (delete this._in_progress[marker]);
-
-		if (this._in_progress[marker] != "wait")
-			this.setUpdated(sid, false);
-
-		var soid = sid;
-
-		switch (action) {
-			case "inserted":
-			case "insert":
-				if (tid != sid) {
-					this.setUpdated(sid, false);
-					this.obj[this._methods[2]](sid, tid);
-					sid = tid;
-				}
-				break;
-			case "delete":
-			case "deleted":
-				this.obj.setUserData(sid, this.action_param, "true_deleted");
-				this.obj[this._methods[3]](sid);
-				delete this._in_progress[marker];
-				return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
-		}
-
-		if (this._in_progress[marker] != "wait") {
-			if (correct) this.obj.setUserData(sid, this.action_param, '');
-			delete this._in_progress[marker];
-		} else {
-			delete this._in_progress[marker];
-			this.setUpdated(tid, true, this.obj.getUserData(sid, this.action_param));
-		}
-
-		this.callEvent("onAfterUpdate", [soid, action, tid, btag]);
-	},
-
-	/**
-	* 	@desc: response from server
-	*	@param: xml - XMLLoader object with response XML
-	*	@type: private
-	*/
-	afterUpdate: function (that, xml, id) {
-		var ajax = this.$gantt.ajax;
-		//try to use json first
-		if (window.JSON) {
-			var tag;
-
-			try {
-				tag = JSON.parse(xml.xmlDoc.responseText);
-			} catch (e) {
-
-				// empty response also can be processed by json handler
-				if (!xml.xmlDoc.responseText.length) {
-					tag = {};
-				}
-			}
-
-			if (tag) {
-				var action = tag.action || this.getState(id) || "updated";
-				var sid = tag.sid || id[0];
-				var tid = tag.tid || id[0];
-				that.afterUpdateCallback(sid, tid, action, tag);
-				that.finalizeUpdate();
-				return;
-			}
-		}
-		//xml response
-		var top = ajax.xmltop("data", xml.xmlDoc); //fix incorrect content type in IE
-		if (!top) return this.cleanUpdate(id);
-		var atag = ajax.xpath("//data/action", top);
-		if (!atag.length) return this.cleanUpdate(id);
-
-		for (var i = 0; i < atag.length; i++) {
-			var btag = atag[i];
-			var action = btag.getAttribute("type");
-			var sid = btag.getAttribute("sid");
-			var tid = btag.getAttribute("tid");
-
-			that.afterUpdateCallback(sid, tid, action, btag);
-		}
-		that.finalizeUpdate();
-	},
-	cleanUpdate: function (id) {
-		if (id)
-			for (var i = 0; i < id.length; i++)
-				delete this._in_progress[id[i]];
-	},
-	finalizeUpdate: function () {
-		if (this._waitMode) this._waitMode--;
-
-		if ((this.obj.mytype == "tree" || this.obj._h2) && this.updatedRows.length)
-			this.sendData();
-		this.callEvent("onAfterUpdateFinish", []);
-		if (!this.updatedRows.length)
-			this.callEvent("onFullSync", []);
-	},
-
-
-
-
-
-	/**
-	* 	@desc: initializes data-processor
-	*	@param: anObj - dhtmlxGrid object to attach this data-processor to
-	*	@type: public
-	*/
-	init: function (anObj) {
-		this.obj = anObj;
-		if (this.obj._dp_init)
-			this.obj._dp_init(this);
-	},
-
-
-	setOnAfterUpdate: function (ev) {
-		this.attachEvent("onAfterUpdate", ev);
-	},
-	enableDebug: function (mode) {
-	},
-	setOnBeforeUpdateHandler: function (func) {
-		this.attachEvent("onBeforeDataSending", func);
-	},
-
-
-
-	/* starts autoupdate mode
-		@param interval
-			time interval for sending update requests
-	*/
-	setAutoUpdate: function (interval, user) {
-		interval = interval || 2000;
-
-		this._user = user || (new Date()).valueOf();
-		this._need_update = false;
-		//this._loader = null;
-		this._update_busy = false;
-
-		this.attachEvent("onAfterUpdate", function (sid, action, tid, xml_node) {
-			this.afterAutoUpdate(sid, action, tid, xml_node);
-		});
-		this.attachEvent("onFullSync", function () {
-			this.fullSync();
-		});
-
-		var self = this;
-		window.setInterval(function () {
-			self.loadUpdate();
-		}, interval);
-	},
-
-
-	/* process updating request answer
-		if status == collision version is depricated
-		set flag for autoupdating immidiatly
-	*/
-	afterAutoUpdate: function (sid, action, tid, xml_node) {
-		if (action == 'collision') {
-			this._need_update = true;
-			return false;
-		} else {
-			return true;
-		}
-	},
-
-
-	/* callback function for onFillSync event
-		call update function if it's need
-	*/
-	fullSync: function () {
-		if (this._need_update) {
-			this._need_update = false;
-			this.loadUpdate();
-		}
-		return true;
-	},
-
-
-	/* sends query to the server and call callback function
-	*/
-	getUpdates: function (url, callback) {
-		var ajax = this.$gantt.ajax;
-		if (this._update_busy)
-			return false;
-		else
-			this._update_busy = true;
-
-		//this._loader = this._loader || new dtmlXMLLoaderObject(true);
-
-		//this._loader.async=true;
-		//this._loader.waitCall=callback;
-		//this._loader.loadXML(url);
-		ajax.get(url, callback);
-
-	},
-
-
-	/* returns xml node value
-		@param node
-			xml node
-	*/
-	_v: function (node) {
-		if (node.firstChild) return node.firstChild.nodeValue;
-		return "";
-	},
-
-
-	/* returns values array of xml nodes array
-		@param arr
-			array of xml nodes
-	*/
-	_a: function (arr) {
-		var res = [];
-		for (var i = 0; i < arr.length; i++) {
-			res[i] = this._v(arr[i]);
-		}
-		return res;
-	},
-
-
-	/* loads updates and processes them
-	*/
-	loadUpdate: function () {
-		var ajax = this.$gantt.ajax;
-		var self = this;
-		var version = this.obj.getUserData(0, "version");
-		var url = this.serverProcessor + ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + version].join("&");
-		url = url.replace("editing=true&", "");
-		this.getUpdates(url, function (xml) {
-			var vers = ajax.xpath("//userdata", xml);
-			self.obj.setUserData(0, "version", self._v(vers[0]));
-
-			var upds = ajax.xpath("//update", xml);
-			if (upds.length) {
-				self._silent_mode = true;
-
-				for (var i = 0; i < upds.length; i++) {
-					var status = upds[i].getAttribute('status');
-					var id = upds[i].getAttribute('id');
-					var parent = upds[i].getAttribute('parent');
-					switch (status) {
-						case 'inserted':
-							self.callEvent("insertCallback", [upds[i], id, parent]);
-							break;
-						case 'updated':
-							self.callEvent("updateCallback", [upds[i], id, parent]);
-							break;
-						case 'deleted':
-							self.callEvent("deleteCallback", [upds[i], id, parent]);
-							break;
-					}
-				}
-
-				self._silent_mode = false;
-			}
-
-			self._update_busy = false;
-			self = null;
-		});
-	},
-
-	destructor: function () {
-		this.callEvent("onDestroy", []);
-		this.detachAllEvents();
-
-		this.updatedRows = [];
-		this._in_progress = {};//?
-		this._invalid = {};
-		this._headers = null;
-		this._payload = null;
-		this.obj = null;
-	}
-};
-
-module.exports = dataProcessor;
-
 /***/ }),
 
-/***/ "./sources/core/dataprocessor/hooks.js":
-/*!*********************************************!*\
-  !*** ./sources/core/dataprocessor/hooks.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/datastore/datastore.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var liveUpdateHooks = __webpack_require__(/*! ./live_update_hooks */ "./sources/core/dataprocessor/live_update_hooks.js");
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
-
-function addDataProcessorHooks(gantt) {
-
-	gantt.dataProcessor = __webpack_require__(/*! ./dataprocessor */ "./sources/core/dataprocessor/dataprocessor.js");
-
-	function detachDataProcessor(gantt, dp){
-		delete dp.$gantt;
-		delete dp.setGanttMode;
-		delete dp._getRowData;
-		dp.afterUpdate = oldAfterUpdate;
-
-		delete gantt._dp;
-		delete gantt._change_id;
-		delete gantt._row_style;
-		delete gantt._delete_task;
-		delete gantt._sendTaskOrder;
-
-		helpers.forEach(dataProcessorHandlers, function(e){
-			gantt.detachEvent(e);
-		});
-		dataProcessorHandlers = [];
-	}
-
-	var oldAfterUpdate;
-	function extendDataProcessor(gantt, dp){
-		dp.setGanttMode = function(mode){
-			var modes = dp.modes || {};
-			if(dp._ganttMode){
-				modes[dp._ganttMode] = {
-					_in_progress : dp._in_progress,
-					_invalid : dp._invalid,
-					updatedRows : dp.updatedRows
-				};
-			}
-
-			var newState = modes[mode];
-			if(!newState){
-				newState = modes[mode] = {
-					_in_progress : {},
-					_invalid : {},
-					updatedRows : []
-				};
-			}
-			dp._in_progress = newState._in_progress;
-			dp._invalid = newState._invalid;
-			dp.updatedRows = newState.updatedRows;
-			dp.modes = modes;
-			dp._ganttMode = mode;
-		};
-
-		oldAfterUpdate = dp.afterUpdate;
-		dp.afterUpdate = function(){
-			var xml;
-			if(arguments.length == 3){
-				xml = arguments[1];
-			}else{
-				// old dataprocessor
-				xml = arguments[4];
-			}
-			var mode = dp._ganttMode;
-			var reqUrl = xml.filePath;
-
-			if(this._tMode != "REST" && this._tMode != "REST-JSON"){
-				if (reqUrl.indexOf("gantt_mode=links") != -1) {
-					mode = "links";
-				}else{
-					mode = "tasks";
-				}
-			}else{
-				if(reqUrl.indexOf("/link") > reqUrl.indexOf("/task")){
-					mode = "links";
-				}else{
-					mode = "tasks";
-				}
-			}
-			dp.setGanttMode(mode);
-
-			var res = oldAfterUpdate.apply(dp, arguments);
-			dp.setGanttMode(mode);
-			return res;
-		};
-
-		dp._getRowData=gantt.bind(function(id, pref) {
-			var task;
-			if (dp._ganttMode == "tasks")
-				task = this.isTaskExists(id) ? this.getTask(id) : { id: id };
-			else
-				task = this.isLinkExists(id) ? this.getLink(id) : { id: id };
-
-			task = gantt.copy(task);
-
-			var data = {};
-			for (var key in task) {
-				if (key.substr(0, 1) == "$") continue;
-				var value = task[key];
-				if (helpers.isDate(value))
-					data[key] = this.templates.xml_format(value);
-				else if(value === null)
-					data[key] = "";
-				else
-					data[key] = value;
-			}
-
-			var taskTiming = this._get_task_timing_mode(task);
-			if(taskTiming.$no_start){
-				task.start_date = "";
-				task.duration = "";
-			}
-			if(taskTiming.$no_end){
-				task.end_date = "";
-				task.duration = "";
-			}
-			data[dp.action_param] = this.getUserData(id, dp.action_param);
-			return data;
-		}, gantt);
-	}
-
-	function extendGantt(gantt, dp){
-		gantt._change_id = gantt.bind(function(oldid, newid) {
-			if (dp._ganttMode != "tasks")
-				this.changeLinkId(oldid, newid);
-			else
-				this.changeTaskId(oldid, newid);
-		}, this);
-
-		gantt._row_style = function(row_id, classname){
-			if (dp._ganttMode != "tasks") return;
-			if(!gantt.isTaskExists(row_id))
-				return;
-
-			var task = gantt.getTask(row_id);
-			task.$dataprocessor_class = classname;
-			gantt.refreshTask(row_id);
-		};
-
-		// fake method for dataprocessor
-		gantt._delete_task = function(row_id, node){};
-
-		gantt._sendTaskOrder = function(id, item){
-			if(item.$drop_target){
-				dp.setGanttMode("tasks");
-				this.getTask(id).target = item.$drop_target;
-				dp.setUpdated(id, true,"order");
-				delete this.getTask(id).$drop_target;
-			}
-		};
-
-		this._dp = dp;
-	}
-
-	function attachDataProcessorEvents(gantt, dp){
-		function clientSideDelete(id){
-			var updated = dp.updatedRows.slice();
-			var clientOnly = false;
-
-			for(var i = 0; i < updated.length && !dp._in_progress[id]; i++){
-				if(updated[i] == id ){
-					if(gantt.getUserData(id, "!nativeeditor_status") == "inserted"){
-						clientOnly = true;
-					}
-					dp.setUpdated(id,false);
-				}
-			}
-			return clientOnly;
-		}
-
-		function getTaskLinks(task){
-			var links = [];
-
-			if (task.$source) {
-				links = links.concat(task.$source);
-			}
-			if (task.$target) {
-				links = links.concat(task.$target);
-			}
-
-			return links;
-		}
-
-		dataProcessorHandlers.push(this.attachEvent("onAfterTaskAdd", function(id, item) {
-			if(gantt.isTaskExists(id)){
-				dp.setGanttMode("tasks");
-				dp.setUpdated(id,true,"inserted");
-			}
-		}));
-		dataProcessorHandlers.push(this.attachEvent("onAfterTaskUpdate", function(id, item) {
-			if(gantt.isTaskExists(id)){
-				dp.setGanttMode("tasks");
-				dp.setUpdated(id,true);
-
-				gantt._sendTaskOrder(id, item);
-			}
-		}));
-
-		var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "./sources/utils/task_tree_helpers.js");
-		var cascadeDelete = {};
-
-		dataProcessorHandlers.push(this.attachEvent("onBeforeTaskDelete", function(id, item){
-			if(!gantt.config.cascade_delete){
-				return true;
-			}
-
-			cascadeDelete[id] = {
-				tasks: treeHelper.getSubtreeTasks(gantt, id),
-				links: treeHelper.getSubtreeLinks(gantt, id)
-			};
-			return true;
-		}));
-
-		dataProcessorHandlers.push(this.attachEvent("onAfterTaskDelete", function(id, item) {
-			dp.setGanttMode("tasks");
-
-			// not send delete request if item is not inserted into the db - just remove it from the client
-			var needDbDelete = !clientSideDelete(id);
-			if(!needDbDelete)
-				return;
-			
-			if(gantt.config.cascade_delete && cascadeDelete[id]){
-				var dpMode = dp.updateMode;
-				dp.setUpdateMode("off");
-
-				var cascade = cascadeDelete[id];
-				for(var i in cascade.tasks){
-					if(!clientSideDelete(i)){
-						dp.setUpdated(i, true, "deleted");
-					}
-				}
-				dp.setGanttMode("links");
-				for(var i in cascade.links){
-					if(!clientSideDelete(i)){
-						dp.setUpdated(i, true, "deleted");
-					}
-				}
-				cascadeDelete[id] = null;
-
-				if(dpMode != "off"){
-					dp.sendAllData();
-				}
-				dp.setGanttMode("tasks");
-
-				dp.setUpdateMode(dpMode);
-
-			}
-
-			dp.setUpdated(id,true,"deleted");
-
-			if(dp.updateMode != 'off' && !dp._tSend){
-				dp.sendAllData();
-			}
-
-		}));
-		dataProcessorHandlers.push(this.attachEvent("onAfterLinkUpdate", function(id, item) {
-			if(gantt.isLinkExists(id)){
-				dp.setGanttMode("links");
-				dp.setUpdated(id, true);
-			}
-		}));
-		dataProcessorHandlers.push(this.attachEvent("onAfterLinkAdd", function(id, item) {
-			if(gantt.isLinkExists(id)){
-				dp.setGanttMode("links");
-				dp.setUpdated(id, true,"inserted");
-			}
-		}));
-		dataProcessorHandlers.push(this.attachEvent("onAfterLinkDelete", function(id, item) {
-			dp.setGanttMode("links");
-
-			var needDbDelete = !clientSideDelete(id);
-			if(!needDbDelete)
-				return;
-
-			dp.setUpdated(id, true,"deleted");
-		}));
-		dataProcessorHandlers.push(this.attachEvent("onRowDragEnd", function(id, target) {
-			gantt._sendTaskOrder(id, gantt.getTask(id));
-		}));
-
-		var tasks = null,
-			links = null;
-		dataProcessorHandlers.push(this.attachEvent("onTaskIdChange",function(oldId, newId){
-			if(!dp._waitMode) return;
-
-			var children = gantt.getChildren(newId);
-			if(children.length) {
-				tasks = tasks || {};
-
-				for (var i = 0; i < children.length; i++) {
-					var ch = this.getTask(children[i]);
-					tasks[ch.id] = ch;
-				}
-			}
-
-			var item = this.getTask(newId),
-				itemLinks = getTaskLinks(item);
-
-			if(itemLinks.length) {
-				links = links || {};
-
-				for (var i = 0; i < itemLinks.length; i++) {
-					var link = this.getLink(itemLinks[i]);
-					links[link.id] = link;
-				}
-			}
-		}));
-
-		dp.attachEvent("onAfterUpdateFinish", function(){
-			if(tasks || links){
-				gantt.batchUpdate(function(){
-					for(var id in tasks){
-						gantt.updateTask(tasks[id].id);
-					}
-
-					for(var id in links){
-						gantt.updateLink(links[id].id);
-					}
-					tasks = null;
-					links = null;
-				});
-				if(tasks) {
-					gantt._dp.setGanttMode("tasks");
-				}else{
-					gantt._dp.setGanttMode("links");
-				}
-			}
-		});
-
-		dp.attachEvent("onBeforeDataSending", function() {
-			var url = this._serverProcessor;
-			if(this._tMode == "REST-JSON" || this._tMode == "REST"){
-				var mode = this._ganttMode.substr(0, this._ganttMode.length - 1);// links, tasks -> /link/id, /task/id
-
-				url = url.substring(0, url.indexOf("?") > -1 ? url.indexOf("?") : url.length);
-				//editing=true&
-				this.serverProcessor = url + (url.slice(-1) == "/" ? "" : "/") + mode;
-			}else{
-				this.serverProcessor = url + gantt.ajax.urlSeparator(url) + "gantt_mode=" + this._ganttMode;
-			}
-
-			return true;
-		});
-	}
-
-	var dataProcessorHandlers = [];
-
-	gantt._dp_init = function(dp) {
-		gantt.assert(!this._dp, "The dataProcessor is already attached to this gantt instance");
-
-		dp.setTransactionMode("POST", true);
-		dp.serverProcessor += (dp.serverProcessor.indexOf("?") != -1 ? "&" : "?") + "editing=true";
-		dp._serverProcessor = dp.serverProcessor;
-		dp.$gantt = this;
-		dp.styles = {
-			updated:"gantt_updated",
-			order:"gantt_updated",
-			inserted:"gantt_inserted",
-			deleted:"gantt_deleted",
-			invalid:"gantt_invalid",
-			error:"gantt_error",
-			clear:""
-		};
-
-		dp._methods=["_row_style","setCellTextStyle","_change_id","_delete_task"];
-
-		extendDataProcessor.call(this, gantt, dp);
-		extendGantt.call(this, gantt, dp);
-		attachDataProcessorEvents.call(this, gantt, dp);
-
-		dp.attachEvent("onDestroy", function(){
-			detachDataProcessor(gantt, dp);
-		});
-		liveUpdateHooks(gantt, dp);
-
-		gantt.callEvent("onDataProcessorReady", [dp]);
-	};
-
-	gantt.getUserData = function(id, name) {
-		if (!this.userdata) this.userdata = {};
-		if (this.userdata[id] && this.userdata[id][name]) return this.userdata[id][name];
-		return "";
-	};
-	gantt.setUserData = function(id, name, value) {
-		if (!this.userdata) this.userdata = {};
-		if (!this.userdata[id]) this.userdata[id] = {};
-		this.userdata[id][name] = value;
-	};
-}
-
-module.exports = addDataProcessorHooks;
-
-
-/***/ }),
-
-/***/ "./sources/core/dataprocessor/live_update_hooks.js":
-/*!*********************************************************!*\
-  !*** ./sources/core/dataprocessor/live_update_hooks.js ***!
-  \*********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var utils = __webpack_require__ (/*! ../../utils/utils */ "./sources/utils/utils.js");
-
-function updateCallback(upd, id) {
-	var data = upd.data || this.xml._xmlNodeToJSON(upd.firstChild);
-	if(!this.isTaskExists(id))
-		return;
-	var objData = this.getTask(id);
-	for(var key in data) {
-		var property = data[key];
-		switch(key) {
-			case "id":
-				continue;
-			case "start_date":
-			case "end_date":
-				property = this.templates.xml_date(property);
-				break;
-			case "duration":
-				objData.end_date = this.calculateEndDate({start_date: objData.start_date, duration: property, task:objData});
-				break;
-		}
-		objData[key] = property;
-	}
-	this.updateTask(id);
-	this.refreshData();
-}
-
-function insertCallback(upd, id, parent, mode) {
-	var data = upd.data || this.xml._xmlNodeToJSON(upd.firstChild),
-		methods = {
-			add: this.addTask,
-			isExist: this.isTaskExists
-		};
-	if(mode == "links") {
-		methods.add = this.addLink;
-		methods.isExist = this.isLinkExists;
-	}
-	if(methods.isExist.call(this, id))
-		return;
-	data.id = id;
-	methods.add.call(this, data);
-}
-
-function deleteCallback(upd, id, parent, mode) {
-	var methods = {
-		"delete": this.deleteTask,
-		"isExist": this.isTaskExists
-	};
-	if(mode == "links") {
-		methods["delete"] = this.deleteLink;
-		methods.isExist = this.isLinkExists;
-	}
-	if(methods.isExist.call(this, id))
-		methods["delete"].call(this, id);
-}
-
-function patchDataProcessor(gantt, dataprocessor){
-	dataprocessor.attachEvent("insertCallback", utils.bind(insertCallback, gantt));
-	dataprocessor.attachEvent("updateCallback",  utils.bind(updateCallback, gantt));
-	dataprocessor.attachEvent("deleteCallback",  utils.bind(deleteCallback, gantt));
-}
-
-module.exports = patchDataProcessor;
-
-/***/ }),
-
-/***/ "./sources/core/datastore/datastore.js":
-/*!*********************************************!*\
-  !*** ./sources/core/datastore/datastore.js ***!
-  \*********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var powerArray = __webpack_require__(/*! ./power_array */ "./sources/core/datastore/power_array.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
+var powerArray = __webpack_require__(/*! ./power_array */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\power_array.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
 
 var DataStore = function(config){
 	this.pull = {};
@@ -3644,16 +9720,16 @@ module.exports = DataStore;
 
 /***/ }),
 
-/***/ "./sources/core/datastore/datastore_hooks.js":
-/*!***************************************************!*\
-  !*** ./sources/core/datastore/datastore_hooks.js ***!
-  \***************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_hooks.js":
+/*!*********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/datastore/datastore_hooks.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var facadeFactory = __webpack_require__(/*! ./../facades/datastore */ "./sources/core/facades/datastore.js");
-var calculateScaleRange = __webpack_require__(/*! ../gantt_data_range */ "./sources/core/gantt_data_range.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var facadeFactory = __webpack_require__(/*! ./../facades/datastore */ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore.js");
+var calculateScaleRange = __webpack_require__(/*! ../gantt_data_range */ "c:\\www-recent\\gantt\\sources\\core\\gantt_data_range.js");
 function initDataStores(gantt){
 
 	var facade = facadeFactory.create();
@@ -3806,7 +9882,7 @@ function initDataStores(gantt){
 
 	(function(){
 		// delete all connected links after task is deleted
-		var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "./sources/utils/task_tree_helpers.js");
+		var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\task_tree_helpers.js");
 		var deletedLinks = {};
 
 		gantt.attachEvent("onBeforeTaskDelete", function(id, item){
@@ -3999,10 +10075,10 @@ module.exports = initDataStores;
 
 /***/ }),
 
-/***/ "./sources/core/datastore/datastore_render.js":
-/*!****************************************************!*\
-  !*** ./sources/core/datastore/datastore_render.js ***!
-  \****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_render.js":
+/*!**********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/datastore/datastore_render.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -4102,14 +10178,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/datastore/power_array.js":
-/*!***********************************************!*\
-  !*** ./sources/core/datastore/power_array.js ***!
-  \***********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\power_array.js":
+/*!*****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/datastore/power_array.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 var $powerArray  = {
 	$create: function(array){
@@ -4164,10 +10240,10 @@ module.exports = $powerArray;
 
 /***/ }),
 
-/***/ "./sources/core/datastore/select.js":
-/*!******************************************!*\
-  !*** ./sources/core/datastore/select.js ***!
-  \******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\select.js":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/datastore/select.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -4250,16 +10326,16 @@ module.exports = createDataStoreSelectMixin;
 
 /***/ }),
 
-/***/ "./sources/core/datastore/treedatastore.js":
-/*!*************************************************!*\
-  !*** ./sources/core/datastore/treedatastore.js ***!
-  \*************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\treedatastore.js":
+/*!*******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/datastore/treedatastore.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var powerArray = __webpack_require__(/*! ./power_array */ "./sources/core/datastore/power_array.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var DataStore = __webpack_require__(/*! ./datastore */ "./sources/core/datastore/datastore.js");
+var powerArray = __webpack_require__(/*! ./power_array */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\power_array.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var DataStore = __webpack_require__(/*! ./datastore */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore.js");
 
 var TreeDataStore = function(config){
 	DataStore.apply(this, [config]);
@@ -4730,10 +10806,10 @@ module.exports = TreeDataStore;
 
 /***/ }),
 
-/***/ "./sources/core/deprecated_warnings.js":
-/*!*********************************************!*\
-  !*** ./sources/core/deprecated_warnings.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\deprecated_warnings.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/deprecated_warnings.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -4771,10 +10847,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/destructor.js":
-/*!************************************!*\
-  !*** ./sources/core/destructor.js ***!
-  \************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\destructor.js":
+/*!******************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/destructor.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -4784,7 +10860,6 @@ function extend(gantt){
 		gantt.callEvent("onDestroy", []);
 
 		this.clearAll();
-		this.detachAllEvents();
 
 		if(this.$root){
 			delete this.$root.gantt;
@@ -4800,8 +10875,10 @@ function extend(gantt){
 		if(this._dp && this._dp.destructor){
 			this._dp.destructor();
 		}
-
 		this.$services.destructor();
+
+		// detachAllEvents should be called last, because in components may be attached events
+		this.detachAllEvents();
 
 		for(var i in this){
 			if(i.indexOf("$") === 0){
@@ -4816,10 +10893,10 @@ module.exports = extend;
 
 /***/ }),
 
-/***/ "./sources/core/dynamic_loading.gpl.js":
-/*!*********************************************!*\
-  !*** ./sources/core/dynamic_loading.gpl.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\dynamic_loading.gpl.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/dynamic_loading.gpl.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -4828,20 +10905,20 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/facades/datastore.js":
-/*!*******************************************!*\
-  !*** ./sources/core/facades/datastore.js ***!
-  \*******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore.js":
+/*!*************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/facades/datastore.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var createTasksFacade = __webpack_require__(/*! ./datastore_tasks */ "./sources/core/facades/datastore_tasks.js"),
-	createLinksFacade = __webpack_require__(/*! ./datastore_links */ "./sources/core/facades/datastore_links.js"),
-	DataStore = __webpack_require__(/*! ../datastore/datastore */ "./sources/core/datastore/datastore.js"),
-	TreeDataStore = __webpack_require__(/*! ../datastore/treedatastore */ "./sources/core/datastore/treedatastore.js"),
-	createDatastoreSelect = __webpack_require__(/*! ../datastore/select */ "./sources/core/datastore/select.js");
-var datastoreRender = __webpack_require__(/*! ../datastore/datastore_render */ "./sources/core/datastore/datastore_render.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var createTasksFacade = __webpack_require__(/*! ./datastore_tasks */ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_tasks.js"),
+	createLinksFacade = __webpack_require__(/*! ./datastore_links */ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_links.js"),
+	DataStore = __webpack_require__(/*! ../datastore/datastore */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore.js"),
+	TreeDataStore = __webpack_require__(/*! ../datastore/treedatastore */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\treedatastore.js"),
+	createDatastoreSelect = __webpack_require__(/*! ../datastore/select */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\select.js");
+var datastoreRender = __webpack_require__(/*! ../datastore/datastore_render */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_render.js");
 
 function getDatastores(){
 	var storeNames = this.$services.getService("datastores");
@@ -4988,14 +11065,14 @@ module.exports = {create: createFacade};
 
 /***/ }),
 
-/***/ "./sources/core/facades/datastore_links.js":
-/*!*************************************************!*\
-  !*** ./sources/core/facades/datastore_links.js ***!
-  \*************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_links.js":
+/*!*******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/facades/datastore_links.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 
 var createLinksStoreFacade = function(){
@@ -5040,14 +11117,14 @@ module.exports = createLinksStoreFacade;
 
 /***/ }),
 
-/***/ "./sources/core/facades/datastore_tasks.js":
-/*!*************************************************!*\
-  !*** ./sources/core/facades/datastore_tasks.js ***!
-  \*************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_tasks.js":
+/*!*******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/facades/datastore_tasks.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 var createTasksDatastoreFacade = function(){
 	return {
@@ -5209,10 +11286,10 @@ module.exports = createTasksDatastoreFacade;
 
 /***/ }),
 
-/***/ "./sources/core/facades/layout.js":
-/*!****************************************!*\
-  !*** ./sources/core/facades/layout.js ***!
-  \****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\layout.js":
+/*!**********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/facades/layout.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5478,15 +11555,15 @@ module.exports = createLayoutFacade;
 
 /***/ }),
 
-/***/ "./sources/core/facades/worktime_calendars.js":
-/*!****************************************************!*\
-  !*** ./sources/core/facades/worktime_calendars.js ***!
-  \****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\worktime_calendars.js":
+/*!**********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/facades/worktime_calendars.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 // TODO: rework public api for date methods
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 var createWorktimeFacade = function(calendarManager, timeCalculator){
 	return {
@@ -5536,18 +11613,18 @@ module.exports = { create: createWorktimeFacade };
 
 /***/ }),
 
-/***/ "./sources/core/gantt.js":
-/*!*******************************!*\
-  !*** ./sources/core/gantt.js ***!
-  \*******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\gantt.js":
+/*!*************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/gantt.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.less");
+__webpack_require__(/*! css/skins/terrace.less */ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.less");
 
 function DHXGantt(){
-	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.0.7";
+	this.constants = __webpack_require__(/*! ./../constants */ "c:\\www-recent\\gantt\\sources\\constants\\index.js");
+	this.version = "6.1.1";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -5560,13 +11637,13 @@ module.exports = function() {
 	// use a named constructor to make gantt instance discoverable in heap snapshots
 	var gantt = new DHXGantt();
 
-	__webpack_require__(/*! ./common/import */ "./sources/core/common/import.js")(gantt);
+	__webpack_require__(/*! ./common/import */ "c:\\www-recent\\gantt\\sources\\core\\common\\import.js")(gantt);
 
-	gantt.$services = gantt.$inject(__webpack_require__(/*! ./common/services */ "./sources/core/common/services.js"));
-	gantt.config = gantt.$inject(__webpack_require__(/*! ./common/config */ "./sources/core/common/config.js"));
-	gantt.ajax =  __webpack_require__(/*! ./common/ajax */ "./sources/core/common/ajax.js")(gantt);
-	gantt.date = __webpack_require__(/*! ./common/date */ "./sources/core/common/date.js")(gantt);
-	var dnd = __webpack_require__(/*! ./common/dnd */ "./sources/core/common/dnd.js")(gantt);
+	gantt.$services = gantt.$inject(__webpack_require__(/*! ./common/services */ "c:\\www-recent\\gantt\\sources\\core\\common\\services.js"));
+	gantt.config = gantt.$inject(__webpack_require__(/*! ./common/config */ "c:\\www-recent\\gantt\\sources\\core\\common\\config.js"));
+	gantt.ajax =  __webpack_require__(/*! ./common/ajax */ "c:\\www-recent\\gantt\\sources\\core\\common\\ajax.js")(gantt);
+	gantt.date = __webpack_require__(/*! ./common/date */ "c:\\www-recent\\gantt\\sources\\core\\common\\date.js")(gantt);
+	var dnd = __webpack_require__(/*! ./common/dnd */ "c:\\www-recent\\gantt\\sources\\core\\common\\dnd.js")(gantt);
 	gantt.$services.setService("dnd", function(){return dnd;});
 
 	gantt.$services.setService("config", function () {
@@ -5582,15 +11659,15 @@ module.exports = function() {
 		return gantt.templates;
 	});
 
-	var templatesLoader = __webpack_require__(/*! ./common/templates */ "./sources/core/common/templates.js")(gantt);
+	var templatesLoader = __webpack_require__(/*! ./common/templates */ "c:\\www-recent\\gantt\\sources\\core\\common\\templates.js")(gantt);
 	gantt.$services.setService("templateLoader", function () {
 		return templatesLoader;
 	});
 
-	var eventable = __webpack_require__(/*! ../utils/eventable */ "./sources/utils/eventable.js");
+	var eventable = __webpack_require__(/*! ../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
 	eventable(gantt);
 
-	var StateService = __webpack_require__(/*! ./common/state */ "./sources/core/common/state.js");
+	var StateService = __webpack_require__(/*! ./common/state */ "c:\\www-recent\\gantt\\sources\\core\\common\\state.js");
 	var stateService = new StateService();
 
 	stateService.registerProvider("global", function () {
@@ -5605,18 +11682,31 @@ module.exports = function() {
 		return stateService;
 	});
 
-	var utils = __webpack_require__(/*! ../utils/utils */ "./sources/utils/utils.js");
+	var utils = __webpack_require__(/*! ../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 	utils.mixin(gantt, utils);
-	gantt.env = __webpack_require__(/*! ../utils/env */ "./sources/utils/env.js");
 
-	var domEvents = __webpack_require__(/*! ../utils/dom_event_scope */ "./sources/utils/dom_event_scope.js")();
+	gantt.Promise = __webpack_require__(/*! ../utils/promise */ "c:\\www-recent\\gantt\\sources\\utils\\promise.js");
+	gantt.env = __webpack_require__(/*! ../utils/env */ "c:\\www-recent\\gantt\\sources\\utils\\env.js");
+
+	var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+	gantt.utils = {
+		dom: {
+			getNodePosition: domHelpers.getNodePosition,
+			getRelativeEventPosition: domHelpers.getRelativeEventPosition,
+			isChildOf: domHelpers.isChildOf,
+			hasClass: domHelpers.hasClass,
+			closest: domHelpers.closest
+		}
+	};
+
+	var domEvents = __webpack_require__(/*! ../utils/dom_event_scope */ "c:\\www-recent\\gantt\\sources\\utils\\dom_event_scope.js")();
 	gantt.event = domEvents.attach;
 	gantt.eventRemove = domEvents.detach;
 	gantt._eventRemoveAll = domEvents.detachAll;
 	gantt._createDomEventScope = domEvents.extend;
 
-	utils.mixin(gantt, __webpack_require__(/*! ./message */ "./sources/core/message.js")(gantt));
-	var uiApi = __webpack_require__(/*! ./ui/index */ "./sources/core/ui/index.js").init(gantt);
+	utils.mixin(gantt, __webpack_require__(/*! ./message */ "c:\\www-recent\\gantt\\sources\\core\\message.js")(gantt));
+	var uiApi = __webpack_require__(/*! ./ui/index */ "c:\\www-recent\\gantt\\sources\\core\\ui\\index.js").init(gantt);
 	gantt.$ui = uiApi.factory;
 	gantt.$ui.layers = uiApi.render;
 	gantt.$mouseEvents = uiApi.mouseEvents;
@@ -5625,63 +11715,66 @@ module.exports = function() {
 	});
 	gantt.mixin(gantt, uiApi.layersApi);
 
-	__webpack_require__(/*! ./data_task_layers */ "./sources/core/data_task_layers.gpl.js")(gantt);
+	__webpack_require__(/*! ./data_task_layers */ "c:\\www-recent\\gantt\\sources\\core\\data_task_layers.gpl.js")(gantt);
 
 	gantt.$services.setService("layers", function () {
 		return uiApi.layersService;
 	});
 
-	var createLayoutFacade = __webpack_require__(/*! ./facades/layout */ "./sources/core/facades/layout.js");
+	var createLayoutFacade = __webpack_require__(/*! ./facades/layout */ "c:\\www-recent\\gantt\\sources\\core\\facades\\layout.js");
 	gantt.mixin(gantt, createLayoutFacade());
 
-	__webpack_require__(/*! ./datastore/datastore_hooks */ "./sources/core/datastore/datastore_hooks.js")(gantt);
+	__webpack_require__(/*! ./datastore/datastore_hooks */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_hooks.js")(gantt);
 
-	__webpack_require__(/*! ./dataprocessor/hooks */ "./sources/core/dataprocessor/hooks.js")(gantt);
-	__webpack_require__(/*! ./plugins */ "./sources/core/plugins/index.js")(gantt);
+	var DataProcessor = __webpack_require__(/*! ./dataprocessor */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\index.js");
+	gantt.dataProcessor = DataProcessor.DEPRECATED_api;
+	gantt.createDataProcessor = DataProcessor.createDataProcessor;
 
-	__webpack_require__(/*! ./dynamic_loading */ "./sources/core/dynamic_loading.gpl.js")(gantt);
-	__webpack_require__(/*! ./grid_column_api */ "./sources/core/grid_column_api.gpl.js")(gantt);
-	__webpack_require__(/*! ./wai_aria */ "./sources/core/wai_aria.js")(gantt);
-	__webpack_require__(/*! ./tasks */ "./sources/core/tasks.js")(gantt);
-	__webpack_require__(/*! ./load */ "./sources/core/load.js")(gantt);
-	__webpack_require__(/*! ./worktime/work_time */ "./sources/core/worktime/work_time.js")(gantt);
-	__webpack_require__(/*! ./data */ "./sources/core/data.js")(gantt);
-	__webpack_require__(/*! ./lightbox */ "./sources/core/lightbox/index.js")(gantt);
-	__webpack_require__(/*! ./lightbox_optional_time */ "./sources/core/lightbox_optional_time.js")(gantt);
-	__webpack_require__(/*! ./data_task_types */ "./sources/core/data_task_types.gpl.js")(gantt);
-	__webpack_require__(/*! ./cached_functions */ "./sources/core/cached_functions.js")(gantt);
-	__webpack_require__(/*! ./skin */ "./sources/core/skin.js")(gantt);
-	__webpack_require__(/*! ../css/skins/skyblue */ "./sources/css/skins/skyblue.js")(gantt);
-	__webpack_require__(/*! ../css/skins/meadow */ "./sources/css/skins/meadow.js")(gantt);
-	__webpack_require__(/*! ../css/skins/terrace */ "./sources/css/skins/terrace.js")(gantt);
-	__webpack_require__(/*! ../css/skins/broadway */ "./sources/css/skins/broadway.js")(gantt);
-	__webpack_require__(/*! ../css/skins/material */ "./sources/css/skins/material.js")(gantt);
-	__webpack_require__(/*! ../css/skins/contrast_black */ "./sources/css/skins/contrast_black.js")(gantt);
-	__webpack_require__(/*! ../css/skins/contrast_white */ "./sources/css/skins/contrast_white.js")(gantt);
-	__webpack_require__(/*! ./touch */ "./sources/core/touch.js")(gantt);
-	__webpack_require__(/*! ../locale/locale */ "./sources/locale/locale.js")(gantt);
-	__webpack_require__(/*! ./gantt_core */ "./sources/core/gantt_core.js")(gantt);
-	__webpack_require__(/*! ./destructor */ "./sources/core/destructor.js")(gantt);
+	__webpack_require__(/*! ./plugins */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\index.js")(gantt);
+
+	__webpack_require__(/*! ./dynamic_loading */ "c:\\www-recent\\gantt\\sources\\core\\dynamic_loading.gpl.js")(gantt);
+	__webpack_require__(/*! ./grid_column_api */ "c:\\www-recent\\gantt\\sources\\core\\grid_column_api.gpl.js")(gantt);
+	__webpack_require__(/*! ./wai_aria */ "c:\\www-recent\\gantt\\sources\\core\\wai_aria.js")(gantt);
+	__webpack_require__(/*! ./tasks */ "c:\\www-recent\\gantt\\sources\\core\\tasks.js")(gantt);
+	__webpack_require__(/*! ./load */ "c:\\www-recent\\gantt\\sources\\core\\load.js")(gantt);
+	__webpack_require__(/*! ./worktime/work_time */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\work_time.js")(gantt);
+	__webpack_require__(/*! ./data */ "c:\\www-recent\\gantt\\sources\\core\\data.js")(gantt);
+	__webpack_require__(/*! ./lightbox */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\index.js")(gantt);
+	__webpack_require__(/*! ./lightbox_optional_time */ "c:\\www-recent\\gantt\\sources\\core\\lightbox_optional_time.js")(gantt);
+	__webpack_require__(/*! ./data_task_types */ "c:\\www-recent\\gantt\\sources\\core\\data_task_types.gpl.js")(gantt);
+	__webpack_require__(/*! ./cached_functions */ "c:\\www-recent\\gantt\\sources\\core\\cached_functions.js")(gantt);
+	__webpack_require__(/*! ./skin */ "c:\\www-recent\\gantt\\sources\\core\\skin.js")(gantt);
+	__webpack_require__(/*! ../css/skins/skyblue */ "c:\\www-recent\\gantt\\sources\\css\\skins\\skyblue.js")(gantt);
+	__webpack_require__(/*! ../css/skins/meadow */ "c:\\www-recent\\gantt\\sources\\css\\skins\\meadow.js")(gantt);
+	__webpack_require__(/*! ../css/skins/terrace */ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.js")(gantt);
+	__webpack_require__(/*! ../css/skins/broadway */ "c:\\www-recent\\gantt\\sources\\css\\skins\\broadway.js")(gantt);
+	__webpack_require__(/*! ../css/skins/material */ "c:\\www-recent\\gantt\\sources\\css\\skins\\material.js")(gantt);
+	__webpack_require__(/*! ../css/skins/contrast_black */ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_black.js")(gantt);
+	__webpack_require__(/*! ../css/skins/contrast_white */ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_white.js")(gantt);
+	__webpack_require__(/*! ./touch */ "c:\\www-recent\\gantt\\sources\\core\\touch.js")(gantt);
+	__webpack_require__(/*! ../locale/locale */ "c:\\www-recent\\gantt\\sources\\locale\\locale.js")(gantt);
+	__webpack_require__(/*! ./gantt_core */ "c:\\www-recent\\gantt\\sources\\core\\gantt_core.js")(gantt);
+	__webpack_require__(/*! ./destructor */ "c:\\www-recent\\gantt\\sources\\core\\destructor.js")(gantt);
 
 	return gantt;
 };
 
 /***/ }),
 
-/***/ "./sources/core/gantt_core.js":
-/*!************************************!*\
-  !*** ./sources/core/gantt_core.js ***!
-  \************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\gantt_core.js":
+/*!******************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/gantt_core.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
-	helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
+var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
+	helpers = __webpack_require__(/*! ../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 module.exports = function(gantt){
-	var calculateScaleRange = __webpack_require__(/*! ./gantt_data_range */ "./sources/core/gantt_data_range.js");
+	var calculateScaleRange = __webpack_require__(/*! ./gantt_data_range */ "c:\\www-recent\\gantt\\sources\\core\\gantt_data_range.js");
 
-	gantt.assert = __webpack_require__(/*! ./common/assert */ "./sources/core/common/assert.js")(gantt);
+	gantt.assert = __webpack_require__(/*! ./common/assert */ "c:\\www-recent\\gantt\\sources\\core\\common\\assert.js")(gantt);
 
 //initial initialization
 	gantt.init = function(node, from, to){
@@ -5973,14 +12066,14 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/gantt_data_range.js":
-/*!******************************************!*\
-  !*** ./sources/core/gantt_data_range.js ***!
-  \******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\gantt_data_range.js":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/gantt_data_range.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ScaleHelper = __webpack_require__(/*! ./ui/timeline/scales_ignore */ "./sources/core/ui/timeline/scales.js");
+var ScaleHelper = __webpack_require__(/*! ./ui/timeline/scales_ignore */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\scales.js");
 
 
 function dateRangeResolver(gantt){
@@ -6084,10 +12177,10 @@ module.exports = function updateTasksRange(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/grid_column_api.gpl.js":
-/*!*********************************************!*\
-  !*** ./sources/core/grid_column_api.gpl.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\grid_column_api.gpl.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/grid_column_api.gpl.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6110,10 +12203,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/base_control.js":
-/*!********************************************************!*\
-  !*** ./sources/core/lightbox/controls/base_control.js ***!
-  \********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js":
+/*!**************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/base_control.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6136,18 +12229,18 @@ module.exports = function(gantt) { // we could send current instance of gantt to
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/checkbox_control.js":
-/*!************************************************************!*\
-  !*** ./sources/core/lightbox/controls/checkbox_control.js ***!
-  \************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\checkbox_control.js":
+/*!******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/checkbox_control.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var helpers = __webpack_require__(/*! ../../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function CheckboxControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -6198,17 +12291,119 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/duration_control.js":
-/*!************************************************************!*\
-  !*** ./sources/core/lightbox/controls/duration_control.js ***!
-  \************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\constraint_control.js":
+/*!********************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/constraint_control.js ***!
+  \********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\html_helpers.js");
+
+module.exports = function (gantt) {
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+
+	function ConstraintControl() {
+		var self = _super.apply(this, arguments) || this;
+		return self;
+	}
+
+	__extends(ConstraintControl, _super);
+
+	function isNonTimedConstraint(value) {
+		if (!value || value === gantt.config.constraint_types.ASAP || value === gantt.config.constraint_types.ALAP) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function toggleTimeSelect(timeSelects, typeValue) {
+		var isNonTimed = isNonTimedConstraint(typeValue);
+		for (var i = 0; i < timeSelects.length; i++) {
+			timeSelects[i].disabled = isNonTimed;
+		}
+	}
+
+	ConstraintControl.prototype.render = function (sns) {
+		var height = (sns.height || 30) + "px";
+		var html = "<div class='gantt_cal_ltext gantt_section_" + sns.name + "' style='height:" + height + ";'>";
+
+		var options = [];
+		for (var i in gantt.config.constraint_types) {
+			options.push({ key: gantt.config.constraint_types[i], label: gantt.locale.labels[gantt.config.constraint_types[i]] });
+		}
+
+		sns.options = sns.options || options;
+
+		html += "<span data-constraint-type-select>" + htmlHelpers.getHtmlSelect(sns.options, [{ key: "data-type", value: "constraint-type" }]) + "</span>";
+
+		var timeLabel = gantt.locale.labels["constraint_date"] || "Constraint date";
+		html += "<label data-constraint-time-select>" + timeLabel + ": " + gantt.form_blocks.getTimePicker.call(this, sns) + "</label>";
+
+		html += "</div>";
+		return html;
+	};
+
+	ConstraintControl.prototype.set_value = function (node, value, task, config) {
+		var typeSelect = node.querySelector("[data-constraint-type-select] select");
+		var timeSelects = node.querySelectorAll("[data-constraint-time-select] select");
+		var map = config._time_format_order;
+
+		var mapping = gantt._resolve_default_mapping(config);
+
+		if (!typeSelect._eventsInitialized) {
+			typeSelect.addEventListener("input", function (e) {
+				toggleTimeSelect(timeSelects, e.target.value);
+			});
+			typeSelect._eventsInitialized = true;
+		}
+
+		var constraintDate = task[mapping.constraint_date] || new Date();
+		gantt.form_blocks._fill_lightbox_select(timeSelects, 0, constraintDate, map, config);
+
+		var constraintType = task[mapping.constraint_type] || gantt.getConstraintType(task);
+		typeSelect.value = constraintType;
+		toggleTimeSelect(timeSelects, constraintType);
+	};
+
+	ConstraintControl.prototype.get_value = function (node, task, config) {
+		var typeSelect = node.querySelector("[data-constraint-type-select] select");
+		var timeSelects = node.querySelectorAll("[data-constraint-time-select] select");
+
+		var constraintType = typeSelect.value;
+		var constraintDate = null;
+		if (!isNonTimedConstraint(constraintType)) {
+			constraintDate = gantt.form_blocks.getTimePickerValue(timeSelects, config);
+		}
+
+		return {
+			constraint_type: constraintType,
+			constraint_date: constraintDate
+		};
+	};
+
+	ConstraintControl.prototype.focus = function (node) {
+		gantt._focus(node.querySelector("select"));
+	};
+
+	return ConstraintControl;
+};
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\duration_control.js":
+/*!******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/duration_control.js ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function DurationControl() {
 		var self = _super.apply(this, arguments) || this; 
@@ -6372,17 +12567,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/parent_control.js":
-/*!**********************************************************!*\
-  !*** ./sources/core/lightbox/controls/parent_control.js ***!
-  \**********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\parent_control.js":
+/*!****************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/parent_control.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./select_control */ "./sources/core/lightbox/controls/select_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./select_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js")(gantt);
 
 	function ParentControl() {
 		var self = _super.apply(this, arguments) || this; 
@@ -6457,17 +12652,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/radio_control.js":
-/*!*********************************************************!*\
-  !*** ./sources/core/lightbox/controls/radio_control.js ***!
-  \*********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\radio_control.js":
+/*!***************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/radio_control.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function RadioControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -6524,18 +12719,18 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/select_control.js":
-/*!**********************************************************!*\
-  !*** ./sources/core/lightbox/controls/select_control.js ***!
-  \**********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js":
+/*!****************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/select_control.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
-var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "./sources/utils/html_helpers.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\html_helpers.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function SelectControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -6579,17 +12774,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/template_control.js":
-/*!************************************************************!*\
-  !*** ./sources/core/lightbox/controls/template_control.js ***!
-  \************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\template_control.js":
+/*!******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/template_control.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function TemplateControl() {
 		var self = _super.apply(this, arguments) || this; 
@@ -6619,17 +12814,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/textarea_control.js":
-/*!************************************************************!*\
-  !*** ./sources/core/lightbox/controls/textarea_control.js ***!
-  \************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\textarea_control.js":
+/*!******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/textarea_control.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function TextareaControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -6666,28 +12861,27 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/controls/time_control.js":
-/*!********************************************************!*\
-  !*** ./sources/core/lightbox/controls/time_control.js ***!
-  \********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\time_control.js":
+/*!**************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/controls/time_control.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
-module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
+module.exports = function (gantt) {
+	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
 
 	function TimeControl() {
 		var self = _super.apply(this, arguments) || this;
 
-		return self; 
+		return self;
 	}
 
 	__extends(TimeControl, _super);
 
-
-	TimeControl.prototype.render = function(sns) {
+	TimeControl.prototype.render = function (sns) {
 		var time = gantt.form_blocks.getTimePicker.call(this, sns);
 		var html = "<div style='height:" + (sns.height || 30) + "px;padding-top:0px;font-size:inherit;text-align:center;' class='gantt_section_time'>";
 		html += time;
@@ -6704,15 +12898,15 @@ module.exports = function(gantt) {
 		return html;
 	};
 
-	TimeControl.prototype.set_value = function(node, value, ev, config) {
+	TimeControl.prototype.set_value = function (node, value, ev, config) {
 		var cfg = config;
 		var s = node.getElementsByTagName("select");
 		var map = config._time_format_order;
 
 		if (cfg.auto_end_date) {
-			var _update_lightbox_select = function() {
+			var _update_lightbox_select = function () {
 				start_date = new Date(s[map[2]].value, s[map[1]].value, s[map[0]].value, 0, 0);
-				end_date = gantt.calculateEndDate({start_date: start_date, duration: 1, task: ev});
+				end_date = gantt.calculateEndDate({ start_date: start_date, duration: 1, task: ev });
 				gantt.form_blocks._fill_lightbox_select(s, map.size, end_date, map, cfg);
 			};
 			for (var i = 0; i < 4; i++) {
@@ -6722,7 +12916,7 @@ module.exports = function(gantt) {
 
 		var mapping = gantt._resolve_default_mapping(config);
 
-		if (typeof(mapping) === "string") mapping = {start_date: mapping};
+		if (typeof (mapping) === "string") mapping = { start_date: mapping };
 
 		var start_date = ev[mapping.start_date] || new Date();
 		var end_date = ev[mapping.end_date] || gantt.calculateEndDate({
@@ -6735,14 +12929,12 @@ module.exports = function(gantt) {
 		gantt.form_blocks._fill_lightbox_select(s, map.size, end_date, map, cfg);
 	};
 
-	TimeControl.prototype.get_value = function(node, ev, config) {
+	TimeControl.prototype.get_value = function (node, ev, config) {
 		var selects = node.getElementsByTagName("select");
-		var map = config._time_format_order;
-		var needSetTime = gantt.defined(map[3]);
 		var startDate;
-
-		function _getEndDate(selects, map, needSetTime, startDate) {
-			var endDate = _getDate(selects, map, needSetTime, map.size);
+		var map = config._time_format_order;
+		function _getEndDate(selects, map, startDate) {
+			var endDate = gantt.form_blocks.getTimePickerValue(selects, config, map.size);
 
 			if (endDate <= startDate) {
 				return gantt.date.add(startDate, gantt._get_timepicker_step(), "minute");
@@ -6750,22 +12942,7 @@ module.exports = function(gantt) {
 			return endDate;
 		}
 
-		function _getDate(selects, map, needSetTime, mapOffset) {
-			var time;
-			var hours = 0;
-			var minutes = 0;
-
-			mapOffset = mapOffset || 0;
-
-			if (needSetTime) {
-				time = parseInt(selects[map[3] + mapOffset].value, 10);
-				hours = Math.floor(time / 60);
-				minutes = time % 60;
-			}
-			return new Date(selects[map[2] + mapOffset].value, selects[map[1] + mapOffset].value, selects[map[0] + mapOffset].value, hours, minutes);
-		}
-
-		startDate = _getDate(selects, map, needSetTime);
+		startDate = gantt.form_blocks.getTimePickerValue(selects, config);
 
 		if (typeof gantt._resolve_default_mapping(config) === "string") {
 			return startDate;
@@ -6773,11 +12950,11 @@ module.exports = function(gantt) {
 
 		return {
 			start_date: startDate,
-			end_date: _getEndDate(selects, map, needSetTime, startDate)
+			end_date: _getEndDate(selects, map, startDate)
 		};
 	};
 
-	TimeControl.prototype.focus = function(node) {
+	TimeControl.prototype.focus = function (node) {
 		gantt._focus(node.getElementsByTagName("select")[0]);
 	};
 
@@ -6786,26 +12963,27 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox/index.js":
-/*!****************************************!*\
-  !*** ./sources/core/lightbox/index.js ***!
-  \****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\index.js":
+/*!**********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox/index.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = function(gantt) {
-	var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
-	var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+module.exports = function (gantt) {
+	var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+	var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
-	var TemplateControl = __webpack_require__(/*! ./controls/template_control */ "./sources/core/lightbox/controls/template_control.js")(gantt);
-	var TextareaControl = __webpack_require__(/*! ./controls/textarea_control */ "./sources/core/lightbox/controls/textarea_control.js")(gantt);
-	var TimeControl = __webpack_require__(/*! ./controls/time_control */ "./sources/core/lightbox/controls/time_control.js")(gantt);
-	var SelectControl = __webpack_require__(/*! ./controls/select_control */ "./sources/core/lightbox/controls/select_control.js")(gantt);
-	var CheckboxControl = __webpack_require__(/*! ./controls/checkbox_control */ "./sources/core/lightbox/controls/checkbox_control.js")(gantt);
-	var RadioControl = __webpack_require__(/*! ./controls/radio_control */ "./sources/core/lightbox/controls/radio_control.js")(gantt);
-	var DurationControl = __webpack_require__(/*! ./controls/duration_control */ "./sources/core/lightbox/controls/duration_control.js")(gantt);
-	var ParentControl = __webpack_require__(/*! ./controls/parent_control */ "./sources/core/lightbox/controls/parent_control.js")(gantt);
-	var ResourcesControl = __webpack_require__(/*! ./controls/resources_control */ "./sources/core/lightbox/controls/select_control.js")(gantt);
+	var TemplateControl = __webpack_require__(/*! ./controls/template_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\template_control.js")(gantt);
+	var TextareaControl = __webpack_require__(/*! ./controls/textarea_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\textarea_control.js")(gantt);
+	var TimeControl = __webpack_require__(/*! ./controls/time_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\time_control.js")(gantt);
+	var SelectControl = __webpack_require__(/*! ./controls/select_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js")(gantt);
+	var CheckboxControl = __webpack_require__(/*! ./controls/checkbox_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\checkbox_control.js")(gantt);
+	var RadioControl = __webpack_require__(/*! ./controls/radio_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\radio_control.js")(gantt);
+	var DurationControl = __webpack_require__(/*! ./controls/duration_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\duration_control.js")(gantt);
+	var ParentControl = __webpack_require__(/*! ./controls/parent_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\parent_control.js")(gantt);
+	var ResourcesControl = __webpack_require__(/*! ./controls/resources_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js")(gantt);
+	var ConstraintControl = __webpack_require__(/*! ./controls/constraint_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\constraint_control.js")(gantt);
 
 
 	gantt._lightbox_methods = {};
@@ -6814,13 +12992,13 @@ module.exports = function(gantt) {
 
 	//TODO: gantt._lightbox_id is changed from data.js and accessed from autoscheduling, check if it can be removed from gantt object
 	var state = gantt.$services.getService("state");
-	state.registerProvider("lightbox", function(){
+	state.registerProvider("lightbox", function () {
 		return {
 			lightbox: gantt._lightbox_id
 		};
 	});
 
-	gantt.showLightbox = function(id) {
+	gantt.showLightbox = function (id) {
 		if (!id || gantt.isReadonly(this.getTask(id))) return;
 		if (!this.callEvent("onBeforeLightbox", [id])) return;
 
@@ -6838,14 +13016,14 @@ module.exports = function(gantt) {
 
 	function _is_chart_visible(gantt) {
 		var timeline = gantt.$ui.getView("timeline");
-		if(timeline && timeline.isVisible()){
+		if (timeline && timeline.isVisible()) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	gantt._get_timepicker_step = function() {
+	gantt._get_timepicker_step = function () {
 		if (this.config.round_dnd_dates) {
 			var step;
 			if (_is_chart_visible(this)) {
@@ -6853,14 +13031,14 @@ module.exports = function(gantt) {
 				step = (helpers.getSecondsInUnit(scale.unit) * scale.step) / 60;//timepicker step is measured in minutes
 			}
 
-			if(!step || step >= 60 * 24){
+			if (!step || step >= 60 * 24) {
 				step = this.config.time_step;
 			}
 			return step;
 		}
 		return this.config.time_step;
 	};
-	gantt.getLabel = function(property, key) {
+	gantt.getLabel = function (property, key) {
 		var sections = this._get_typed_lightbox_config();
 		for (var i = 0; i < sections.length; i++) {
 			if (sections[i].map_to == property) {
@@ -6875,7 +13053,7 @@ module.exports = function(gantt) {
 		return "";
 	};
 
-	gantt.updateCollection = function(list_name, collection) {
+	gantt.updateCollection = function (list_name, collection) {
 		collection = collection.slice(0);
 		var list = gantt.serverList(list_name);
 		if (!list) return false;
@@ -6883,10 +13061,10 @@ module.exports = function(gantt) {
 		list.push.apply(list, collection || []);
 		gantt.resetLightbox();
 	};
-	gantt.getLightboxType = function() {
+	gantt.getLightboxType = function () {
 		return this.getTaskType(this._lightbox_type);
 	};
-	gantt.getLightbox = function(type) {
+	gantt.getLightbox = function (type) {
 		var lightboxDiv;
 		var fullWidth;
 		var html;
@@ -6925,7 +13103,7 @@ module.exports = function(gantt) {
 
 			if (gantt.config.drag_lightbox) {
 				lightboxDiv.firstChild.onmousedown = gantt._ready_to_dnd;
-				lightboxDiv.firstChild.onselectstart = function() {
+				lightboxDiv.firstChild.onselectstart = function () {
 					return false;
 				};
 				lightboxDiv.firstChild.style.cursor = "pointer";
@@ -6953,7 +13131,7 @@ module.exports = function(gantt) {
 		return this._lightbox;
 	};
 
-	gantt._render_sections = function(sns) {
+	gantt._render_sections = function (sns) {
 		var html = "";
 		for (var i = 0; i < sns.length; i++) {
 			var block = this.form_blocks[sns[i].type];
@@ -6975,7 +13153,7 @@ module.exports = function(gantt) {
 	};
 
 
-	gantt.resizeLightbox = function() {
+	gantt.resizeLightbox = function () {
 		if (!this._lightbox) return;
 
 		var con = this._lightbox.childNodes[1];
@@ -6985,7 +13163,7 @@ module.exports = function(gantt) {
 		con.style.height = con.scrollHeight + "px"; //it is incredible , how ugly IE can be
 	};
 
-	gantt._center_lightbox = function(box) {
+	gantt._center_lightbox = function (box) {
 		if (box) {
 			box.style.display = "block";
 
@@ -7006,7 +13184,7 @@ module.exports = function(gantt) {
 				box.style.left = Math.round((document.body.offsetWidth - box.offsetWidth) / 2) + "px";
 		}
 	};
-	gantt.showCover = function() {
+	gantt.showCover = function () {
 		if (this._cover) return;
 
 		this._cover = document.createElement("DIV");
@@ -7018,16 +13196,16 @@ module.exports = function(gantt) {
 	};
 
 
-	gantt._init_lightbox_events = function() {
+	gantt._init_lightbox_events = function () {
 		gantt.lightbox_events = {};
 
 
-		gantt.lightbox_events.gantt_save_btn = function() {
+		gantt.lightbox_events.gantt_save_btn = function () {
 			gantt._save_lightbox();
 		};
 
 
-		gantt.lightbox_events.gantt_delete_btn = function() {
+		gantt.lightbox_events.gantt_delete_btn = function () {
 			if (!gantt.callEvent("onLightboxDelete", [gantt._lightbox_id]))
 				return;
 
@@ -7040,12 +13218,12 @@ module.exports = function(gantt) {
 		};
 
 
-		gantt.lightbox_events.gantt_cancel_btn = function() {
+		gantt.lightbox_events.gantt_cancel_btn = function () {
 			gantt._cancel_lightbox();
 		};
 
 
-		gantt.lightbox_events["default"] = function(e, src) {
+		gantt.lightbox_events["default"] = function (e, src) {
 			if (src.getAttribute("data-dhx-button")) {
 				gantt.callEvent("onLightboxButton", [src.className, src, e]);
 			} else {
@@ -7075,7 +13253,7 @@ module.exports = function(gantt) {
 				}
 			}
 		};
-		this.event(gantt.getLightbox(), "click", function(e) {
+		this.event(gantt.getLightbox(), "click", function (e) {
 			e = e || window.event;
 			var src = e.target ? e.target : e.srcElement;
 
@@ -7095,41 +13273,41 @@ module.exports = function(gantt) {
 			return false;
 		});
 
-		gantt.getLightbox().onkeydown = function(e) {
+		gantt.getLightbox().onkeydown = function (e) {
 			var event = e || window.event;
 			var target = e.target || e.srcElement;
 			var buttonTarget = domHelpers.getClassName(target).indexOf("gantt_btn_set") > -1;
 
 			switch ((e || event).keyCode) {
-			case gantt.constants.KEY_CODES.SPACE: {
-				if ((e || event).shiftKey) return;
-				if (buttonTarget && target.click) {
-					target.click();
+				case gantt.constants.KEY_CODES.SPACE: {
+					if ((e || event).shiftKey) return;
+					if (buttonTarget && target.click) {
+						target.click();
+					}
+					break;
 				}
-				break;
-			}
-			case gantt.keys.edit_save:
-				if ((e || event).shiftKey) return;
-				if (buttonTarget && target.click) {
-					target.click();
-				} else {
-					gantt._save_lightbox();
-				}
-				break;
-			case gantt.keys.edit_cancel:
-				gantt._cancel_lightbox();
-				break;
-			default:
-				break;
+				case gantt.keys.edit_save:
+					if ((e || event).shiftKey) return;
+					if (buttonTarget && target.click) {
+						target.click();
+					} else {
+						gantt._save_lightbox();
+					}
+					break;
+				case gantt.keys.edit_cancel:
+					gantt._cancel_lightbox();
+					break;
+				default:
+					break;
 			}
 		};
 	};
 
-	gantt._cancel_lightbox = function() {
+	gantt._cancel_lightbox = function () {
 		var task = this.getLightboxValues();
 		this.callEvent("onLightboxCancel", [this._lightbox_id, task.$new]);
 		if (gantt.isTaskExists(task.id) && task.$new) {
-			this.silent(function(){
+			this.silent(function () {
 				gantt.$data.tasksStore.removeItem(task.id);
 				gantt._update_flags(task.id, null);
 			});
@@ -7139,7 +13317,7 @@ module.exports = function(gantt) {
 		this.hideLightbox();
 	};
 
-	gantt._save_lightbox = function() {
+	gantt._save_lightbox = function () {
 		var task = this.getLightboxValues();
 		if (!this.callEvent("onLightboxSave", [this._lightbox_id, task, !!task.$new]))
 			return;
@@ -7147,7 +13325,7 @@ module.exports = function(gantt) {
 		if (task.$new) {
 			delete task.$new;
 			this.addTask(task);
-		}else if(this.isTaskExists(task.id)){
+		} else if (this.isTaskExists(task.id)) {
 			this.mixin(this.getTask(task.id), task, true);
 			this.refreshTask(task.id);
 			this.updateTask(task.id);
@@ -7158,21 +13336,25 @@ module.exports = function(gantt) {
 		this.hideLightbox();
 	};
 
-	gantt._resolve_default_mapping = function(section) {
+	gantt._resolve_default_mapping = function (section) {
 		var mapping = section.map_to;
-		var time_controls = {"time": true, "time_optional": true, "duration": true, "duration_optional": true};
+		var time_controls = { "time": true, "time_optional": true, "duration": true, "duration_optional": true };
 		if (time_controls[section.type]) {
 			if (section.map_to == "auto") {
-				mapping = {start_date: "start_date", end_date: "end_date", duration: "duration"};
-			} else if (typeof(section.map_to) === "string") {
-				mapping = {start_date: section.map_to};
+				mapping = { start_date: "start_date", end_date: "end_date", duration: "duration" };
+			} else if (typeof (section.map_to) === "string") {
+				mapping = { start_date: section.map_to };
+			}
+		} else if (section.type === "constraint") {
+			if (!section.map_to || typeof (section.map_to) === "string") {
+				mapping = { constraint_type: "constraint_type", constraint_date: "constraint_date" };
 			}
 		}
 
 		return mapping;
 	};
 
-	gantt.getLightboxValues = function() {
+	gantt.getLightboxValues = function () {
 		var task = {};
 
 		if (gantt.isTaskExists(this._lightbox_id)) {
@@ -7200,7 +13382,7 @@ module.exports = function(gantt) {
 	};
 
 
-	gantt.hideLightbox = function() {
+	gantt.hideLightbox = function () {
 		var box = this.getLightbox();
 		if (box) box.style.display = "none";
 
@@ -7210,18 +13392,19 @@ module.exports = function(gantt) {
 		this.hideCover();
 		this.callEvent("onAfterLightbox", []);
 	};
-	gantt.hideCover = function() {
+	gantt.hideCover = function () {
 		if (this._cover)
 			this._cover.parentNode.removeChild(this._cover);
 		this._cover = null;
 	};
 
-	gantt.resetLightbox = function() {
+	gantt.resetLightbox = function () {
 		if (gantt._lightbox && !gantt._custom_lightbox)
 			gantt._lightbox.parentNode.removeChild(gantt._lightbox);
 		gantt._lightbox = null;
+		gantt.hideCover();
 	};
-	gantt._set_lightbox_values = function(data, box) {
+	gantt._set_lightbox_values = function (data, box) {
 		var task = data;
 		var s = box.getElementsByTagName("span");
 		var lightboxHeader = [];
@@ -7232,9 +13415,9 @@ module.exports = function(gantt) {
 			s[2].innerHTML = gantt.templates.lightbox_header(task.start_date, task.end_date, task);
 		} else {
 			lightboxHeader.push(this.templates.task_time(task.start_date, task.end_date, task));
-			lightboxHeader.push((this.templates.task_text(task.start_date, task.end_date, task) || "").substr(0, 70)); //IE6 fix
+			lightboxHeader.push(String(this.templates.task_text(task.start_date, task.end_date, task) || "").substr(0, 70)); //IE6 fix
 			s[1].innerHTML = this.templates.task_time(task.start_date, task.end_date, task);
-			s[2].innerHTML = (this.templates.task_text(task.start_date, task.end_date, task) || "").substr(0, 70); //IE6 fix
+			s[2].innerHTML = String(this.templates.task_text(task.start_date, task.end_date, task) || "").substr(0, 70); //IE6 fix
 		}
 		s[1].innerHTML = lightboxHeader[0];
 		s[2].innerHTML = lightboxHeader[1];
@@ -7262,13 +13445,13 @@ module.exports = function(gantt) {
 		if (data.id)
 			gantt._lightbox_id = data.id;
 	};
-	gantt._fill_lightbox = function(id, box) {
+	gantt._fill_lightbox = function (id, box) {
 		var task = this.getTask(id);
 		this._set_lightbox_values(task, box);
 	};
 
 
-	gantt.getLightboxSection = function(name) {
+	gantt.getLightboxSection = function (name) {
 		var config = this._get_typed_lightbox_config();
 		var i = 0;
 		for (i; i < config.length; i++)
@@ -7287,10 +13470,10 @@ module.exports = function(gantt) {
 			section: section,
 			header: header,
 			node: node,
-			getValue: function(ev) {
+			getValue: function (ev) {
 				return gantt.form_blocks[section.type].get_value.call(gantt, node, (ev || {}), section);
 			},
-			setValue: function(value, ev) {
+			setValue: function (value, ev) {
 				return gantt.form_blocks[section.type].set_value.call(gantt, node, value, (ev || {}), section);
 			}
 		};
@@ -7299,31 +13482,31 @@ module.exports = function(gantt) {
 		return handler ? handler(result) : result;
 	};
 
-	gantt._lightbox_methods.get_template_control = function(result) {
+	gantt._lightbox_methods.get_template_control = function (result) {
 		result.control = result.node;
 		return result;
 	};
-	gantt._lightbox_methods.get_select_control = function(result) {
+	gantt._lightbox_methods.get_select_control = function (result) {
 		result.control = result.node.getElementsByTagName("select")[0];
 		return result;
 	};
-	gantt._lightbox_methods.get_textarea_control = function(result) {
+	gantt._lightbox_methods.get_textarea_control = function (result) {
 		result.control = result.node.getElementsByTagName("textarea")[0];
 		return result;
 	};
-	gantt._lightbox_methods.get_time_control = function(result) {
+	gantt._lightbox_methods.get_time_control = function (result) {
 		result.control = result.node.getElementsByTagName("select"); // array
 		return result;
 	};
 
 
-	gantt._init_dnd_events = function() {
+	gantt._init_dnd_events = function () {
 		this.event(document.body, "mousemove", gantt._move_while_dnd);
 		this.event(document.body, "mouseup", gantt._finish_dnd);
-		gantt._init_dnd_events = function() {
+		gantt._init_dnd_events = function () {
 		};
 	};
-	gantt._move_while_dnd = function(e) {
+	gantt._move_while_dnd = function (e) {
 		if (gantt._dnd_start_lb) {
 			if (!document.gantt_unselectable) {
 				document.body.className += " gantt_unselectable";
@@ -7335,12 +13518,12 @@ module.exports = function(gantt) {
 			lb.style.left = gantt._lb_start[0] + now[0] - gantt._dnd_start_lb[0] + "px";
 		}
 	};
-	gantt._ready_to_dnd = function(e) {
+	gantt._ready_to_dnd = function (e) {
 		var lb = gantt.getLightbox();
 		gantt._lb_start = [parseInt(lb.style.left, 10), parseInt(lb.style.top, 10)];
 		gantt._dnd_start_lb = (e && e.target) ? [e.pageX, e.pageY] : [event.clientX, event.clientY];
 	};
-	gantt._finish_dnd = function() {
+	gantt._finish_dnd = function () {
 		if (gantt._lb_start) {
 			gantt._lb_start = gantt._dnd_start_lb = false;
 			document.body.className = document.body.className.replace(" gantt_unselectable", "");
@@ -7349,7 +13532,7 @@ module.exports = function(gantt) {
 	};
 
 
-	gantt._focus = function(node, select) {
+	gantt._focus = function (node, select) {
 		if (node && node.focus) {
 			if (gantt.config.touch) {
 				//do not focus editor, to prevent auto-zoom
@@ -7366,7 +13549,7 @@ module.exports = function(gantt) {
 
 
 	gantt.form_blocks = {
-		getTimePicker: function(sns, hidden) {
+		getTimePicker: function (sns, hidden) {
 			var html = "";
 			var cfg = this.config;
 			var i;
@@ -7382,7 +13565,7 @@ module.exports = function(gantt) {
 			};
 
 			// map: default order => real one
-			sns._time_format_order = {size: 0};
+			sns._time_format_order = { size: 0 };
 
 			if (gantt.config.limit_time_select) {
 				settings.first = 60 * cfg.first_hour;
@@ -7407,7 +13590,25 @@ module.exports = function(gantt) {
 			}
 			return html;
 		},
-		_fill_lightbox_select: function(s, i, d, map) {
+		getTimePickerValue: function (selects, config, offset) {
+			var map = config._time_format_order;
+			var needSetTime = gantt.defined(map[3]);
+
+			var time;
+			var hours = 0;
+			var minutes = 0;
+
+			var mapOffset = offset || 0;
+
+			if (needSetTime) {
+				time = parseInt(selects[map[3] + mapOffset].value, 10);
+				hours = Math.floor(time / 60);
+				minutes = time % 60;
+			}
+			return new Date(selects[map[2] + mapOffset].value, selects[map[1] + mapOffset].value, selects[map[0] + mapOffset].value, hours, minutes);
+		},
+
+		_fill_lightbox_select: function (s, i, d, map) {
 			s[i + map[0]].value = d.getDate();
 			s[i + map[1]].value = d.getMonth();
 			s[i + map[2]].value = d.getFullYear();
@@ -7428,10 +13629,11 @@ module.exports = function(gantt) {
 		parent: new ParentControl(),
 		radio: new RadioControl(),
 		checkbox: new CheckboxControl(),
-		resources: new ResourcesControl()
+		resources: new ResourcesControl(),
+		constraint: new ConstraintControl()
 	};
 
-	gantt._is_lightbox_timepicker = function() {
+	gantt._is_lightbox_timepicker = function () {
 		var s = this._get_typed_lightbox_config();
 		for (var i = 0; i < s.length; i++)
 			if (s[i].name == "time" && s[i].type == "time")
@@ -7439,17 +13641,17 @@ module.exports = function(gantt) {
 		return false;
 	};
 
-	gantt._dhtmlx_confirm = function(message, title, callback, ok) {
+	gantt._dhtmlx_confirm = function (message, title, callback, ok) {
 		if (!message)
 			return callback();
-		var opts = {text: message};
+		var opts = { text: message };
 		if (title)
 			opts.title = title;
 		if (ok) {
 			opts.ok = ok;
 		}
 		if (callback) {
-			opts.callback = function(result) {
+			opts.callback = function (result) {
 				if (result)
 					callback();
 			};
@@ -7466,7 +13668,7 @@ module.exports = function(gantt) {
 		return "task";
 	}
 
-	gantt._get_typed_lightbox_config = function(type) {
+	gantt._get_typed_lightbox_config = function (type) {
 		if (type === undefined) {
 			type = this.getLightboxType();
 		}
@@ -7480,7 +13682,7 @@ module.exports = function(gantt) {
 		}
 	};
 
-	gantt._silent_redraw_lightbox = function(type) {
+	gantt._silent_redraw_lightbox = function (type) {
 		var oldType = this.getLightboxType();
 
 		if (this.getState().lightbox) {
@@ -7512,12 +13714,12 @@ module.exports = function(gantt) {
 		for (i = 0; i < sns.length; i++) {
 			section = sns[i];
 			labelBlock = document.getElementById(section.id);
-			
+
 			if (!section.id || !labelBlock) continue;
 
 			label = labelBlock.querySelector("label");
 			inputBlock = labelBlock.nextSibling;
-			
+
 			if (!inputBlock) continue;
 
 			input = inputBlock.querySelector("input, select, textarea");
@@ -7574,63 +13776,63 @@ module.exports = function(gantt) {
 		var html = "";
 
 		switch (settings.timeFormat[index]) {
-		case "%Y":
-			sns._time_format_order[2] = index;
-			sns._time_format_order.size++;
-			//year
+			case "%Y":
+				sns._time_format_order[2] = index;
+				sns._time_format_order.size++;
+				//year
 
-			if (sns.year_range) {
-				if (!isNaN(sns.year_range)) {
-					range = sns.year_range;
-				} else if (sns.year_range.push) {
-					// if
-					start_year = sns.year_range[0];
-					end_year = sns.year_range[1];
+				if (sns.year_range) {
+					if (!isNaN(sns.year_range)) {
+						range = sns.year_range;
+					} else if (sns.year_range.push) {
+						// if
+						start_year = sns.year_range[0];
+						end_year = sns.year_range[1];
+					}
 				}
-			}
 
-			range = range || 10;
-			offset = offset || Math.floor(range / 2);
-			start_year = start_year || settings.date.getFullYear() - offset;
-			end_year = end_year || start_year + range;
+				range = range || 10;
+				offset = offset || Math.floor(range / 2);
+				start_year = start_year || settings.date.getFullYear() - offset;
+				end_year = end_year || start_year + range;
 
-			for (i = start_year; i < end_year; i++)
-				html += "<option value='" + (i) + "'>" + (i) + "</option>";
-			break;
-		case "%m":
-			sns._time_format_order[1] = index;
-			sns._time_format_order.size++;
-			//month
-			for (i = 0; i < 12; i++)
-				html += "<option value='" + i + "'>" + gantt.locale.date.month_full[i] + "</option>";
-			break;
-		case "%d":
-			sns._time_format_order[0] = index;
-			sns._time_format_order.size++;
-			//days
-			for (i = 1; i < 32; i++)
-				html += "<option value='" + i + "'>" + i + "</option>";
-			break;
-		case "%H:%i":
-			//  var last = 24*60, first = 0;
-			sns._time_format_order[3] = index;
-			sns._time_format_order.size++;
-			//hours
-			i = settings.first;
-			tdate = settings.date.getDate();
-			sns._time_values = [];
+				for (i = start_year; i < end_year; i++)
+					html += "<option value='" + (i) + "'>" + (i) + "</option>";
+				break;
+			case "%m":
+				sns._time_format_order[1] = index;
+				sns._time_format_order.size++;
+				//month
+				for (i = 0; i < 12; i++)
+					html += "<option value='" + i + "'>" + gantt.locale.date.month_full[i] + "</option>";
+				break;
+			case "%d":
+				sns._time_format_order[0] = index;
+				sns._time_format_order.size++;
+				//days
+				for (i = 1; i < 32; i++)
+					html += "<option value='" + i + "'>" + i + "</option>";
+				break;
+			case "%H:%i":
+				//  var last = 24*60, first = 0;
+				sns._time_format_order[3] = index;
+				sns._time_format_order.size++;
+				//hours
+				i = settings.first;
+				tdate = settings.date.getDate();
+				sns._time_values = [];
 
-			while (i < settings.last) {
-				time = gantt.templates.time_picker(settings.date);
-				html += "<option value='" + i + "'>" + time + "</option>";
-				sns._time_values.push(i);
-				settings.date.setTime(settings.date.valueOf() + gantt._get_timepicker_step() * 60 * 1000);
-				diff = (settings.date.getDate() != tdate) ? 1 : 0; // moved or not to the next day
-				i = diff * 24 * 60 + settings.date.getHours() * 60 + settings.date.getMinutes();
-			}
-			break;
-		default:
-			break;
+				while (i < settings.last) {
+					time = gantt.templates.time_picker(settings.date);
+					html += "<option value='" + i + "'>" + time + "</option>";
+					sns._time_values.push(i);
+					settings.date.setTime(settings.date.valueOf() + gantt._get_timepicker_step() * 60 * 1000);
+					diff = (settings.date.getDate() != tdate) ? 1 : 0; // moved or not to the next day
+					i = diff * 24 * 60 + settings.date.getHours() * 60 + settings.date.getMinutes();
+				}
+				break;
+			default:
+				break;
 		}
 		return html;
 	}
@@ -7638,10 +13840,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/lightbox_optional_time.js":
-/*!************************************************!*\
-  !*** ./sources/core/lightbox_optional_time.js ***!
-  \************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox_optional_time.js":
+/*!******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/lightbox_optional_time.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7722,14 +13924,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/load.js":
-/*!******************************!*\
-  !*** ./sources/core/load.js ***!
-  \******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\load.js":
+/*!************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/load.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
+var helpers = __webpack_require__(/*! ../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 module.exports = function(gantt) {
 
@@ -7752,7 +13954,7 @@ module.exports = function(gantt) {
 
 		this.callEvent("onLoadStart", [url, tp]);
 
-		this.ajax.get(url, gantt.bind(function (l) {
+		return this.ajax.get(url, gantt.bind(function (l) {
 			this.on_load(l, tp);
 			this.callEvent("onLoadEnd", [url, tp]);
 			if (typeof cl == "function")
@@ -8091,15 +14293,15 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/message.js":
-/*!*********************************!*\
-  !*** ./sources/core/message.js ***!
-  \*********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\message.js":
+/*!***************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/message.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../utils/utils */ "./sources/utils/utils.js");
-var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var utils = __webpack_require__(/*! ../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 module.exports = function(gantt) {
 
@@ -8461,10 +14663,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/plugins/auto_task_types.js":
-/*!*************************************************!*\
-  !*** ./sources/core/plugins/auto_task_types.js ***!
-  \*************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\auto_task_types.js":
+/*!*******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/auto_task_types.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8606,14 +14808,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/plugins/autoscroll.js":
-/*!********************************************!*\
-  !*** ./sources/core/plugins/autoscroll.js ***!
-  \********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\autoscroll.js":
+/*!**************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/autoscroll.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 module.exports = function(gantt){
 
@@ -8790,10 +14992,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/plugins/batch_update.js":
-/*!**********************************************!*\
-  !*** ./sources/core/plugins/batch_update.js ***!
-  \**********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\batch_update.js":
+/*!****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/batch_update.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8890,9 +15092,9 @@ function createMethod(gantt){
 
 		if (call_dp) {
 			this._dp.setUpdateMode(dp_mode);
-			this._dp.setGanttMode("tasks");
+			this._dp.setGanttMode("task");
 			this._dp.sendData();
-			this._dp.setGanttMode("links");
+			this._dp.setGanttMode("link");
 			this._dp.sendData();
 		}
 	};
@@ -8907,10 +15109,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/plugins/dhtmlx_hooks.js":
-/*!**********************************************!*\
-  !*** ./sources/core/plugins/dhtmlx_hooks.js ***!
-  \**********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\dhtmlx_hooks.js":
+/*!****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/dhtmlx_hooks.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8979,23 +15181,23 @@ module.exports = null;
 
 /***/ }),
 
-/***/ "./sources/core/plugins/index.js":
-/*!***************************************!*\
-  !*** ./sources/core/plugins/index.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\index.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/index.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt){
 	var modules = [
-		__webpack_require__(/*! ./autoscroll */ "./sources/core/plugins/autoscroll.js"),
-		__webpack_require__(/*! ./batch_update */ "./sources/core/plugins/batch_update.js"),
-		__webpack_require__(/*! ./wbs */ "./sources/core/plugins/wbs.js"),
-		__webpack_require__(/*! ./jquery_hooks */ "./sources/core/plugins/jquery_hooks.js"),
-		__webpack_require__(/*! ./dhtmlx_hooks */ "./sources/core/plugins/dhtmlx_hooks.js"),
-		__webpack_require__(/*! ./resources */ "./sources/core/plugins/resources.js"),
-		__webpack_require__(/*! ./new_task_placeholder */ "./sources/core/plugins/new_task_placeholder.js"),
-		__webpack_require__(/*! ./auto_task_types */ "./sources/core/plugins/auto_task_types.js")
+		__webpack_require__(/*! ./autoscroll */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\autoscroll.js"),
+		__webpack_require__(/*! ./batch_update */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\batch_update.js"),
+		__webpack_require__(/*! ./wbs */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\wbs.js"),
+		__webpack_require__(/*! ./jquery_hooks */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\jquery_hooks.js"),
+		__webpack_require__(/*! ./dhtmlx_hooks */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\dhtmlx_hooks.js"),
+		__webpack_require__(/*! ./resources */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\resources.js"),
+		__webpack_require__(/*! ./new_task_placeholder */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\new_task_placeholder.js"),
+		__webpack_require__(/*! ./auto_task_types */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\auto_task_types.js")
 	];
 
 	for(var i = 0; i < modules.length; i++){
@@ -9006,10 +15208,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/plugins/jquery_hooks.js":
-/*!**********************************************!*\
-  !*** ./sources/core/plugins/jquery_hooks.js ***!
-  \**********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\jquery_hooks.js":
+/*!****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/jquery_hooks.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9062,10 +15264,10 @@ module.exports = null;
 
 /***/ }),
 
-/***/ "./sources/core/plugins/new_task_placeholder.js":
-/*!******************************************************!*\
-  !*** ./sources/core/plugins/new_task_placeholder.js ***!
-  \******************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\new_task_placeholder.js":
+/*!************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/new_task_placeholder.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9178,14 +15380,14 @@ module.exports = function addPlaceholder(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/plugins/resources.js":
-/*!*******************************************!*\
-  !*** ./sources/core/plugins/resources.js ***!
-  \*******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\resources.js":
+/*!*************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/resources.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 function createResourceMethods(gantt){
 
@@ -9586,10 +15788,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/plugins/wbs.js":
-/*!*************************************!*\
-  !*** ./sources/core/plugins/wbs.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\wbs.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/plugins/wbs.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9700,10 +15902,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/skin.js":
-/*!******************************!*\
-  !*** ./sources/core/skin.js ***!
-  \******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\skin.js":
+/*!************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/skin.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9793,10 +15995,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/tasks.js":
-/*!*******************************!*\
-  !*** ./sources/core/tasks.js ***!
-  \*******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\tasks.js":
+/*!*************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/tasks.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -9812,10 +16014,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/touch.js":
-/*!*******************************!*\
-  !*** ./sources/core/touch.js ***!
-  \*******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\touch.js":
+/*!*************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/touch.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10080,14 +16282,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/configurable.js":
-/*!*****************************************!*\
-  !*** ./sources/core/ui/configurable.js ***!
-  \*****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\configurable.js":
+/*!***********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/configurable.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 function ViewSettings(config){
 	utils.mixin(this, config, true);
@@ -10138,14 +16340,14 @@ module.exports = function(obj, parent){
 
 /***/ }),
 
-/***/ "./sources/core/ui/gantt_layers.js":
-/*!*****************************************!*\
-  !*** ./sources/core/ui/gantt_layers.js ***!
-  \*****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\gantt_layers.js":
+/*!***********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/gantt_layers.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "./sources/core/ui/render/layer_engine.js");
+var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\layer_engine.js");
 
 var createLayerEngine = function(gantt){
 	var factory = createLayerFactory(gantt);
@@ -10265,22 +16467,22 @@ module.exports = createLayerEngine;
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/controller.js":
-/*!****************************************************!*\
-  !*** ./sources/core/ui/grid/editors/controller.js ***!
-  \****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\controller.js":
+/*!**********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/controller.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getKeyboardMapping = __webpack_require__(/*! ./keyboard_mappings */ "./sources/core/ui/grid/editors/keyboard_mappings.js");
-var textEditorFactory = __webpack_require__(/*! ./editors/text */ "./sources/core/ui/grid/editors/editors/text.js"),
-	numberEditorFactory = __webpack_require__(/*! ./editors/number */ "./sources/core/ui/grid/editors/editors/number.js"),
-	selectEditorFactory = __webpack_require__(/*! ./editors/select */ "./sources/core/ui/grid/editors/editors/select.js"),
-	dateEditorFactory = __webpack_require__(/*! ./editors/date */ "./sources/core/ui/grid/editors/editors/date.js"),
-	predecessorEditorFactory = __webpack_require__(/*! ./editors/predecessor */ "./sources/core/ui/grid/editors/editors/predecessor.js");
-var utils = __webpack_require__(/*! ../../../../utils/utils */ "./sources/utils/utils.js");
-var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
-var eventable = __webpack_require__(/*! ../../../../utils/eventable */ "./sources/utils/eventable.js");
+var getKeyboardMapping = __webpack_require__(/*! ./keyboard_mappings */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings.js");
+var textEditorFactory = __webpack_require__(/*! ./editors/text */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\text.js"),
+	numberEditorFactory = __webpack_require__(/*! ./editors/number */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\number.js"),
+	selectEditorFactory = __webpack_require__(/*! ./editors/select */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\select.js"),
+	dateEditorFactory = __webpack_require__(/*! ./editors/date */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\date.js"),
+	predecessorEditorFactory = __webpack_require__(/*! ./editors/predecessor */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\predecessor.js");
+var utils = __webpack_require__(/*! ../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var eventable = __webpack_require__(/*! ../../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
 
 function initConfigs(gantt){
 	gantt.config.editor_types = {
@@ -10706,10 +16908,10 @@ module.exports = create;
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/editors/base.js":
-/*!******************************************************!*\
-  !*** ./sources/core/ui/grid/editors/editors/base.js ***!
-  \******************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js":
+/*!************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/base.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10766,28 +16968,28 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/editors/date.js":
-/*!******************************************************!*\
-  !*** ./sources/core/ui/grid/editors/editors/date.js ***!
-  \******************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\date.js":
+/*!************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/date.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = function(gantt) {
-	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
+module.exports = function (gantt) {
+	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 	var html5DateFormat = "%Y-%m-%d";
 
 	var dateToStr = null;
 	var strToDate = null;
 
-	function init(){
-		if(!dateToStr){
+	function init() {
+		if (!dateToStr) {
 			dateToStr = gantt.date.date_to_str(html5DateFormat);
 		}
-		if(!strToDate){
+		if (!strToDate) {
 			strToDate = gantt.date.str_to_date(html5DateFormat);
 		}
 	}
@@ -10811,7 +17013,11 @@ module.exports = function(gantt) {
 			placeholder.innerHTML = html;
 		},
 		set_value: function (value, id, column, node) {
-			this.get_input(node).value = dateToStr(value);
+			if (value && value.getFullYear) {
+				this.get_input(node).value = dateToStr(value);
+			} else {
+				this.get_input(node).value = value;
+			}
 		},
 		is_valid: function (value, id, column, node) {
 			if (!value || isNaN(value.getTime()))
@@ -10836,18 +17042,18 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/editors/number.js":
-/*!********************************************************!*\
-  !*** ./sources/core/ui/grid/editors/editors/number.js ***!
-  \********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\number.js":
+/*!**************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/number.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (gantt) {
 
-	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 	function NumberEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -10877,18 +17083,18 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/editors/predecessor.js":
-/*!*************************************************************!*\
-  !*** ./sources/core/ui/grid/editors/editors/predecessor.js ***!
-  \*************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\predecessor.js":
+/*!*******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/predecessor.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (gantt) {
 
-	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 	function PredecessorEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -11016,17 +17222,17 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/editors/select.js":
-/*!********************************************************!*\
-  !*** ./sources/core/ui/grid/editors/editors/select.js ***!
-  \********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\select.js":
+/*!**************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/select.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
-	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 	function SelectEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -11058,18 +17264,18 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/editors/text.js":
-/*!******************************************************!*\
-  !*** ./sources/core/ui/grid/editors/editors/text.js ***!
-  \******************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\text.js":
+/*!************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/text.js ***!
+  \************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
 
-	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
 
 	function TextEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -11090,15 +17296,15 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/keyboard_mappings.js":
-/*!***********************************************************!*\
-  !*** ./sources/core/ui/grid/editors/keyboard_mappings.js ***!
-  \***********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings.js":
+/*!*****************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/keyboard_mappings.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var defaultMapping = __webpack_require__(/*! ./keyboard_mappings/default */ "./sources/core/ui/grid/editors/keyboard_mappings/default.js");
-var keyNavMappings = __webpack_require__(/*! ./keyboard_mappings/keyboard_navigation */ "./sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js");
+var defaultMapping = __webpack_require__(/*! ./keyboard_mappings/default */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\default.js");
+var keyNavMappings = __webpack_require__(/*! ./keyboard_mappings/keyboard_navigation */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\keyboard_navigation.js");
 
 module.exports = function(gantt){
 
@@ -11124,50 +17330,55 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/keyboard_mappings/default.js":
-/*!*******************************************************************!*\
-  !*** ./sources/core/ui/grid/editors/keyboard_mappings/default.js ***!
-  \*******************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\default.js":
+/*!*************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/keyboard_mappings/default.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
 module.exports = {
-	init: function(controller, grid){
+	init: function (controller, grid) {
 		var gantt = grid.$gantt;
 
 		gantt.attachEvent("onTaskClick", function (id, e) {
-			if(gantt._is_icon_open_click(e))
+			if (gantt._is_icon_open_click(e))
 				return true;
 			var state = controller.getState();
 			var cell = controller.locateCell(e.target);
 
 			if (cell && controller.getEditorConfig(cell.columnName)) {
-				if(controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName){
+				if (controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName) {
 					// do nothing if editor is already active in this cell
-				}else{
+				} else {
 					controller.startEdit(cell.id, cell.columnName);
 				}
 				return false;
 			}
 			return true;
 		});
+
 		gantt.attachEvent("onEmptyClick", function () {
-			controller.hide();
+			if (controller.isVisible() && controller.isChanged()) {
+				controller.save();
+			} else {
+				controller.hide();
+			}
 			return true;
 		});
 
-		gantt.attachEvent("onTaskDblClick", function(id,e){
+		gantt.attachEvent("onTaskDblClick", function (id, e) {
 			var state = controller.getState();
 			var cell = controller.locateCell(e.target);
-			if(cell && controller.isVisible() && cell.columnName == state.columnName){
+			if (cell && controller.isVisible() && cell.columnName == state.columnName) {
 				return false;
 			}
 			return true;
 		});
 	},
 
-	onShow: function(controller, placeholder, grid){
-		if(grid.$getConfig().keyboard_navigation){
+	onShow: function (controller, placeholder, grid) {
+		if (grid.$getConfig().keyboard_navigation) {
 			// keyboard navigation extension will handle arrows if enabled
 			return;
 		}
@@ -11176,7 +17387,7 @@ module.exports = {
 			e = e || window.event;
 
 			var keyboard = gantt.constants.KEY_CODES;
-			if(e.defaultPrevented || (e.shiftKey && e.keyCode != keyboard.TAB)){
+			if (e.defaultPrevented || (e.shiftKey && e.keyCode != keyboard.TAB)) {
 				return;
 			}
 
@@ -11189,9 +17400,9 @@ module.exports = {
 					controller.hide();
 					break;
 				case keyboard.TAB:
-					if(e.shiftKey){
+					if (e.shiftKey) {
 						controller.editPrevCell(true);
-					}else{
+					} else {
 						controller.editNextCell(true);
 					}
 					break;
@@ -11200,16 +17411,16 @@ module.exports = {
 					break;
 			}
 
-			if(shouldPrevent){
+			if (shouldPrevent) {
 				e.preventDefault();
 			}
 		};
 	},
-	onHide: function(){
+	onHide: function () {
 
 	},
 
-	destroy: function(){
+	destroy: function () {
 
 	}
 };
@@ -11218,10 +17429,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js":
-/*!*******************************************************************************!*\
-  !*** ./sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js ***!
-  \*******************************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\keyboard_navigation.js":
+/*!*************************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js ***!
+  \*************************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11425,20 +17636,20 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/grid.js":
-/*!**************************************!*\
-  !*** ./sources/core/ui/grid/grid.js ***!
-  \**************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid.js":
+/*!********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/grid.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
-	gridResize = __webpack_require__(/*! ./grid_resize */ "./sources/core/ui/grid/grid_resize.gpl.js"),
-	topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	eventable = __webpack_require__(/*! ../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js"),
+	gridResize = __webpack_require__(/*! ./grid_resize */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid_resize.gpl.js"),
+	topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "c:\\www-recent\\gantt\\sources\\core\\ui\\row_position_mixin.js");
 
-var Grid = function(parent, config, factory, gantt){
+var Grid = function (parent, config, factory, gantt) {
 	this.$config = utils.mixin({}, config || {});
 	this.$gantt = gantt;
 	this.$parent = parent;
@@ -11448,28 +17659,28 @@ var Grid = function(parent, config, factory, gantt){
 
 
 Grid.prototype = {
-	init: function(container){
+	init: function (container) {
 		var gantt = this.$gantt;
 		var gridAriaAttr = gantt._waiAria.gridAttrString();
 		var gridDataAriaAttr = gantt._waiAria.gridDataAttrString();
 
 
-		container.innerHTML = "<div class='gantt_grid' style='height:inherit;width:inherit;' "+gridAriaAttr+"></div>";
+		container.innerHTML = "<div class='gantt_grid' style='height:inherit;width:inherit;' " + gridAriaAttr + "></div>";
 		this.$grid = container.childNodes[0];
 
-		this.$grid.innerHTML = "<div class='gantt_grid_scale' "+
-			gantt._waiAria.gridScaleRowAttrString()+"></div><div class='gantt_grid_data' "+gridDataAriaAttr+"></div>";
+		this.$grid.innerHTML = "<div class='gantt_grid_scale' " +
+			gantt._waiAria.gridScaleRowAttrString() + "></div><div class='gantt_grid_data' " + gridDataAriaAttr + "></div>";
 
 		this.$grid_scale = this.$grid.childNodes[0];
 		this.$grid_data = this.$grid.childNodes[1];
 
 		var attr = this.$getConfig()[this.$config.bind + "_attribute"];
-		if(!attr && this.$config.bind){
+		if (!attr && this.$config.bind) {
 			attr = this.$config.bind + "_id";
 		}
 		this.$config.item_attribute = attr || null;
 
-		if(!this.$config.layers){
+		if (!this.$config.layers) {
 			var layers = this._createLayerConfig();
 			this.$config.layers = layers;
 		}
@@ -11477,7 +17688,7 @@ Grid.prototype = {
 		var resizer = gridResize(gantt, this);
 		resizer.init();
 		this._renderHeaderResizers = resizer.doOnRender;
-		this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "./sources/core/ui/mouse_event_container.js")(gantt);
+		this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js")(gantt);
 
 		this._addLayers(this.$gantt);
 		this._initEvents();
@@ -11485,22 +17696,22 @@ Grid.prototype = {
 		//this.refresh();
 	},
 
-	_validateColumnWidth: function(column, property){
+	_validateColumnWidth: function (column, property) {
 		// user can set {name:"text", width:"200",...} for some reason,
 		// check and convert it to number when possible
 		var value = column[property];
 		if (value && value != "*") {
 			var gantt = this.$gantt;
-			var numericWidth = value*1;
-			if(isNaN(numericWidth)){
+			var numericWidth = value * 1;
+			if (isNaN(numericWidth)) {
 				gantt.assert(false, "Wrong " + property + " value of column " + column.name);
-			}else{
+			} else {
 				column[property] = numericWidth;
 			}
 		}
 	},
 
-	setSize: function(width, height){
+	setSize: function (width, height) {
 		this.$config.width = this.$state.width = width;
 		this.$state.height = height;
 
@@ -11513,27 +17724,27 @@ Grid.prototype = {
 			this._validateColumnWidth(columns[i], "min_width");
 			this._validateColumnWidth(columns[i], "max_width");
 			this._validateColumnWidth(columns[i], "width");
-		
-			innerWidth += columns[i].width*1;
+
+			innerWidth += columns[i].width * 1;
 		}
 
 		var outerWidth;
-		if(isNaN(innerWidth) || !this.$config.scrollable){
+		if (isNaN(innerWidth) || !this.$config.scrollable) {
 			outerWidth = this._setColumnsWidth(width + 1);
 			innerWidth = outerWidth;
 		}
 
-		if(this.$config.scrollable){
+		if (this.$config.scrollable) {
 			this.$grid_scale.style.width = innerWidth + "px";
 			this.$grid_data.style.width = innerWidth + "px";
-		}else{
+		} else {
 			this.$grid_scale.style.width = "inherit";
 			this.$grid_data.style.width = "inherit";
 		}
 		this.$config.width -= 1;
 
 		var config = this.$getConfig();
-		if(outerWidth !== width){
+		if (outerWidth !== width) {
 			config.grid_width = outerWidth;
 			this.$config.width = outerWidth - 1;
 		}
@@ -11542,7 +17753,7 @@ Grid.prototype = {
 		this.$grid_data.style.height = dataHeight + "px";
 		this.refresh();
 	},
-	getSize: function(){
+	getSize: function () {
 
 		var config = this.$getConfig();
 
@@ -11554,17 +17765,17 @@ Grid.prototype = {
 		var size = {
 			x: this.$state.width,
 			y: this.$state.height,
-			contentX: this.isVisible() ? contentWidth: 0,
+			contentX: this.isVisible() ? contentWidth : 0,
 			contentY: this.isVisible() ? (config.scale_height + contentHeight) : 0,
-			scrollHeight: this.isVisible() ? contentHeight: 0,
+			scrollHeight: this.isVisible() ? contentHeight : 0,
 			scrollWidth: this.isVisible() ? contentWidth : 0
 		};
 
 		return size;
 	},
-	refresh: function(){
+	refresh: function () {
 
-		if(this.$config.bind)
+		if (this.$config.bind)
 			this.$config.rowStore = this.$gantt.getDatastore(this.$config.bind);
 
 		this._initSmartRenderingPlaceholder();
@@ -11572,21 +17783,21 @@ Grid.prototype = {
 		this._calculateGridWidth();
 		this._renderGridHeader();
 	},
-	scrollTo: function(left, top){
-		if(!this.isVisible())
+	scrollTo: function (left, top) {
+		if (!this.isVisible())
 			return;
 
-		if (left*1 == left){
+		if (left * 1 == left) {
 			this.$state.scrollLeft = this.$grid.scrollLeft = left;
 		}
 
 		// var config = this.$getConfig();
-		if(top*1 == top){
+		if (top * 1 == top) {
 			this.$state.scrollTop = this.$grid_data.scrollTop = top;
 		}
 	},
 
-	getColumnIndex: function(name){
+	getColumnIndex: function (name) {
 		var columns = this.$getConfig().columns;
 
 		for (var i = 0; i < columns.length; i++) {
@@ -11597,39 +17808,39 @@ Grid.prototype = {
 		return null;
 	},
 
-	getColumn: function(name){
+	getColumn: function (name) {
 		var index = this.getColumnIndex(name);
-		if(index === null){
+		if (index === null) {
 			return null;
 		}
 		return this.$getConfig().columns[index];
 	},
 
-	getGridColumns: function(){
+	getGridColumns: function () {
 		var config = this.$getConfig();
 		return config.columns.slice();
 	},
-	isVisible: function(){
-		if(this.$parent && this.$parent.$config){
+	isVisible: function () {
+		if (this.$parent && this.$parent.$config) {
 			return !this.$parent.$config.hidden;
-		}else{
+		} else {
 			return this.$grid.offsetWidth;
 		}
 	},
 
-	getItemHeight: function(){
+	getItemHeight: function () {
 		var config = this.$getConfig();
 		return config.row_height;
 	},
 
-	_createLayerConfig: function(){
+	_createLayerConfig: function () {
 		var gantt = this.$gantt;
 		var self = this;
 		var layers = [
 			{
 				renderer: gantt.$ui.layers.gridLine,
 				container: this.$grid_data,
-				filter: [function(){
+				filter: [function () {
 					return self.isVisible();
 				}]
 			}
@@ -11637,8 +17848,8 @@ Grid.prototype = {
 		return layers;
 	},
 
-	_addLayers: function(gantt){
-		if(!this.$config.bind)
+	_addLayers: function (gantt) {
+		if (!this.$config.bind)
 			return;
 
 		this._taskLayers = [];
@@ -11648,48 +17859,48 @@ Grid.prototype = {
 		var layers = this.$gantt.$services.getService("layers");
 		var taskRenderer = layers.getDataRender(this.$config.bind);
 
-		if(!taskRenderer){
+		if (!taskRenderer) {
 			taskRenderer = layers.createDataRender({
 				name: this.$config.bind,
-				defaultContainer: function(){ return self.$grid_data;}
+				defaultContainer: function () { return self.$grid_data; }
 			});
 		}
 
 		var taskLayers = this.$config.layers;
-		for(var i = 0; taskLayers && i < taskLayers.length; i++){
+		for (var i = 0; taskLayers && i < taskLayers.length; i++) {
 			var layer = taskLayers[i];
 			layer.host = this;
 			var bar_layer = taskRenderer.addLayer(layer);
 			this._taskLayers.push(bar_layer);
 		}
 
-		if(this.$config.bind)
+		if (this.$config.bind)
 			this.$config.rowStore = this.$gantt.getDatastore(this.$config.bind);
 
 		this._initSmartRenderingPlaceholder();
 	},
 
-	_refreshPlaceholderOnStoreUpdate: function(id){
+	_refreshPlaceholderOnStoreUpdate: function (id) {
 		var config = this.$getConfig(),
 			store = this.$config.rowStore;
 
-		if(!store || id !== null || !this.isVisible() || !config.smart_rendering) {
+		if (!store || id !== null || !this.isVisible() || !config.smart_rendering) {
 			return;
 		}
 
 		var contentHeight;
-		if(this.$config.scrollY) {
+		if (this.$config.scrollY) {
 			var scroll = this.$gantt.$ui.getView(this.$config.scrollY);
-			if(scroll)
+			if (scroll)
 				contentHeight = scroll.getScrollState().scrollSize;
 		}
 
-		if(!contentHeight){
+		if (!contentHeight) {
 			contentHeight = store ? config.row_height * store.countVisible() : 0;
 		}
 
-		if(contentHeight){
-			if(this.$rowsPlaceholder && this.$rowsPlaceholder.parentNode){
+		if (contentHeight) {
+			if (this.$rowsPlaceholder && this.$rowsPlaceholder.parentNode) {
 				this.$rowsPlaceholder.parentNode.removeChild(this.$rowsPlaceholder);
 			}
 
@@ -11701,24 +17912,24 @@ Grid.prototype = {
 		}
 	},
 
-	_initSmartRenderingPlaceholder: function(){
+	_initSmartRenderingPlaceholder: function () {
 		var store = this.$config.rowStore;
-		if(!store){
+		if (!store) {
 			return;
-		}else{
-			this._initSmartRenderingPlaceholder = function(){};
+		} else {
+			this._initSmartRenderingPlaceholder = function () { };
 		}
 		this._staticBgHandler = store.attachEvent("onStoreUpdated", utils.bind(this._refreshPlaceholderOnStoreUpdate, this));
 	},
 
-	_initEvents: function(){
+	_initEvents: function () {
 		var gantt = this.$gantt;
 		this._mouseDelegates.delegate("click", "gantt_close", gantt.bind(function (e, id, trg) {
 			var store = this.$config.rowStore;
-			if(!store) return true;
+			if (!store) return true;
 
 			var target = domHelpers.locateAttribute(e, this.$config.item_attribute);
-			if(target){
+			if (target) {
 				store.close(target.getAttribute(this.$config.item_attribute));
 
 			}
@@ -11727,10 +17938,10 @@ Grid.prototype = {
 
 		this._mouseDelegates.delegate("click", "gantt_open", gantt.bind(function (e, id, trg) {
 			var store = this.$config.rowStore;
-			if(!store) return true;
+			if (!store) return true;
 
 			var target = domHelpers.locateAttribute(e, this.$config.item_attribute);
-			if(target){
+			if (target) {
 				store.open(target.getAttribute(this.$config.item_attribute));
 
 			}
@@ -11738,12 +17949,12 @@ Grid.prototype = {
 		}, this), this.$grid);
 	},
 
-	_clearLayers: function(gantt){
+	_clearLayers: function (gantt) {
 		var layers = this.$gantt.$services.getService("layers");
 		var taskRenderer = layers.getDataRender(this.$config.bind);
 
 		if (this._taskLayers) {
-			for(var i = 0; i < this._taskLayers.length; i++){
+			for (var i = 0; i < this._taskLayers.length; i++) {
 				taskRenderer.removeLayer(this._taskLayers[i]);
 			}
 		}
@@ -11751,7 +17962,7 @@ Grid.prototype = {
 		this._taskLayers = [];
 	},
 
-	_getColumnWidth: function(column, config, width) {
+	_getColumnWidth: function (column, config, width) {
 		var min_width = column.min_width || config.min_grid_column_width;
 		var new_width = Math.max(width, min_width || 10);
 		if (column.max_width)
@@ -11759,23 +17970,23 @@ Grid.prototype = {
 		return new_width;
 	},
 	// return min and max possible grid width according to restricts
-	_getGridWidthLimits: function() {
+	_getGridWidthLimits: function () {
 		var config = this.$getConfig(),
 			columns = this.getGridColumns(),
 			min_limit = 0,
 			max_limit = 0;
 
-			for (var i=0; i<columns.length; i++) {
-				min_limit += columns[i].min_width ? columns[i].min_width : config.min_grid_column_width;
-				if (max_limit !== undefined) {
-					max_limit = columns[i].max_width ? (max_limit + columns[i].max_width) : undefined;
-				}
+		for (var i = 0; i < columns.length; i++) {
+			min_limit += columns[i].min_width ? columns[i].min_width : config.min_grid_column_width;
+			if (max_limit !== undefined) {
+				max_limit = columns[i].max_width ? (max_limit + columns[i].max_width) : undefined;
 			}
+		}
 
-			return [min_limit, max_limit];
+		return [min_limit, max_limit];
 	},
-	// resize columns to get total newWidth, starting from columns[start_index]  
-	_setColumnsWidth: function(newWidth, start_index) {
+	// resize columns to get total newWidth, starting from columns[start_index]
+	_setColumnsWidth: function (newWidth, start_index) {
 		var config = this.$getConfig();
 		var columns = this.getGridColumns(),
 			columns_width = 0,
@@ -11784,38 +17995,38 @@ Grid.prototype = {
 		start_index = !window.isNaN(start_index) ? start_index : -1;
 
 		for (var i = 0, l = columns.length; i < l; i++) {
-			columns_width += columns[i].width*1;
+			columns_width += columns[i].width * 1;
 		}
 
 		if (window.isNaN(columns_width)) {
-			this._calculateGridWidth(); 
+			this._calculateGridWidth();
 			columns_width = 0;
 			for (var i = 0, l = columns.length; i < l; i++) {
-				columns_width += columns[i].width*1;
+				columns_width += columns[i].width * 1;
 			}
 		}
 
 		var extra_width = final_width - columns_width;
 
 		var start_width = 0;
-		for (var i=0; i<start_index+1; i++) {
+		for (var i = 0; i < start_index + 1; i++) {
 			start_width += columns[i].width;
 		}
 
 		columns_width -= start_width;
 
-		for (var i=start_index+1; i<columns.length; i++) {
+		for (var i = start_index + 1; i < columns.length; i++) {
 
 			var col = columns[i];
-			var	share = Math.round(extra_width * (col.width / columns_width));
+			var share = Math.round(extra_width * (col.width / columns_width));
 
 			// columns have 2 additional restrict fields - min_width & max_width that are set by user
 			if (extra_width < 0) {
-				if (col.min_width && col.width+share < col.min_width)
+				if (col.min_width && col.width + share < col.min_width)
 					share = col.min_width - col.width;
-				else if (!col.min_width && config.min_grid_column_width && col.width+share < config.min_grid_column_width)
+				else if (!col.min_width && config.min_grid_column_width && col.width + share < config.min_grid_column_width)
 					share = config.min_grid_column_width - col.width;
-			} else if (col.max_width && col.width+share > col.max_width)
+			} else if (col.max_width && col.width + share > col.max_width)
 				share = col.max_width - col.width;
 
 			columns_width -= col.width;
@@ -11827,7 +18038,7 @@ Grid.prototype = {
 		var iterator = extra_width > 0 ? 1 : -1;
 		while ((extra_width > 0 && iterator === 1) || (extra_width < 0 && iterator === -1)) {
 			var curExtra = extra_width;
-			for (i = start_index+1; i<columns.length; i++) {
+			for (i = start_index + 1; i < columns.length; i++) {
 				var new_width = columns[i].width + iterator;
 
 				if (new_width == this._getColumnWidth(columns[i], config, new_width)) {
@@ -11857,7 +18068,7 @@ Grid.prototype = {
 		return this._getColsTotalWidth();
 	},
 
-	_getColsTotalWidth: function(){
+	_getColsTotalWidth: function () {
 		var columns = this.getGridColumns();
 		var cols_width = 0;
 
@@ -11870,7 +18081,7 @@ Grid.prototype = {
 		}
 		return cols_width;
 	},
-	_calculateGridWidth: function() {
+	_calculateGridWidth: function () {
 		var config = this.$getConfig();
 		var columns = this.getGridColumns();
 		var cols_width = 0;
@@ -11893,7 +18104,7 @@ Grid.prototype = {
 			if (config.autofit) {
 				// delta must be added for all columns
 				for (var i = 0; i < width.length; i++) {
-					var delta = Math.round(diff / (width.length-i));
+					var delta = Math.round(diff / (width.length - i));
 					width[i] += delta;
 					var new_width = this._getColumnWidth(columns[i], config, width[i]);
 
@@ -11906,7 +18117,7 @@ Grid.prototype = {
 			} else if (unknown.length) {
 				// there are several columns with undefined width
 				for (var i = 0; i < unknown.length; i++) {
-					var delta = Math.round(diff / (unknown.length-i)); // no float values, just integer
+					var delta = Math.round(diff / (unknown.length - i)); // no float values, just integer
 					var index = unknown[i];
 					width[index] += delta;
 					var new_width = this._getColumnWidth(columns[index], config, width[index]);
@@ -11925,22 +18136,22 @@ Grid.prototype = {
 			var changed = (gridWidth != cols_width);
 			this.$config.width = cols_width - 1;
 			config.grid_width = cols_width;
-			if(changed){
+			if (changed) {
 				this.$parent._setContentSize(this.$config.width, this.$config.height);
-//				this.$parent.$config.width = cols_width;
+				//				this.$parent.$config.width = cols_width;
 			}
 		}
 
 	},
 
-	_renderGridHeader: function(){
+	_renderGridHeader: function () {
 		var gantt = this.$gantt;
 		var config = this.$getConfig();
 		var locale = this.$gantt.locale;
 		var templates = this.$gantt.templates;
 
 		var columns = this.getGridColumns();
-		if(config.rtl){
+		if (config.rtl) {
 			columns = columns.reverse();
 		}
 		var cells = [];
@@ -11971,7 +18182,7 @@ Grid.prototype = {
 				templates.grid_header_class(col.name, col)].join(" ");
 
 			var style = "width:" + (colWidth - (last ? 1 : 0)) + "px;";
-			var label = (col.label || labels["column_" + col.name]);
+			var label = (col.label || labels["column_" + col.name] || labels[col.name]);
 			label = label || "";
 
 			var ariaAttrs = gantt._waiAria.gridScaleCellAttrString(col, label);
@@ -11984,19 +18195,19 @@ Grid.prototype = {
 		//this.$grid_scale.style.width = "inherit";
 		this.$grid_scale.innerHTML = cells.join("");
 
-		if(this._renderHeaderResizers){
+		if (this._renderHeaderResizers) {
 			this._renderHeaderResizers();
 		}
 	},
 
-	_getGridWidth: function(){
+	_getGridWidth: function () {
 		// TODO: refactor/remove/comment some of _getGridWidth/this.$config.width/this.$state.width, it's not clear what they do
 		return this.$config.width;
 	},
 
-	destructor: function(){
+	destructor: function () {
 		this._clearLayers(this.$gantt);
-		if(this._mouseDelegates){
+		if (this._mouseDelegates) {
 			this._mouseDelegates.destructor();
 			this._mouseDelegates = null;
 		}
@@ -12005,7 +18216,7 @@ Grid.prototype = {
 		this.$grid_data = null;
 		this.$gantt = null;
 
-		if(this.$config.rowStore){
+		if (this.$config.rowStore) {
 			this.$config.rowStore.detachEvent(this._staticBgHandler);
 			this.$config.rowStore = null;
 		}
@@ -12022,10 +18233,10 @@ module.exports = Grid;
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/grid_resize.gpl.js":
-/*!*************************************************!*\
-  !*** ./sources/core/ui/grid/grid_resize.gpl.js ***!
-  \*************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid_resize.gpl.js":
+/*!*******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/grid_resize.gpl.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12040,16 +18251,16 @@ module.exports = createResizer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/main_grid_initializer.js":
-/*!*******************************************************!*\
-  !*** ./sources/core/ui/grid/main_grid_initializer.js ***!
-  \*******************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\main_grid_initializer.js":
+/*!*************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/main_grid_initializer.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
-var rowDnd = __webpack_require__(/*! ./tasks_grid_dnd */ "./sources/core/ui/grid/tasks_grid_dnd.js");
-var rowDndMarker = __webpack_require__(/*! ./tasks_grid_dnd_marker */ "./sources/core/ui/grid/tasks_grid_dnd_marker.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var rowDnd = __webpack_require__(/*! ./tasks_grid_dnd */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd.js");
+var rowDndMarker = __webpack_require__(/*! ./tasks_grid_dnd_marker */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker.js");
 
 var initializer = (function(){
 	return function(gantt){
@@ -12064,7 +18275,7 @@ var initializer = (function(){
 					gantt.ext.inlineEditors.init();
 				}
 
-				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "./sources/core/ui/mouse_event_container.js")(gantt);
+				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js")(gantt);
 			},
 			onInitialized: function (grid) {
 				var config = grid.$getConfig();
@@ -12190,14 +18401,14 @@ module.exports = initializer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/tasks_grid_dnd.js":
-/*!************************************************!*\
-  !*** ./sources/core/ui/grid/tasks_grid_dnd.js ***!
-  \************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd.js":
+/*!******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 function _init_dnd(gantt, grid) {
 	var DnD = gantt.$services.getService("dnd");
@@ -12437,18 +18648,18 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker.js":
-/*!*******************************************************!*\
-  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker.js ***!
-  \*******************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker.js":
+/*!*************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
-var dropTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
-var getLockedLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/locked_level */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js");
-var getMultiLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/multi_level */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js");
-var higlighter = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/highlight */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var dropTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/drop_target */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js");
+var getLockedLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/locked_level */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\locked_level.js");
+var getMultiLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/multi_level */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\multi_level.js");
+var higlighter = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/highlight */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\highlight.js");
 
 function _init_dnd(gantt, grid) {
 	var DnD = gantt.$services.getService("dnd");
@@ -12597,10 +18808,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js":
-/*!***************************************************************************!*\
-  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js ***!
-  \***************************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js":
+/*!*********************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12608,7 +18819,7 @@ module.exports = {
  * The state object for order branch drag and drop
  */
 
-var utils = __webpack_require__(/*! ../../../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 module.exports = {
 	createDropTargetObject: function createDropTargetObject(parent) {
@@ -12669,14 +18880,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js":
-/*!*************************************************************************!*\
-  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js ***!
-  \*************************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\highlight.js":
+/*!*******************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js ***!
+  \*******************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 /**
  * methods for highlighting current drag and drop position
@@ -12803,10 +19014,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js":
-/*!****************************************************************************!*\
-  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js ***!
-  \****************************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\locked_level.js":
+/*!**********************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js ***!
+  \**********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12814,7 +19025,7 @@ module.exports = {
  * resolve dnd position of the task when gantt.config.order_branch_free = false
  */
 
-var dropTarget = __webpack_require__(/*! ./drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
+var dropTarget = __webpack_require__(/*! ./drop_target */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js");
 
 function getLast(store){
 	var current = store.getNext();
@@ -12901,10 +19112,10 @@ module.exports = function getSameLevelDropPosition(dndTaskId, targetTaskId, relT
 
 /***/ }),
 
-/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js":
-/*!***************************************************************************!*\
-  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js ***!
-  \***************************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\multi_level.js":
+/*!*********************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js ***!
+  \*********************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -12912,7 +19123,7 @@ module.exports = function getSameLevelDropPosition(dndTaskId, targetTaskId, relT
  * resolve dnd position of the task when gantt.config.order_branch_free = true
  */
 
-var dropTarget = __webpack_require__(/*! ./drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
+var dropTarget = __webpack_require__(/*! ./drop_target */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js");
 
 module.exports = function getMultiLevelDropPosition(dndTaskId, targetTaskId, relTargetPos, eventTop, store){
 	var result;
@@ -12939,41 +19150,41 @@ module.exports = function getMultiLevelDropPosition(dndTaskId, targetTaskId, rel
 
 /***/ }),
 
-/***/ "./sources/core/ui/index.js":
-/*!**********************************!*\
-  !*** ./sources/core/ui/index.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\index.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/index.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var uiFactory = __webpack_require__(/*! ./ui_factory */ "./sources/core/ui/ui_factory.js"),
-	mouseEvents = __webpack_require__(/*! ./mouse */ "./sources/core/ui/mouse.js"),
-	createLayers = __webpack_require__(/*! ./gantt_layers */ "./sources/core/ui/gantt_layers.js"),
-	Cell = __webpack_require__(/*! ./layout/cell */ "./sources/core/ui/layout/cell.js"),
-	Layout = __webpack_require__(/*! ./layout/layout */ "./sources/core/ui/layout/layout.js"),
-	ViewLayout = __webpack_require__(/*! ./layout/view_layout */ "./sources/core/ui/layout/view_layout.js"),
-	ViewCell = __webpack_require__(/*! ./layout/view_cell */ "./sources/core/ui/layout/view_cell.js"),
-	Resizer = __webpack_require__(/*! ./layout/resizer_cell */ "./sources/core/ui/layout/resizer_cell.gpl.js"),
-	Scrollbar = __webpack_require__(/*! ./layout/scrollbar_cell */ "./sources/core/ui/layout/scrollbar_cell.js"),
-	Timeline = __webpack_require__(/*! ./timeline/timeline */ "./sources/core/ui/timeline/timeline.js"),
-	Grid = __webpack_require__(/*! ./grid/grid */ "./sources/core/ui/grid/grid.js"),
-	ResourceGrid = __webpack_require__(/*! ./grid/resource_grid */ "./sources/core/ui/grid/grid.js"),
-	ResourceTimeline = __webpack_require__(/*! ./timeline/resource_timeline */ "./sources/core/ui/timeline/timeline.js"),
-	ResourceHistogram = __webpack_require__(/*! ./timeline/resource_histogram */ "./sources/core/ui/timeline/timeline.js");
+var uiFactory = __webpack_require__(/*! ./ui_factory */ "c:\\www-recent\\gantt\\sources\\core\\ui\\ui_factory.js"),
+	mouseEvents = __webpack_require__(/*! ./mouse */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse.js"),
+	createLayers = __webpack_require__(/*! ./gantt_layers */ "c:\\www-recent\\gantt\\sources\\core\\ui\\gantt_layers.js"),
+	Cell = __webpack_require__(/*! ./layout/cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js"),
+	Layout = __webpack_require__(/*! ./layout/layout */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\layout.js"),
+	ViewLayout = __webpack_require__(/*! ./layout/view_layout */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_layout.js"),
+	ViewCell = __webpack_require__(/*! ./layout/view_cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_cell.js"),
+	Resizer = __webpack_require__(/*! ./layout/resizer_cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\resizer_cell.gpl.js"),
+	Scrollbar = __webpack_require__(/*! ./layout/scrollbar_cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\scrollbar_cell.js"),
+	Timeline = __webpack_require__(/*! ./timeline/timeline */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js"),
+	Grid = __webpack_require__(/*! ./grid/grid */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid.js"),
+	ResourceGrid = __webpack_require__(/*! ./grid/resource_grid */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid.js"),
+	ResourceTimeline = __webpack_require__(/*! ./timeline/resource_timeline */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js"),
+	ResourceHistogram = __webpack_require__(/*! ./timeline/resource_histogram */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js");
 
 
-var gridEditorsFactory = __webpack_require__(/*! ./grid/editors/controller */ "./sources/core/ui/grid/editors/controller.js");
+var gridEditorsFactory = __webpack_require__(/*! ./grid/editors/controller */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\controller.js");
 
 
-var renderTaskBar = __webpack_require__(/*! ./render/task_bar_render */ "./sources/core/ui/render/task_bar_render.js"),
-	renderSplitTaskBar = __webpack_require__(/*! ./render/task_split_render */ "./sources/core/ui/render/task_split_render.js"),
-	renderTaskBg = __webpack_require__(/*! ./render/task_bg_render */ "./sources/core/ui/render/task_bg_render.js"),
-	renderLink = __webpack_require__(/*! ./render/link_render */ "./sources/core/ui/render/link_render.js"),
-	gridRenderer = __webpack_require__(/*! ./render/task_grid_line_render */ "./sources/core/ui/render/task_grid_line_render.js");
+var renderTaskBar = __webpack_require__(/*! ./render/task_bar_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bar_render.js"),
+	renderSplitTaskBar = __webpack_require__(/*! ./render/task_split_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_split_render.js"),
+	renderTaskBg = __webpack_require__(/*! ./render/task_bg_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bg_render.js"),
+	renderLink = __webpack_require__(/*! ./render/link_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\link_render.js"),
+	gridRenderer = __webpack_require__(/*! ./render/task_grid_line_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_grid_line_render.js");
 
-var mainGridInitializer = __webpack_require__(/*! ./grid/main_grid_initializer */ "./sources/core/ui/grid/main_grid_initializer.js");
-var mainTimelineInitializer = __webpack_require__(/*! ./timeline/main_timeline_initializer */ "./sources/core/ui/timeline/main_timeline_initializer.js");
-var mainLayoutInitializer = __webpack_require__(/*! ./main_layout_initializer */ "./sources/core/ui/main_layout_initializer.js");
+var mainGridInitializer = __webpack_require__(/*! ./grid/main_grid_initializer */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\main_grid_initializer.js");
+var mainTimelineInitializer = __webpack_require__(/*! ./timeline/main_timeline_initializer */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\main_timeline_initializer.js");
+var mainLayoutInitializer = __webpack_require__(/*! ./main_layout_initializer */ "c:\\www-recent\\gantt\\sources\\core\\ui\\main_layout_initializer.js");
 
 function initUI(gantt){
 	function attachInitializer(view, initializer){
@@ -13055,16 +19266,16 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/layout/cell.js":
-/*!****************************************!*\
-  !*** ./sources/core/ui/layout/cell.js ***!
-  \****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js":
+/*!**********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/layout/cell.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	eventable = __webpack_require__(/*! ../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 var Cell = (function () {
 	"use strict";
@@ -13390,16 +19601,16 @@ module.exports = Cell;
 
 /***/ }),
 
-/***/ "./sources/core/ui/layout/layout.js":
-/*!******************************************!*\
-  !*** ./sources/core/ui/layout/layout.js ***!
-  \******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\layout.js":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/layout/layout.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
-	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
+	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
 
 var Layout = (function (_super) {
 	"use strict";
@@ -14155,10 +20366,10 @@ module.exports = Layout;
 
 /***/ }),
 
-/***/ "./sources/core/ui/layout/resizer_cell.gpl.js":
-/*!****************************************************!*\
-  !*** ./sources/core/ui/layout/resizer_cell.gpl.js ***!
-  \****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\resizer_cell.gpl.js":
+/*!**********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/layout/resizer_cell.gpl.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14166,18 +20377,18 @@ module.exports = null;
 
 /***/ }),
 
-/***/ "./sources/core/ui/layout/scrollbar_cell.js":
-/*!**************************************************!*\
-  !*** ./sources/core/ui/layout/scrollbar_cell.js ***!
-  \**************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\scrollbar_cell.js":
+/*!********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/layout/scrollbar_cell.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	env = __webpack_require__(/*! ../../../utils/env */ "./sources/utils/env.js"),
-	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	env = __webpack_require__(/*! ../../../utils/env */ "c:\\www-recent\\gantt\\sources\\utils\\env.js"),
+	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
 
 var ScrollbarCell = (function (_super) {
 	"use strict";
@@ -14680,16 +20891,16 @@ module.exports = ScrollbarCell;
 
 /***/ }),
 
-/***/ "./sources/core/ui/layout/view_cell.js":
-/*!*********************************************!*\
-  !*** ./sources/core/ui/layout/view_cell.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_cell.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/layout/view_cell.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
 
 var ViewCell = (function (_super) {
 	"use strict";
@@ -14806,16 +21017,16 @@ module.exports = ViewCell;
 
 /***/ }),
 
-/***/ "./sources/core/ui/layout/view_layout.js":
-/*!***********************************************!*\
-  !*** ./sources/core/ui/layout/view_layout.js ***!
-  \***********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_layout.js":
+/*!*****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/layout/view_layout.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
-	Layout = __webpack_require__(/*! ./layout */ "./sources/core/ui/layout/layout.js"),
-	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
+	Layout = __webpack_require__(/*! ./layout */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\layout.js"),
+	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
 
 var ViewLayout = (function (_super) {
 	"use strict";
@@ -14882,14 +21093,14 @@ module.exports = ViewLayout;
 
 /***/ }),
 
-/***/ "./sources/core/ui/main_layout_initializer.js":
-/*!****************************************************!*\
-  !*** ./sources/core/ui/main_layout_initializer.js ***!
-  \****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\main_layout_initializer.js":
+/*!**********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/main_layout_initializer.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 var initializer = (function() {
 	return function (gantt) {
@@ -15116,14 +21327,14 @@ module.exports = initializer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/mouse.js":
-/*!**********************************!*\
-  !*** ./sources/core/ui/mouse.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/mouse.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 var createMouseHandler = (function(domHelpers) {
 	return function (gantt) {
@@ -15239,7 +21450,8 @@ var createMouseHandler = (function(domHelpers) {
 			var id = gantt.locate(e);
 
 			var handlers = findEventHandlers(e, eventHandlers.doubleclick);
-			var res = !gantt.checkEvent("onTaskDblClick") || gantt.callEvent("onTaskDblClick", [id, e]);
+			// when doubleclick fired not on task, id === null
+			var res = !gantt.checkEvent("onTaskDblClick") || id === null || gantt.callEvent("onTaskDblClick", [id, e]);
 			if (res) {
 				var default_action = callEventHandlers(handlers, e, id);
 				if (!default_action)
@@ -15324,10 +21536,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/mouse_event_container.js":
-/*!**************************************************!*\
-  !*** ./sources/core/ui/mouse_event_container.js ***!
-  \**************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js":
+/*!********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/mouse_event_container.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15356,16 +21568,16 @@ module.exports = create;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/layer_engine.js":
-/*!************************************************!*\
-  !*** ./sources/core/ui/render/layer_engine.js ***!
-  \************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\layer_engine.js":
+/*!******************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/layer_engine.js ***!
+  \******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var renderFactoryProvider = __webpack_require__(/*! ./render_factory */ "./sources/core/ui/render/render_factory.js");
-var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var renderFactoryProvider = __webpack_require__(/*! ./render_factory */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\render_factory.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 var layerFactory = function(gantt){
 
@@ -15503,10 +21715,10 @@ module.exports = layerFactory;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/link_render.js":
-/*!***********************************************!*\
-  !*** ./sources/core/ui/render/link_render.js ***!
-  \***********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\link_render.js":
+/*!*****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/link_render.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15957,10 +22169,10 @@ module.exports = createLinkRender;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/render_factory.js":
-/*!**************************************************!*\
-  !*** ./sources/core/ui/render/render_factory.js ***!
-  \**************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\render_factory.js":
+/*!********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/render_factory.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16103,10 +22315,10 @@ module.exports = rendererFactory;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/task_bar_render.js":
-/*!***************************************************!*\
-  !*** ./sources/core/ui/render/task_bar_render.js ***!
-  \***************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bar_render.js":
+/*!*********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/task_bar_render.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16450,10 +22662,10 @@ module.exports = createTaskRenderer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/task_bg_render.js":
-/*!**************************************************!*\
-  !*** ./sources/core/ui/render/task_bg_render.js ***!
-  \**************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bg_render.js":
+/*!********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/task_bg_render.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16519,14 +22731,14 @@ module.exports = createTaskBgRender;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/task_grid_line_render.js":
-/*!*********************************************************!*\
-  !*** ./sources/core/ui/render/task_grid_line_render.js ***!
-  \*********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_grid_line_render.js":
+/*!***************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/task_grid_line_render.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
+var helpers = __webpack_require__(/*! ../../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 function createGridLineRender(gantt){
 	function _render_grid_item(item, view) {
@@ -16643,15 +22855,15 @@ module.exports = createGridLineRender;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/task_split_render.js":
-/*!*****************************************************!*\
-  !*** ./sources/core/ui/render/task_split_render.js ***!
-  \*****************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_split_render.js":
+/*!***********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/render/task_split_render.js ***!
+  \***********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 function createTaskRenderer(gantt){
-	var defaultRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js")(gantt);
+	var defaultRender = __webpack_require__(/*! ./task_bar_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bar_render.js")(gantt);
 
 	return function show_children(task, timeline) {
 		if (gantt.isSplitTask(task)) {
@@ -16685,10 +22897,10 @@ module.exports = createTaskRenderer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/row_position_mixin.js":
-/*!***********************************************!*\
-  !*** ./sources/core/ui/row_position_mixin.js ***!
-  \***********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\row_position_mixin.js":
+/*!*****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/row_position_mixin.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16731,14 +22943,14 @@ module.exports = createMixin;
 
 /***/ }),
 
-/***/ "./sources/core/ui/timeline/links_dnd.js":
-/*!***********************************************!*\
-  !*** ./sources/core/ui/timeline/links_dnd.js ***!
-  \***********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\links_dnd.js":
+/*!*****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/timeline/links_dnd.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 var initLinksDND = function(timeline, gantt) {
 	var _link_landing,
@@ -17115,17 +23327,17 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/timeline/main_timeline_initializer.js":
-/*!***************************************************************!*\
-  !*** ./sources/core/ui/timeline/main_timeline_initializer.js ***!
-  \***************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\main_timeline_initializer.js":
+/*!*********************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/timeline/main_timeline_initializer.js ***!
+  \*********************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	taskDnD = __webpack_require__(/*! ./tasks_dnd */ "./sources/core/ui/timeline/tasks_dnd.js"),
-	linkDnD = __webpack_require__(/*! ./links_dnd */ "./sources/core/ui/timeline/links_dnd.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	taskDnD = __webpack_require__(/*! ./tasks_dnd */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_dnd.js"),
+	linkDnD = __webpack_require__(/*! ./links_dnd */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\links_dnd.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
 
 var initializer = (function(){
 	return function(gantt){
@@ -17140,7 +23352,7 @@ var initializer = (function(){
 				timeline._tasksDnD = taskDnD.createTaskDND();
 				timeline._tasksDnD.extend(timeline);
 
-				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "./sources/core/ui/mouse_event_container.js")(gantt);
+				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js")(gantt);
 			},
 			onInitialized: function (timeline) {
 				this._attachDomEvents(gantt);
@@ -17255,14 +23467,14 @@ module.exports = initializer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/timeline/scales.js":
-/*!********************************************!*\
-  !*** ./sources/core/ui/timeline/scales.js ***!
-  \********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\scales.js":
+/*!**************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/timeline/scales.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 function ScaleHelper(gantt){
 	var dateHelper = gantt.date;
@@ -17601,10 +23813,10 @@ module.exports = ScaleHelper;
 
 /***/ }),
 
-/***/ "./sources/core/ui/timeline/tasks_canvas_render.gpl.js":
-/*!*************************************************************!*\
-  !*** ./sources/core/ui/timeline/tasks_canvas_render.gpl.js ***!
-  \*************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_canvas_render.gpl.js":
+/*!*******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/timeline/tasks_canvas_render.gpl.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17624,16 +23836,16 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/timeline/tasks_dnd.js":
-/*!***********************************************!*\
-  !*** ./sources/core/ui/timeline/tasks_dnd.js ***!
-  \***********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_dnd.js":
+/*!*****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/timeline/tasks_dnd.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
-var timeout = __webpack_require__(/*! ../../../utils/timeout */ "./sources/utils/timeout.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var timeout = __webpack_require__(/*! ../../../utils/timeout */ "c:\\www-recent\\gantt\\sources\\utils\\timeout.js");
 
 function createTaskDND(timeline, gantt){
 	var services = gantt.$services;
@@ -18169,18 +24381,18 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/ui/timeline/timeline.js":
-/*!**********************************************!*\
-  !*** ./sources/core/ui/timeline/timeline.js ***!
-  \**********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js":
+/*!****************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/timeline/timeline.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ScaleHelper = __webpack_require__(/*! ./scales_ignore */ "./sources/core/ui/timeline/scales.js");
-var eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js");
-var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
-var topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
-var canvasRender = __webpack_require__(/*! ./tasks_canvas_render */ "./sources/core/ui/timeline/tasks_canvas_render.gpl.js");
+var ScaleHelper = __webpack_require__(/*! ./scales_ignore */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\scales.js");
+var eventable = __webpack_require__(/*! ../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "c:\\www-recent\\gantt\\sources\\core\\ui\\row_position_mixin.js");
+var canvasRender = __webpack_require__(/*! ./tasks_canvas_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_canvas_render.gpl.js");
 
 var Timeline = function(parent, config, factory, gantt){
 	this.$config = utils.mixin({}, config || {});
@@ -18843,15 +25055,15 @@ function _findBinary(array, target) {
 
 /***/ }),
 
-/***/ "./sources/core/ui/ui_factory.js":
-/*!***************************************!*\
-  !*** ./sources/core/ui/ui_factory.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\ui_factory.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/ui/ui_factory.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js"),
-	configurable = __webpack_require__(/*! ./configurable */ "./sources/core/ui/configurable.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
+	configurable = __webpack_require__(/*! ./configurable */ "c:\\www-recent\\gantt\\sources\\core\\ui\\configurable.js");
 
 var uiFactory = function createFactory(gantt){
 	var views = {};
@@ -18967,10 +25179,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/core/wai_aria.js":
-/*!**********************************!*\
-  !*** ./sources/core/wai_aria.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\wai_aria.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/wai_aria.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -19240,15 +25452,15 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/worktime/calendar_arguments_helper.js":
-/*!************************************************************!*\
-  !*** ./sources/core/worktime/calendar_arguments_helper.js ***!
-  \************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_arguments_helper.js":
+/*!******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/calendar_arguments_helper.js ***!
+  \******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 
 function IsWorkTimeArgument(date, unit, task, id, calendar){
@@ -19433,16 +25645,16 @@ module.exports = calendarArgumentsHelper;
 
 /***/ }),
 
-/***/ "./sources/core/worktime/calendar_manager.js":
-/*!***************************************************!*\
-  !*** ./sources/core/worktime/calendar_manager.js ***!
-  \***************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_manager.js":
+/*!*********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/calendar_manager.js ***!
+  \*********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
-var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "./sources/core/worktime/calendar_arguments_helper.js");
-var CalendarWorktimeStrategy = __webpack_require__(/*! ./strategy/calendar_strategy */ "./sources/core/worktime/strategy/calendar_strategy.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_arguments_helper.js");
+var CalendarWorktimeStrategy = __webpack_require__(/*! ./strategy/calendar_strategy */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_strategy.js");
 
 function CalendarManager (gantt){
 	this.$gantt = gantt;
@@ -19564,14 +25776,13 @@ CalendarManager.prototype = {
 		return res;
 	},
 
-	getTaskCalendar: function (task) {
-		var config = this.$gantt.$services.config();
-		if (!task) {
-			return this.getCalendar();
-		} else if (task[config.calendar_property]) {
+	_getOwnCalendar: function(task){
+		var config = this.$gantt.config;
+		if (task[config.calendar_property]) {
 			return this.getCalendar(task[config.calendar_property]);
-		} else if (config.resource_calendars) {
+		}
 
+		if (config.resource_calendars) {
 			for (var field in config.resource_calendars) {
 				var resource = config.resource_calendars[field];
 				if (task[field]) {
@@ -19582,8 +25793,30 @@ CalendarManager.prototype = {
 				}
 			}
 		}
+		return null;
+	},
 
-		return this.getCalendar();
+	getTaskCalendar: function (task) {
+		if (!task) {
+			return this.getCalendar();
+		}
+
+		var calendar = this._getOwnCalendar(task);
+		var gantt = this.$gantt;
+		if (!calendar && gantt.config.inherit_calendar && gantt.isTaskExists(task.parent)){
+			var stop = false;
+			gantt.eachParent(function(parent){
+				if(stop) return;
+				if(gantt.isSummaryTask(parent)){
+					calendar = this._getOwnCalendar(parent);
+					if(calendar){
+						stop = true;
+					}
+				}
+			}, task.id, this);
+		}
+
+		return calendar || this.getCalendar();
 	},
 
 	addCalendar: function (calendar) { // puts new calendar to Global Storage - gantt.calendarManager._calendars {}
@@ -19592,7 +25825,7 @@ CalendarManager.prototype = {
 			calendar = this.createCalendar(calendar);
 			calendar.id = id;
 		}
-		var config = this.$gantt.$services.config();
+		var config = this.$gantt.config;
 
 		calendar.id = calendar.id || utils.uid();
 		this._calendars[calendar.id] = calendar;
@@ -19603,7 +25836,7 @@ CalendarManager.prototype = {
 	},
 
 	deleteCalendar: function (calendar) {
-		var config = this.$gantt.$services.config();
+		var config = this.$gantt.config;
 		if (!calendar) return false;
 		if (this._calendars[calendar]) {
 			delete this._calendars[calendar];
@@ -19644,7 +25877,7 @@ CalendarManager.prototype = {
 	},
 
 	createDefaultCalendars: function () {
-		var config = this.$gantt.$services.config();
+		var config = this.$gantt.config;
 		this.restoreConfigCalendars(this.defaults);
 		this.restoreConfigCalendars(config.worktimes);
 	}
@@ -19654,15 +25887,15 @@ module.exports = CalendarManager;
 
 /***/ }),
 
-/***/ "./sources/core/worktime/strategy/calendar_strategy.js":
-/*!*************************************************************!*\
-  !*** ./sources/core/worktime/strategy/calendar_strategy.js ***!
-  \*************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_strategy.js":
+/*!*******************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/strategy/calendar_strategy.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Cache = __webpack_require__(/*! ./calendar_workunit_cache */ "./sources/core/worktime/strategy/calendar_workunit_cache.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
+var Cache = __webpack_require__(/*! ./calendar_workunit_cache */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_workunit_cache.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 function CalendarWorkTimeStrategy(gantt, argumentsHelper){
 	this.argumentsHelper = argumentsHelper;
@@ -20117,10 +26350,10 @@ module.exports = CalendarWorkTimeStrategy;
 
 /***/ }),
 
-/***/ "./sources/core/worktime/strategy/calendar_workunit_cache.js":
-/*!*******************************************************************!*\
-  !*** ./sources/core/worktime/strategy/calendar_workunit_cache.js ***!
-  \*******************************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_workunit_cache.js":
+/*!*************************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/strategy/calendar_workunit_cache.js ***!
+  \*************************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20167,10 +26400,10 @@ module.exports = WorkUnitsCache;
 
 /***/ }),
 
-/***/ "./sources/core/worktime/strategy/no_work_time.js":
-/*!********************************************************!*\
-  !*** ./sources/core/worktime/strategy/no_work_time.js ***!
-  \********************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\no_work_time.js":
+/*!**************************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/strategy/no_work_time.js ***!
+  \**************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20265,15 +26498,15 @@ module.exports = CalendarDisabledTimeStrategy;
 
 /***/ }),
 
-/***/ "./sources/core/worktime/time_calculator.js":
-/*!**************************************************!*\
-  !*** ./sources/core/worktime/time_calculator.js ***!
-  \**************************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\time_calculator.js":
+/*!********************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/time_calculator.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "./sources/core/worktime/calendar_arguments_helper.js"),
-	NoWorkTimeCalendar = __webpack_require__(/*! ./strategy/no_work_time */ "./sources/core/worktime/strategy/no_work_time.js");
+var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_arguments_helper.js"),
+	NoWorkTimeCalendar = __webpack_require__(/*! ./strategy/no_work_time */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\no_work_time.js");
 
 function TimeCalculator(calendarManager){
 
@@ -20369,17 +26602,17 @@ module.exports = TimeCalculator;
 
 /***/ }),
 
-/***/ "./sources/core/worktime/work_time.js":
-/*!********************************************!*\
-  !*** ./sources/core/worktime/work_time.js ***!
-  \********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\work_time.js":
+/*!**************************************************************!*\
+  !*** c:/www-recent/gantt/sources/core/worktime/work_time.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var CalendarManager = __webpack_require__(/*! ./calendar_manager */ "./sources/core/worktime/calendar_manager.js"),
-	TimeCalculator = __webpack_require__(/*! ./time_calculator */ "./sources/core/worktime/time_calculator.js"),
-	worktimeFacadeFactory = __webpack_require__(/*! ../facades/worktime_calendars */ "./sources/core/facades/worktime_calendars.js"),
-	utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var CalendarManager = __webpack_require__(/*! ./calendar_manager */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_manager.js"),
+	TimeCalculator = __webpack_require__(/*! ./time_calculator */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\time_calculator.js"),
+	worktimeFacadeFactory = __webpack_require__(/*! ../facades/worktime_calendars */ "c:\\www-recent\\gantt\\sources\\core\\facades\\worktime_calendars.js"),
+	utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 module.exports = function (gantt) {
 	var manager = new CalendarManager(gantt),
@@ -20391,10 +26624,10 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "./sources/css/skins/broadway.js":
-/*!***************************************!*\
-  !*** ./sources/css/skins/broadway.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\broadway.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/broadway.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20422,10 +26655,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/css/skins/contrast_black.js":
-/*!*********************************************!*\
-  !*** ./sources/css/skins/contrast_black.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_black.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/contrast_black.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20447,10 +26680,10 @@ gantt.skins["contrast_black"] = {
 
 /***/ }),
 
-/***/ "./sources/css/skins/contrast_white.js":
-/*!*********************************************!*\
-  !*** ./sources/css/skins/contrast_white.js ***!
-  \*********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_white.js":
+/*!***************************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/contrast_white.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20472,10 +26705,10 @@ gantt.skins["contrast_white"] = {
 
 /***/ }),
 
-/***/ "./sources/css/skins/material.js":
-/*!***************************************!*\
-  !*** ./sources/css/skins/material.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\material.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/material.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20515,10 +26748,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/css/skins/meadow.js":
-/*!*************************************!*\
-  !*** ./sources/css/skins/meadow.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\meadow.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/meadow.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20540,10 +26773,10 @@ gantt.skins.meadow = {
 
 /***/ }),
 
-/***/ "./sources/css/skins/skyblue.js":
-/*!**************************************!*\
-  !*** ./sources/css/skins/skyblue.js ***!
-  \**************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\skyblue.js":
+/*!********************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/skyblue.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20565,10 +26798,10 @@ gantt.skins.skyblue = {
 
 /***/ }),
 
-/***/ "./sources/css/skins/terrace.js":
-/*!**************************************!*\
-  !*** ./sources/css/skins/terrace.js ***!
-  \**************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.js":
+/*!********************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/terrace.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20590,10 +26823,10 @@ gantt.skins.terrace = {
 
 /***/ }),
 
-/***/ "./sources/css/skins/terrace.less":
-/*!****************************************!*\
-  !*** ./sources/css/skins/terrace.less ***!
-  \****************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.less":
+/*!**********************************************************!*\
+  !*** c:/www-recent/gantt/sources/css/skins/terrace.less ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -20601,32 +26834,34 @@ gantt.skins.terrace = {
 
 /***/ }),
 
-/***/ "./sources/dhtmlxgantt.gpl.ts":
-/*!************************************!*\
-  !*** ./sources/dhtmlxgantt.gpl.ts ***!
-  \************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\dhtmlxgantt.gpl.ts":
+/*!******************************************************!*\
+  !*** c:/www-recent/gantt/sources/dhtmlxgantt.gpl.ts ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var warnings = __webpack_require__(/*! ./core/deprecated_warnings */ "./sources/core/deprecated_warnings.js");
-var base = __webpack_require__(/*! ./core/gantt */ "./sources/core/gantt.js");
+var warnings = __webpack_require__(/*! ./core/deprecated_warnings */ "c:\\www-recent\\gantt\\sources\\core\\deprecated_warnings.js");
+var base = __webpack_require__(/*! ./core/gantt */ "c:\\www-recent\\gantt\\sources\\core\\gantt.js");
 var gantt = window.gantt = base();
+exports.gantt = gantt;
 warnings(gantt);
+exports.default = gantt;
 
 
 /***/ }),
 
-/***/ "./sources/locale/locale.js":
-/*!**********************************!*\
-  !*** ./sources/locale/locale.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/locale/locale.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = function(gantt) {
+module.exports = function (gantt) {
 	gantt.locale = {
 		date: {
 			month_full: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
@@ -20673,8 +26908,24 @@ module.exports = function(gantt) {
 
 			/* message popup */
 			message_ok: "OK",
-			message_cancel: "Cancel"
+			message_cancel: "Cancel",
 
+			/* constraints */
+			section_constraint: "Constraint",
+			constraint_type: "Constraint type",
+			constraint_date: "Constraint date",
+			asap: "As Soon As Possible",
+			alap: "As Late As Possible",
+			snet: "Start No Earlier Than",
+			snlt: "Start No Later Than",
+			fnet: "Finish No Earlier Than",
+			fnlt: "Finish No Later Than",
+			mso: "Must Start On",
+			mfo: "Must Finish On",
+
+			/* resource control */
+			resources_filter_placeholder: "type to filter",
+			resources_filter_label: "hide empty"
 		}
 	};
 };
@@ -20683,14 +26934,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "./sources/utils/dom_event_scope.js":
-/*!******************************************!*\
-  !*** ./sources/utils/dom_event_scope.js ***!
-  \******************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\dom_event_scope.js":
+/*!************************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/dom_event_scope.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ./utils */ "./sources/utils/utils.js");
+var utils = __webpack_require__(/*! ./utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
 
 function createScope(addEvent, removeEvent){
 	addEvent = addEvent || utils.event;
@@ -20732,10 +26983,10 @@ module.exports = createScope;
 
 /***/ }),
 
-/***/ "./sources/utils/dom_helpers.js":
-/*!**************************************!*\
-  !*** ./sources/utils/dom_helpers.js ***!
-  \**************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js":
+/*!********************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/dom_helpers.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20985,7 +27236,6 @@ function getRelativeEventPosition(ev, node){
 	};
 }
 
-
 function isChildOf(child, parent){
 	if(!child || !parent){
 		return false;
@@ -20996,6 +27246,26 @@ function isChildOf(child, parent){
 	}
 
 	return child === parent;
+}
+
+function closest(element, selector){
+	if(element.closest){
+		return element.closest(selector);
+	}else if(element.matches || element.msMatchesSelector || element.webkitMatchesSelector){
+		var el = element;
+		if (!document.documentElement.contains(el)) return null;
+		do {
+			var method = el.matches || el.msMatchesSelector || el.webkitMatchesSelector;
+
+			if (method.call(el, selector)) return el;
+			el = el.parentElement || el.parentNode;
+		} while (el !== null && el.nodeType === 1); 
+		return null;
+	}else{
+		// eslint-disable-next-line no-console
+		console.error("Your browser is not supported");
+		return null;
+	}
 }
 
 module.exports = {
@@ -21014,15 +27284,16 @@ module.exports = {
 	getTargetNode: getTargetNode,
 	getRelativeEventPosition: getRelativeEventPosition,
 	isChildOf: isChildOf,
-	hasClass: hasClass
+	hasClass: hasClass,
+	closest: closest
 };
 
 /***/ }),
 
-/***/ "./sources/utils/env.js":
-/*!******************************!*\
-  !*** ./sources/utils/env.js ***!
-  \******************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\env.js":
+/*!************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/env.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21043,10 +27314,10 @@ module.exports = env;
 
 /***/ }),
 
-/***/ "./sources/utils/eventable.js":
-/*!************************************!*\
-  !*** ./sources/utils/eventable.js ***!
-  \************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js":
+/*!******************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/eventable.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21136,10 +27407,10 @@ module.exports = makeEventable;
 
 /***/ }),
 
-/***/ "./sources/utils/extends.js":
-/*!**********************************!*\
-  !*** ./sources/utils/extends.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\extends.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/extends.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21151,10 +27422,10 @@ module.exports = function (d, b) {
 
 /***/ }),
 
-/***/ "./sources/utils/helpers.js":
-/*!**********************************!*\
-  !*** ./sources/utils/helpers.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/helpers.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21306,13 +27577,13 @@ function throttle (callback, timeout) {
 
 function delay (callback, timeout){
 	var timer;
-	
 
 	var result = function() {
 		result.$cancelTimeout();
 		callback.$pending = true;
+		var args = Array.prototype.slice.call(arguments);
 		timer = setTimeout(function(){
-			callback();
+			callback.apply(this, args);
 			result.$pending = false;
 		}, timeout);
 	};
@@ -21337,9 +27608,23 @@ function sortArrayOfHash(arr, field, desc) {
 
 	arr.sort(function(a, b) {
 		if (a[field] === b[field]) return 0;
-		
+
 		return desc ? compare(a[field], b[field]) : compare(b[field], a[field]);
 	});
+}
+
+function objectKeys(obj) {
+	if (Object.keys) {
+		return Object.keys(obj);
+	}
+	var result = [];
+	var key;
+	for (key in obj) {
+		if (Object.prototype.hasOwnProperty.call(obj, key)) {
+			result.push(key);
+		}
+	}
+	return result;
 }
 
 module.exports = {
@@ -21358,19 +27643,20 @@ module.exports = {
 	isStringObject: isStringObject,
 	isNumberObject: isNumberObject,
 	isBooleanObject: isBooleanObject,
-	delay: delay
+	delay: delay,
+	objectKeys: objectKeys
 };
 
 /***/ }),
 
-/***/ "./sources/utils/html_helpers.js":
-/*!***************************************!*\
-  !*** ./sources/utils/html_helpers.js ***!
-  \***************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\html_helpers.js":
+/*!*********************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/html_helpers.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
+var helpers = __webpack_require__(/*! ./helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 var htmlHelpers = {
 	getHtmlSelect: function(options, attributes, value) {
@@ -21425,10 +27711,21 @@ module.exports = htmlHelpers;
 
 /***/ }),
 
-/***/ "./sources/utils/task_tree_helpers.js":
-/*!********************************************!*\
-  !*** ./sources/utils/task_tree_helpers.js ***!
-  \********************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\promise.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/promise.js ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! bluebird */ "c:\\www-recent\\gantt\\node_modules\\bluebird\\js\\browser\\bluebird.js");
+
+/***/ }),
+
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\task_tree_helpers.js":
+/*!**************************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/task_tree_helpers.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21476,10 +27773,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./sources/utils/timeout.js":
-/*!**********************************!*\
-  !*** ./sources/utils/timeout.js ***!
-  \**********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\timeout.js":
+/*!****************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/timeout.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21505,14 +27802,14 @@ module.exports = checkTimeout;
 
 /***/ }),
 
-/***/ "./sources/utils/utils.js":
-/*!********************************!*\
-  !*** ./sources/utils/utils.js ***!
-  \********************************/
+/***/ "c:\\www-recent\\gantt\\sources\\utils\\utils.js":
+/*!**************************************************!*\
+  !*** c:/www-recent/gantt/sources/utils/utils.js ***!
+  \**************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
+var helpers = __webpack_require__(/*! ./helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
 
 function copy(object) {
 	var i, result; // iterator, types array, result
@@ -21593,7 +27890,6 @@ function eventRemove(el, event, handler, capture){
 		el.detachEvent("on"+event, handler);
 }
 
-
 module.exports = {
 	copy: copy,
 	defined: defined,
@@ -21607,3 +27903,4 @@ module.exports = {
 /***/ })
 
 /******/ });
+});

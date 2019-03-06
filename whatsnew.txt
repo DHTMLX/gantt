@@ -1,3 +1,20 @@
+### 6.1.1
+- Add missing locale options for the resource lightbox control
+- Fix script error when using gantt.destructor together with the dataProcessor
+- Fix script error when using gantt.destructor together with the resource panel
+- Fix the filesize of the tooltip extension
+- Fix unexpected call of the onTaskDblClick event while double clicking on a link element
+- Fix stuck lightbox cover if gantt.init is called while lightbox is opened
+- Fix issues with lightbox and the tooltip extension in the full-screen mode
+
+### 6.1.0
+- Ability to add an overlay for the Gantt Chart (PRO)
+- Time constraints for tasks (PRO)
+- Routing options for dataProcessor
+- Project-level working calendars (PRO)
+- Ability to create tooltips for all the elements of dhtmlxGantt
+- Ability to import dhtmlxGantt as an ES6 module
+
 ### 6.0.7
 - reduce the number of redundant repaints of the resource diagram
 - fix script error from the resource diagram after deleting a task
@@ -64,10 +81,10 @@
 - Work Time calendars at the task and resource levels
 - WBS code (outline numbers) calculation
 - Autoscroll for drag and drop operations
-- Persian (Farsi) locale 
-- The getter function for key navigation shortcuts 
+- Persian (Farsi) locale
+- The getter function for key navigation shortcuts
 - The config for cascade deleting of nested tasks and links
-- The ability to scroll timeline horizontally on Shift+a mouse wheel movement 
+- The ability to scroll timeline horizontally on Shift+a mouse wheel movement
 - German and Italian locales are updated
 - GIF images in the Gantt skins are replaced with PNG
 - various fixes

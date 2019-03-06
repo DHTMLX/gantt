@@ -1,13 +1,23 @@
 /*
 @license
 
-dhtmlxGantt v.6.0.7 Standard
+dhtmlxGantt v.6.1.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
 
 */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else {
+		var a = factory();
+		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
+	}
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -90,15 +100,15 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/locale/locale_fa.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\locale\\locale_fa.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./sources/locale/locale_fa.js":
-/*!*************************************!*\
-  !*** ./sources/locale/locale_fa.js ***!
-  \*************************************/
+/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale_fa.js":
+/*!*******************************************************!*\
+  !*** c:/www-recent/gantt/sources/locale/locale_fa.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -107,8 +117,8 @@ This software is covered by GPL license. You also can obtain Commercial or Enter
  */
 /*jshint -W100*/
 gantt.locale = {
-	date:{
-		month_full:[
+	date: {
+		month_full: [
 			"ژانویه",
 			"فوریه",
 			"مارس",
@@ -122,8 +132,8 @@ gantt.locale = {
 			"نوامبر",
 			"دسامبر"
 		],
-		month_short:[ "1","2","3","4","5","6","7","8","9","10","11","12" ],
-		day_full:[
+		month_short: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+		day_full: [
 			"يکشنبه",
 			"دوشنبه",
 			"سه‌شنبه",
@@ -132,7 +142,7 @@ gantt.locale = {
 			"جمعه",
 			"شنبه"
 		],
-		day_short:[
+		day_short: [
 			"ی",
 			"د",
 			"س",
@@ -142,31 +152,31 @@ gantt.locale = {
 			"ش"
 		]
 	},
-	labels:{
-		new_task:"وظیفه جدید",
+	labels: {
+		new_task: "وظیفه جدید",
 		new_event: "رویداد جدید",
-		icon_save:"ذخیره",
-		icon_cancel:"لغو",
-		icon_details:"جزییات",
-		icon_edit:"ویرایش",
-		icon_delete:"حذف",
-		confirm_closing:"تغییرات شما ازدست خواهد رفت، آیا مطمئن هستید؟",
-		confirm_deleting:"این مورد برای همیشه حذف خواهد شد، آیا مطمئن هستید؟",
-		section_description:"توضیحات",
-		section_time:"مدت زمان",
-		section_type:"نوع",
+		icon_save: "ذخیره",
+		icon_cancel: "لغو",
+		icon_details: "جزییات",
+		icon_edit: "ویرایش",
+		icon_delete: "حذف",
+		confirm_closing: "تغییرات شما ازدست خواهد رفت، آیا مطمئن هستید؟",
+		confirm_deleting: "این مورد برای همیشه حذف خواهد شد، آیا مطمئن هستید؟",
+		section_description: "توضیحات",
+		section_time: "مدت زمان",
+		section_type: "نوع",
 
 		/* grid columns */
 
-		column_wbs : "WBS",
-		column_text : "عنوان",
-		column_start_date : "زمان شروع",
-		column_duration : "مدت",
-		column_add : "",
+		column_wbs: "WBS",
+		column_text: "عنوان",
+		column_start_date: "زمان شروع",
+		column_duration: "مدت",
+		column_add: "",
 
 		/* link confirmation */
 		link: "ارتباط",
-		confirm_link_deleting:"حذف خواهد شد",
+		confirm_link_deleting: "حذف خواهد شد",
 		link_start: " (آغاز)",
 		link_end: " (پایان)",
 
@@ -183,7 +193,24 @@ gantt.locale = {
 
 		/* message popup */
 		message_ok: "تایید",
-		message_cancel: "لغو"
+		message_cancel: "لغو",
+
+		/* constraints */
+		section_constraint: "Constraint",
+		constraint_type: "Constraint type",
+		constraint_date: "Constraint date",
+		asap: "As Soon As Possible",
+		alap: "As Late As Possible",
+		snet: "Start No Earlier Than",
+		snlt: "Start No Later Than",
+		fnet: "Finish No Earlier Than",
+		fnlt: "Finish No Later Than",
+		mso: "Must Start On",
+		mfo: "Must Finish On",
+
+		/* resource control */
+		resources_filter_placeholder: "type to filter",
+		resources_filter_label: "hide empty"
 
 	}
 };
@@ -193,3 +220,4 @@ gantt.locale = {
 /***/ })
 
 /******/ });
+});
