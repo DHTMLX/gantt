@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.1 Standard
+dhtmlxGantt v.6.1.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -100,15 +100,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\ext\\tooltip\\index.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/tooltip/index.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\tooltip\\index.ts":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/tooltip/index.ts ***!
-  \********************************************************/
+/***/ "./sources/ext/tooltip/index.ts":
+/*!**************************************!*\
+  !*** ./sources/ext/tooltip/index.ts ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -119,7 +119,7 @@ gantt.config.tooltip_timeout = 30;
 gantt.config.tooltip_offset_y = 20;
 gantt.config.tooltip_offset_x = 10;
 gantt.config.tooltip_hide_timeout = 30;
-var tooltipManager_1 = __webpack_require__(/*! ./tooltipManager */ "c:\\www-recent\\gantt\\sources\\ext\\tooltip\\tooltipManager.ts");
+var tooltipManager_1 = __webpack_require__(/*! ./tooltipManager */ "./sources/ext/tooltip/tooltipManager.ts");
 var tooltipManager = new tooltipManager_1.TooltipManager();
 gantt.ext.tooltips = tooltipManager;
 gantt.attachEvent("onGanttReady", function () {
@@ -143,17 +143,17 @@ gantt.attachEvent("onGanttReady", function () {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\tooltip\\tooltip.ts":
-/*!**********************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/tooltip/tooltip.ts ***!
-  \**********************************************************/
+/***/ "./sources/ext/tooltip/tooltip.ts":
+/*!****************************************!*\
+  !*** ./sources/ext/tooltip/tooltip.ts ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 var Tooltip = /** @class */ (function () {
     function Tooltip() {
     }
@@ -283,20 +283,20 @@ exports.Tooltip = Tooltip;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\tooltip\\tooltipManager.ts":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/tooltip/tooltipManager.ts ***!
-  \*****************************************************************/
+/***/ "./sources/ext/tooltip/tooltipManager.ts":
+/*!***********************************************!*\
+  !*** ./sources/ext/tooltip/tooltipManager.ts ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var tooltip_1 = __webpack_require__(/*! ./tooltip */ "c:\\www-recent\\gantt\\sources\\ext\\tooltip\\tooltip.ts");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var tooltip_1 = __webpack_require__(/*! ./tooltip */ "./sources/ext/tooltip/tooltip.ts");
 var TooltipManager = /** @class */ (function () {
     function TooltipManager() {
         this.tooltip = new tooltip_1.Tooltip();
@@ -396,10 +396,10 @@ exports.TooltipManager = TooltipManager;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/dom_helpers.js ***!
-  \********************************************************/
+/***/ "./sources/utils/dom_helpers.js":
+/*!**************************************!*\
+  !*** ./sources/utils/dom_helpers.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -703,10 +703,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/helpers.js ***!
-  \****************************************************/
+/***/ "./sources/utils/helpers.js":
+/*!**********************************!*\
+  !*** ./sources/utils/helpers.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -930,14 +930,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\utils.js":
-/*!**************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/utils.js ***!
-  \**************************************************/
+/***/ "./sources/utils/utils.js":
+/*!********************************!*\
+  !*** ./sources/utils/utils.js ***!
+  \********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ./helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
 
 function copy(object) {
 	var i, result; // iterator, types array, result

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.1 Standard
+dhtmlxGantt v.6.1.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -100,20 +100,20 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/keyboard_navigation.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation.js":
-/*!**************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation.js ***!
-  \**************************************************************/
+/***/ "./sources/ext/keyboard_navigation.js":
+/*!********************************************!*\
+  !*** ./sources/ext/keyboard_navigation.js ***!
+  \********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function(){
-	var eventable = __webpack_require__(/*! ../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+	var eventable = __webpack_require__(/*! ../utils/eventable */ "./sources/utils/eventable.js");
 	function setupKeyNav(gantt){
 		gantt.config.keyboard_navigation = true;
 		gantt.config.keyboard_navigation_cells = false;
@@ -136,18 +136,18 @@ return /******/ (function(modules) { // webpackBootstrap
 			return res;
 		};
 
-		__webpack_require__ (/*! ./keyboard_navigation/common/keyboard_shortcuts */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\common\\keyboard_shortcuts.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/common/eventhandler */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\common\\eventhandler.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/common/trap_modal_focus */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\common\\trap_modal_focus.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/elements/gantt_node */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\gantt_node.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/elements/nav_node */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\nav_node.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/elements/header_cell */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\header_cell.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/elements/task_row */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\task_row.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/elements/task_cell */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\task_cell.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/modals */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\modals.js")(gantt);
-		__webpack_require__ (/*! ./keyboard_navigation/core */ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\core.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/common/keyboard_shortcuts */ "./sources/ext/keyboard_navigation/common/keyboard_shortcuts.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/common/eventhandler */ "./sources/ext/keyboard_navigation/common/eventhandler.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/common/trap_modal_focus */ "./sources/ext/keyboard_navigation/common/trap_modal_focus.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/elements/gantt_node */ "./sources/ext/keyboard_navigation/elements/gantt_node.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/elements/nav_node */ "./sources/ext/keyboard_navigation/elements/nav_node.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/elements/header_cell */ "./sources/ext/keyboard_navigation/elements/header_cell.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/elements/task_row */ "./sources/ext/keyboard_navigation/elements/task_row.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/elements/task_cell */ "./sources/ext/keyboard_navigation/elements/task_cell.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/modals */ "./sources/ext/keyboard_navigation/modals.js")(gantt);
+		__webpack_require__ (/*! ./keyboard_navigation/core */ "./sources/ext/keyboard_navigation/core.js")(gantt);
 
-		var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+		var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 		(function(){
 			var dispatcher = gantt.$keyboardNavigation.dispatcher;
@@ -509,10 +509,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\common\\eventhandler.js":
-/*!**********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/common/eventhandler.js ***!
-  \**********************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/common/eventhandler.js":
+/*!****************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/common/eventhandler.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -583,10 +583,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\common\\keyboard_shortcuts.js":
-/*!****************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/common/keyboard_shortcuts.js ***!
-  \****************************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/common/keyboard_shortcuts.js":
+/*!**********************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/common/keyboard_shortcuts.js ***!
+  \**********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -716,17 +716,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\common\\trap_modal_focus.js":
-/*!**************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/common/trap_modal_focus.js ***!
-  \**************************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/common/trap_modal_focus.js":
+/*!********************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/common/trap_modal_focus.js ***!
+  \********************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
 
 	(function () {
-		var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+		var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 		gantt.$keyboardNavigation.getFocusableNodes = domHelpers.getFocusableNodes;
 
 		gantt.$keyboardNavigation.trapFocus = function trapFocus(root, e) {
@@ -775,10 +775,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\core.js":
-/*!*******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/core.js ***!
-  \*******************************************************************/
+/***/ "./sources/ext/keyboard_navigation/core.js":
+/*!*************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/core.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -934,10 +934,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\gantt_node.js":
-/*!**********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/elements/gantt_node.js ***!
-  \**********************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/elements/gantt_node.js":
+/*!****************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/elements/gantt_node.js ***!
+  \****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1015,15 +1015,15 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\header_cell.js":
-/*!***********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/elements/header_cell.js ***!
-  \***********************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/elements/header_cell.js":
+/*!*****************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/elements/header_cell.js ***!
+  \*****************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
-	var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+	var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 	gantt.$keyboardNavigation.HeaderCell = function (index) {
 		this.index = index || 0;
@@ -1139,10 +1139,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\nav_node.js":
-/*!********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/elements/nav_node.js ***!
-  \********************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/elements/nav_node.js":
+/*!**************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/elements/nav_node.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1230,15 +1230,15 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\task_cell.js":
-/*!*********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/elements/task_cell.js ***!
-  \*********************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/elements/task_cell.js":
+/*!***************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/elements/task_cell.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
-	var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+	var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 	gantt.$keyboardNavigation.TaskCell = function (taskId, index) {
 		if (!taskId) {
@@ -1371,10 +1371,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\elements\\task_row.js":
-/*!********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/elements/task_row.js ***!
-  \********************************************************************************/
+/***/ "./sources/ext/keyboard_navigation/elements/task_row.js":
+/*!**************************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/elements/task_row.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1581,10 +1581,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\keyboard_navigation\\modals.js":
-/*!*********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/keyboard_navigation/modals.js ***!
-  \*********************************************************************/
+/***/ "./sources/ext/keyboard_navigation/modals.js":
+/*!***************************************************!*\
+  !*** ./sources/ext/keyboard_navigation/modals.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1682,10 +1682,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/dom_helpers.js ***!
-  \********************************************************/
+/***/ "./sources/utils/dom_helpers.js":
+/*!**************************************!*\
+  !*** ./sources/utils/dom_helpers.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -1989,10 +1989,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/eventable.js ***!
-  \******************************************************/
+/***/ "./sources/utils/eventable.js":
+/*!************************************!*\
+  !*** ./sources/utils/eventable.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 

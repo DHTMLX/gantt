@@ -1,3 +1,12 @@
+### 6.1.2
+- Keyboard navigation: add a method for getting the active cell
+- Fix incorrect work of the resource panel after creating a new datastore to overwrite the previous one
+- Fix incorrect values of query parameters in the POST mode of dataProcessor
+- Fix incorrect result of gantt.getClosestWorkTime when called without specifying a direction
+- Fix issue when the English locale couldn't override the previously added locale
+- Fix script error with gantt.undo and indent actions in the grid
+- Fix SalesForce compatibility: new resize listener was broken in SF, fallback is added
+
 ### 6.1.1
 - Add missing locale options for the resource lightbox control
 - Fix script error when using gantt.destructor together with the dataProcessor

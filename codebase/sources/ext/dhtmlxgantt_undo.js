@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.1 Standard
+dhtmlxGantt v.6.1.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -100,15 +100,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\ext\\undo.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/ext/undo.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "c:\\www-recent\\gantt\\sources\\ext\\undo.js":
-/*!***********************************************!*\
-  !*** c:/www-recent/gantt/sources/ext/undo.js ***!
-  \***********************************************/
+/***/ "./sources/ext/undo.js":
+/*!*****************************!*\
+  !*** ./sources/ext/undo.js ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 

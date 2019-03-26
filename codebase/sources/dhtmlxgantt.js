@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.1 Standard
+dhtmlxGantt v.6.1.2 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -100,15 +100,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "c:\\www-recent\\gantt\\sources\\dhtmlxgantt.gpl.ts");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./sources/dhtmlxgantt.gpl.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "c:\\www-recent\\gantt\\node_modules\\bluebird\\js\\browser\\bluebird.js":
-/*!************************************************************************!*\
-  !*** c:/www-recent/gantt/node_modules/bluebird/js/browser/bluebird.js ***!
-  \************************************************************************/
+/***/ "./node_modules/bluebird/js/browser/bluebird.js":
+/*!******************************************************!*\
+  !*** ./node_modules/bluebird/js/browser/bluebird.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5438,14 +5438,14 @@ module.exports = ret;
 
 },{"./es5":13}]},{},[4])(4)
 });                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../process/browser.js */ "c:\\www-recent\\gantt\\node_modules\\process\\browser.js"), __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js"), __webpack_require__(/*! ./../../../timers-browserify/main.js */ "c:\\www-recent\\gantt\\node_modules\\timers-browserify\\main.js").setImmediate))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../process/browser.js */ "./node_modules/process/browser.js"), __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../timers-browserify/main.js */ "./node_modules/timers-browserify/main.js").setImmediate))
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\node_modules\\process\\browser.js":
-/*!***********************************************************!*\
-  !*** c:/www-recent/gantt/node_modules/process/browser.js ***!
-  \***********************************************************/
+/***/ "./node_modules/process/browser.js":
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5637,10 +5637,10 @@ process.umask = function() { return 0; };
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\node_modules\\setimmediate\\setImmediate.js":
-/*!*********************************************************************!*\
-  !*** c:/www-recent/gantt/node_modules/setimmediate/setImmediate.js ***!
-  \*********************************************************************/
+/***/ "./node_modules/setimmediate/setImmediate.js":
+/*!***************************************************!*\
+  !*** ./node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5831,14 +5831,14 @@ process.umask = function() { return 0; };
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js"), __webpack_require__(/*! ./../process/browser.js */ "c:\\www-recent\\gantt\\node_modules\\process\\browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\node_modules\\timers-browserify\\main.js":
-/*!******************************************************************!*\
-  !*** c:/www-recent/gantt/node_modules/timers-browserify/main.js ***!
-  \******************************************************************/
+/***/ "./node_modules/timers-browserify/main.js":
+/*!************************************************!*\
+  !*** ./node_modules/timers-browserify/main.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5895,7 +5895,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(/*! setimmediate */ "c:\\www-recent\\gantt\\node_modules\\setimmediate\\setImmediate.js");
+__webpack_require__(/*! setimmediate */ "./node_modules/setimmediate/setImmediate.js");
 // On some exotic environments, it's not clear which object `setimmediate` was
 // able to install onto.  Search each possibility in the same order as the
 // `setimmediate` library.
@@ -5906,11 +5906,11 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
                          (typeof global !== "undefined" && global.clearImmediate) ||
                          (this && this.clearImmediate);
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\node_modules\\webpack\\buildin\\global.js":
+/***/ "./node_modules/webpack/buildin/global.js":
 /*!***********************************!*\
   !*** (webpack)/buildin/global.js ***!
   \***********************************/
@@ -5941,10 +5941,10 @@ module.exports = g;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\constants\\index.js":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/constants/index.js ***!
-  \******************************************************/
+/***/ "./sources/constants/index.js":
+/*!************************************!*\
+  !*** ./sources/constants/index.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -5964,10 +5964,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\cached_functions.js":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/cached_functions.js ***!
-  \************************************************************/
+/***/ "./sources/core/cached_functions.js":
+/*!******************************************!*\
+  !*** ./sources/core/cached_functions.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6147,15 +6147,15 @@ gantt.attachEvent("onBeforeGanttReady", function(){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\ajax.js":
-/*!*******************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/ajax.js ***!
-  \*******************************************************/
+/***/ "./sources/core/common/ajax.js":
+/*!*************************************!*\
+  !*** ./sources/core/common/ajax.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var env = __webpack_require__(/*! ../../utils/env */ "c:\\www-recent\\gantt\\sources\\utils\\env.js");
-var serialize = __webpack_require__(/*! ./serialize */ "c:\\www-recent\\gantt\\sources\\core\\common\\serialize.ts").default;
+var env = __webpack_require__(/*! ../../utils/env */ "./sources/utils/env.js");
+var serialize = __webpack_require__(/*! ./serialize */ "./sources/core/common/serialize.ts").default;
 
 function createConfig(method, args) {
 	var result = {
@@ -6378,10 +6378,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\assert.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/assert.js ***!
-  \*********************************************************/
+/***/ "./sources/core/common/assert.js":
+/*!***************************************!*\
+  !*** ./sources/core/common/assert.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6405,10 +6405,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\config.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/config.js ***!
-  \*********************************************************/
+/***/ "./sources/core/common/config.js":
+/*!***************************************!*\
+  !*** ./sources/core/common/config.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6594,10 +6594,10 @@ module.exports = function() {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\date.js":
-/*!*******************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/date.js ***!
-  \*******************************************************/
+/***/ "./sources/core/common/date.js":
+/*!*************************************!*\
+  !*** ./sources/core/common/date.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6918,16 +6918,16 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\dnd.js":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/dnd.js ***!
-  \******************************************************/
+/***/ "./sources/core/common/dnd.js":
+/*!************************************!*\
+  !*** ./sources/core/common/dnd.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var timeout = __webpack_require__(/*! ../../utils/timeout */ "c:\\www-recent\\gantt\\sources\\utils\\timeout.js");
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var timeout = __webpack_require__(/*! ../../utils/timeout */ "./sources/utils/timeout.js");
 
 module.exports = function(gantt){
 
@@ -7225,10 +7225,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\import.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/import.js ***!
-  \*********************************************************/
+/***/ "./sources/core/common/import.js":
+/*!***************************************!*\
+  !*** ./sources/core/common/import.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7240,10 +7240,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\serialize.ts":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/serialize.ts ***!
-  \************************************************************/
+/***/ "./sources/core/common/serialize.ts":
+/*!******************************************!*\
+  !*** ./sources/core/common/serialize.ts ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7281,10 +7281,10 @@ exports.default = serialize;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\services.js":
-/*!***********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/services.js ***!
-  \***********************************************************/
+/***/ "./sources/core/common/services.js":
+/*!*****************************************!*\
+  !*** ./sources/core/common/services.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7301,6 +7301,12 @@ module.exports = function(){
 		return services[name]();
 	}
 
+	function dropService(name) {
+		if (services[name]) {
+			delete services[name];
+		}
+	}
+
 	var servicesEnum = {
 		"config": "config",
 		"templates": "templates",
@@ -7311,6 +7317,7 @@ module.exports = function(){
 		services: servicesEnum,
 		setService: register,
 		getService: getService,
+		dropService: dropService,
 		config: function(){
 			return this.getService("config");
 		},
@@ -7337,14 +7344,14 @@ module.exports = function(){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\state.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/state.js ***!
-  \********************************************************/
+/***/ "./sources/core/common/state.js":
+/*!**************************************!*\
+  !*** ./sources/core/common/state.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 var StateService = (function(){
 	var stateProviders = {};
@@ -7383,10 +7390,10 @@ module.exports = StateService;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\common\\templates.js":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/common/templates.js ***!
-  \************************************************************/
+/***/ "./sources/core/common/templates.js":
+/*!******************************************!*\
+  !*** ./sources/core/common/templates.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7541,14 +7548,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\data.js":
-/*!************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/data.js ***!
-  \************************************************/
+/***/ "./sources/core/data.js":
+/*!******************************!*\
+  !*** ./sources/core/data.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
 
 module.exports = function(gantt) {
 
@@ -7984,10 +7991,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\data_task_layers.gpl.js":
-/*!****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/data_task_layers.gpl.js ***!
-  \****************************************************************/
+/***/ "./sources/core/data_task_layers.gpl.js":
+/*!**********************************************!*\
+  !*** ./sources/core/data_task_layers.gpl.js ***!
+  \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7998,10 +8005,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\data_task_types.gpl.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/data_task_types.gpl.js ***!
-  \***************************************************************/
+/***/ "./sources/core/data_task_types.gpl.js":
+/*!*********************************************!*\
+  !*** ./sources/core/data_task_types.gpl.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8014,21 +8021,21 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor.ts":
-/*!************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/dataprocessor/data_processor.ts ***!
-  \************************************************************************/
+/***/ "./sources/core/dataprocessor/data_processor.ts":
+/*!******************************************************!*\
+  !*** ./sources/core/dataprocessor/data_processor.ts ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var data_processor_events_1 = __webpack_require__(/*! ./data_processor_events */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor_events.ts");
-var extend_gantt_1 = __webpack_require__(/*! ./extend_gantt */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\extend_gantt.ts");
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var data_processor_events_1 = __webpack_require__(/*! ./data_processor_events */ "./sources/core/dataprocessor/data_processor_events.ts");
+var extend_gantt_1 = __webpack_require__(/*! ./extend_gantt */ "./sources/core/dataprocessor/extend_gantt.ts");
 function createDataProcessor(config) {
     var router;
     var tMode;
@@ -9010,17 +9017,17 @@ exports.DataProcessor = DataProcessor;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor_events.ts":
-/*!*******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/dataprocessor/data_processor_events.ts ***!
-  \*******************************************************************************/
+/***/ "./sources/core/dataprocessor/data_processor_events.ts":
+/*!*************************************************************!*\
+  !*** ./sources/core/dataprocessor/data_processor_events.ts ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 var DataProcessorEvents = /** @class */ (function () {
     function DataProcessorEvents(gantt, dp) {
         this.$gantt = gantt;
@@ -9030,7 +9037,7 @@ var DataProcessorEvents = /** @class */ (function () {
     DataProcessorEvents.prototype.attach = function () {
         var dp = this.$dp;
         var gantt = this.$gantt;
-        var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\task_tree_helpers.js");
+        var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "./sources/utils/task_tree_helpers.js");
         var cascadeDelete = {};
         function clientSideDelete(id) {
             var updated = dp.updatedRows.slice();
@@ -9191,7 +9198,8 @@ var DataProcessorEvents = /** @class */ (function () {
                 this.serverProcessor = url + (url.slice(-1) === "/" ? "" : "/") + mode;
             }
             else {
-                this.serverProcessor = url + gantt.ajax.urlSeparator(url) + "gantt_mode=" + this._ganttMode;
+                var pluralizedMode = this._ganttMode + "s";
+                this.serverProcessor = url + gantt.ajax.urlSeparator(url) + "gantt_mode=" + pluralizedMode;
             }
             return true;
         });
@@ -9263,10 +9271,10 @@ exports.default = DataProcessorEvents;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\extend_gantt.ts":
-/*!**********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/dataprocessor/extend_gantt.ts ***!
-  \**********************************************************************/
+/***/ "./sources/core/dataprocessor/extend_gantt.ts":
+/*!****************************************************!*\
+  !*** ./sources/core/dataprocessor/extend_gantt.ts ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9331,14 +9339,14 @@ exports.default = extendGantt;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\index.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/dataprocessor/index.js ***!
-  \***************************************************************/
+/***/ "./sources/core/dataprocessor/index.js":
+/*!*********************************************!*\
+  !*** ./sources/core/dataprocessor/index.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var DataProcessor = __webpack_require__(/*! ./data_processor */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\data_processor.ts");
+var DataProcessor = __webpack_require__(/*! ./data_processor */ "./sources/core/dataprocessor/data_processor.ts");
 module.exports = {
 	DEPRECATED_api: function(server) {
 		return new (DataProcessor.DataProcessor)(server);
@@ -9349,16 +9357,16 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/datastore/datastore.js ***!
-  \***************************************************************/
+/***/ "./sources/core/datastore/datastore.js":
+/*!*********************************************!*\
+  !*** ./sources/core/datastore/datastore.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var powerArray = __webpack_require__(/*! ./power_array */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\power_array.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var eventable = __webpack_require__(/*! ../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+var powerArray = __webpack_require__(/*! ./power_array */ "./sources/core/datastore/power_array.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
 
 var DataStore = function(config){
 	this.pull = {};
@@ -9720,16 +9728,16 @@ module.exports = DataStore;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_hooks.js":
-/*!*********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/datastore/datastore_hooks.js ***!
-  \*********************************************************************/
+/***/ "./sources/core/datastore/datastore_hooks.js":
+/*!***************************************************!*\
+  !*** ./sources/core/datastore/datastore_hooks.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var facadeFactory = __webpack_require__(/*! ./../facades/datastore */ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore.js");
-var calculateScaleRange = __webpack_require__(/*! ../gantt_data_range */ "c:\\www-recent\\gantt\\sources\\core\\gantt_data_range.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var facadeFactory = __webpack_require__(/*! ./../facades/datastore */ "./sources/core/facades/datastore.js");
+var calculateScaleRange = __webpack_require__(/*! ../gantt_data_range */ "./sources/core/gantt_data_range.js");
 function initDataStores(gantt){
 
 	var facade = facadeFactory.create();
@@ -9882,7 +9890,7 @@ function initDataStores(gantt){
 
 	(function(){
 		// delete all connected links after task is deleted
-		var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\task_tree_helpers.js");
+		var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "./sources/utils/task_tree_helpers.js");
 		var deletedLinks = {};
 
 		gantt.attachEvent("onBeforeTaskDelete", function(id, item){
@@ -10075,10 +10083,10 @@ module.exports = initDataStores;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_render.js":
-/*!**********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/datastore/datastore_render.js ***!
-  \**********************************************************************/
+/***/ "./sources/core/datastore/datastore_render.js":
+/*!****************************************************!*\
+  !*** ./sources/core/datastore/datastore_render.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10178,14 +10186,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\power_array.js":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/datastore/power_array.js ***!
-  \*****************************************************************/
+/***/ "./sources/core/datastore/power_array.js":
+/*!***********************************************!*\
+  !*** ./sources/core/datastore/power_array.js ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 var $powerArray  = {
 	$create: function(array){
@@ -10240,10 +10248,10 @@ module.exports = $powerArray;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\select.js":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/datastore/select.js ***!
-  \************************************************************/
+/***/ "./sources/core/datastore/select.js":
+/*!******************************************!*\
+  !*** ./sources/core/datastore/select.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10326,16 +10334,16 @@ module.exports = createDataStoreSelectMixin;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\datastore\\treedatastore.js":
-/*!*******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/datastore/treedatastore.js ***!
-  \*******************************************************************/
+/***/ "./sources/core/datastore/treedatastore.js":
+/*!*************************************************!*\
+  !*** ./sources/core/datastore/treedatastore.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var powerArray = __webpack_require__(/*! ./power_array */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\power_array.js");
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var DataStore = __webpack_require__(/*! ./datastore */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore.js");
+var powerArray = __webpack_require__(/*! ./power_array */ "./sources/core/datastore/power_array.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var DataStore = __webpack_require__(/*! ./datastore */ "./sources/core/datastore/datastore.js");
 
 var TreeDataStore = function(config){
 	DataStore.apply(this, [config]);
@@ -10806,10 +10814,10 @@ module.exports = TreeDataStore;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\deprecated_warnings.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/deprecated_warnings.js ***!
-  \***************************************************************/
+/***/ "./sources/core/deprecated_warnings.js":
+/*!*********************************************!*\
+  !*** ./sources/core/deprecated_warnings.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10847,10 +10855,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\destructor.js":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/destructor.js ***!
-  \******************************************************/
+/***/ "./sources/core/destructor.js":
+/*!************************************!*\
+  !*** ./sources/core/destructor.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10893,10 +10901,10 @@ module.exports = extend;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\dynamic_loading.gpl.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/dynamic_loading.gpl.js ***!
-  \***************************************************************/
+/***/ "./sources/core/dynamic_loading.gpl.js":
+/*!*********************************************!*\
+  !*** ./sources/core/dynamic_loading.gpl.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10905,20 +10913,20 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore.js":
-/*!*************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/facades/datastore.js ***!
-  \*************************************************************/
+/***/ "./sources/core/facades/datastore.js":
+/*!*******************************************!*\
+  !*** ./sources/core/facades/datastore.js ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var createTasksFacade = __webpack_require__(/*! ./datastore_tasks */ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_tasks.js"),
-	createLinksFacade = __webpack_require__(/*! ./datastore_links */ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_links.js"),
-	DataStore = __webpack_require__(/*! ../datastore/datastore */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore.js"),
-	TreeDataStore = __webpack_require__(/*! ../datastore/treedatastore */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\treedatastore.js"),
-	createDatastoreSelect = __webpack_require__(/*! ../datastore/select */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\select.js");
-var datastoreRender = __webpack_require__(/*! ../datastore/datastore_render */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_render.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var createTasksFacade = __webpack_require__(/*! ./datastore_tasks */ "./sources/core/facades/datastore_tasks.js"),
+	createLinksFacade = __webpack_require__(/*! ./datastore_links */ "./sources/core/facades/datastore_links.js"),
+	DataStore = __webpack_require__(/*! ../datastore/datastore */ "./sources/core/datastore/datastore.js"),
+	TreeDataStore = __webpack_require__(/*! ../datastore/treedatastore */ "./sources/core/datastore/treedatastore.js"),
+	createDatastoreSelect = __webpack_require__(/*! ../datastore/select */ "./sources/core/datastore/select.js");
+var datastoreRender = __webpack_require__(/*! ../datastore/datastore_render */ "./sources/core/datastore/datastore_render.js");
 
 function getDatastores(){
 	var storeNames = this.$services.getService("datastores");
@@ -10935,7 +10943,7 @@ var createDatastoreFacade = function(){
 
 		var $StoreType = (config.type || "").toLowerCase() == "treedatastore" ? TreeDataStore : DataStore;
 
-		if(config){
+		if (config) {
 			var self = this;
 			config.openInitially = function(){ return self.config.open_tree_initially; };
 		}
@@ -10943,15 +10951,20 @@ var createDatastoreFacade = function(){
 		var store = new $StoreType(config);
 		this.mixin(store, createDatastoreSelect(store));
 
-		if(config.name){
+		if (config.name) {
+			var servicePrefix = "datastore:";
 
-			this.$services.setService("datastore:" + config.name, function(){return store;});
+			this.$services.dropService(servicePrefix + config.name);
+			this.$services.setService(servicePrefix + config.name, function() { return store; } );
+
 			var storeList = this.$services.getService("datastores");
-			if(!storeList){
+			if (!storeList) {
 				storeList = [];
-				this.$services.setService("datastores", function(){return storeList;});
+				this.$services.setService("datastores", function() { return storeList; });
+				storeList.push(config.name);
+			} else if (storeList.indexOf(config.name) < 0) {
+				storeList.push(config.name);
 			}
-			storeList.push(config.name);
 
 			datastoreRender.bindDataStore(config.name, this);
 		}
@@ -11065,14 +11078,14 @@ module.exports = {create: createFacade};
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_links.js":
-/*!*******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/facades/datastore_links.js ***!
-  \*******************************************************************/
+/***/ "./sources/core/facades/datastore_links.js":
+/*!*************************************************!*\
+  !*** ./sources/core/facades/datastore_links.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 
 var createLinksStoreFacade = function(){
@@ -11117,14 +11130,14 @@ module.exports = createLinksStoreFacade;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\datastore_tasks.js":
-/*!*******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/facades/datastore_tasks.js ***!
-  \*******************************************************************/
+/***/ "./sources/core/facades/datastore_tasks.js":
+/*!*************************************************!*\
+  !*** ./sources/core/facades/datastore_tasks.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 var createTasksDatastoreFacade = function(){
 	return {
@@ -11286,10 +11299,10 @@ module.exports = createTasksDatastoreFacade;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\layout.js":
-/*!**********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/facades/layout.js ***!
-  \**********************************************************/
+/***/ "./sources/core/facades/layout.js":
+/*!****************************************!*\
+  !*** ./sources/core/facades/layout.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -11555,15 +11568,15 @@ module.exports = createLayoutFacade;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\facades\\worktime_calendars.js":
-/*!**********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/facades/worktime_calendars.js ***!
-  \**********************************************************************/
+/***/ "./sources/core/facades/worktime_calendars.js":
+/*!****************************************************!*\
+  !*** ./sources/core/facades/worktime_calendars.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 // TODO: rework public api for date methods
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 var createWorktimeFacade = function(calendarManager, timeCalculator){
 	return {
@@ -11613,18 +11626,18 @@ module.exports = { create: createWorktimeFacade };
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\gantt.js":
-/*!*************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/gantt.js ***!
-  \*************************************************/
+/***/ "./sources/core/gantt.js":
+/*!*******************************!*\
+  !*** ./sources/core/gantt.js ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! css/skins/terrace.less */ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.less");
+__webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.less");
 
 function DHXGantt(){
-	this.constants = __webpack_require__(/*! ./../constants */ "c:\\www-recent\\gantt\\sources\\constants\\index.js");
-	this.version = "6.1.1";
+	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
+	this.version = "6.1.2";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -11637,13 +11650,13 @@ module.exports = function() {
 	// use a named constructor to make gantt instance discoverable in heap snapshots
 	var gantt = new DHXGantt();
 
-	__webpack_require__(/*! ./common/import */ "c:\\www-recent\\gantt\\sources\\core\\common\\import.js")(gantt);
+	__webpack_require__(/*! ./common/import */ "./sources/core/common/import.js")(gantt);
 
-	gantt.$services = gantt.$inject(__webpack_require__(/*! ./common/services */ "c:\\www-recent\\gantt\\sources\\core\\common\\services.js"));
-	gantt.config = gantt.$inject(__webpack_require__(/*! ./common/config */ "c:\\www-recent\\gantt\\sources\\core\\common\\config.js"));
-	gantt.ajax =  __webpack_require__(/*! ./common/ajax */ "c:\\www-recent\\gantt\\sources\\core\\common\\ajax.js")(gantt);
-	gantt.date = __webpack_require__(/*! ./common/date */ "c:\\www-recent\\gantt\\sources\\core\\common\\date.js")(gantt);
-	var dnd = __webpack_require__(/*! ./common/dnd */ "c:\\www-recent\\gantt\\sources\\core\\common\\dnd.js")(gantt);
+	gantt.$services = gantt.$inject(__webpack_require__(/*! ./common/services */ "./sources/core/common/services.js"));
+	gantt.config = gantt.$inject(__webpack_require__(/*! ./common/config */ "./sources/core/common/config.js"));
+	gantt.ajax =  __webpack_require__(/*! ./common/ajax */ "./sources/core/common/ajax.js")(gantt);
+	gantt.date = __webpack_require__(/*! ./common/date */ "./sources/core/common/date.js")(gantt);
+	var dnd = __webpack_require__(/*! ./common/dnd */ "./sources/core/common/dnd.js")(gantt);
 	gantt.$services.setService("dnd", function(){return dnd;});
 
 	gantt.$services.setService("config", function () {
@@ -11659,15 +11672,15 @@ module.exports = function() {
 		return gantt.templates;
 	});
 
-	var templatesLoader = __webpack_require__(/*! ./common/templates */ "c:\\www-recent\\gantt\\sources\\core\\common\\templates.js")(gantt);
+	var templatesLoader = __webpack_require__(/*! ./common/templates */ "./sources/core/common/templates.js")(gantt);
 	gantt.$services.setService("templateLoader", function () {
 		return templatesLoader;
 	});
 
-	var eventable = __webpack_require__(/*! ../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+	var eventable = __webpack_require__(/*! ../utils/eventable */ "./sources/utils/eventable.js");
 	eventable(gantt);
 
-	var StateService = __webpack_require__(/*! ./common/state */ "c:\\www-recent\\gantt\\sources\\core\\common\\state.js");
+	var StateService = __webpack_require__(/*! ./common/state */ "./sources/core/common/state.js");
 	var stateService = new StateService();
 
 	stateService.registerProvider("global", function () {
@@ -11682,13 +11695,13 @@ module.exports = function() {
 		return stateService;
 	});
 
-	var utils = __webpack_require__(/*! ../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+	var utils = __webpack_require__(/*! ../utils/utils */ "./sources/utils/utils.js");
 	utils.mixin(gantt, utils);
 
-	gantt.Promise = __webpack_require__(/*! ../utils/promise */ "c:\\www-recent\\gantt\\sources\\utils\\promise.js");
-	gantt.env = __webpack_require__(/*! ../utils/env */ "c:\\www-recent\\gantt\\sources\\utils\\env.js");
+	gantt.Promise = __webpack_require__(/*! ../utils/promise */ "./sources/utils/promise.js");
+	gantt.env = __webpack_require__(/*! ../utils/env */ "./sources/utils/env.js");
 
-	var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+	var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 	gantt.utils = {
 		dom: {
 			getNodePosition: domHelpers.getNodePosition,
@@ -11699,14 +11712,14 @@ module.exports = function() {
 		}
 	};
 
-	var domEvents = __webpack_require__(/*! ../utils/dom_event_scope */ "c:\\www-recent\\gantt\\sources\\utils\\dom_event_scope.js")();
+	var domEvents = __webpack_require__(/*! ../utils/dom_event_scope */ "./sources/utils/dom_event_scope.js")();
 	gantt.event = domEvents.attach;
 	gantt.eventRemove = domEvents.detach;
 	gantt._eventRemoveAll = domEvents.detachAll;
 	gantt._createDomEventScope = domEvents.extend;
 
-	utils.mixin(gantt, __webpack_require__(/*! ./message */ "c:\\www-recent\\gantt\\sources\\core\\message.js")(gantt));
-	var uiApi = __webpack_require__(/*! ./ui/index */ "c:\\www-recent\\gantt\\sources\\core\\ui\\index.js").init(gantt);
+	utils.mixin(gantt, __webpack_require__(/*! ./message */ "./sources/core/message.js")(gantt));
+	var uiApi = __webpack_require__(/*! ./ui/index */ "./sources/core/ui/index.js").init(gantt);
 	gantt.$ui = uiApi.factory;
 	gantt.$ui.layers = uiApi.render;
 	gantt.$mouseEvents = uiApi.mouseEvents;
@@ -11715,66 +11728,66 @@ module.exports = function() {
 	});
 	gantt.mixin(gantt, uiApi.layersApi);
 
-	__webpack_require__(/*! ./data_task_layers */ "c:\\www-recent\\gantt\\sources\\core\\data_task_layers.gpl.js")(gantt);
+	__webpack_require__(/*! ./data_task_layers */ "./sources/core/data_task_layers.gpl.js")(gantt);
 
 	gantt.$services.setService("layers", function () {
 		return uiApi.layersService;
 	});
 
-	var createLayoutFacade = __webpack_require__(/*! ./facades/layout */ "c:\\www-recent\\gantt\\sources\\core\\facades\\layout.js");
+	var createLayoutFacade = __webpack_require__(/*! ./facades/layout */ "./sources/core/facades/layout.js");
 	gantt.mixin(gantt, createLayoutFacade());
 
-	__webpack_require__(/*! ./datastore/datastore_hooks */ "c:\\www-recent\\gantt\\sources\\core\\datastore\\datastore_hooks.js")(gantt);
+	__webpack_require__(/*! ./datastore/datastore_hooks */ "./sources/core/datastore/datastore_hooks.js")(gantt);
 
-	var DataProcessor = __webpack_require__(/*! ./dataprocessor */ "c:\\www-recent\\gantt\\sources\\core\\dataprocessor\\index.js");
+	var DataProcessor = __webpack_require__(/*! ./dataprocessor */ "./sources/core/dataprocessor/index.js");
 	gantt.dataProcessor = DataProcessor.DEPRECATED_api;
 	gantt.createDataProcessor = DataProcessor.createDataProcessor;
 
-	__webpack_require__(/*! ./plugins */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\index.js")(gantt);
+	__webpack_require__(/*! ./plugins */ "./sources/core/plugins/index.js")(gantt);
 
-	__webpack_require__(/*! ./dynamic_loading */ "c:\\www-recent\\gantt\\sources\\core\\dynamic_loading.gpl.js")(gantt);
-	__webpack_require__(/*! ./grid_column_api */ "c:\\www-recent\\gantt\\sources\\core\\grid_column_api.gpl.js")(gantt);
-	__webpack_require__(/*! ./wai_aria */ "c:\\www-recent\\gantt\\sources\\core\\wai_aria.js")(gantt);
-	__webpack_require__(/*! ./tasks */ "c:\\www-recent\\gantt\\sources\\core\\tasks.js")(gantt);
-	__webpack_require__(/*! ./load */ "c:\\www-recent\\gantt\\sources\\core\\load.js")(gantt);
-	__webpack_require__(/*! ./worktime/work_time */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\work_time.js")(gantt);
-	__webpack_require__(/*! ./data */ "c:\\www-recent\\gantt\\sources\\core\\data.js")(gantt);
-	__webpack_require__(/*! ./lightbox */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\index.js")(gantt);
-	__webpack_require__(/*! ./lightbox_optional_time */ "c:\\www-recent\\gantt\\sources\\core\\lightbox_optional_time.js")(gantt);
-	__webpack_require__(/*! ./data_task_types */ "c:\\www-recent\\gantt\\sources\\core\\data_task_types.gpl.js")(gantt);
-	__webpack_require__(/*! ./cached_functions */ "c:\\www-recent\\gantt\\sources\\core\\cached_functions.js")(gantt);
-	__webpack_require__(/*! ./skin */ "c:\\www-recent\\gantt\\sources\\core\\skin.js")(gantt);
-	__webpack_require__(/*! ../css/skins/skyblue */ "c:\\www-recent\\gantt\\sources\\css\\skins\\skyblue.js")(gantt);
-	__webpack_require__(/*! ../css/skins/meadow */ "c:\\www-recent\\gantt\\sources\\css\\skins\\meadow.js")(gantt);
-	__webpack_require__(/*! ../css/skins/terrace */ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.js")(gantt);
-	__webpack_require__(/*! ../css/skins/broadway */ "c:\\www-recent\\gantt\\sources\\css\\skins\\broadway.js")(gantt);
-	__webpack_require__(/*! ../css/skins/material */ "c:\\www-recent\\gantt\\sources\\css\\skins\\material.js")(gantt);
-	__webpack_require__(/*! ../css/skins/contrast_black */ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_black.js")(gantt);
-	__webpack_require__(/*! ../css/skins/contrast_white */ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_white.js")(gantt);
-	__webpack_require__(/*! ./touch */ "c:\\www-recent\\gantt\\sources\\core\\touch.js")(gantt);
-	__webpack_require__(/*! ../locale/locale */ "c:\\www-recent\\gantt\\sources\\locale\\locale.js")(gantt);
-	__webpack_require__(/*! ./gantt_core */ "c:\\www-recent\\gantt\\sources\\core\\gantt_core.js")(gantt);
-	__webpack_require__(/*! ./destructor */ "c:\\www-recent\\gantt\\sources\\core\\destructor.js")(gantt);
+	__webpack_require__(/*! ./dynamic_loading */ "./sources/core/dynamic_loading.gpl.js")(gantt);
+	__webpack_require__(/*! ./grid_column_api */ "./sources/core/grid_column_api.gpl.js")(gantt);
+	__webpack_require__(/*! ./wai_aria */ "./sources/core/wai_aria.js")(gantt);
+	__webpack_require__(/*! ./tasks */ "./sources/core/tasks.js")(gantt);
+	__webpack_require__(/*! ./load */ "./sources/core/load.js")(gantt);
+	__webpack_require__(/*! ./worktime/work_time */ "./sources/core/worktime/work_time.js")(gantt);
+	__webpack_require__(/*! ./data */ "./sources/core/data.js")(gantt);
+	__webpack_require__(/*! ./lightbox */ "./sources/core/lightbox/index.js")(gantt);
+	__webpack_require__(/*! ./lightbox_optional_time */ "./sources/core/lightbox_optional_time.js")(gantt);
+	__webpack_require__(/*! ./data_task_types */ "./sources/core/data_task_types.gpl.js")(gantt);
+	__webpack_require__(/*! ./cached_functions */ "./sources/core/cached_functions.js")(gantt);
+	__webpack_require__(/*! ./skin */ "./sources/core/skin.js")(gantt);
+	__webpack_require__(/*! ../css/skins/skyblue */ "./sources/css/skins/skyblue.js")(gantt);
+	__webpack_require__(/*! ../css/skins/meadow */ "./sources/css/skins/meadow.js")(gantt);
+	__webpack_require__(/*! ../css/skins/terrace */ "./sources/css/skins/terrace.js")(gantt);
+	__webpack_require__(/*! ../css/skins/broadway */ "./sources/css/skins/broadway.js")(gantt);
+	__webpack_require__(/*! ../css/skins/material */ "./sources/css/skins/material.js")(gantt);
+	__webpack_require__(/*! ../css/skins/contrast_black */ "./sources/css/skins/contrast_black.js")(gantt);
+	__webpack_require__(/*! ../css/skins/contrast_white */ "./sources/css/skins/contrast_white.js")(gantt);
+	__webpack_require__(/*! ./touch */ "./sources/core/touch.js")(gantt);
+	__webpack_require__(/*! ../locale */ "./sources/locale/index.js")(gantt);
+	__webpack_require__(/*! ./gantt_core */ "./sources/core/gantt_core.js")(gantt);
+	__webpack_require__(/*! ./destructor */ "./sources/core/destructor.js")(gantt);
 
 	return gantt;
 };
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\gantt_core.js":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/gantt_core.js ***!
-  \******************************************************/
+/***/ "./sources/core/gantt_core.js":
+/*!************************************!*\
+  !*** ./sources/core/gantt_core.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
-	helpers = __webpack_require__(/*! ../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
+	helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
 
 module.exports = function(gantt){
-	var calculateScaleRange = __webpack_require__(/*! ./gantt_data_range */ "c:\\www-recent\\gantt\\sources\\core\\gantt_data_range.js");
+	var calculateScaleRange = __webpack_require__(/*! ./gantt_data_range */ "./sources/core/gantt_data_range.js");
 
-	gantt.assert = __webpack_require__(/*! ./common/assert */ "c:\\www-recent\\gantt\\sources\\core\\common\\assert.js")(gantt);
+	gantt.assert = __webpack_require__(/*! ./common/assert */ "./sources/core/common/assert.js")(gantt);
 
 //initial initialization
 	gantt.init = function(node, from, to){
@@ -11857,8 +11870,6 @@ module.exports = function(gantt){
 	};
 
 	function addResizeListener(gantt){
-		var resizeDelay;
-
 		var containerStyles = window.getComputedStyle(gantt.$root);
 		if(containerStyles.getPropertyValue("position") == "static"){
 			gantt.$root.style.position = "relative";
@@ -11868,12 +11879,24 @@ module.exports = function(gantt){
 		resizeWatcher.className = "gantt_container_resize_watcher";
 		resizeWatcher.tabIndex = -1;
 
+		// in some environments (namely, in SalesForce) iframe.contentWindow is not available
 		gantt.$root.appendChild(resizeWatcher);
-		resizeWatcher.contentWindow.addEventListener('resize', function(){ 
+		if (resizeWatcher.contentWindow) {
+			listenWindowResize(gantt, resizeWatcher.contentWindow);
+		} else {
+			// if so - ditch the iframe and fallback to listening the main window resize
+			gantt.$root.removeChild(resizeWatcher);
+			listenWindowResize(gantt, window);
+		}
+	}
+
+	function listenWindowResize(gantt, window){
+		var resizeDelay;
+		gantt.event(window, "resize", function(){
 			clearTimeout(resizeDelay);
 			resizeDelay = setTimeout(function(){
 				gantt.render();
-			}, 300);		
+			}, 300);
 		});
 	}
 
@@ -12066,14 +12089,14 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\gantt_data_range.js":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/gantt_data_range.js ***!
-  \************************************************************/
+/***/ "./sources/core/gantt_data_range.js":
+/*!******************************************!*\
+  !*** ./sources/core/gantt_data_range.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ScaleHelper = __webpack_require__(/*! ./ui/timeline/scales_ignore */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\scales.js");
+var ScaleHelper = __webpack_require__(/*! ./ui/timeline/scales_ignore */ "./sources/core/ui/timeline/scales.js");
 
 
 function dateRangeResolver(gantt){
@@ -12177,10 +12200,10 @@ module.exports = function updateTasksRange(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\grid_column_api.gpl.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/grid_column_api.gpl.js ***!
-  \***************************************************************/
+/***/ "./sources/core/grid_column_api.gpl.js":
+/*!*********************************************!*\
+  !*** ./sources/core/grid_column_api.gpl.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12203,10 +12226,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js":
-/*!**************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/base_control.js ***!
-  \**************************************************************************/
+/***/ "./sources/core/lightbox/controls/base_control.js":
+/*!********************************************************!*\
+  !*** ./sources/core/lightbox/controls/base_control.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -12229,18 +12252,18 @@ module.exports = function(gantt) { // we could send current instance of gantt to
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\checkbox_control.js":
-/*!******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/checkbox_control.js ***!
-  \******************************************************************************/
+/***/ "./sources/core/lightbox/controls/checkbox_control.js":
+/*!************************************************************!*\
+  !*** ./sources/core/lightbox/controls/checkbox_control.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function CheckboxControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -12291,18 +12314,18 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\constraint_control.js":
-/*!********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/constraint_control.js ***!
-  \********************************************************************************/
+/***/ "./sources/core/lightbox/controls/constraint_control.js":
+/*!**************************************************************!*\
+  !*** ./sources/core/lightbox/controls/constraint_control.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
-var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\html_helpers.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "./sources/utils/html_helpers.js");
 
 module.exports = function (gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function ConstraintControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -12393,17 +12416,17 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\duration_control.js":
-/*!******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/duration_control.js ***!
-  \******************************************************************************/
+/***/ "./sources/core/lightbox/controls/duration_control.js":
+/*!************************************************************!*\
+  !*** ./sources/core/lightbox/controls/duration_control.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function DurationControl() {
 		var self = _super.apply(this, arguments) || this; 
@@ -12567,17 +12590,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\parent_control.js":
-/*!****************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/parent_control.js ***!
-  \****************************************************************************/
+/***/ "./sources/core/lightbox/controls/parent_control.js":
+/*!**********************************************************!*\
+  !*** ./sources/core/lightbox/controls/parent_control.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./select_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./select_control */ "./sources/core/lightbox/controls/select_control.js")(gantt);
 
 	function ParentControl() {
 		var self = _super.apply(this, arguments) || this; 
@@ -12652,17 +12675,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\radio_control.js":
-/*!***************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/radio_control.js ***!
-  \***************************************************************************/
+/***/ "./sources/core/lightbox/controls/radio_control.js":
+/*!*********************************************************!*\
+  !*** ./sources/core/lightbox/controls/radio_control.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function RadioControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -12719,18 +12742,18 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js":
-/*!****************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/select_control.js ***!
-  \****************************************************************************/
+/***/ "./sources/core/lightbox/controls/select_control.js":
+/*!**********************************************************!*\
+  !*** ./sources/core/lightbox/controls/select_control.js ***!
+  \**********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
-var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\html_helpers.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
+var htmlHelpers = __webpack_require__(/*! ../../../utils/html_helpers */ "./sources/utils/html_helpers.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function SelectControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -12774,17 +12797,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\template_control.js":
-/*!******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/template_control.js ***!
-  \******************************************************************************/
+/***/ "./sources/core/lightbox/controls/template_control.js":
+/*!************************************************************!*\
+  !*** ./sources/core/lightbox/controls/template_control.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function TemplateControl() {
 		var self = _super.apply(this, arguments) || this; 
@@ -12814,17 +12837,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\textarea_control.js":
-/*!******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/textarea_control.js ***!
-  \******************************************************************************/
+/***/ "./sources/core/lightbox/controls/textarea_control.js":
+/*!************************************************************!*\
+  !*** ./sources/core/lightbox/controls/textarea_control.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function(gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function TextareaControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -12861,17 +12884,17 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\time_control.js":
-/*!**************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/controls/time_control.js ***!
-  \**************************************************************************/
+/***/ "./sources/core/lightbox/controls/time_control.js":
+/*!********************************************************!*\
+  !*** ./sources/core/lightbox/controls/time_control.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js");
 
 module.exports = function (gantt) {
-	var _super = __webpack_require__(/*! ./base_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\base_control.js")(gantt);
+	var _super = __webpack_require__(/*! ./base_control */ "./sources/core/lightbox/controls/base_control.js")(gantt);
 
 	function TimeControl() {
 		var self = _super.apply(this, arguments) || this;
@@ -12963,27 +12986,27 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\index.js":
-/*!**********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox/index.js ***!
-  \**********************************************************/
+/***/ "./sources/core/lightbox/index.js":
+/*!****************************************!*\
+  !*** ./sources/core/lightbox/index.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (gantt) {
-	var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
-	var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+	var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+	var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 
-	var TemplateControl = __webpack_require__(/*! ./controls/template_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\template_control.js")(gantt);
-	var TextareaControl = __webpack_require__(/*! ./controls/textarea_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\textarea_control.js")(gantt);
-	var TimeControl = __webpack_require__(/*! ./controls/time_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\time_control.js")(gantt);
-	var SelectControl = __webpack_require__(/*! ./controls/select_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js")(gantt);
-	var CheckboxControl = __webpack_require__(/*! ./controls/checkbox_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\checkbox_control.js")(gantt);
-	var RadioControl = __webpack_require__(/*! ./controls/radio_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\radio_control.js")(gantt);
-	var DurationControl = __webpack_require__(/*! ./controls/duration_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\duration_control.js")(gantt);
-	var ParentControl = __webpack_require__(/*! ./controls/parent_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\parent_control.js")(gantt);
-	var ResourcesControl = __webpack_require__(/*! ./controls/resources_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\select_control.js")(gantt);
-	var ConstraintControl = __webpack_require__(/*! ./controls/constraint_control */ "c:\\www-recent\\gantt\\sources\\core\\lightbox\\controls\\constraint_control.js")(gantt);
+	var TemplateControl = __webpack_require__(/*! ./controls/template_control */ "./sources/core/lightbox/controls/template_control.js")(gantt);
+	var TextareaControl = __webpack_require__(/*! ./controls/textarea_control */ "./sources/core/lightbox/controls/textarea_control.js")(gantt);
+	var TimeControl = __webpack_require__(/*! ./controls/time_control */ "./sources/core/lightbox/controls/time_control.js")(gantt);
+	var SelectControl = __webpack_require__(/*! ./controls/select_control */ "./sources/core/lightbox/controls/select_control.js")(gantt);
+	var CheckboxControl = __webpack_require__(/*! ./controls/checkbox_control */ "./sources/core/lightbox/controls/checkbox_control.js")(gantt);
+	var RadioControl = __webpack_require__(/*! ./controls/radio_control */ "./sources/core/lightbox/controls/radio_control.js")(gantt);
+	var DurationControl = __webpack_require__(/*! ./controls/duration_control */ "./sources/core/lightbox/controls/duration_control.js")(gantt);
+	var ParentControl = __webpack_require__(/*! ./controls/parent_control */ "./sources/core/lightbox/controls/parent_control.js")(gantt);
+	var ResourcesControl = __webpack_require__(/*! ./controls/resources_control */ "./sources/core/lightbox/controls/select_control.js")(gantt);
+	var ConstraintControl = __webpack_require__(/*! ./controls/constraint_control */ "./sources/core/lightbox/controls/constraint_control.js")(gantt);
 
 
 	gantt._lightbox_methods = {};
@@ -13840,10 +13863,10 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\lightbox_optional_time.js":
-/*!******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/lightbox_optional_time.js ***!
-  \******************************************************************/
+/***/ "./sources/core/lightbox_optional_time.js":
+/*!************************************************!*\
+  !*** ./sources/core/lightbox_optional_time.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -13924,14 +13947,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\load.js":
-/*!************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/load.js ***!
-  \************************************************/
+/***/ "./sources/core/load.js":
+/*!******************************!*\
+  !*** ./sources/core/load.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
 
 module.exports = function(gantt) {
 
@@ -14293,15 +14316,15 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\message.js":
-/*!***************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/message.js ***!
-  \***************************************************/
+/***/ "./sources/core/message.js":
+/*!*********************************!*\
+  !*** ./sources/core/message.js ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var utils = __webpack_require__(/*! ../utils/utils */ "./sources/utils/utils.js");
+var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 module.exports = function(gantt) {
 
@@ -14663,10 +14686,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\auto_task_types.js":
-/*!*******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/auto_task_types.js ***!
-  \*******************************************************************/
+/***/ "./sources/core/plugins/auto_task_types.js":
+/*!*************************************************!*\
+  !*** ./sources/core/plugins/auto_task_types.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -14808,14 +14831,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\autoscroll.js":
-/*!**************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/autoscroll.js ***!
-  \**************************************************************/
+/***/ "./sources/core/plugins/autoscroll.js":
+/*!********************************************!*\
+  !*** ./sources/core/plugins/autoscroll.js ***!
+  \********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 module.exports = function(gantt){
 
@@ -14992,10 +15015,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\batch_update.js":
-/*!****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/batch_update.js ***!
-  \****************************************************************/
+/***/ "./sources/core/plugins/batch_update.js":
+/*!**********************************************!*\
+  !*** ./sources/core/plugins/batch_update.js ***!
+  \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15109,10 +15132,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\dhtmlx_hooks.js":
-/*!****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/dhtmlx_hooks.js ***!
-  \****************************************************************/
+/***/ "./sources/core/plugins/dhtmlx_hooks.js":
+/*!**********************************************!*\
+  !*** ./sources/core/plugins/dhtmlx_hooks.js ***!
+  \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15181,23 +15204,23 @@ module.exports = null;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\index.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/index.js ***!
-  \*********************************************************/
+/***/ "./sources/core/plugins/index.js":
+/*!***************************************!*\
+  !*** ./sources/core/plugins/index.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt){
 	var modules = [
-		__webpack_require__(/*! ./autoscroll */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\autoscroll.js"),
-		__webpack_require__(/*! ./batch_update */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\batch_update.js"),
-		__webpack_require__(/*! ./wbs */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\wbs.js"),
-		__webpack_require__(/*! ./jquery_hooks */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\jquery_hooks.js"),
-		__webpack_require__(/*! ./dhtmlx_hooks */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\dhtmlx_hooks.js"),
-		__webpack_require__(/*! ./resources */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\resources.js"),
-		__webpack_require__(/*! ./new_task_placeholder */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\new_task_placeholder.js"),
-		__webpack_require__(/*! ./auto_task_types */ "c:\\www-recent\\gantt\\sources\\core\\plugins\\auto_task_types.js")
+		__webpack_require__(/*! ./autoscroll */ "./sources/core/plugins/autoscroll.js"),
+		__webpack_require__(/*! ./batch_update */ "./sources/core/plugins/batch_update.js"),
+		__webpack_require__(/*! ./wbs */ "./sources/core/plugins/wbs.js"),
+		__webpack_require__(/*! ./jquery_hooks */ "./sources/core/plugins/jquery_hooks.js"),
+		__webpack_require__(/*! ./dhtmlx_hooks */ "./sources/core/plugins/dhtmlx_hooks.js"),
+		__webpack_require__(/*! ./resources */ "./sources/core/plugins/resources.js"),
+		__webpack_require__(/*! ./new_task_placeholder */ "./sources/core/plugins/new_task_placeholder.js"),
+		__webpack_require__(/*! ./auto_task_types */ "./sources/core/plugins/auto_task_types.js")
 	];
 
 	for(var i = 0; i < modules.length; i++){
@@ -15208,10 +15231,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\jquery_hooks.js":
-/*!****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/jquery_hooks.js ***!
-  \****************************************************************/
+/***/ "./sources/core/plugins/jquery_hooks.js":
+/*!**********************************************!*\
+  !*** ./sources/core/plugins/jquery_hooks.js ***!
+  \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15264,10 +15287,10 @@ module.exports = null;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\new_task_placeholder.js":
-/*!************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/new_task_placeholder.js ***!
-  \************************************************************************/
+/***/ "./sources/core/plugins/new_task_placeholder.js":
+/*!******************************************************!*\
+  !*** ./sources/core/plugins/new_task_placeholder.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15380,14 +15403,14 @@ module.exports = function addPlaceholder(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\resources.js":
-/*!*************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/resources.js ***!
-  \*************************************************************/
+/***/ "./sources/core/plugins/resources.js":
+/*!*******************************************!*\
+  !*** ./sources/core/plugins/resources.js ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 
 function createResourceMethods(gantt){
 
@@ -15788,10 +15811,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\plugins\\wbs.js":
-/*!*******************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/plugins/wbs.js ***!
-  \*******************************************************/
+/***/ "./sources/core/plugins/wbs.js":
+/*!*************************************!*\
+  !*** ./sources/core/plugins/wbs.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15902,10 +15925,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\skin.js":
-/*!************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/skin.js ***!
-  \************************************************/
+/***/ "./sources/core/skin.js":
+/*!******************************!*\
+  !*** ./sources/core/skin.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -15995,10 +16018,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\tasks.js":
-/*!*************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/tasks.js ***!
-  \*************************************************/
+/***/ "./sources/core/tasks.js":
+/*!*******************************!*\
+  !*** ./sources/core/tasks.js ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16014,10 +16037,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\touch.js":
-/*!*************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/touch.js ***!
-  \*************************************************/
+/***/ "./sources/core/touch.js":
+/*!*******************************!*\
+  !*** ./sources/core/touch.js ***!
+  \*******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16282,14 +16305,14 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\configurable.js":
-/*!***********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/configurable.js ***!
-  \***********************************************************/
+/***/ "./sources/core/ui/configurable.js":
+/*!*****************************************!*\
+  !*** ./sources/core/ui/configurable.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 function ViewSettings(config){
 	utils.mixin(this, config, true);
@@ -16340,14 +16363,14 @@ module.exports = function(obj, parent){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\gantt_layers.js":
-/*!***********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/gantt_layers.js ***!
-  \***********************************************************/
+/***/ "./sources/core/ui/gantt_layers.js":
+/*!*****************************************!*\
+  !*** ./sources/core/ui/gantt_layers.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\layer_engine.js");
+var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "./sources/core/ui/render/layer_engine.js");
 
 var createLayerEngine = function(gantt){
 	var factory = createLayerFactory(gantt);
@@ -16467,22 +16490,22 @@ module.exports = createLayerEngine;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\controller.js":
-/*!**********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/controller.js ***!
-  \**********************************************************************/
+/***/ "./sources/core/ui/grid/editors/controller.js":
+/*!****************************************************!*\
+  !*** ./sources/core/ui/grid/editors/controller.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getKeyboardMapping = __webpack_require__(/*! ./keyboard_mappings */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings.js");
-var textEditorFactory = __webpack_require__(/*! ./editors/text */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\text.js"),
-	numberEditorFactory = __webpack_require__(/*! ./editors/number */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\number.js"),
-	selectEditorFactory = __webpack_require__(/*! ./editors/select */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\select.js"),
-	dateEditorFactory = __webpack_require__(/*! ./editors/date */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\date.js"),
-	predecessorEditorFactory = __webpack_require__(/*! ./editors/predecessor */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\predecessor.js");
-var utils = __webpack_require__(/*! ../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
-var eventable = __webpack_require__(/*! ../../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
+var getKeyboardMapping = __webpack_require__(/*! ./keyboard_mappings */ "./sources/core/ui/grid/editors/keyboard_mappings.js");
+var textEditorFactory = __webpack_require__(/*! ./editors/text */ "./sources/core/ui/grid/editors/editors/text.js"),
+	numberEditorFactory = __webpack_require__(/*! ./editors/number */ "./sources/core/ui/grid/editors/editors/number.js"),
+	selectEditorFactory = __webpack_require__(/*! ./editors/select */ "./sources/core/ui/grid/editors/editors/select.js"),
+	dateEditorFactory = __webpack_require__(/*! ./editors/date */ "./sources/core/ui/grid/editors/editors/date.js"),
+	predecessorEditorFactory = __webpack_require__(/*! ./editors/predecessor */ "./sources/core/ui/grid/editors/editors/predecessor.js");
+var utils = __webpack_require__(/*! ../../../../utils/utils */ "./sources/utils/utils.js");
+var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var eventable = __webpack_require__(/*! ../../../../utils/eventable */ "./sources/utils/eventable.js");
 
 function initConfigs(gantt){
 	gantt.config.editor_types = {
@@ -16908,10 +16931,10 @@ module.exports = create;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js":
-/*!************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/base.js ***!
-  \************************************************************************/
+/***/ "./sources/core/ui/grid/editors/editors/base.js":
+/*!******************************************************!*\
+  !*** ./sources/core/ui/grid/editors/editors/base.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -16968,17 +16991,17 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\date.js":
-/*!************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/date.js ***!
-  \************************************************************************/
+/***/ "./sources/core/ui/grid/editors/editors/date.js":
+/*!******************************************************!*\
+  !*** ./sources/core/ui/grid/editors/editors/date.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (gantt) {
-	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
 
 	var html5DateFormat = "%Y-%m-%d";
 
@@ -17042,18 +17065,18 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\number.js":
-/*!**************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/number.js ***!
-  \**************************************************************************/
+/***/ "./sources/core/ui/grid/editors/editors/number.js":
+/*!********************************************************!*\
+  !*** ./sources/core/ui/grid/editors/editors/number.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (gantt) {
 
-	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
 
 	function NumberEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -17083,18 +17106,18 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\predecessor.js":
-/*!*******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/predecessor.js ***!
-  \*******************************************************************************/
+/***/ "./sources/core/ui/grid/editors/editors/predecessor.js":
+/*!*************************************************************!*\
+  !*** ./sources/core/ui/grid/editors/editors/predecessor.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function (gantt) {
 
-	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
 
 	function PredecessorEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -17222,17 +17245,17 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\select.js":
-/*!**************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/select.js ***!
-  \**************************************************************************/
+/***/ "./sources/core/ui/grid/editors/editors/select.js":
+/*!********************************************************!*\
+  !*** ./sources/core/ui/grid/editors/editors/select.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
-	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
 
 	function SelectEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -17264,18 +17287,18 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\text.js":
-/*!************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/editors/text.js ***!
-  \************************************************************************/
+/***/ "./sources/core/ui/grid/editors/editors/text.js":
+/*!******************************************************!*\
+  !*** ./sources/core/ui/grid/editors/editors/text.js ***!
+  \******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt) {
 
-	var BaseEditor = __webpack_require__(/*! ./base */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\editors\\base.js")(gantt),
-		utils = __webpack_require__(/*! ../../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js");
+	var BaseEditor = __webpack_require__(/*! ./base */ "./sources/core/ui/grid/editors/editors/base.js")(gantt),
+		utils = __webpack_require__(/*! ../../../../../utils/utils */ "./sources/utils/utils.js");
+	var __extends = __webpack_require__(/*! ../../../../../utils/extends */ "./sources/utils/extends.js");
 
 	function TextEditor() {
 		var self = BaseEditor.apply(this, arguments) || this;
@@ -17296,15 +17319,15 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings.js":
-/*!*****************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/keyboard_mappings.js ***!
-  \*****************************************************************************/
+/***/ "./sources/core/ui/grid/editors/keyboard_mappings.js":
+/*!***********************************************************!*\
+  !*** ./sources/core/ui/grid/editors/keyboard_mappings.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var defaultMapping = __webpack_require__(/*! ./keyboard_mappings/default */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\default.js");
-var keyNavMappings = __webpack_require__(/*! ./keyboard_mappings/keyboard_navigation */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\keyboard_navigation.js");
+var defaultMapping = __webpack_require__(/*! ./keyboard_mappings/default */ "./sources/core/ui/grid/editors/keyboard_mappings/default.js");
+var keyNavMappings = __webpack_require__(/*! ./keyboard_mappings/keyboard_navigation */ "./sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js");
 
 module.exports = function(gantt){
 
@@ -17330,10 +17353,10 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\default.js":
-/*!*************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/keyboard_mappings/default.js ***!
-  \*************************************************************************************/
+/***/ "./sources/core/ui/grid/editors/keyboard_mappings/default.js":
+/*!*******************************************************************!*\
+  !*** ./sources/core/ui/grid/editors/keyboard_mappings/default.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17429,10 +17452,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\keyboard_mappings\\keyboard_navigation.js":
-/*!*************************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js ***!
-  \*************************************************************************************************/
+/***/ "./sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js":
+/*!*******************************************************************************!*\
+  !*** ./sources/core/ui/grid/editors/keyboard_mappings/keyboard_navigation.js ***!
+  \*******************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -17636,18 +17659,18 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/grid.js ***!
-  \********************************************************/
+/***/ "./sources/core/ui/grid/grid.js":
+/*!**************************************!*\
+  !*** ./sources/core/ui/grid/grid.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	eventable = __webpack_require__(/*! ../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js"),
-	gridResize = __webpack_require__(/*! ./grid_resize */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid_resize.gpl.js"),
-	topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "c:\\www-recent\\gantt\\sources\\core\\ui\\row_position_mixin.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
+	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
+	gridResize = __webpack_require__(/*! ./grid_resize */ "./sources/core/ui/grid/grid_resize.gpl.js"),
+	topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
 
 var Grid = function (parent, config, factory, gantt) {
 	this.$config = utils.mixin({}, config || {});
@@ -17688,7 +17711,7 @@ Grid.prototype = {
 		var resizer = gridResize(gantt, this);
 		resizer.init();
 		this._renderHeaderResizers = resizer.doOnRender;
-		this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js")(gantt);
+		this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "./sources/core/ui/mouse_event_container.js")(gantt);
 
 		this._addLayers(this.$gantt);
 		this._initEvents();
@@ -18233,10 +18256,10 @@ module.exports = Grid;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid_resize.gpl.js":
-/*!*******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/grid_resize.gpl.js ***!
-  \*******************************************************************/
+/***/ "./sources/core/ui/grid/grid_resize.gpl.js":
+/*!*************************************************!*\
+  !*** ./sources/core/ui/grid/grid_resize.gpl.js ***!
+  \*************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -18251,16 +18274,16 @@ module.exports = createResizer;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\main_grid_initializer.js":
-/*!*************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/main_grid_initializer.js ***!
-  \*************************************************************************/
+/***/ "./sources/core/ui/grid/main_grid_initializer.js":
+/*!*******************************************************!*\
+  !*** ./sources/core/ui/grid/main_grid_initializer.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var rowDnd = __webpack_require__(/*! ./tasks_grid_dnd */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd.js");
-var rowDndMarker = __webpack_require__(/*! ./tasks_grid_dnd_marker */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
+var rowDnd = __webpack_require__(/*! ./tasks_grid_dnd */ "./sources/core/ui/grid/tasks_grid_dnd.js");
+var rowDndMarker = __webpack_require__(/*! ./tasks_grid_dnd_marker */ "./sources/core/ui/grid/tasks_grid_dnd_marker.js");
 
 var initializer = (function(){
 	return function(gantt){
@@ -18275,7 +18298,7 @@ var initializer = (function(){
 					gantt.ext.inlineEditors.init();
 				}
 
-				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js")(gantt);
+				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "./sources/core/ui/mouse_event_container.js")(gantt);
 			},
 			onInitialized: function (grid) {
 				var config = grid.$getConfig();
@@ -18401,14 +18424,14 @@ module.exports = initializer;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd.js":
-/*!******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd.js ***!
-  \******************************************************************/
+/***/ "./sources/core/ui/grid/tasks_grid_dnd.js":
+/*!************************************************!*\
+  !*** ./sources/core/ui/grid/tasks_grid_dnd.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 function _init_dnd(gantt, grid) {
 	var DnD = gantt.$services.getService("dnd");
@@ -18648,18 +18671,18 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker.js":
-/*!*************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker.js ***!
-  \*************************************************************************/
+/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker.js":
+/*!*******************************************************!*\
+  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker.js ***!
+  \*******************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
-var dropTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/drop_target */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js");
-var getLockedLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/locked_level */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\locked_level.js");
-var getMultiLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/multi_level */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\multi_level.js");
-var higlighter = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/highlight */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\highlight.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+var dropTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
+var getLockedLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/locked_level */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js");
+var getMultiLevelTarget = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/multi_level */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js");
+var higlighter = __webpack_require__(/*! ./tasks_grid_dnd_marker_helpers/highlight */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js");
 
 function _init_dnd(gantt, grid) {
 	var DnD = gantt.$services.getService("dnd");
@@ -18808,10 +18831,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js":
-/*!*********************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js ***!
-  \*********************************************************************************************/
+/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js":
+/*!***************************************************************************!*\
+  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -18819,7 +18842,7 @@ module.exports = {
  * The state object for order branch drag and drop
  */
 
-var utils = __webpack_require__(/*! ../../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../../../utils/utils */ "./sources/utils/utils.js");
 
 module.exports = {
 	createDropTargetObject: function createDropTargetObject(parent) {
@@ -18880,14 +18903,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\highlight.js":
-/*!*******************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js ***!
-  \*******************************************************************************************/
+/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js":
+/*!*************************************************************************!*\
+  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/highlight.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 /**
  * methods for highlighting current drag and drop position
@@ -19014,10 +19037,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\locked_level.js":
-/*!**********************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js ***!
-  \**********************************************************************************************/
+/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js":
+/*!****************************************************************************!*\
+  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/locked_level.js ***!
+  \****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19025,7 +19048,7 @@ module.exports = {
  * resolve dnd position of the task when gantt.config.order_branch_free = false
  */
 
-var dropTarget = __webpack_require__(/*! ./drop_target */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js");
+var dropTarget = __webpack_require__(/*! ./drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
 
 function getLast(store){
 	var current = store.getNext();
@@ -19112,10 +19135,10 @@ module.exports = function getSameLevelDropPosition(dndTaskId, targetTaskId, relT
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\multi_level.js":
-/*!*********************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js ***!
-  \*********************************************************************************************/
+/***/ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js":
+/*!***************************************************************************!*\
+  !*** ./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/multi_level.js ***!
+  \***************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -19123,7 +19146,7 @@ module.exports = function getSameLevelDropPosition(dndTaskId, targetTaskId, relT
  * resolve dnd position of the task when gantt.config.order_branch_free = true
  */
 
-var dropTarget = __webpack_require__(/*! ./drop_target */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\tasks_grid_dnd_marker_helpers\\drop_target.js");
+var dropTarget = __webpack_require__(/*! ./drop_target */ "./sources/core/ui/grid/tasks_grid_dnd_marker_helpers/drop_target.js");
 
 module.exports = function getMultiLevelDropPosition(dndTaskId, targetTaskId, relTargetPos, eventTop, store){
 	var result;
@@ -19150,41 +19173,41 @@ module.exports = function getMultiLevelDropPosition(dndTaskId, targetTaskId, rel
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\index.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/index.js ***!
-  \****************************************************/
+/***/ "./sources/core/ui/index.js":
+/*!**********************************!*\
+  !*** ./sources/core/ui/index.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var uiFactory = __webpack_require__(/*! ./ui_factory */ "c:\\www-recent\\gantt\\sources\\core\\ui\\ui_factory.js"),
-	mouseEvents = __webpack_require__(/*! ./mouse */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse.js"),
-	createLayers = __webpack_require__(/*! ./gantt_layers */ "c:\\www-recent\\gantt\\sources\\core\\ui\\gantt_layers.js"),
-	Cell = __webpack_require__(/*! ./layout/cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js"),
-	Layout = __webpack_require__(/*! ./layout/layout */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\layout.js"),
-	ViewLayout = __webpack_require__(/*! ./layout/view_layout */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_layout.js"),
-	ViewCell = __webpack_require__(/*! ./layout/view_cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_cell.js"),
-	Resizer = __webpack_require__(/*! ./layout/resizer_cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\resizer_cell.gpl.js"),
-	Scrollbar = __webpack_require__(/*! ./layout/scrollbar_cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\scrollbar_cell.js"),
-	Timeline = __webpack_require__(/*! ./timeline/timeline */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js"),
-	Grid = __webpack_require__(/*! ./grid/grid */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid.js"),
-	ResourceGrid = __webpack_require__(/*! ./grid/resource_grid */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\grid.js"),
-	ResourceTimeline = __webpack_require__(/*! ./timeline/resource_timeline */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js"),
-	ResourceHistogram = __webpack_require__(/*! ./timeline/resource_histogram */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js");
+var uiFactory = __webpack_require__(/*! ./ui_factory */ "./sources/core/ui/ui_factory.js"),
+	mouseEvents = __webpack_require__(/*! ./mouse */ "./sources/core/ui/mouse.js"),
+	createLayers = __webpack_require__(/*! ./gantt_layers */ "./sources/core/ui/gantt_layers.js"),
+	Cell = __webpack_require__(/*! ./layout/cell */ "./sources/core/ui/layout/cell.js"),
+	Layout = __webpack_require__(/*! ./layout/layout */ "./sources/core/ui/layout/layout.js"),
+	ViewLayout = __webpack_require__(/*! ./layout/view_layout */ "./sources/core/ui/layout/view_layout.js"),
+	ViewCell = __webpack_require__(/*! ./layout/view_cell */ "./sources/core/ui/layout/view_cell.js"),
+	Resizer = __webpack_require__(/*! ./layout/resizer_cell */ "./sources/core/ui/layout/resizer_cell.gpl.js"),
+	Scrollbar = __webpack_require__(/*! ./layout/scrollbar_cell */ "./sources/core/ui/layout/scrollbar_cell.js"),
+	Timeline = __webpack_require__(/*! ./timeline/timeline */ "./sources/core/ui/timeline/timeline.js"),
+	Grid = __webpack_require__(/*! ./grid/grid */ "./sources/core/ui/grid/grid.js"),
+	ResourceGrid = __webpack_require__(/*! ./grid/resource_grid */ "./sources/core/ui/grid/grid.js"),
+	ResourceTimeline = __webpack_require__(/*! ./timeline/resource_timeline */ "./sources/core/ui/timeline/timeline.js"),
+	ResourceHistogram = __webpack_require__(/*! ./timeline/resource_histogram */ "./sources/core/ui/timeline/timeline.js");
 
 
-var gridEditorsFactory = __webpack_require__(/*! ./grid/editors/controller */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\editors\\controller.js");
+var gridEditorsFactory = __webpack_require__(/*! ./grid/editors/controller */ "./sources/core/ui/grid/editors/controller.js");
 
 
-var renderTaskBar = __webpack_require__(/*! ./render/task_bar_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bar_render.js"),
-	renderSplitTaskBar = __webpack_require__(/*! ./render/task_split_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_split_render.js"),
-	renderTaskBg = __webpack_require__(/*! ./render/task_bg_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bg_render.js"),
-	renderLink = __webpack_require__(/*! ./render/link_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\link_render.js"),
-	gridRenderer = __webpack_require__(/*! ./render/task_grid_line_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_grid_line_render.js");
+var renderTaskBar = __webpack_require__(/*! ./render/task_bar_render */ "./sources/core/ui/render/task_bar_render.js"),
+	renderSplitTaskBar = __webpack_require__(/*! ./render/task_split_render */ "./sources/core/ui/render/task_split_render.js"),
+	renderTaskBg = __webpack_require__(/*! ./render/task_bg_render */ "./sources/core/ui/render/task_bg_render.js"),
+	renderLink = __webpack_require__(/*! ./render/link_render */ "./sources/core/ui/render/link_render.js"),
+	gridRenderer = __webpack_require__(/*! ./render/task_grid_line_render */ "./sources/core/ui/render/task_grid_line_render.js");
 
-var mainGridInitializer = __webpack_require__(/*! ./grid/main_grid_initializer */ "c:\\www-recent\\gantt\\sources\\core\\ui\\grid\\main_grid_initializer.js");
-var mainTimelineInitializer = __webpack_require__(/*! ./timeline/main_timeline_initializer */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\main_timeline_initializer.js");
-var mainLayoutInitializer = __webpack_require__(/*! ./main_layout_initializer */ "c:\\www-recent\\gantt\\sources\\core\\ui\\main_layout_initializer.js");
+var mainGridInitializer = __webpack_require__(/*! ./grid/main_grid_initializer */ "./sources/core/ui/grid/main_grid_initializer.js");
+var mainTimelineInitializer = __webpack_require__(/*! ./timeline/main_timeline_initializer */ "./sources/core/ui/timeline/main_timeline_initializer.js");
+var mainLayoutInitializer = __webpack_require__(/*! ./main_layout_initializer */ "./sources/core/ui/main_layout_initializer.js");
 
 function initUI(gantt){
 	function attachInitializer(view, initializer){
@@ -19266,16 +19289,16 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js":
-/*!**********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/layout/cell.js ***!
-  \**********************************************************/
+/***/ "./sources/core/ui/layout/cell.js":
+/*!****************************************!*\
+  !*** ./sources/core/ui/layout/cell.js ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	eventable = __webpack_require__(/*! ../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
+	eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 var Cell = (function () {
 	"use strict";
@@ -19601,16 +19624,16 @@ module.exports = Cell;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\layout.js":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/layout/layout.js ***!
-  \************************************************************/
+/***/ "./sources/core/ui/layout/layout.js":
+/*!******************************************!*\
+  !*** ./sources/core/ui/layout/layout.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
-	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
+	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
 
 var Layout = (function (_super) {
 	"use strict";
@@ -20366,10 +20389,10 @@ module.exports = Layout;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\resizer_cell.gpl.js":
-/*!**********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/layout/resizer_cell.gpl.js ***!
-  \**********************************************************************/
+/***/ "./sources/core/ui/layout/resizer_cell.gpl.js":
+/*!****************************************************!*\
+  !*** ./sources/core/ui/layout/resizer_cell.gpl.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20377,18 +20400,18 @@ module.exports = null;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\scrollbar_cell.js":
-/*!********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/layout/scrollbar_cell.js ***!
-  \********************************************************************/
+/***/ "./sources/core/ui/layout/scrollbar_cell.js":
+/*!**************************************************!*\
+  !*** ./sources/core/ui/layout/scrollbar_cell.js ***!
+  \**************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	env = __webpack_require__(/*! ../../../utils/env */ "c:\\www-recent\\gantt\\sources\\utils\\env.js"),
-	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
+	env = __webpack_require__(/*! ../../../utils/env */ "./sources/utils/env.js"),
+	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
 
 var ScrollbarCell = (function (_super) {
 	"use strict";
@@ -20891,16 +20914,16 @@ module.exports = ScrollbarCell;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_cell.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/layout/view_cell.js ***!
-  \***************************************************************/
+/***/ "./sources/core/ui/layout/view_cell.js":
+/*!*********************************************!*\
+  !*** ./sources/core/ui/layout/view_cell.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
+	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
 
 var ViewCell = (function (_super) {
 	"use strict";
@@ -21017,16 +21040,16 @@ module.exports = ViewCell;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\view_layout.js":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/layout/view_layout.js ***!
-  \*****************************************************************/
+/***/ "./sources/core/ui/layout/view_layout.js":
+/*!***********************************************!*\
+  !*** ./sources/core/ui/layout/view_layout.js ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var __extends = __webpack_require__(/*! ../../../utils/extends */ "c:\\www-recent\\gantt\\sources\\utils\\extends.js"),
-	Layout = __webpack_require__(/*! ./layout */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\layout.js"),
-	Cell = __webpack_require__(/*! ./cell */ "c:\\www-recent\\gantt\\sources\\core\\ui\\layout\\cell.js");
+var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/utils/extends.js"),
+	Layout = __webpack_require__(/*! ./layout */ "./sources/core/ui/layout/layout.js"),
+	Cell = __webpack_require__(/*! ./cell */ "./sources/core/ui/layout/cell.js");
 
 var ViewLayout = (function (_super) {
 	"use strict";
@@ -21093,14 +21116,14 @@ module.exports = ViewLayout;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\main_layout_initializer.js":
-/*!**********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/main_layout_initializer.js ***!
-  \**********************************************************************/
+/***/ "./sources/core/ui/main_layout_initializer.js":
+/*!****************************************************!*\
+  !*** ./sources/core/ui/main_layout_initializer.js ***!
+  \****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 var initializer = (function() {
 	return function (gantt) {
@@ -21327,14 +21350,14 @@ module.exports = initializer;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/mouse.js ***!
-  \****************************************************/
+/***/ "./sources/core/ui/mouse.js":
+/*!**********************************!*\
+  !*** ./sources/core/ui/mouse.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 var createMouseHandler = (function(domHelpers) {
 	return function (gantt) {
@@ -21536,10 +21559,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js":
-/*!********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/mouse_event_container.js ***!
-  \********************************************************************/
+/***/ "./sources/core/ui/mouse_event_container.js":
+/*!**************************************************!*\
+  !*** ./sources/core/ui/mouse_event_container.js ***!
+  \**************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21568,16 +21591,16 @@ module.exports = create;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\layer_engine.js":
-/*!******************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/layer_engine.js ***!
-  \******************************************************************/
+/***/ "./sources/core/ui/render/layer_engine.js":
+/*!************************************************!*\
+  !*** ./sources/core/ui/render/layer_engine.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var renderFactoryProvider = __webpack_require__(/*! ./render_factory */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\render_factory.js");
-var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var renderFactoryProvider = __webpack_require__(/*! ./render_factory */ "./sources/core/ui/render/render_factory.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 var layerFactory = function(gantt){
 
@@ -21715,10 +21738,10 @@ module.exports = layerFactory;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\link_render.js":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/link_render.js ***!
-  \*****************************************************************/
+/***/ "./sources/core/ui/render/link_render.js":
+/*!***********************************************!*\
+  !*** ./sources/core/ui/render/link_render.js ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22169,10 +22192,10 @@ module.exports = createLinkRender;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\render_factory.js":
-/*!********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/render_factory.js ***!
-  \********************************************************************/
+/***/ "./sources/core/ui/render/render_factory.js":
+/*!**************************************************!*\
+  !*** ./sources/core/ui/render/render_factory.js ***!
+  \**************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22315,10 +22338,10 @@ module.exports = rendererFactory;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bar_render.js":
-/*!*********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/task_bar_render.js ***!
-  \*********************************************************************/
+/***/ "./sources/core/ui/render/task_bar_render.js":
+/*!***************************************************!*\
+  !*** ./sources/core/ui/render/task_bar_render.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22662,10 +22685,10 @@ module.exports = createTaskRenderer;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bg_render.js":
-/*!********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/task_bg_render.js ***!
-  \********************************************************************/
+/***/ "./sources/core/ui/render/task_bg_render.js":
+/*!**************************************************!*\
+  !*** ./sources/core/ui/render/task_bg_render.js ***!
+  \**************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22731,14 +22754,14 @@ module.exports = createTaskBgRender;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_grid_line_render.js":
-/*!***************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/task_grid_line_render.js ***!
-  \***************************************************************************/
+/***/ "./sources/core/ui/render/task_grid_line_render.js":
+/*!*********************************************************!*\
+  !*** ./sources/core/ui/render/task_grid_line_render.js ***!
+  \*********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ../../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
 
 function createGridLineRender(gantt){
 	function _render_grid_item(item, view) {
@@ -22855,15 +22878,15 @@ module.exports = createGridLineRender;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_split_render.js":
-/*!***********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/render/task_split_render.js ***!
-  \***********************************************************************/
+/***/ "./sources/core/ui/render/task_split_render.js":
+/*!*****************************************************!*\
+  !*** ./sources/core/ui/render/task_split_render.js ***!
+  \*****************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 function createTaskRenderer(gantt){
-	var defaultRender = __webpack_require__(/*! ./task_bar_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\render\\task_bar_render.js")(gantt);
+	var defaultRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js")(gantt);
 
 	return function show_children(task, timeline) {
 		if (gantt.isSplitTask(task)) {
@@ -22897,10 +22920,10 @@ module.exports = createTaskRenderer;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\row_position_mixin.js":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/row_position_mixin.js ***!
-  \*****************************************************************/
+/***/ "./sources/core/ui/row_position_mixin.js":
+/*!***********************************************!*\
+  !*** ./sources/core/ui/row_position_mixin.js ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -22943,14 +22966,14 @@ module.exports = createMixin;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\links_dnd.js":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/timeline/links_dnd.js ***!
-  \*****************************************************************/
+/***/ "./sources/core/ui/timeline/links_dnd.js":
+/*!***********************************************!*\
+  !*** ./sources/core/ui/timeline/links_dnd.js ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 var initLinksDND = function(timeline, gantt) {
 	var _link_landing,
@@ -23327,17 +23350,17 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\main_timeline_initializer.js":
-/*!*********************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/timeline/main_timeline_initializer.js ***!
-  \*********************************************************************************/
+/***/ "./sources/core/ui/timeline/main_timeline_initializer.js":
+/*!***************************************************************!*\
+  !*** ./sources/core/ui/timeline/main_timeline_initializer.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	taskDnD = __webpack_require__(/*! ./tasks_dnd */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_dnd.js"),
-	linkDnD = __webpack_require__(/*! ./links_dnd */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\links_dnd.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
+	taskDnD = __webpack_require__(/*! ./tasks_dnd */ "./sources/core/ui/timeline/tasks_dnd.js"),
+	linkDnD = __webpack_require__(/*! ./links_dnd */ "./sources/core/ui/timeline/links_dnd.js"),
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 
 var initializer = (function(){
 	return function(gantt){
@@ -23352,7 +23375,7 @@ var initializer = (function(){
 				timeline._tasksDnD = taskDnD.createTaskDND();
 				timeline._tasksDnD.extend(timeline);
 
-				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "c:\\www-recent\\gantt\\sources\\core\\ui\\mouse_event_container.js")(gantt);
+				this._mouseDelegates = __webpack_require__(/*! ../mouse_event_container */ "./sources/core/ui/mouse_event_container.js")(gantt);
 			},
 			onInitialized: function (timeline) {
 				this._attachDomEvents(gantt);
@@ -23467,14 +23490,14 @@ module.exports = initializer;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\scales.js":
-/*!**************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/timeline/scales.js ***!
-  \**************************************************************/
+/***/ "./sources/core/ui/timeline/scales.js":
+/*!********************************************!*\
+  !*** ./sources/core/ui/timeline/scales.js ***!
+  \********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
 
 function ScaleHelper(gantt){
 	var dateHelper = gantt.date;
@@ -23813,10 +23836,10 @@ module.exports = ScaleHelper;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_canvas_render.gpl.js":
-/*!*******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/timeline/tasks_canvas_render.gpl.js ***!
-  \*******************************************************************************/
+/***/ "./sources/core/ui/timeline/tasks_canvas_render.gpl.js":
+/*!*************************************************************!*\
+  !*** ./sources/core/ui/timeline/tasks_canvas_render.gpl.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -23836,16 +23859,16 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_dnd.js":
-/*!*****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/timeline/tasks_dnd.js ***!
-  \*****************************************************************/
+/***/ "./sources/core/ui/timeline/tasks_dnd.js":
+/*!***********************************************!*\
+  !*** ./sources/core/ui/timeline/tasks_dnd.js ***!
+  \***********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var timeout = __webpack_require__(/*! ../../../utils/timeout */ "c:\\www-recent\\gantt\\sources\\utils\\timeout.js");
+var domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
+var timeout = __webpack_require__(/*! ../../../utils/timeout */ "./sources/utils/timeout.js");
 
 function createTaskDND(timeline, gantt){
 	var services = gantt.$services;
@@ -24381,18 +24404,18 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\timeline.js":
-/*!****************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/timeline/timeline.js ***!
-  \****************************************************************/
+/***/ "./sources/core/ui/timeline/timeline.js":
+/*!**********************************************!*\
+  !*** ./sources/core/ui/timeline/timeline.js ***!
+  \**********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var ScaleHelper = __webpack_require__(/*! ./scales_ignore */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\scales.js");
-var eventable = __webpack_require__(/*! ../../../utils/eventable */ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js");
-var utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "c:\\www-recent\\gantt\\sources\\core\\ui\\row_position_mixin.js");
-var canvasRender = __webpack_require__(/*! ./tasks_canvas_render */ "c:\\www-recent\\gantt\\sources\\core\\ui\\timeline\\tasks_canvas_render.gpl.js");
+var ScaleHelper = __webpack_require__(/*! ./scales_ignore */ "./sources/core/ui/timeline/scales.js");
+var eventable = __webpack_require__(/*! ../../../utils/eventable */ "./sources/utils/eventable.js");
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
+var topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
+var canvasRender = __webpack_require__(/*! ./tasks_canvas_render */ "./sources/core/ui/timeline/tasks_canvas_render.gpl.js");
 
 var Timeline = function(parent, config, factory, gantt){
 	this.$config = utils.mixin({}, config || {});
@@ -25055,15 +25078,15 @@ function _findBinary(array, target) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\ui\\ui_factory.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/ui/ui_factory.js ***!
-  \*********************************************************/
+/***/ "./sources/core/ui/ui_factory.js":
+/*!***************************************!*\
+  !*** ./sources/core/ui/ui_factory.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js"),
-	configurable = __webpack_require__(/*! ./configurable */ "c:\\www-recent\\gantt\\sources\\core\\ui\\configurable.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js"),
+	configurable = __webpack_require__(/*! ./configurable */ "./sources/core/ui/configurable.js");
 
 var uiFactory = function createFactory(gantt){
 	var views = {};
@@ -25179,10 +25202,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\wai_aria.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/wai_aria.js ***!
-  \****************************************************/
+/***/ "./sources/core/wai_aria.js":
+/*!**********************************!*\
+  !*** ./sources/core/wai_aria.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -25452,15 +25475,15 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_arguments_helper.js":
-/*!******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/calendar_arguments_helper.js ***!
-  \******************************************************************************/
+/***/ "./sources/core/worktime/calendar_arguments_helper.js":
+/*!************************************************************!*\
+  !*** ./sources/core/worktime/calendar_arguments_helper.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var helpers = __webpack_require__(/*! ../../utils/helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 
 
 function IsWorkTimeArgument(date, unit, task, id, calendar){
@@ -25645,16 +25668,16 @@ module.exports = calendarArgumentsHelper;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_manager.js":
-/*!*********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/calendar_manager.js ***!
-  \*********************************************************************/
+/***/ "./sources/core/worktime/calendar_manager.js":
+/*!***************************************************!*\
+  !*** ./sources/core/worktime/calendar_manager.js ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
-var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_arguments_helper.js");
-var CalendarWorktimeStrategy = __webpack_require__(/*! ./strategy/calendar_strategy */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_strategy.js");
+var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
+var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "./sources/core/worktime/calendar_arguments_helper.js");
+var CalendarWorktimeStrategy = __webpack_require__(/*! ./strategy/calendar_strategy */ "./sources/core/worktime/strategy/calendar_strategy.js");
 
 function CalendarManager (gantt){
 	this.$gantt = gantt;
@@ -25887,15 +25910,15 @@ module.exports = CalendarManager;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_strategy.js":
-/*!*******************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/strategy/calendar_strategy.js ***!
-  \*******************************************************************************/
+/***/ "./sources/core/worktime/strategy/calendar_strategy.js":
+/*!*************************************************************!*\
+  !*** ./sources/core/worktime/strategy/calendar_strategy.js ***!
+  \*************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Cache = __webpack_require__(/*! ./calendar_workunit_cache */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_workunit_cache.js"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var Cache = __webpack_require__(/*! ./calendar_workunit_cache */ "./sources/core/worktime/strategy/calendar_workunit_cache.js"),
+	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
 
 function CalendarWorkTimeStrategy(gantt, argumentsHelper){
 	this.argumentsHelper = argumentsHelper;
@@ -26274,75 +26297,83 @@ CalendarWorkTimeStrategy.prototype = {
 	},
 
 	getClosestWorkTime: function () {
-		var config =  this.argumentsHelper.getClosestWorkTimeArguments.apply( this.argumentsHelper, arguments);
-		return this._getClosestWorkTime(config);
+		var settings =  this.argumentsHelper.getClosestWorkTimeArguments.apply( this.argumentsHelper, arguments);
+		return this._getClosestWorkTime(settings.date, settings.unit, settings.dir);
 	},
 
-	_getClosestWorkTime: function (settings) {
-		if (this._isWorkTime(settings.date, settings.unit))
-			return settings.date;
+	_getClosestWorkTime: function (inputDate, unit, direction) {
+		var result = new Date(inputDate);
 
-		var unit = settings.unit;
+		if (this._isWorkTime(result, unit)) {
+			return result;
+		}
 
-		var curr = this.$gantt.date[unit + '_start'](new Date(settings.date));
+		result = this.$gantt.date[unit + '_start'](result);
 
-		var future_target = new Date(curr),
-			prev_target = new Date(curr),
-			tick = true,
-			maximum_loop = 3000,//be extra sure we won't fall into infinite loop, 3k seems big enough
-			count = 0,
-			both_directins = (settings.dir == 'any' || !settings.dir);
+		if (direction == 'any' || !direction) {
+			var closestFuture = this._getClosestWorkTimeFuture(result, unit);
+			var closestPast = this._getClosestWorkTimePast(result, unit);
+			if (Math.abs(closestFuture - inputDate) <= Math.abs(inputDate - closestPast)) {
+				result = closestFuture;
+			} else {
+				result = closestPast;
+			}
+		} else if (direction == "past") {
+			result = this._getClosestWorkTimePast(result, unit);
+		} else {
+			result = this._getClosestWorkTimeFuture(result, unit);
+		}
+		return result;
+	},
 
-		var inc = 1;
-		if (settings.dir == 'past')
-			inc = -1;
+	_getClosestWorkTimeFuture: function (date, unit) {
+		return this._getClosestWorkTimeGeneric(date, unit, 1);
+	},
 
+	_getClosestWorkTimePast: function (date, unit) {
+		var result = this._getClosestWorkTimeGeneric(date, unit, -1);
+		// should return the end of the closest work interval
+		return this.$gantt.date.add(result, 1, unit);
+	},
+
+	_getClosestWorkTimeGeneric: function (date, unit, increment) {
 		var unitOrder = this._getUnitOrder(unit),
 			biggerTimeUnit = this.units[unitOrder - 1];
 
-		//will seek closest working hour in future or in past, one step in one direction per iteration
-		while (!this._isWorkTime(curr, unit)) {
+		var result = date;
 
-			if(biggerTimeUnit && !this._isWorkTime(curr, biggerTimeUnit)){
-				// no need to check every hour/minute if we know that the whole day is not working
-				var biggerTimeUnitSettings = this.$gantt.copy(settings);
-				biggerTimeUnitSettings.date = curr;
-				biggerTimeUnitSettings.unit = biggerTimeUnit;
 
-				return this._getClosestWorkTime(biggerTimeUnitSettings);
-			}
 
-			if (both_directins) {
-				curr = tick ? future_target : prev_target;
-				inc = inc * (-1);
-			}
-			var tzOffset = curr.getTimezoneOffset();
-			curr = this.$gantt.date.add(curr, inc, unit);
+		// be extra sure we won't fall into infinite loop, 3k seems big enough
+		var maximumLoop = 3000,
+			count = 0;
 
-			curr = this.$gantt._correct_dst_change(curr, tzOffset, inc, unit);
-			if (this.$gantt.date[unit + '_start'])
-				curr = this.$gantt.date[unit + '_start'](curr);
+		while (!this._isWorkTime(result, unit)) {
+			if (biggerTimeUnit && !this._isWorkTime(result, biggerTimeUnit)) {
+				// if we look for closest work hour and detect a week-end - first find the closest work day,
+				// and continue iterations after that
+				result = this._getClosestWorkTimeGeneric(result, biggerTimeUnit, increment);
 
-			if (both_directins) {
-				if (tick) {
-					future_target = curr;
-				} else {
-					prev_target = curr;
+				if (this._isWorkTime(result, unit)) {
+					break;
 				}
 			}
-			tick = !tick;
+
 			count++;
-			if (count > maximum_loop) {
+			if (count > maximumLoop) {
 				this.$gantt.assert(false, "Invalid working time check");
 				return false;
 			}
-		}
 
-		if (curr == prev_target || settings.dir == 'past') {
-			curr = this.$gantt.date.add(curr, 1, unit);
-		}
+			var tzOffset = result.getTimezoneOffset();
+			result = this.$gantt.date.add(result, increment, unit);
 
-		return curr;
+			result = this.$gantt._correct_dst_change(result, tzOffset, increment, unit);
+			if (this.$gantt.date[unit + '_start']) {
+				result = this.$gantt.date[unit + '_start'](result);
+			}
+		}
+		return result;
 	}
 };
 
@@ -26350,10 +26381,10 @@ module.exports = CalendarWorkTimeStrategy;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\calendar_workunit_cache.js":
-/*!*************************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/strategy/calendar_workunit_cache.js ***!
-  \*************************************************************************************/
+/***/ "./sources/core/worktime/strategy/calendar_workunit_cache.js":
+/*!*******************************************************************!*\
+  !*** ./sources/core/worktime/strategy/calendar_workunit_cache.js ***!
+  \*******************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26400,10 +26431,10 @@ module.exports = WorkUnitsCache;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\no_work_time.js":
-/*!**************************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/strategy/no_work_time.js ***!
-  \**************************************************************************/
+/***/ "./sources/core/worktime/strategy/no_work_time.js":
+/*!********************************************************!*\
+  !*** ./sources/core/worktime/strategy/no_work_time.js ***!
+  \********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26498,15 +26529,15 @@ module.exports = CalendarDisabledTimeStrategy;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\time_calculator.js":
-/*!********************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/time_calculator.js ***!
-  \********************************************************************/
+/***/ "./sources/core/worktime/time_calculator.js":
+/*!**************************************************!*\
+  !*** ./sources/core/worktime/time_calculator.js ***!
+  \**************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_arguments_helper.js"),
-	NoWorkTimeCalendar = __webpack_require__(/*! ./strategy/no_work_time */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\strategy\\no_work_time.js");
+var createArgumentsHelper = __webpack_require__(/*! ./calendar_arguments_helper */ "./sources/core/worktime/calendar_arguments_helper.js"),
+	NoWorkTimeCalendar = __webpack_require__(/*! ./strategy/no_work_time */ "./sources/core/worktime/strategy/no_work_time.js");
 
 function TimeCalculator(calendarManager){
 
@@ -26602,17 +26633,17 @@ module.exports = TimeCalculator;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\core\\worktime\\work_time.js":
-/*!**************************************************************!*\
-  !*** c:/www-recent/gantt/sources/core/worktime/work_time.js ***!
-  \**************************************************************/
+/***/ "./sources/core/worktime/work_time.js":
+/*!********************************************!*\
+  !*** ./sources/core/worktime/work_time.js ***!
+  \********************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var CalendarManager = __webpack_require__(/*! ./calendar_manager */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\calendar_manager.js"),
-	TimeCalculator = __webpack_require__(/*! ./time_calculator */ "c:\\www-recent\\gantt\\sources\\core\\worktime\\time_calculator.js"),
-	worktimeFacadeFactory = __webpack_require__(/*! ../facades/worktime_calendars */ "c:\\www-recent\\gantt\\sources\\core\\facades\\worktime_calendars.js"),
-	utils = __webpack_require__(/*! ../../utils/utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var CalendarManager = __webpack_require__(/*! ./calendar_manager */ "./sources/core/worktime/calendar_manager.js"),
+	TimeCalculator = __webpack_require__(/*! ./time_calculator */ "./sources/core/worktime/time_calculator.js"),
+	worktimeFacadeFactory = __webpack_require__(/*! ../facades/worktime_calendars */ "./sources/core/facades/worktime_calendars.js"),
+	utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
 module.exports = function (gantt) {
 	var manager = new CalendarManager(gantt),
@@ -26624,10 +26655,10 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\broadway.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/broadway.js ***!
-  \*********************************************************/
+/***/ "./sources/css/skins/broadway.js":
+/*!***************************************!*\
+  !*** ./sources/css/skins/broadway.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26655,10 +26686,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_black.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/contrast_black.js ***!
-  \***************************************************************/
+/***/ "./sources/css/skins/contrast_black.js":
+/*!*********************************************!*\
+  !*** ./sources/css/skins/contrast_black.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26680,10 +26711,10 @@ gantt.skins["contrast_black"] = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\contrast_white.js":
-/*!***************************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/contrast_white.js ***!
-  \***************************************************************/
+/***/ "./sources/css/skins/contrast_white.js":
+/*!*********************************************!*\
+  !*** ./sources/css/skins/contrast_white.js ***!
+  \*********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26705,10 +26736,10 @@ gantt.skins["contrast_white"] = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\material.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/material.js ***!
-  \*********************************************************/
+/***/ "./sources/css/skins/material.js":
+/*!***************************************!*\
+  !*** ./sources/css/skins/material.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26748,10 +26779,10 @@ module.exports = function(gantt) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\meadow.js":
-/*!*******************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/meadow.js ***!
-  \*******************************************************/
+/***/ "./sources/css/skins/meadow.js":
+/*!*************************************!*\
+  !*** ./sources/css/skins/meadow.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26773,10 +26804,10 @@ gantt.skins.meadow = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\skyblue.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/skyblue.js ***!
-  \********************************************************/
+/***/ "./sources/css/skins/skyblue.js":
+/*!**************************************!*\
+  !*** ./sources/css/skins/skyblue.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26798,10 +26829,10 @@ gantt.skins.skyblue = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/terrace.js ***!
-  \********************************************************/
+/***/ "./sources/css/skins/terrace.js":
+/*!**************************************!*\
+  !*** ./sources/css/skins/terrace.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -26823,10 +26854,10 @@ gantt.skins.terrace = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\css\\skins\\terrace.less":
-/*!**********************************************************!*\
-  !*** c:/www-recent/gantt/sources/css/skins/terrace.less ***!
-  \**********************************************************/
+/***/ "./sources/css/skins/terrace.less":
+/*!****************************************!*\
+  !*** ./sources/css/skins/terrace.less ***!
+  \****************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -26834,18 +26865,18 @@ gantt.skins.terrace = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\dhtmlxgantt.gpl.ts":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/dhtmlxgantt.gpl.ts ***!
-  \******************************************************/
+/***/ "./sources/dhtmlxgantt.gpl.ts":
+/*!************************************!*\
+  !*** ./sources/dhtmlxgantt.gpl.ts ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var warnings = __webpack_require__(/*! ./core/deprecated_warnings */ "c:\\www-recent\\gantt\\sources\\core\\deprecated_warnings.js");
-var base = __webpack_require__(/*! ./core/gantt */ "c:\\www-recent\\gantt\\sources\\core\\gantt.js");
+var warnings = __webpack_require__(/*! ./core/deprecated_warnings */ "./sources/core/deprecated_warnings.js");
+var base = __webpack_require__(/*! ./core/gantt */ "./sources/core/gantt.js");
 var gantt = window.gantt = base();
 exports.gantt = gantt;
 warnings(gantt);
@@ -26854,94 +26885,94 @@ exports.default = gantt;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\locale\\locale.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/locale/locale.js ***!
-  \****************************************************/
+/***/ "./sources/locale/index.js":
+/*!*********************************!*\
+  !*** ./sources/locale/index.js ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+// default locale
+// load locale definition and wrap it into module build-time
 module.exports = function (gantt) {
 	gantt.locale = {
-		date: {
-			month_full: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-			month_short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-			day_full: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-			day_short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-		},
-		labels: {
-			new_task: "New task",
-			icon_save: "Save",
-			icon_cancel: "Cancel",
-			icon_details: "Details",
-			icon_edit: "Edit",
-			icon_delete: "Delete",
-			confirm_closing: "",//Your changes will be lost, are you sure?
-			confirm_deleting: "Task will be deleted permanently, are you sure?",
-			section_description: "Description",
-			section_time: "Time period",
-			section_type: "Type",
+	date: {
+		month_full: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+		month_short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+		day_full: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+		day_short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+	},
+	labels: {
+		new_task: "New task",
+		icon_save: "Save",
+		icon_cancel: "Cancel",
+		icon_details: "Details",
+		icon_edit: "Edit",
+		icon_delete: "Delete",
+		confirm_closing: "",//Your changes will be lost, are you sure?
+		confirm_deleting: "Task will be deleted permanently, are you sure?",
+		section_description: "Description",
+		section_time: "Time period",
+		section_type: "Type",
 
-			/* grid columns */
-			column_wbs: "WBS",
-			column_text: "Task name",
-			column_start_date: "Start time",
-			column_duration: "Duration",
-			column_add: "",
+		/* grid columns */
+		column_wbs: "WBS",
+		column_text: "Task name",
+		column_start_date: "Start time",
+		column_duration: "Duration",
+		column_add: "",
 
-			/* link confirmation */
-			link: "Link",
-			confirm_link_deleting: "will be deleted",
-			link_start: " (start)",
-			link_end: " (end)",
+		/* link confirmation */
+		link: "Link",
+		confirm_link_deleting: "will be deleted",
+		link_start: " (start)",
+		link_end: " (end)",
 
-			type_task: "Task",
-			type_project: "Project",
-			type_milestone: "Milestone",
+		type_task: "Task",
+		type_project: "Project",
+		type_milestone: "Milestone",
 
-			minutes: "Minutes",
-			hours: "Hours",
-			days: "Days",
-			weeks: "Week",
-			months: "Months",
-			years: "Years",
+		minutes: "Minutes",
+		hours: "Hours",
+		days: "Days",
+		weeks: "Week",
+		months: "Months",
+		years: "Years",
 
-			/* message popup */
-			message_ok: "OK",
-			message_cancel: "Cancel",
+		/* message popup */
+		message_ok: "OK",
+		message_cancel: "Cancel",
 
-			/* constraints */
-			section_constraint: "Constraint",
-			constraint_type: "Constraint type",
-			constraint_date: "Constraint date",
-			asap: "As Soon As Possible",
-			alap: "As Late As Possible",
-			snet: "Start No Earlier Than",
-			snlt: "Start No Later Than",
-			fnet: "Finish No Earlier Than",
-			fnlt: "Finish No Later Than",
-			mso: "Must Start On",
-			mfo: "Must Finish On",
+		/* constraints */
+		section_constraint: "Constraint",
+		constraint_type: "Constraint type",
+		constraint_date: "Constraint date",
+		asap: "As Soon As Possible",
+		alap: "As Late As Possible",
+		snet: "Start No Earlier Than",
+		snlt: "Start No Later Than",
+		fnet: "Finish No Earlier Than",
+		fnlt: "Finish No Later Than",
+		mso: "Must Start On",
+		mfo: "Must Finish On",
 
-			/* resource control */
-			resources_filter_placeholder: "type to filter",
-			resources_filter_label: "hide empty"
-		}
-	};
+		/* resource control */
+		resources_filter_placeholder: "type to filter",
+		resources_filter_label: "hide empty"
+	}
 };
-
-
+};
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\dom_event_scope.js":
-/*!************************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/dom_event_scope.js ***!
-  \************************************************************/
+/***/ "./sources/utils/dom_event_scope.js":
+/*!******************************************!*\
+  !*** ./sources/utils/dom_event_scope.js ***!
+  \******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var utils = __webpack_require__(/*! ./utils */ "c:\\www-recent\\gantt\\sources\\utils\\utils.js");
+var utils = __webpack_require__(/*! ./utils */ "./sources/utils/utils.js");
 
 function createScope(addEvent, removeEvent){
 	addEvent = addEvent || utils.event;
@@ -26983,10 +27014,10 @@ module.exports = createScope;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\dom_helpers.js":
-/*!********************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/dom_helpers.js ***!
-  \********************************************************/
+/***/ "./sources/utils/dom_helpers.js":
+/*!**************************************!*\
+  !*** ./sources/utils/dom_helpers.js ***!
+  \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27290,10 +27321,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\env.js":
-/*!************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/env.js ***!
-  \************************************************/
+/***/ "./sources/utils/env.js":
+/*!******************************!*\
+  !*** ./sources/utils/env.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27314,10 +27345,10 @@ module.exports = env;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\eventable.js":
-/*!******************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/eventable.js ***!
-  \******************************************************/
+/***/ "./sources/utils/eventable.js":
+/*!************************************!*\
+  !*** ./sources/utils/eventable.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27407,10 +27438,10 @@ module.exports = makeEventable;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\extends.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/extends.js ***!
-  \****************************************************/
+/***/ "./sources/utils/extends.js":
+/*!**********************************!*\
+  !*** ./sources/utils/extends.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27422,10 +27453,10 @@ module.exports = function (d, b) {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/helpers.js ***!
-  \****************************************************/
+/***/ "./sources/utils/helpers.js":
+/*!**********************************!*\
+  !*** ./sources/utils/helpers.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27649,14 +27680,14 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\html_helpers.js":
-/*!*********************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/html_helpers.js ***!
-  \*********************************************************/
+/***/ "./sources/utils/html_helpers.js":
+/*!***************************************!*\
+  !*** ./sources/utils/html_helpers.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ./helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
 
 var htmlHelpers = {
 	getHtmlSelect: function(options, attributes, value) {
@@ -27711,21 +27742,21 @@ module.exports = htmlHelpers;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\promise.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/promise.js ***!
-  \****************************************************/
+/***/ "./sources/utils/promise.js":
+/*!**********************************!*\
+  !*** ./sources/utils/promise.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! bluebird */ "c:\\www-recent\\gantt\\node_modules\\bluebird\\js\\browser\\bluebird.js");
+module.exports = __webpack_require__(/*! bluebird */ "./node_modules/bluebird/js/browser/bluebird.js");
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\task_tree_helpers.js":
-/*!**************************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/task_tree_helpers.js ***!
-  \**************************************************************/
+/***/ "./sources/utils/task_tree_helpers.js":
+/*!********************************************!*\
+  !*** ./sources/utils/task_tree_helpers.js ***!
+  \********************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27773,10 +27804,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\timeout.js":
-/*!****************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/timeout.js ***!
-  \****************************************************/
+/***/ "./sources/utils/timeout.js":
+/*!**********************************!*\
+  !*** ./sources/utils/timeout.js ***!
+  \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -27802,14 +27833,14 @@ module.exports = checkTimeout;
 
 /***/ }),
 
-/***/ "c:\\www-recent\\gantt\\sources\\utils\\utils.js":
-/*!**************************************************!*\
-  !*** c:/www-recent/gantt/sources/utils/utils.js ***!
-  \**************************************************/
+/***/ "./sources/utils/utils.js":
+/*!********************************!*\
+  !*** ./sources/utils/utils.js ***!
+  \********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var helpers = __webpack_require__(/*! ./helpers */ "c:\\www-recent\\gantt\\sources\\utils\\helpers.js");
+var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
 
 function copy(object) {
 	var i, result; // iterator, types array, result
