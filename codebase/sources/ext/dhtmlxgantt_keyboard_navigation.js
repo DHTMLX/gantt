@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.2 Standard
+dhtmlxGantt v.6.1.3 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -173,7 +173,9 @@ return /******/ (function(modules) { // webpackBootstrap
 					e.preventDefault();
 					gantt.$container.blur();
 					return false;
-				}else{
+				// do nothing if key-nav focus is already planned
+				} else if (!dispatcher.awaitsFocus()) {
+					// otherwise - re-focus key-nav element on gantt focus
 					dispatcher.focusGlobalNode();
 				}
 
@@ -246,17 +248,15 @@ return /******/ (function(modules) { // webpackBootstrap
 					}
 					focusNode = locateTask;
 				}
-
-				if(focusNode) {
+				if (focusNode) {
 					if (!dispatcher.isEnabled()) {
 						dispatcher.activeNode = focusNode;
-
 					} else {
 						dispatcher.delay(function () {
 							dispatcher.setActiveNode(focusNode);
 						});
 					}
-				}else{
+				} else {
 					// empty click should drop focus from gantt, insert of reselecting default node
 					dispatcher.$preventDefault = true;
 					setTimeout(function(){
@@ -270,7 +270,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				gantt.detachEvent(onReady);
 
 				gantt.$data.tasksStore.attachEvent("onStoreUpdated", function(id){
-					if(gantt.config.keyboard_navigation && dispatcher.isEnabled()){
+					if (gantt.config.keyboard_navigation && dispatcher.isEnabled()) {
 						var currentNode = dispatcher.getActiveNode();
 						if(currentNode && currentNode.taskId == id){
 							reFocusActiveNode();
@@ -415,7 +415,6 @@ return /******/ (function(modules) { // webpackBootstrap
 					if(commands.length){
 						return this.getCommandHandler(commands[0], scope);
 					}
-					
 				},
 				getCommandHandler: function(command, scope){
 					var scopeObject = getScope(scope);
@@ -1249,7 +1248,10 @@ module.exports = function(gantt) {
 		}
 		this.taskId = taskId;
 		this.columnIndex = index || 0;
-		this.index = gantt.getTaskIndex(this.taskId);
+		// provided task may not exist, in this case node will be detectes as invalid
+		if (gantt.isTaskExists(this.taskId)) {
+			this.index = gantt.getTaskIndex(this.taskId);
+		}
 	};
 
 	gantt.$keyboardNavigation.TaskCell.prototype = gantt._compose(
@@ -1261,7 +1263,9 @@ module.exports = function(gantt) {
 				return gantt.$keyboardNavigation.TaskRow.prototype.isValid.call(this) && !!gantt.getGridColumns()[this.columnIndex];
 			},
 			fallback: function () {
+
 				var node = gantt.$keyboardNavigation.TaskRow.prototype.fallback.call(this);
+				var result = node;
 				if (node instanceof gantt.$keyboardNavigation.TaskRow) {
 					var visibleColumns = gantt.getGridColumns();
 					var index = this.columnIndex;
@@ -1271,12 +1275,11 @@ module.exports = function(gantt) {
 						index--;
 					}
 					if (visibleColumns[index]) {
-						return new gantt.$keyboardNavigation.TaskCell(node.taskId, index);
-					} else {
-						return node;
+						result = new gantt.$keyboardNavigation.TaskCell(node.taskId, index);
 					}
 				}
 
+				return result;
 			},
 
 			fromDomElement: function(el){

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.2 Standard
+dhtmlxGantt v.6.1.3 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -137,7 +137,7 @@ return /******/ (function(modules) { // webpackBootstrap
  * 
  */
 /**
- * bluebird build version 3.5.3
+ * bluebird build version 3.5.4
  * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, using, timers, filter, any, each
 */
 !function(e){if(true)module.exports=e();else { var f; }}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -3432,7 +3432,7 @@ _dereq_("./synchronous_inspection")(Promise);
 _dereq_("./join")(
     Promise, PromiseArray, tryConvertToPromise, INTERNAL, async, getDomain);
 Promise.Promise = Promise;
-Promise.version = "3.5.3";
+Promise.version = "3.5.4";
 _dereq_('./map.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
 _dereq_('./call_get.js')(Promise);
 _dereq_('./using.js')(Promise, apiRejection, tryConvertToPromise, createContext, INTERNAL, debug);
@@ -5427,7 +5427,12 @@ var ret = {
     domainBind: domainBind
 };
 ret.isRecentNode = ret.isNode && (function() {
-    var version = process.versions.node.split(".").map(Number);
+    var version;
+    if (process.versions && process.versions.node) {    
+        version = process.versions.node.split(".").map(Number);
+    } else if (process.version) {
+        version = process.version.split(".").map(Number);
+    }
     return (version[0] === 0 && version[1] > 10) || (version[0] > 0);
 })();
 
@@ -6899,16 +6904,18 @@ module.exports = function(gantt) {
 			// raw date may be of type string, number (timestamp) or something else
 			// do not check for instanceof Date explicitly, since we may swap native date with different date implementation at some point
 			if (date && !date.getFullYear) {
-				if (gantt.defined(format)) {
-					if (typeof(format) == "string")
+				if (typeof(format) != "function") {
+					if (typeof(format) == "string"){
 						format = gantt.defined(gantt.templates[format]) ? gantt.templates[format] : gantt.date.str_to_date(format);
-					else
+					} else {
 						format = gantt.templates.xml_date;
+					}
 				}
-				if (date)
+				if (date) {
 					date = format(date);
-				else
+				} else {
 					date = null;
+				}
 			}
 			return date;
 		}
@@ -7000,14 +7007,20 @@ module.exports = function(gantt){
 			}, this);
 
 			var limited_mousemove = utils.bind(function (e) {
-				if (e && e.preventDefault) //Cancel default action on DND
-					e.preventDefault();
-				(e || event).cancelBubble = true;
-				if (utils.defined(this.config.updates_per_second)) {
+				if (this.config.started && utils.defined(this.config.updates_per_second)) {
 					if (!timeout(this, this.config.updates_per_second))
-						return true;
+						return;
 				}
-				return mousemove(e);
+
+				var dndActive = mousemove(e);
+
+				if (dndActive) {
+					if (e && e.preventDefault) //Cancel default action on DND
+					e.preventDefault();
+					e .cancelBubble = true;
+				}
+
+				return dndActive;
 			}, this);
 
 			var mouseup = utils.bind(function (e) {
@@ -7156,7 +7169,7 @@ module.exports = function(gantt){
 		},
 		dragMove: function (obj, e, getEvent) {
 			var source = getEvent(e);
-			if (!source) return;
+			if (!source) return false;
 
 			if (!this.config.marker && !this.config.started) {
 				var pos = this.getPosition(source);
@@ -7168,7 +7181,7 @@ module.exports = function(gantt){
 					this.config.ignore = false;
 					if (this.callEvent("onBeforeDragStart", [obj, this.config.original_target]) === false) {
 						this.config.ignore = true;
-						return true;
+						return false;
 					}
 					this.backupEventTarget(e, getEvent);
 					this.initDnDMarker();
@@ -7179,14 +7192,14 @@ module.exports = function(gantt){
 				}
 			}
 
-
 			if (!this.config.ignore) {
 				source.pos = this.getPosition(source);
 				this.config.marker.style.left = source.pos.x + "px";
 				this.config.marker.style.top = source.pos.y + "px";
 				this.callEvent("onDragMove", [obj, source]);
-				return false;
+				return true;
 			}
+			return false;
 		},
 
 		dragEnd: function (obj) {
@@ -7669,7 +7682,7 @@ module.exports = function(gantt) {
 			item.duration = 1;
 		}
 
-		if (parent) {
+		if (this.isTaskExists(parent)) {
 			this.setParent(item, parent, true);
 			var parentObj = this.getTask(parent);
 			parentObj.$open = true;
@@ -10053,6 +10066,7 @@ function initDataStores(gantt){
 			}
 		}
 
+		task.progress = Number(task.progress) || 0;
 
 		if (this._isAllowedUnscheduledTask(task)) {
 			this._set_default_task_timing(task);
@@ -11179,7 +11193,7 @@ var createTasksDatastoreFacade = function(){
 			item.id = utils.uid();
 
 		if (!utils.defined(parent)) parent = this.getParent(item) || 0;
-		if (!this.isTaskExists(parent)) parent = 0;
+		if (!this.isTaskExists(parent)) parent = this.config.root_id;
 		this.setParent(item, parent);
 
 		return this.$data.tasksStore.addItem(item, index, parent);
@@ -11637,7 +11651,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.1.2";
+	this.version = "6.1.3";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -11818,7 +11832,10 @@ module.exports = function(gantt){
 
 	gantt._reinit = function(node){
 		this.callEvent("onBeforeGanttReady", []);
-		//this._init_tasks_range();
+
+		// detach listeners before clearing old DOM, possible IE errors when accessing detached nodes
+		this.$mouseEvents.reset();
+
 		this.resetLightbox();
 		this._update_flags();
 
@@ -14773,16 +14790,17 @@ module.exports = function(gantt) {
 		isParsingDone = true;
 	}));
 
-	gantt.attachEvent("onAfterTaskAdd",  function() {
-		if (isParsingDone)
-			callIfEnabled(updateParents);
-	});
+	gantt.attachEvent("onAfterTaskAdd", callIfEnabled(function(id) {
+		if (isParsingDone) {
+			updateParents(id);
+		}
+	}));
 
-	gantt.attachEvent("onAfterTaskUpdate", function() {
-		if (isParsingDone)
-			callIfEnabled(updateParents);
-	});
-
+	gantt.attachEvent("onAfterTaskUpdate", callIfEnabled(function(id) {
+		if (isParsingDone) {
+			updateParents(id);
+		}
+	}));
 
 	function updateAfterRemoveChild(id){
 		if (id != gantt.config.root_id && gantt.isTaskExists(id)) {
@@ -14790,7 +14808,7 @@ module.exports = function(gantt) {
 		}
 	}
 
-	gantt.attachEvent("onBeforeTaskDelete",  callIfEnabled(function(id, task) {
+	gantt.attachEvent("onBeforeTaskDelete", callIfEnabled(function(id, task) {
 		delTaskParent = gantt.getParent(id);
 		return true;
 	}));
@@ -16647,7 +16665,13 @@ function create(gantt){
 				}
 
 				var editorState = {id: itemId, columnName: columnName};
-				if(this.callEvent("onBeforeEditStart", [editorState]) === false){
+				if (gantt.isReadonly(store.getItem(itemId))) {
+					this.callEvent("onEditPrevent", [editorState]);
+					return;
+				}
+
+				if (this.callEvent("onBeforeEditStart", [editorState]) === false) {
+					this.callEvent("onEditPrevent", [editorState]);
 					return;
 				}
 
@@ -16878,12 +16902,16 @@ function create(gantt){
 				}
 			},
 
-			moveRow: function moveRow(dir){
-				if(dir > 0){
-					return gantt.getNext(this._itemId);
-				}else {
-					return  gantt.getPrev(this._itemId);
+			moveRow: function moveRow(dir) {
+				var moveTask = dir > 0 ? gantt.getNext : gantt.getPrev;
+				moveTask = gantt.bind(moveTask, gantt);
+
+				var nextItem = moveTask(this._itemId);
+				// skip readonly rows
+				while (gantt.isTaskExists(nextItem) && gantt.isReadonly(gantt.getTask(nextItem))) {
+					nextItem = moveTask(nextItem);
 				}
+				return nextItem;
 			},
 
 			editNextRow: function nextRow(){
@@ -18457,6 +18485,10 @@ function _init_dnd(gantt, grid) {
 		if (!el) return false;
 		if (gantt.hideQuickInfo) gantt._hideQuickInfo();
 
+		if (domHelpers.closest(e.target, ".gantt_grid_editor_placeholder")){
+			return false;
+		}
+
 		var id = el.getAttribute(grid.$config.item_attribute);
 
 		var datastore = getStore();
@@ -18659,9 +18691,8 @@ function _init_dnd(gantt, grid) {
 		} else {
 			this.callEvent("onRowDragEnd", [dnd.config.id, task.$drop_target]);
 		}
-		
-		store.refresh(task.id);
-		//this.refreshData();
+
+		this.refreshData();
 	}, gantt));
 }
 
@@ -18703,6 +18734,9 @@ function _init_dnd(gantt, grid) {
 		var el = locate(e);
 		if (!el) return false;
 		if (gantt.hideQuickInfo) gantt._hideQuickInfo();
+		if (domHelpers.closest(e.target, ".gantt_grid_editor_placeholder")){
+			return false;
+		}
 
 		var id = el.getAttribute(grid.$config.item_attribute);
 		var datastore = grid.$config.rowStore;
@@ -18728,7 +18762,7 @@ function _init_dnd(gantt, grid) {
 			element.style.position = "static";
 			element.style.pointerEvents = "none";
 		}
-		
+
 		dnd.config.id = el.getAttribute(grid.$config.item_attribute);
 
 		var store = grid.$config.rowStore;
@@ -18793,11 +18827,11 @@ function _init_dnd(gantt, grid) {
 	dnd.attachEvent("onDragMove", gantt.bind(function (obj, e) {
 		var target = getDropPosition(e);
 
-		if(!target || 
+		if(!target ||
 			gantt.callEvent("onBeforeRowDragMove", [dnd.config.id, target.targetParent, target.targetIndex]) === false){
 				target = dropTarget.createDropTargetObject(dnd.config.drop_target);
 			}
-		
+
 		higlighter.highlightPosition(target, dnd.config, grid);
 		dnd.config.drop_target = target;
 
@@ -18866,7 +18900,7 @@ module.exports = {
 		result.nextSibling = true;
 		result.targetParent = store.getParent(result.targetId);
 		result.targetIndex = store.getBranchIndex(result.targetId);
-		if(store.getParent(dndTaskId) == result.targetParent && result.targetIndex < store.getBranchIndex(dndTaskId)){
+		if(store.getParent(dndTaskId) != result.targetParent || result.targetIndex < store.getBranchIndex(dndTaskId)){
 			result.targetIndex += 1;
 		}
 		return result;
@@ -22931,7 +22965,7 @@ function createMixin(){
 	return {
 		/**
 		 * Get top coordinate by row index (order)
-		 * @param {number} index 
+		 * @param {number} index
 		 */
 		getRowTop: function(index){
 			return index * this.$getConfig().row_height;
@@ -22939,21 +22973,27 @@ function createMixin(){
 
 		/**
 		 * Get top coordinate by item id
-		 * @param {*} task_id 
+		 * @param {*} task_id
 		 */
-		getItemTop: function (task_id) {
+		getItemTop: function (taskId) {
 			if(this.$config.rowStore){
 				var store = this.$config.rowStore;
 				if(!store) return 0;
 
-				if(store.getParent && store.exists(task_id) && store.exists(store.getParent(task_id))){
-					var parent = store.getItem(store.getParent(task_id));
-					if(this.$gantt.isSplitTask(parent)){
-						return this.getRowTop(store.getIndexById(parent.id));
+				var itemIndex = store.getIndexById(taskId);
+
+				if (itemIndex === -1 && store.getParent && store.exists(taskId)) {
+					var parentId = store.getParent(taskId);
+					if (store.exists(parentId)) {
+						// if task is not found in list - maybe it's parent is a split task and we should use parents index instead
+						var parent = store.getItem(parentId);
+						if (this.$gantt.isSplitTask(parent)) {
+							return this.getRowTop(store.getIndexById(parent.id));
+						}
 					}
 				}
-				return this.getRowTop(store.getIndexById(task_id));
 
+				return this.getRowTop(itemIndex);
 			}else{
 				return 0;
 			}
@@ -24700,7 +24740,9 @@ Timeline.prototype = {
 				}
 			}
 		});
-
+		this.attachEvent("onDestroy", function () {
+			staticRender.destroy();
+		});
 		this._initStaticBackgroundRender = function(){};//init once
 	},
 
@@ -24889,6 +24931,35 @@ Timeline.prototype = {
 		}
 		return Math.round(pos);
 	},
+
+	_getNextVisibleColumn: function (startIndex, columns, ignores) {
+		// iterate columns to the right
+		var date = +columns[startIndex];
+		var visibleDateIndex = startIndex;
+		while (ignores[date]) {
+			visibleDateIndex++;
+			date = +columns[visibleDateIndex];
+		}
+
+		return visibleDateIndex;
+	},
+	_getPrevVisibleColumn: function (startIndex, columns, ignores) {
+		// iterate columns to the left
+		var date = +columns[startIndex];
+		var visibleDateIndex = startIndex;
+		while (ignores[date]) {
+			visibleDateIndex--;
+			date = +columns[visibleDateIndex];
+		}
+		return visibleDateIndex;
+	},
+	_getClosestVisibleColumn: function (startIndex, columns, ignores) {
+		var visibleDateIndex = this._getNextVisibleColumn(startIndex, columns, ignores);
+		if (!columns[visibleDateIndex]) {
+			visibleDateIndex =  this._getPrevVisibleColumn(startIndex, columns, ignores);
+		}
+		return visibleDateIndex;
+	},
 	columnIndexByDate: function columnIndexByDate(date) {
 		var pos = new Date(date).valueOf();
 		var days = this._tasks.trace_x_ascending,
@@ -24913,24 +24984,13 @@ Timeline.prototype = {
 			}
 		}
 
-		/*var day = null;
-		 for (var xind = 0, length = days.length-1; xind < length; xind++) {
-		 // | 8:00, 8:30 | 8:15 should be checked against 8:30
-		 // clicking at the most left part of the cell, say 8:30 should create event in that cell, not previous one
-		 day = +days[xind+1];
-		 if (pos < day && !ignores[day])
-		 break;
-		 }*/
+		var dateIndex = _findBinary(days, pos);
 
-		var day_ind = _findBinary(days, pos);
-		var day = +days[day_ind];
-		while (ignores[day]) {
-			day = +days[++day_ind];
-		}
-
+		var visibleIndex = this._getClosestVisibleColumn(dateIndex, days, ignores);
+		var visibleDate = days[visibleIndex];
 		var transition = this._tasks.trace_index_transition;
-		var index = day_ind;
-		if(!day){
+
+		if(!visibleDate){
 			if(transition){
 				return transition[0];
 			}else{
@@ -24938,14 +24998,12 @@ Timeline.prototype = {
 			}
 		}
 
-		var part = ((date - days[day_ind]) / this._getColumnDuration(this._tasks, days[day_ind]));
+		var part = ((date - days[visibleIndex]) / this._getColumnDuration(this._tasks, days[visibleIndex]));
 		if(transition){
-			return transition[index] + (1 - part);
+			return transition[visibleIndex] + (1 - part);
 		}else{
-			return index + part;
+			return visibleIndex + part;
 		}
-
-		//return day_ind + ((date - days[day_ind]) / this._getColumnDuration(this._tasks, days[day_ind]));
 	},
 	getItemPosition:function (task, start_date, end_date) {
 		var xLeft, xRight, width;
@@ -25917,13 +25975,13 @@ module.exports = CalendarManager;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Cache = __webpack_require__(/*! ./calendar_workunit_cache */ "./sources/core/worktime/strategy/calendar_workunit_cache.js"),
+var cacheFactory = __webpack_require__(/*! ./work_unit_cache */ "./sources/core/worktime/strategy/work_unit_cache/index.ts"),
 	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
 
 function CalendarWorkTimeStrategy(gantt, argumentsHelper){
 	this.argumentsHelper = argumentsHelper;
 	this.$gantt = gantt;
-	this._workingUnitsCache = new Cache();
+	this._workingUnitsCache = cacheFactory.createCacheObject();
 }
 
 CalendarWorkTimeStrategy.prototype = {
@@ -26066,6 +26124,11 @@ CalendarWorkTimeStrategy.prototype = {
 		}
 		return units;
 	},
+
+	_getMinutesPerDay: function (date) {
+		// current api doesn't allow setting working minutes, so use hardcoded 60 minutes per hour
+		return this._getHoursPerDay(date) * 60;
+	},
 	_getHoursPerDay: function (date) {
 		var hours = this._getWorkHours(date);
 		var res = 0;
@@ -26074,19 +26137,31 @@ CalendarWorkTimeStrategy.prototype = {
 		}
 		return res;
 	},
-	_getWorkHoursForRange: function (from, to) {
-		var hours = 0;
+	_getWorkUnitsForRange: function (from, to, unit, step) {
+		var total = 0;
 		var start = new Date(from),
 			end = new Date(to);
 
+		var getUnitsPerDay;
+		if (unit == "minute") {
+			getUnitsPerDay = utils.bind(this._getMinutesPerDay, this);
+		} else {
+			getUnitsPerDay = utils.bind(this._getHoursPerDay, this);
+		}
+
 		while (start.valueOf() < end.valueOf()) {
-			if (this._isWorkTime(start, "day"))
-				hours += this._getHoursPerDay(start);
+			if (this._isWorkTime(start, "day")) {
+				total += getUnitsPerDay(start);
+			}
 			start = this._nextDate(start, "day", 1);
 		}
-		return hours;
+
+		return total / step;
 	},
-	_getWorkUnitsBetweenHours: function (from, to, unit, step) {
+
+	// optimized method for calculating work units duration of large time spans
+	// implemented for hours and minutes units, bigger time units don't benefit from the optimization so much
+	_getWorkUnitsBetweenQuick: function (from, to, unit, step) {
 		var start = new Date(from),
 			end = new Date(to);
 		step = step || 1;
@@ -26104,10 +26179,10 @@ CalendarWorkTimeStrategy.prototype = {
 			var startPart = this._getWorkUnitsBetweenGeneric(firstDayStart, firstDayEnd, unit, step);
 			var endPart = this._getWorkUnitsBetweenGeneric(lastDayStart, lastDayEnd, unit, step);
 
-			var hourRange = this._getWorkHoursForRange(firstDayEnd, lastDayStart);
-			hourRange = ((hourRange / step) + startPart + endPart);
+			var rangePart = this._getWorkUnitsForRange(firstDayEnd, lastDayStart, unit, step);
+			var total = startPart + rangePart + endPart;
 
-			return hourRange;
+			return total;
 		}
 	},
 
@@ -26209,13 +26284,16 @@ CalendarWorkTimeStrategy.prototype = {
 	},
 
 	_isWorkTime: function (date, unit, order) {
-		//Check if this item has in the cache
-		var is_work_unit = this._workingUnitsCache.get(unit, date);
+		// Check if this item has in the cache
+
+		// use string keys
+		var dateKey = String(date.valueOf());
+		var is_work_unit = this._workingUnitsCache.getItem(unit, dateKey);
 
 		if (is_work_unit == -1) {
 			// calculate if not cached
 			is_work_unit = this._checkIfWorkingUnit(date, unit, order);
-			this._workingUnitsCache.put(unit, date, is_work_unit);
+			this._workingUnitsCache.setItem(unit, dateKey, is_work_unit);
 		}
 
 		return is_work_unit;
@@ -26232,15 +26310,18 @@ CalendarWorkTimeStrategy.prototype = {
 		if (!config.unit) {
 			return false;
 		}
+		return this._calculateDuration(config.start_date, config.end_date, config.unit, config.step);
+	},
 
+	_calculateDuration: function (from, to, unit, step) {
 		var res = 0;
-		if (config.unit == "hour") {
-			res = this._getWorkUnitsBetweenHours(config.start_date, config.end_date, config.unit, config.step);
+		if (unit == "hour" || unit == "minute") {
+			res = this._getWorkUnitsBetweenQuick(from, to, unit, step);
 		} else {
-			res = this._getWorkUnitsBetweenGeneric(config.start_date, config.end_date, config.unit, config.step);
+			res = this._getWorkUnitsBetweenGeneric(from, to, unit, step);
 		}
 
-		// getDuration.. returns decimal durations
+		// getWorkUnits.. returns decimal durations
 		return Math.round(res);
 	},
 	hasDuration: function () {
@@ -26274,25 +26355,123 @@ CalendarWorkTimeStrategy.prototype = {
 			unit = config.unit,
 			step = config.step;
 
+		if (!unit)
+			return false;
+
 		var mult = (config.duration >= 0) ? 1 : -1;
+		duration = Math.abs(duration * 1);
 		return this._calculateEndDate(from, duration, unit, step * mult);
 	},
+
 	_calculateEndDate: function (from, duration, unit, step) {
 		if (!unit)
 			return false;
+
+		if (step == 1 && unit == "minute") {
+			return this._calculateMinuteEndDate(from, duration, step);
+		} else if (step == 1 && unit == "hour") {
+			return this._calculateHourEndDate(from, duration, step);
+		} else {
+			var interval = this._addInterval(from, duration, unit, step, null);
+			return interval.end;
+		}
+	},
+
+	_addInterval: function (start, duration, unit, step, stopAction) {
+		var added = 0;
+		var current = start;
+		while (added < duration && !(stopAction && stopAction(current))) {
+			var next = this._nextDate(current, unit, step);
+			if (this._isWorkTime(step > 0 ? new Date(next.valueOf() - 1) : new Date(next.valueOf() + 1), unit)) {
+				added++;
+			}
+			current = next;
+		}
+		return {
+			end: current,
+			satrt: start,
+			added: added
+		};
+	},
+
+	_calculateHourEndDate: function (from, duration,  step) {
+		var start = new Date(from),
+		added = 0;
+		step = step || 1;
+		duration = Math.abs(duration * 1);
+
+		var interval = this._addInterval(start, duration, "hour", step, function (date) {
+			// iterate until hour end
+			if (!(date.getHours() || date.getMinutes() || date.getSeconds() || date.getMilliseconds())) {
+				return true;
+			}
+			return false;
+		});
+
+		added = interval.added;
+		start = interval.end;
+
+		var durationLeft = duration - added;
+
+		if (durationLeft && durationLeft > 24) {
+			var current = start;
+			while (added < duration) {
+				var next = this._nextDate(current, "day", step);
+				if (this._isWorkTime(step > 0 ? new Date(next.valueOf() - 1) : new Date(next.valueOf() + 1), "day")) {
+					var hours = this._getHoursPerDay(current);
+					if (added + hours >= duration) {
+						break;
+					} else {
+						added += hours;
+					}
+				}
+				current = next;
+			}
+			start = current;
+		}
+
+		if (added < duration) {
+			var durationLeft = duration - added;
+			interval = this._addInterval(start, durationLeft, "hour", step, null);
+			start = interval.end;
+		}
+
+		return start;
+	},
+
+	_calculateMinuteEndDate: function (from, duration, step) {
 
 		var start = new Date(from),
 			added = 0;
 		step = step || 1;
 		duration = Math.abs(duration * 1);
 
-		while (added < duration) {
-			var next = this._nextDate(start, unit, step);
-			//if(this.isWorkTime(step > 0 ? start : next, unit))
-			if (this._isWorkTime(step > 0 ? new Date(next.valueOf() - 1) : new Date(next.valueOf() + 1), unit))
-				added++;
-			start = next;
+		var interval = this._addInterval(start, duration, "minute", step, function (date) {
+			// iterate until hour end
+			if (!(date.getMinutes() || date.getSeconds() || date.getMilliseconds())) {
+				return true;
+			}
+			return false;
+		});
+
+		added = interval.added;
+		start = interval.end;
+
+		if (added < duration) {
+			var left = duration - added;
+			var hours = Math.floor(left / 60);
+			if (hours) {
+				start = this._calculateEndDate(start, hours, "hour", step > 0 ? 1 : -1);
+				added += hours * 60;
+			}
 		}
+
+		if (added < duration) {
+			var durationLeft = duration - added;
+			interval = this._addInterval(start, durationLeft, "minute", step, null);
+			start = interval.end;
+		}
+
 		return start;
 	},
 
@@ -26378,56 +26557,6 @@ CalendarWorkTimeStrategy.prototype = {
 };
 
 module.exports = CalendarWorkTimeStrategy;
-
-/***/ }),
-
-/***/ "./sources/core/worktime/strategy/calendar_workunit_cache.js":
-/*!*******************************************************************!*\
-  !*** ./sources/core/worktime/strategy/calendar_workunit_cache.js ***!
-  \*******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-function WorkUnitsCache() {
-	this._cache = {};
-}
-
-WorkUnitsCache.prototype = {
-	// cache previously calculated worktime
-	get: function (unit, date) {
-		var result = -1;// default value (if not existed in the cache)
-
-		var cache = this._cache;
-		if (cache && cache[unit]) {
-			var units = cache[unit];
-			var time = date.getTime();
-			if (units[time] !== undefined)
-				result = units[time];
-		}
-		return result;
-	},
-
-	put: function (unit, date, value) {
-		if (!unit || !date) return false;
-
-		var cache = this._cache;
-
-		var time = date.getTime();
-
-		value = !!value;
-
-		if (!cache) return false;
-		if (!cache[unit]) cache[unit] = {};
-		cache[unit][time] = value;
-		return true;
-	},
-
-	clear: function () {
-		this._cache = {};
-	}
-};
-
-module.exports = WorkUnitsCache;
 
 /***/ }),
 
@@ -26526,6 +26655,128 @@ CalendarDisabledTimeStrategy.prototype = {
 };
 
 module.exports = CalendarDisabledTimeStrategy;
+
+/***/ }),
+
+/***/ "./sources/core/worktime/strategy/work_unit_cache/index.ts":
+/*!*****************************************************************!*\
+  !*** ./sources/core/worktime/strategy/work_unit_cache/index.ts ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var workunit_map_cache_1 = __webpack_require__(/*! ./workunit_map_cache */ "./sources/core/worktime/strategy/work_unit_cache/workunit_map_cache.ts");
+var workunit_object_cache_1 = __webpack_require__(/*! ./workunit_object_cache */ "./sources/core/worktime/strategy/work_unit_cache/workunit_object_cache.ts");
+function createCacheObject() {
+    // worktime hash is on the hot path,
+    // Map seems to work faster than plain array, use it whenever possible
+    if (typeof Map !== "undefined") {
+        return new workunit_map_cache_1.WorkUnitsMapCache();
+    }
+    else {
+        return new workunit_object_cache_1.WorkUnitsObjectCache();
+    }
+}
+exports.createCacheObject = createCacheObject;
+
+
+/***/ }),
+
+/***/ "./sources/core/worktime/strategy/work_unit_cache/workunit_map_cache.ts":
+/*!******************************************************************************!*\
+  !*** ./sources/core/worktime/strategy/work_unit_cache/workunit_map_cache.ts ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var WorkUnitsMapCache = /** @class */ (function () {
+    function WorkUnitsMapCache() {
+        this.clear();
+    }
+    WorkUnitsMapCache.prototype.getItem = function (unit, timestamp) {
+        if (this._cache.has(unit)) {
+            var unitCache = this._cache.get(unit);
+            if (unitCache.has(timestamp)) {
+                return unitCache.get(timestamp);
+            }
+        }
+        return -1;
+    };
+    WorkUnitsMapCache.prototype.setItem = function (unit, timestamp, value) {
+        if (!unit || !timestamp) {
+            return;
+        }
+        var cache = this._cache;
+        var unitCache;
+        if (!cache.has(unit)) {
+            unitCache = new Map();
+            cache.set(unit, unitCache);
+        }
+        else {
+            unitCache = cache.get(unit);
+        }
+        unitCache.set(timestamp, value);
+    };
+    WorkUnitsMapCache.prototype.clear = function () {
+        this._cache = new Map();
+    };
+    return WorkUnitsMapCache;
+}());
+exports.WorkUnitsMapCache = WorkUnitsMapCache;
+
+
+/***/ }),
+
+/***/ "./sources/core/worktime/strategy/work_unit_cache/workunit_object_cache.ts":
+/*!*********************************************************************************!*\
+  !*** ./sources/core/worktime/strategy/work_unit_cache/workunit_object_cache.ts ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var WorkUnitsObjectCache = /** @class */ (function () {
+    function WorkUnitsObjectCache() {
+        this.clear();
+    }
+    WorkUnitsObjectCache.prototype.getItem = function (unit, timestamp) {
+        var cache = this._cache;
+        if (cache && cache[unit]) {
+            var units = cache[unit];
+            if (units[timestamp] !== undefined) {
+                return units[timestamp];
+            }
+        }
+        return -1;
+    };
+    WorkUnitsObjectCache.prototype.setItem = function (unit, timestamp, value) {
+        if (!unit || !timestamp) {
+            return;
+        }
+        var cache = this._cache;
+        if (!cache) {
+            return;
+        }
+        if (!cache[unit]) {
+            cache[unit] = {};
+        }
+        cache[unit][timestamp] = value;
+    };
+    WorkUnitsObjectCache.prototype.clear = function () {
+        this._cache = {};
+    };
+    return WorkUnitsObjectCache;
+}());
+exports.WorkUnitsObjectCache = WorkUnitsObjectCache;
+
 
 /***/ }),
 
