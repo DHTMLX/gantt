@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.3 Standard
+dhtmlxGantt v.6.1.4 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -1308,7 +1308,7 @@ module.exports = function(gantt) {
 						var row = gantt.$grid.querySelector(".gantt_row[" + gantt.config.task_attribute + "='" + this.taskId + "']");
 						if(!row)
 							return null;
-						return row.childNodes[this.columnIndex];
+						return row.querySelector("[data-column-index='"+this.columnIndex+"']");
 					} else {
 						return gantt.getTaskNode(this.taskId);
 					}

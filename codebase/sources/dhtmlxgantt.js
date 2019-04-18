@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.3 Standard
+dhtmlxGantt v.6.1.4 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -11651,7 +11651,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.1.3";
+	this.version = "6.1.4";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -11834,6 +11834,7 @@ module.exports = function(gantt){
 		this.callEvent("onBeforeGanttReady", []);
 
 		// detach listeners before clearing old DOM, possible IE errors when accessing detached nodes
+		this._eventRemoveAll();
 		this.$mouseEvents.reset();
 
 		this.resetLightbox();
@@ -16583,13 +16584,26 @@ function create(gantt){
 				width: width
 			};
 		}
+
+		function findVisibleIndex(grid, columnName) {
+			var columns = grid.getGridColumns();
+			for (var i = 0; i < columns.length; i++){
+				if(columns[i].name == columnName){
+					return i;
+				}
+			}
+			return 0;
+		}
+
 		function _createPlaceholder(itemId, columnName) {
 			var pos = _getEditorPosition(itemId, columnName);
 			var el = document.createElement("div");
 			el.className = "gantt_grid_editor_placeholder";
 			el.setAttribute(grid.$config.item_attribute, itemId);
 			el.setAttribute("data-column-name", columnName);
-			el.setAttribute("data-column-index", grid.getColumnIndex(columnName));
+
+			var visibleIndex = findVisibleIndex(grid, columnName);
+			el.setAttribute("data-column-index", visibleIndex);
 
 			el.style.cssText = [
 				"top:" + pos.top + "px",
@@ -23433,6 +23447,9 @@ var initializer = (function(){
 			onDestroyed: function (timeline) {
 				this._clearDomEvents(gantt);
 				this._clearStateProvider(gantt);
+				if (timeline._tasksDnD) {
+					timeline._tasksDnD.destructor();
+				}
 			},
 			extendDom: function(timeline){
 				gantt.$task = timeline.$task;
@@ -23885,7 +23902,8 @@ module.exports = ScaleHelper;
 
 var createStaticBgHelper = function(){
 	return {
-		render: function(){}
+		render: function () { },
+		destroy: function () { }
 	};
 };
 
@@ -27225,40 +27243,49 @@ module.exports = function (gantt) {
 
 var utils = __webpack_require__(/*! ./utils */ "./sources/utils/utils.js");
 
-function createScope(addEvent, removeEvent){
+function createScope(addEvent, removeEvent) {
 	addEvent = addEvent || utils.event;
 	removeEvent = removeEvent || utils.eventRemove;
 
 	var handlers = [];
 
-	return {
-		attach: function(el, event, handler, capture){
-			handlers.push({element: el, event:event, callback: handler, capture: capture});
-			addEvent(el, event, handler, capture);
+	var eventScope = {
+		attach: function(el, event, callback, capture){
+			handlers.push({element: el, event:event, callback: callback, capture: capture});
+			addEvent(el, event, callback, capture);
 		},
-		detach: function(el, event, handler, capture){
-			removeEvent(el, event, handler, capture);
+		detach: function(el, event, callback, capture){
+			removeEvent(el, event, callback, capture);
 			for(var i = 0; i < handlers.length; i++){
 				var handler = handlers[i];
-				if(handler.element === el && handler.event === event && handler.callback === handler && handler.capture === capture){
+				if (handler.element === el && handler.event === event && handler.callback === callback && handler.capture === capture) {
 					handlers.splice(i, 1);
 					i--;
 				}
 			}
 		},
-		detachAll: function(){
-			for(var i = 0; i < handlers.length; i++){
-				removeEvent(handlers[i].element, handlers[i].event, handlers[i].callback, handlers[i].capture);
-				removeEvent(handlers[i].element, handlers[i].event, handlers[i].callback, undefined);
-				removeEvent(handlers[i].element, handlers[i].event, handlers[i].callback, false);
-				removeEvent(handlers[i].element, handlers[i].event, handlers[i].callback, true);
+		detachAll: function () {
+			var staticArray = handlers.slice();
+			// original handlers array can be spliced on every iteration
+			for (var i = 0; i < staticArray.length; i++){
+				var handler = staticArray[i];
+				eventScope.detach(handler.element, handler.event, handler.callback, handler.capture);
+				eventScope.detach(handler.element, handler.event, handler.callback, undefined);
+				eventScope.detach(handler.element, handler.event, handler.callback, false);
+				eventScope.detach(handler.element, handler.event, handler.callback, true);
 			}
-			handlers = [];
+			handlers.splice(0, handlers.length);
 		},
 		extend: function(){
 			return createScope(this.event, this.eventRemove);
 		}
 	};
+
+	if (!window.scopes) {
+		window.scopes = [];
+	}
+	window.scopes.push(handlers);
+	return eventScope;
 }
 
 module.exports = createScope;
