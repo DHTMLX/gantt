@@ -1,3 +1,7 @@
+### 6.1.5
+- Fix script error on a second gantt.init call when show_chart config is disabled
+- Fix incorrect position of order_branch placeholder in the marker mode
+
 ### 6.1.4
 - Fix script error on reinitialization of gantt in the IE browser
 - Fix incorrect behavior of Tooltip extension when gantt.destructor is called

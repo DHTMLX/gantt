@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.4 Standard
+dhtmlxGantt v.6.1.5 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -11651,7 +11651,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.1.4";
+	this.version = "6.1.5";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -18967,7 +18967,7 @@ var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "./sou
 function highlightPosition(target, root, grid){
 	var markerPos = getTaskMarkerPosition(target, grid);
 	// setting position of row
-	root.marker.style.left = 10 + "px";
+	root.marker.style.left = markerPos.x + 9 + "px";
 	root.marker.style.top = markerPos.y + "px";
 	var markerLine = root.markerLine;
 	if(!markerLine){
@@ -24275,13 +24275,13 @@ function createTaskDND(timeline, gantt){
 			} else if (drag.mode == config.drag_mode.move) {
 				task.start_date = gantt.roundDate({date: task.start_date, unit: unit, step: step});
 				fixStart(task);
-				task.end_date = gantt.calculateEndDate(task);				
+				task.end_date = gantt.calculateEndDate(task);
 			}
 		},
 		_fix_working_times: function (task, drag) {
 			var config = timeline.$getConfig();
 			var drag = drag || {mode: config.drag_mode.move};
-			
+
 			if (drag.mode == config.drag_mode.resize) {
 				if (drag.left) {
 					task.start_date = gantt.getClosestWorkTime({date: task.start_date, dir: 'future', task: task});
@@ -24448,9 +24448,11 @@ function initTaskDND() {
 			timeline._tasks_dnd = _tasks_dnd;
 			return _tasks_dnd.init(gantt);
 		},
-		destructor: function(){
-			_tasks_dnd.destructor();
-			_tasks_dnd = null;
+		destructor: function () {
+			if (_tasks_dnd) {
+				_tasks_dnd.destructor();
+				_tasks_dnd = null;
+			}
 		}
 	};
 }
