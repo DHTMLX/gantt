@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.5 Standard
+dhtmlxGantt v.6.1.6 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -120,7 +120,7 @@ gantt.attachEvent("onTaskClick", function(id){
 	setTimeout(function() {
 		gantt.showQuickInfo(id);
 	}, 0);
-	
+
 	return true;
 });
 
@@ -134,6 +134,16 @@ gantt.attachEvent("onTaskClick", function(id){
 		gantt.attachEvent(events[i], hiding_function);
 })();
 
+(function () {
+	function clearQuickInfo() {
+		gantt.hideQuickInfo(true);
+		gantt._quick_info_box = null;
+		return true;
+	}
+	gantt.attachEvent("onGanttReady", clearQuickInfo);
+	gantt.attachEvent("onDestroy", clearQuickInfo);
+})();
+
 gantt.templates.quick_info_title = function(start, end, ev){ return ev.text.substr(0,50); };
 gantt.templates.quick_info_content = function(start, end, ev){ return ev.details || ev.text; };
 gantt.templates.quick_info_date = function(start, end, ev){
@@ -141,13 +151,20 @@ gantt.templates.quick_info_date = function(start, end, ev){
 };
 gantt.templates.quick_info_class = function(start, end, task){ return ""; };
 
+
 gantt.showQuickInfo = function(id){
-	if (id == this._quick_info_box_id || !this.config.show_quick_info) return;
+	if ((
+		id == this._quick_info_box_id &&
+		gantt.utils.dom.isChildOf(this._quick_info_box, document.body)
+	) || !this.config.show_quick_info) {
+		// not show if the quick info is already displayed for this task, or if it shouldn't be displayed
+		return;
+	}
 	this.hideQuickInfo(true);
 	var offset = 6; // offset TASK <> QI-BOX in 'px'
+	var container = getContainer();
+	var pos = this._get_event_counter_part(id, offset, container.viewport);
 
-	var pos = this._get_event_counter_part(id, offset);
-	
 	if (pos){
 		this._quick_info_box = this._init_quick_info(pos, id);
 		this._quick_info_task = id;
@@ -192,35 +209,59 @@ gantt.event(window, "keydown", function(e){
 		gantt.hideQuickInfo();
 });
 
+function getContainer() {
+	var container = gantt.$task_data;
+	if (container && container.offsetHeight && container.offsetWidth) {
+		return {
+			parent: container,
+			viewport: gantt.$task
+		};
+	}
+	container = gantt.$grid_data;
+	if (container && container.offsetHeight && container.offsetWidth) {
+		return {
+			parent: container,
+			viewport: gantt.$grid
+		};
+	}
+
+	return {
+		parent: gantt.$layout,
+		viewport: gantt.$layout
+	};
+}
+
 gantt._show_quick_info = function(pos, offset){
 	var qi = gantt._quick_info_box;
-	if (gantt.config.quick_info_detached){
-		if (!qi.parentNode || 
+	if (gantt.config.quick_info_detached) {
+		var container = getContainer();
+		if (!qi.parentNode ||
 			qi.parentNode.nodeName.toLowerCase() == "#document-fragment")//IE8
-			gantt.$task_data.appendChild(qi);
+			container.parent.appendChild(qi);
 		var width = qi.offsetWidth;
 		var height = qi.offsetHeight;
 
-		var scrolls = this.getScrollState();
-		var screen_width = this.$task.offsetWidth + scrolls.x - width;
+		var scrolls = gantt.getScrollState();
+		var viewPort = container.viewport;
+		var screenWidth = viewPort.offsetWidth + scrolls.x - width;
 
 		//pos.dy = (pos.top + height - scrolls.y > (gantt._y - gantt.config.scale_height)*0.96) ? 1 : 0; // uncomment to show QI at the bottom of task always
 
-		qi.style.left = Math.min(Math.max(scrolls.x, pos.left - pos.dx*(width - pos.width)), screen_width) + "px";
+		qi.style.left = Math.min(Math.max(scrolls.x, pos.left - pos.dx*(width - pos.width)), screenWidth) + "px";
 		qi.style.top = pos.top - (pos.dy ? (height + pos.height + 2*offset) : 0) + "px";
 	} else {
 		qi.style.top = 20 + "px";
 		if (pos.dx == 1){
 			qi.style.right = "auto";
 			qi.style.left = "-300px";
-			
+
 			setTimeout(function(){
 				qi.style.left = "10px";
 			},1);
 		} else {
 			qi.style.left = "auto";
 			qi.style.right = "-300px";
-			
+
 			setTimeout(function(){
 				qi.style.right = "10px";
 			},1);
@@ -298,8 +339,10 @@ gantt._init_quick_info = function(pos, id){
 				},1);
 			}
 		});
-		if (gantt.config.quick_info_detached)
-			gantt.event(gantt.$task_data, "scroll", function(){  gantt.hideQuickInfo(); });
+		if (gantt.config.quick_info_detached) {
+			var container = getContainer();
+			gantt.event(container, "scroll", function () { gantt.hideQuickInfo(); });
+		}
 	}
 
 	return this._quick_info_box;
@@ -316,19 +359,23 @@ gantt._qi_button_click = function(node){
 	} else
 		gantt._qi_button_click(node.parentNode);
 };
-gantt._get_event_counter_part = function(id, offset){
+gantt._get_event_counter_part = function(id, offset, viewport){
 	var domEv = gantt.getTaskNode(id);
-	if (!domEv)
-		return null;
+	if (!domEv) {
+		domEv = gantt.getTaskRowNode(id);
+		if (!domEv) {
+			return null;
+		}
+	}
 	var left = 0;
 	var top = offset + domEv.offsetTop + domEv.offsetHeight;
 
 	var node = domEv;
-	while (node && node.className != "gantt_task"){
+	while (node && node !== viewport){
 		left += node.offsetLeft;
 		node = node.offsetParent;
 	}
-	
+
 	var scroll = this.getScrollState();
 
 	if(node){

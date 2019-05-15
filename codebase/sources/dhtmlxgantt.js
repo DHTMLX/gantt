@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.5 Standard
+dhtmlxGantt v.6.1.6 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -8266,6 +8266,8 @@ var DataProcessor = /** @class */ (function () {
         if (state === "deleted") {
             return "delete";
         }
+        // reorder
+        return "update";
     };
     DataProcessor.prototype.getState = function (id) {
         return this.$gantt.getUserData(id, this.action_param);
@@ -11651,7 +11653,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.1.5";
+	this.version = "6.1.6";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -13365,7 +13367,7 @@ module.exports = function (gantt) {
 
 		if (task.$new) {
 			delete task.$new;
-			this.addTask(task);
+			this.addTask(task, task.parent, this.getTaskIndex(task.id));
 		} else if (this.isTaskExists(task.id)) {
 			this.mixin(this.getTask(task.id), task, true);
 			this.refreshTask(task.id);
@@ -24577,11 +24579,11 @@ Timeline.prototype = {
 		var store = this.$config.rowStore;
 
 		var contentHeight = store ? config.row_height * store.countVisible() : 0,
-			contentWidth = this._tasks.full_width;
+			contentWidth = this.isVisible() ? this._tasks.full_width : 0;
 
 		return {
-			x: this.$config.width,
-			y: this.$config.height,
+			x: this.isVisible() ? this.$config.width : 0,
+			y: this.isVisible() ? this.$config.height : 0,
 			contentX: this.isVisible() ? contentWidth : 0,
 			contentY: this.isVisible() ? (config.scale_height + contentHeight) : 0,
 			scrollHeight: this.isVisible() ? contentHeight : 0,
