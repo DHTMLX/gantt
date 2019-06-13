@@ -34,9 +34,7 @@ Check out our step by step guides
 License
 ----------
 
-This software is allowed to use under GPL or you need to obtain the license to use it in non-GPL project.
-
-Please check [the license options](https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing) or contact sales@dhtmlx.com for details.
+This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects. To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
 (c) Dinamenta UAB
 
