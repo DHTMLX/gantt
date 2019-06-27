@@ -47,7 +47,7 @@ gantt.parse({
 });
 ~~~
 
-==> [Check the live demo](http://snippet.dhtmlx.com/488b9857e)
+==> [Check the live demo](https://snippet.dhtmlx.com/a69d7378a)
 
 ### Complete guides
 
