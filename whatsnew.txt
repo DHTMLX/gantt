@@ -1,3 +1,11 @@
+### 6.1.7
+- Fix incorrect behavior of getClosestWorkTime
+- Fix issue with the autoscroll which happened after toggling visibility of the timeline
+- Fix bug in the Multiselect extension which caused selected tasks to lose highlight after chart repaint
+- Fix script error which happened after vertical drag-and-drop if smart rendering and keyboard navigation extensions were enabled
+- Fix incorrect behavior which happened when users tried to switch between inline editors using the Tab key if some columns of the grid were hidden
+- Fix unexpected behavior which prevented the lightbox and inline editors from overriding constraint dates
+
 ### 6.1.6
 - Fix issue with not working click handlers of QuickInfo popup after a second gantt.init call
 - Fix issue with QuickInfo popup not showing up if show_chart config is set to false

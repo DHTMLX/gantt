@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.6 Standard
+dhtmlxGantt v.6.1.7 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -10333,6 +10333,9 @@ function createDataStoreSelectMixin(store){
 		getSelectedId: function(){
 			return selectedId;
 		},
+		isSelected: function(id){
+			return id == selectedId;
+		},
 		unselect: function(id){
 			var id = id || selectedId;
 			if(!id)
@@ -11074,6 +11077,9 @@ var createDatastoreFacade = function(){
 		var store = this.$data.tasksStore;
 		store.unselect(id);
 	},
+	isSelectedTask: function(id){
+		return this.$data.tasksStore.isSelected(id);
+	},
 	getSelectedId: function() {
 		return this.$data.tasksStore.getSelectedId();
 	}
@@ -11653,7 +11659,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.1.6";
+	this.version = "6.1.7";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -14876,8 +14882,24 @@ module.exports = function(gantt){
 		},
 		eventPos = {};
 
+
+	function isDisplayed(element){
+		return element && 
+			domHelpers.isChildOf(element, gantt.$root) && 
+			element.offsetHeight;
+	}
+
 	function getAutoscrollContainer(){
-		return gantt.$task || gantt.$grid || gantt.$root;
+		var element;
+		if(isDisplayed(gantt.$task)){
+			element = gantt.$task;
+		}else if(isDisplayed(gantt.$grid)){
+			element = gantt.$grid;
+		}else{
+			element = gantt.$root;
+		}
+
+		return element;
 	}
 
 	function isScrollState() {
@@ -22660,8 +22682,9 @@ function createTaskRenderer(gantt){
 			css.push("gantt_split_parent");
 		}
 
-		if (cfg.select_task && itemId == state.selected_task)
+		if (cfg.select_task && gantt.isSelectedTask(itemId)) {
 			css.push("gantt_selected");
+		}
 
 		if (itemId == state.drag_id) {
 			css.push("gantt_drag_" + state.drag_mode);
@@ -22775,7 +22798,7 @@ function createTaskBgRender(gantt){
 		var css = "gantt_task_row" + (odd ? " odd" : "") + (cssTemplate ? ' ' + cssTemplate : '');
 
 		var store = view.$config.rowStore;
-		if(store.getSelectedId() == item.id) {
+		if(store.isSelected(item.id)) {
 			css += " gantt_selected";
 		}
 
@@ -22893,7 +22916,7 @@ function createGridLineRender(gantt){
 				css += " " + css_template;
 		}
 
-		if(store.getSelectedId() == item.id) {
+		if(store.isSelected(item.id)) {
 			css += " gantt_selected";
 		}
 
@@ -25323,7 +25346,6 @@ module.exports = function(gantt){
 			return gantt._waiAria.getAttributeString({"aria-label": dateString});
 		},
 
-
 		_taskCommonAttr: function(task, div){
 
 			if(!(task.start_date && task.end_date))
@@ -25333,17 +25355,13 @@ module.exports = function(gantt){
 
 			if(gantt.isReadonly(task)){
 				div.setAttribute("aria-readonly", true);
-
-
 			}
 
 			if(task.$dataprocessor_class){
 				div.setAttribute("aria-busy", true);
 			}
 
-
-			div.setAttribute("aria-selected",
-				(gantt.getState().selected_task == task.id || (gantt.isSelectedTask && gantt.isSelectedTask(task.id))) ? "true" : "false");
+			div.setAttribute("aria-selected", gantt.isSelectedTask(task.id) ? "true" : "false");
 		},
 
 		setTaskBarAttr: function(task, div){
@@ -26543,8 +26561,6 @@ CalendarWorkTimeStrategy.prototype = {
 
 		var result = date;
 
-
-
 		// be extra sure we won't fall into infinite loop, 3k seems big enough
 		var maximumLoop = 3000,
 			count = 0;
@@ -26553,7 +26569,11 @@ CalendarWorkTimeStrategy.prototype = {
 			if (biggerTimeUnit && !this._isWorkTime(result, biggerTimeUnit)) {
 				// if we look for closest work hour and detect a week-end - first find the closest work day,
 				// and continue iterations after that
-				result = this._getClosestWorkTimeGeneric(result, biggerTimeUnit, increment);
+				if (increment > 0) {
+					result = this._getClosestWorkTimeFuture(result, biggerTimeUnit);
+				} else {
+					result = this._getClosestWorkTimePast(result, biggerTimeUnit);
+				}
 
 				if (this._isWorkTime(result, unit)) {
 					break;

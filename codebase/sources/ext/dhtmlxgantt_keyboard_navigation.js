@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.6 Standard
+dhtmlxGantt v.6.1.7 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -279,8 +279,8 @@ return /******/ (function(modules) { // webpackBootstrap
 				});
 
 				if(gantt._smart_render){
-					var updateRender = gantt._smart_render._redrawItems;
-					gantt._smart_render._redrawItems = function(renderers, items){
+					var updateRender = gantt._smart_render._redrawTasks;
+					gantt._smart_render._redrawTasks = function(renderers, items){
 						if(gantt.config.keyboard_navigation && dispatcher.isEnabled()){
 							var currentNode = dispatcher.getActiveNode();
 							if(currentNode && currentNode.taskId !== undefined){
@@ -401,6 +401,16 @@ return /******/ (function(modules) { // webpackBootstrap
 				return scopes[mode] || scopes.gantt;
 			}
 
+			function findVisibleColumnIndex(columnName) {
+				var columns = gantt.getGridColumns();
+				for (var i = 0; i < columns.length; i++){
+					if(columns[i].name == columnName){
+						return i;
+					}
+				}
+				return 0;
+			}
+
 			var keyNavFacade = {};
 			eventable(keyNavFacade);
 			gantt.mixin(keyNavFacade, {
@@ -436,13 +446,13 @@ return /******/ (function(modules) { // webpackBootstrap
 					var node;
 					switch (type){
 						case "taskCell":
-							node = new constructor(config.id, gantt.getColumnIndex(config.column));
+							node = new constructor(config.id, findVisibleColumnIndex(config.column));
 							break;
 						case "taskRow":
 							node = new constructor(config.id);
 							break;
 						case "headerCell":
-							node = new constructor(gantt.getColumnIndex(config.column));
+							node = new constructor(findVisibleColumnIndex(config.column));
 							break;
 						default:
 
@@ -1545,7 +1555,7 @@ module.exports = function(gantt) {
 
 				// select
 				"space": function (e) {
-					if (gantt.getState().selected_task != this.taskId) {
+					if (!gantt.isSelectedTask(this.taskId)) {
 						gantt.selectTask(this.taskId);
 					} else {
 						gantt.unselectTask(this.taskId);
