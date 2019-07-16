@@ -1,8 +1,8 @@
-# dhtmlxGantt v.6.1
+# dhtmlxGantt v.6.2
 
 [![Join the chat at https://gitter.im/dhtmlx/dhtmlx](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dhtmlx/dhtmlx)
 
-dhtmlxGantt is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart. 
+dhtmlxGantt is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
 
 It can show the dependencies between tasks as lines and allows you to set up different relationships between tasks (finish-to-start, start-to-start, finish-to-finish, start-to-finish).
 
@@ -28,7 +28,7 @@ Add markup:
 And initialize:
 
 ~~~js
-gantt.config.xml_date = "%Y-%m-%d %H:%i";
+gantt.config.date_format = "%Y-%m-%d %H:%i";
 gantt.init("gantt_here");
 gantt.parse({
   data: [
@@ -72,7 +72,7 @@ gantt.parse({
 
 ## License
 
-This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects. 
+This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 

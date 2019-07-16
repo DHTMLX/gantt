@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.7 Standard
+dhtmlxGantt v.6.2.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -6410,190 +6410,182 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/common/config.js":
+/***/ "./sources/core/common/config.ts":
 /*!***************************************!*\
-  !*** ./sources/core/common/config.js ***!
+  !*** ./sources/core/common/config.ts ***!
   \***************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = function() {
-	return {
-		layout: {
-			css: "gantt_container",
-			rows: [
-				{
-					cols: [
-						{view: "grid", scrollX: "scrollHor", scrollY: "scrollVer"},
-						{resizer: true, width: 1},
-						{view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
-						{view: "scrollbar", id: "scrollVer"}
-					]
+"use strict";
 
-				},
-				{view: "scrollbar", id: "scrollHor", height: 20}
-			]
-		},
-		links: {
-			"finish_to_start": "0",
-			"start_to_start": "1",
-			"finish_to_finish": "2",
-			"start_to_finish": "3"
-		},
-		types: {
-			'task': 'task',
-			'project': 'project',
-			'milestone': 'milestone'
-		},
-		auto_types: false,
-		duration_unit: "day",
-		work_time: false,
-		correct_work_time: false,
-		skip_off_time: false,
-
-		cascade_delete: true,
-
-		autosize: false,
-		autosize_min_width: 0,
-		autoscroll: true,
-		autoscroll_speed: 30,
-
-		show_links: true,
-		show_task_cells: true,
-		// replace backgroung of the task area with a canvas img
-		static_background: false,
-		branch_loading: false,
-		branch_loading_property: "$has_child",
-		show_loading: false,
-		show_chart: true,
-		show_grid: true,
-		min_duration: 60 * 60 * 1000,
-		xml_date: "%d-%m-%Y %H:%i",
-		api_date: "%d-%m-%Y %H:%i",
-		start_on_monday: true,
-		server_utc: false,
-		show_progress: true,
-		fit_tasks: false,
-		select_task: true,
-		scroll_on_click: true,
-		preserve_scroll: true,
-		readonly: false,
-
-		/*grid */
-		date_grid: "%Y-%m-%d",
-
-		drag_links: true,
-		drag_progress: true,
-		drag_resize: true,
-		drag_project: false,
-		drag_move: true,
-		drag_mode: {
-			"resize": "resize",
-			"progress": "progress",
-			"move": "move",
-			"ignore": "ignore"
-		},
-		round_dnd_dates: true,
-		link_wrapper_width: 20,
-		root_id: 0,
-
-		autofit: false, // grid column automatic fit grid_width config
-		columns: [
-			{name: "text", tree: true, width: '*', resize: true},
-			{name: "start_date", align: "center", resize: true},
-			{name: "duration", align: "center"},
-			{name: "add", width: 44}
-		],
-
-		/*scale*/
-		step: 1,
-		scale_unit: "day",
-		scale_offset_minimal: true,
-		subscales: [],
-
-		inherit_scale_class: false,
-
-		time_step: 60,
-		duration_step: 1,
-		date_scale: "%d %M",
-		task_date: "%d %F %Y",
-		time_picker: "%H:%i",
-		task_attribute: "task_id",
-		link_attribute: "link_id",
-		layer_attribute: "data-layer",
-		buttons_left: [
-			"gantt_save_btn",
-			"gantt_cancel_btn"
-		],
-		_migrate_buttons: {
-			"dhx_save_btn": "gantt_save_btn",
-			"dhx_cancel_btn": "gantt_cancel_btn",
-			"dhx_delete_btn": "gantt_delete_btn"
-		},
-		buttons_right: [
-			"gantt_delete_btn"
-		],
-		lightbox: {
-			sections: [
-				{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-				{name: "time", type: "duration", map_to: "auto"}
-			],
-			project_sections: [
-				{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-				{name: "type", type: "typeselect", map_to: "type"},
-				{name: "time", type: "duration", readonly: true, map_to: "auto"}
-			],
-			milestone_sections: [
-				{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-				{name: "type", type: "typeselect", map_to: "type"},
-				{name: "time", type: "duration", single_date: true, map_to: "auto"}
-			]
-		},
-		drag_lightbox: true,
-		sort: false,
-		details_on_create: true,
-		details_on_dblclick: true,
-		initial_scroll: true,
-		task_scroll_offset: 100,
-
-		order_branch: false,
-		order_branch_free: false,
-
-		task_height: "full",//number px of 'full' for row height
-		min_column_width: 70,
-
-		// min width for grid column (when resizing)
-		min_grid_column_width: 70,
-		// name of the attribute with column index for resize element
-		grid_resizer_column_attribute: "column_index",
-		// name of the attribute with column index for resize element
-		grid_resizer_attribute: "grid_resizer",
-
-		// grid width can be increased after the column has been resized
-		keep_grid_width: false,
-
-		// grid width can be adjusted
-		grid_resize: false,
-
-		show_unscheduled: true,
-
-		//
-		readonly_property: "readonly",
-		editable_property: "editable",
-		calendar_property: "calendar_id",
-		resource_calendars: {},
-		inherit_calendar: false,
-		type_renderers: {},
-
-		open_tree_initially: false,
-		optimize_render: true,
-		prevent_default_scroll: false,
-		show_errors: true,
-		wai_aria_attributes: true,
-		smart_scales: true,
-		rtl:false,
-		placeholder_task: false
-	};
+Object.defineProperty(exports, "__esModule", { value: true });
+module.exports = function () {
+    var result = {
+        layout: {
+            css: "gantt_container",
+            rows: [
+                {
+                    cols: [
+                        { view: "grid", scrollX: "scrollHor", scrollY: "scrollVer" },
+                        { resizer: true, width: 1 },
+                        { view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer" },
+                        { view: "scrollbar", id: "scrollVer" }
+                    ]
+                },
+                { view: "scrollbar", id: "scrollHor", height: 20 }
+            ]
+        },
+        links: {
+            finish_to_start: "0",
+            start_to_start: "1",
+            finish_to_finish: "2",
+            start_to_finish: "3"
+        },
+        types: {
+            task: "task",
+            project: "project",
+            milestone: "milestone"
+        },
+        auto_types: false,
+        duration_unit: "day",
+        work_time: false,
+        correct_work_time: false,
+        skip_off_time: false,
+        cascade_delete: true,
+        autosize: false,
+        autosize_min_width: 0,
+        autoscroll: true,
+        autoscroll_speed: 30,
+        show_links: true,
+        show_task_cells: true,
+        // replace backgroung of the task area with a canvas img
+        static_background: false,
+        static_background_cells: true,
+        branch_loading: false,
+        branch_loading_property: "$has_child",
+        show_loading: false,
+        show_chart: true,
+        show_grid: true,
+        min_duration: 60 * 60 * 1000,
+        date_format: "%d-%m-%Y %H:%i",
+        xml_date: undefined,
+        start_on_monday: true,
+        server_utc: false,
+        show_progress: true,
+        fit_tasks: false,
+        select_task: true,
+        scroll_on_click: true,
+        smart_rendering: true,
+        preserve_scroll: true,
+        readonly: false,
+        /*grid */
+        date_grid: "%Y-%m-%d",
+        drag_links: true,
+        drag_progress: true,
+        drag_resize: true,
+        drag_project: false,
+        drag_move: true,
+        drag_mode: {
+            resize: "resize",
+            progress: "progress",
+            move: "move",
+            ignore: "ignore"
+        },
+        round_dnd_dates: true,
+        link_wrapper_width: 20,
+        root_id: 0,
+        autofit: false,
+        columns: [
+            { name: "text", tree: true, width: "*", resize: true },
+            { name: "start_date", align: "center", resize: true },
+            { name: "duration", align: "center" },
+            { name: "add", width: 44 }
+        ],
+        /*scale*/
+        scale_offset_minimal: true,
+        inherit_scale_class: false,
+        scales: [
+            {
+                unit: "day",
+                step: 1,
+                date: "%d %M"
+            }
+        ],
+        // 		date_scale: "%d %M",
+        time_step: 60,
+        duration_step: 1,
+        task_date: "%d %F %Y",
+        time_picker: "%H:%i",
+        task_attribute: "task_id",
+        link_attribute: "link_id",
+        layer_attribute: "data-layer",
+        buttons_left: [
+            "gantt_save_btn",
+            "gantt_cancel_btn"
+        ],
+        _migrate_buttons: {
+            dhx_save_btn: "gantt_save_btn",
+            dhx_cancel_btn: "gantt_cancel_btn",
+            dhx_delete_btn: "gantt_delete_btn"
+        },
+        buttons_right: [
+            "gantt_delete_btn"
+        ],
+        lightbox: {
+            sections: [
+                { name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+                { name: "time", type: "duration", map_to: "auto" }
+            ],
+            project_sections: [
+                { name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+                { name: "type", type: "typeselect", map_to: "type" },
+                { name: "time", type: "duration", readonly: true, map_to: "auto" }
+            ],
+            milestone_sections: [
+                { name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+                { name: "type", type: "typeselect", map_to: "type" },
+                { name: "time", type: "duration", single_date: true, map_to: "auto" }
+            ]
+        },
+        drag_lightbox: true,
+        sort: false,
+        details_on_create: true,
+        details_on_dblclick: true,
+        initial_scroll: true,
+        task_scroll_offset: 100,
+        order_branch: false,
+        order_branch_free: false,
+        task_height: "full",
+        min_column_width: 70,
+        // min width for grid column (when resizing)
+        min_grid_column_width: 70,
+        // name of the attribute with column index for resize element
+        grid_resizer_column_attribute: "column_index",
+        // name of the attribute with column index for resize element
+        grid_resizer_attribute: "grid_resizer",
+        // grid width can be increased after the column has been resized
+        keep_grid_width: false,
+        // grid width can be adjusted
+        grid_resize: false,
+        show_unscheduled: true,
+        //
+        readonly_property: "readonly",
+        editable_property: "editable",
+        calendar_property: "calendar_id",
+        resource_calendars: {},
+        inherit_calendar: false,
+        type_renderers: {},
+        open_tree_initially: false,
+        optimize_render: true,
+        prevent_default_scroll: false,
+        show_errors: true,
+        wai_aria_attributes: true,
+        smart_scales: true,
+        rtl: false,
+        placeholder_task: false
+    };
+    return result;
 };
 
 
@@ -6904,11 +6896,18 @@ module.exports = function(gantt) {
 			// raw date may be of type string, number (timestamp) or something else
 			// do not check for instanceof Date explicitly, since we may swap native date with different date implementation at some point
 			if (date && !date.getFullYear) {
-				if (typeof(format) != "function") {
-					if (typeof(format) == "string"){
-						format = gantt.defined(gantt.templates[format]) ? gantt.templates[format] : gantt.date.str_to_date(format);
+				if (typeof(format) !== "function") {
+					if (typeof(format) === "string") {
+						if (format === "parse_date") {
+							format = gantt.templates.parse_date;
+							if (gantt.defined(gantt.templates.xml_date) && gantt.templates.parse_date !== gantt.templates.xml_date) {
+								format = gantt.templates.xml_date;
+							}
+						} else {
+							format = gantt.defined(gantt.templates[format]) ? gantt.templates[format] : gantt.date.str_to_date(format);
+						}
 					} else {
-						format = gantt.templates.xml_date;
+						format = gantt.templates.xml_date !== gantt.templates.parse_date ? gantt.templates.xml_date : gantt.templates.parse_date;
 					}
 				}
 				if (date) {
@@ -7439,14 +7438,20 @@ module.exports = function(gantt) {
 		//build configuration based templates
 		var d = date.date_to_str;
 		var c = gantt.config;
+		var format_date = d(c.xml_date || c.date_format, c.server_utc);
+		var parse_date = date.str_to_date(c.xml_date || c.date_format, c.server_utc);
+
 		initTemplate("date_scale", true, undefined, gantt.config, gantt.templates);
 		initTemplate("date_grid", true, "grid_date_format", gantt.config, gantt.templates);
 		initTemplate("task_date", true, undefined, gantt.config, gantt.templates);
 
 		gantt.mixin(gantt.templates, {
-			xml_date: date.str_to_date(c.xml_date, c.server_utc),
-			xml_format: d(c.xml_date, c.server_utc),
-			api_date: date.str_to_date(c.api_date),
+			xml_format: format_date, // deprecated
+			format_date: format_date,
+
+			xml_date: parse_date, // deprecated
+			parse_date: parse_date,
+
 			progress_text: function (start, end, task) {
 				return "";
 			},
@@ -7466,7 +7471,7 @@ module.exports = function(gantt) {
 			task_row_class: function (start, end, task) {
 				return "";
 			},
-			task_cell_class: function (item, date) {
+			timeline_cell_class: function (item, date) {
 				return "";
 			},
 			scale_cell_class: function (date) {
@@ -8639,6 +8644,10 @@ var DataProcessor = /** @class */ (function () {
      * @topic: 0
      */
     DataProcessor.prototype.afterUpdateCallback = function (sid, tid, action, btag) {
+        if (!this.$gantt) {
+            // destructor has been called before the callback
+            return;
+        }
         var marker = sid;
         var correct = (action !== "error" && action !== "invalid");
         if (!correct) {
@@ -8998,7 +9007,7 @@ var DataProcessor = /** @class */ (function () {
             }
             var value = task[key];
             if (helpers.isDate(value)) {
-                data[key] = this.$gantt.templates.xml_format(value);
+                data[key] = this.$gantt.templates.xml_format !== this.$gantt.templates.format_date ? this.$gantt.templates.xml_format(value) : this.$gantt.templates.format_date(value);
             }
             else if (value === null) {
                 data[key] = "";
@@ -9087,7 +9096,10 @@ var DataProcessorEvents = /** @class */ (function () {
             if (gantt.isTaskExists(id)) {
                 dp.setGanttMode("tasks");
                 dp.setUpdated(id, true);
-                gantt._sendTaskOrder(id, item);
+                // gantt can be destroyed/reinitialized after dp.setUpdated
+                if (gantt._sendTaskOrder) {
+                    gantt._sendTaskOrder(id, item);
+                }
             }
         }));
         this._dataProcessorHandlers.push(gantt.attachEvent("onBeforeTaskDelete", function (id, item) {
@@ -9247,7 +9259,7 @@ var DataProcessorEvents = /** @class */ (function () {
                         continue;
                     case "start_date":
                     case "end_date":
-                        property = gantt.templates.xml_date(property);
+                        property = gantt.templates.xml_date !== gantt.templates.parse_date ? gantt.templates.xml_date(property) : gantt.templates.parse_date(property);
                         break;
                     case "duration":
                         objData.end_date = gantt.calculateEndDate({ start_date: objData.start_date, duration: property, task: objData });
@@ -9665,6 +9677,7 @@ DataStore.prototype = {
 	},
 	
 	filter: function(rule){
+		this.callEvent("onBeforeFilter", []);
 		var filteredOrder = powerArray.$create();
 		this.eachItem(function(item){
 			if(this.callEvent("onFilterItem", [item.id, item])){
@@ -9677,6 +9690,7 @@ DataStore.prototype = {
 		for(var i = 0; i < this.visibleOrder.length; i++){
 			this._searchVisibleOrder[this.visibleOrder[i]] = i;
 		}
+		this.callEvent("onFilter", []);
 	},
 
 	getIndexRange: function(from, to){
@@ -9760,13 +9774,19 @@ function initDataStores(gantt){
 	var tasksStore = gantt.createDatastore({
 		name: "task",
 		type: "treeDatastore",
-		rootId: function(){return gantt.config.root_id;},
-		initItem: utils.bind(_init_task, gantt)
+		rootId: function() { return gantt.config.root_id; },
+		initItem: utils.bind(_init_task, gantt),
+		getConfig: function() { return gantt.config; }
 	});
 
 	var linksStore = gantt.createDatastore({
 		name: "link",
 		initItem: utils.bind(_init_link, gantt)
+	});
+
+	gantt.attachEvent("onDestroy", function(){
+		tasksStore.destructor();
+		linksStore.destructor();
 	});
 
 	tasksStore.attachEvent("onBeforeRefreshAll", function(){
@@ -10046,9 +10066,9 @@ function initDataStores(gantt){
 			task.id = this.uid();
 
 		if (task.start_date)
-			task.start_date = gantt.date.parseDate(task.start_date, "xml_date");
+			task.start_date = gantt.date.parseDate(task.start_date, "parse_date");
 		if (task.end_date)
-			task.end_date = gantt.date.parseDate(task.end_date, "xml_date");
+			task.end_date = gantt.date.parseDate(task.end_date, "parse_date");
 
 
 		var duration = null;
@@ -10131,8 +10151,23 @@ var storeRenderCreator = function(name, gantt){
 			for (var i = 0; i < renderers.length; i++) {
 				renderers[i].render_items(data);
 			}
+		},
+		updateItems: function(layer) {
+			if(layer.update_items){
+				var data = store.getVisibleItems();
+				layer.update_items(data);
+			}
 		}
 	};
+
+	store.attachEvent("onStoreUpdated", function(id, item, action){
+		var renderer = gantt.$services.getService("layers").getDataRender(name);
+		if(renderer){
+			renderer.onUpdateRequest = function(layer){
+				itemRepainter.updateItems(layer);
+			};
+		}
+	});
 
 	function skipRepaint(gantt){
 		var state = gantt.$services.getService("state");
@@ -10388,10 +10423,21 @@ var TreeDataStore = function(config){
 	this._searchVisibleOrder = {};
 	this._skip_refresh = false;
 
+	this._ganttConfig = null;
+	if(config.getConfig){
+		this._ganttConfig = config.getConfig();
+	}
+
 	this.attachEvent("onFilterItem", function(id, item){
+
+		var canOpenSplitTasks = false;
+		if(this._ganttConfig){
+			var canOpenSplitTasks = this._ganttConfig.open_split_tasks;
+		}
+
 		var open = true;
 		this.eachParent(function(parent){
-			open = open && parent.$open && !(this._isSplitItem(parent));
+			open = open && parent.$open && (canOpenSplitTasks || !this._isSplitItem(parent));
 		}, item);
 		return !!open;
 	});
@@ -10885,7 +10931,6 @@ function extend(gantt){
 
 	gantt.destructor = function(){
 		gantt.callEvent("onDestroy", []);
-
 		this.clearAll();
 
 		if(this.$root){
@@ -10912,6 +10957,7 @@ function extend(gantt){
 				delete this[i];
 			}
 		}
+		gantt.$destroyed = true;
 	};
 }
 
@@ -11188,6 +11234,9 @@ var createTasksDatastoreFacade = function(){
 		return res;
 	},
 	isTaskExists: function (id) {
+		if(!this.$data || !this.$data.tasksStore){
+			return false;
+		}
 		return this.$data.tasksStore.exists(id);
 	},
 	updateTask: function (id, item) {
@@ -11659,7 +11708,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.1.7";
+	this.version = "6.2.0";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -11675,7 +11724,7 @@ module.exports = function() {
 	__webpack_require__(/*! ./common/import */ "./sources/core/common/import.js")(gantt);
 
 	gantt.$services = gantt.$inject(__webpack_require__(/*! ./common/services */ "./sources/core/common/services.js"));
-	gantt.config = gantt.$inject(__webpack_require__(/*! ./common/config */ "./sources/core/common/config.js"));
+	gantt.config = gantt.$inject(__webpack_require__(/*! ./common/config */ "./sources/core/common/config.ts"));
 	gantt.ajax =  __webpack_require__(/*! ./common/ajax */ "./sources/core/common/ajax.js")(gantt);
 	gantt.date = __webpack_require__(/*! ./common/date */ "./sources/core/common/date.js")(gantt);
 	var dnd = __webpack_require__(/*! ./common/dnd */ "./sources/core/common/dnd.js")(gantt);
@@ -11706,11 +11755,17 @@ module.exports = function() {
 	var stateService = new StateService();
 
 	stateService.registerProvider("global", function () {
-		return {
+		var res = {
 			min_date: gantt._min_date,
 			max_date: gantt._max_date,
-			selected_task: gantt.$data.tasksStore.getSelectedId()
+			selected_task: null
 		};
+
+		// do not throw error if getState called from non-initialized gantt
+		if(gantt.$data && gantt.$data.tasksStore){
+			res.selected_task = gantt.$data.tasksStore.getSelectedId();
+		}
+		return res;
 	});
 	gantt.getState = stateService.getState;
 	gantt.$services.setService("state", function () {
@@ -12123,6 +12178,7 @@ module.exports = function(gantt){
 /***/ (function(module, exports, __webpack_require__) {
 
 var ScaleHelper = __webpack_require__(/*! ./ui/timeline/scales_ignore */ "./sources/core/ui/timeline/scales.js");
+var PrimaryScaleHelper = __webpack_require__(/*! ./ui/timeline/scales */ "./sources/core/ui/timeline/scales.js");
 
 
 function dateRangeResolver(gantt){
@@ -12161,12 +12217,13 @@ function resolveConfigRange(unit, gantt){
 }
 
 function _scale_range_unit(gantt) {
-	var unit = gantt.config.scale_unit;
-	var step = gantt.config.step;
+	var primaryScale = (new PrimaryScaleHelper(gantt)).primaryScale();
+	var unit = primaryScale.unit;
+	var step = primaryScale.step;
 	if (gantt.config.scale_offset_minimal) {
 
 		var helper = new ScaleHelper(gantt);
-		var scales = [helper.primaryScale()].concat(gantt.config.subscales);
+		var scales = [helper.primaryScale()].concat(helper.getSubScales());
 
 		helper.sortScales(scales);
 		unit = scales[scales.length - 1].unit;
@@ -14150,7 +14207,7 @@ module.exports = function(gantt) {
 				copy[key] = obj[key];
 
 				if (helpers.isDate(copy[key])) {
-					copy[key] = gantt.templates.xml_format(copy[key]);
+					copy[key] = gantt.templates.xml_format !== gantt.templates.formate_date ? gantt.templates.xml_format(copy[key]) : gantt.templates.formate_date(copy[key]);
 				}
 			}
 			return copy;
@@ -14884,8 +14941,8 @@ module.exports = function(gantt){
 
 
 	function isDisplayed(element){
-		return element && 
-			domHelpers.isChildOf(element, gantt.$root) && 
+		return element &&
+			domHelpers.isChildOf(element, gantt.$root) &&
 			element.offsetHeight;
 	}
 
@@ -14906,8 +14963,11 @@ module.exports = function(gantt){
 		var dragMarker = !!document.querySelector(".gantt_drag_marker");
 		var isResize = !!document.querySelector(".gantt_drag_marker.gantt_grid_resize_area");
 		var isLink = !!document.querySelector(".gantt_link_direction");
+		var state = gantt.getState();
+		var isClickDrag = state.autoscroll;
 		isMove = dragMarker && !isResize && !isLink;
-		return !((!gantt.getState().drag_mode && !dragMarker) || isResize);
+
+		return !((!state.drag_mode && !dragMarker) || isResize) || isClickDrag;
 	}
 
 	function defineDelayTimeout(state) {
@@ -14917,7 +14977,7 @@ module.exports = function(gantt){
 		}
 		if (state) {
 			var speed = gantt.config.autoscroll_speed;
-			if (speed && speed < 10) // limit speed value to 10 
+			if (speed && speed < 10) // limit speed value to 10
 				speed = 10;
 
 			delayTimeout = setTimeout(function() {
@@ -14948,7 +15008,7 @@ module.exports = function(gantt){
 
 		var isScroll = isScrollState();
 
-		if ((interval || delayTimeout) && !isScroll) { 
+		if ((interval || delayTimeout) && !isScroll) {
 			defineScrollInterval(false);
 		}
 
@@ -14974,7 +15034,7 @@ module.exports = function(gantt){
 		}
 
 		var box = domHelpers.getNodePosition(getAutoscrollContainer());
-		var posX = eventPos.x - box.x; 
+		var posX = eventPos.x - box.x;
 		var posY = eventPos.y - box.y;
 
 		var scrollLeft = isMove ? 0 : need_scroll(posX, box.width, startPos.x - box.x);
@@ -15016,8 +15076,7 @@ module.exports = function(gantt){
 
 		if (scrollLeft || scrollTop) {
 			scroll(scrollLeft, scrollTop);
-		} 
-
+		}
 	}
 
 	function need_scroll(pos, boxSize, startCoord) {
@@ -15255,6 +15314,10 @@ module.exports = null;
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = function(gantt){
+	if(!gantt.ext){
+		gantt.ext = {};
+	}
+
 	var modules = [
 		__webpack_require__(/*! ./autoscroll */ "./sources/core/plugins/autoscroll.js"),
 		__webpack_require__(/*! ./batch_update */ "./sources/core/plugins/batch_update.js"),
@@ -15270,6 +15333,9 @@ module.exports = function(gantt){
 		if(modules[i])
 			modules[i](gantt);
 	}
+
+	var TimelineZoom = __webpack_require__(/*! ./timeline_zoom */ "./sources/core/plugins/timeline_zoom.ts").default;
+	gantt.ext.zoom = new TimelineZoom(gantt);
 };
 
 /***/ }),
@@ -15454,6 +15520,7 @@ module.exports = function addPlaceholder(gantt){
 /***/ (function(module, exports, __webpack_require__) {
 
 var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+var smartRender = __webpack_require__(/*! ../ui/render/smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
 
 function createResourceMethods(gantt){
 
@@ -15588,52 +15655,67 @@ function createResourceMethods(gantt){
 		return timetable;
 	}
 
-	function renderResourceLine(resource, timeline) {
-		var config = timeline.$getConfig(),
-			templates = timeline.$getTemplates();
-		var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
-
-		var cells = [];
-		for (var i = 0; i < timetable.length; i++) {
-
-			var day = timetable[i];
-
-			var css = templates.resource_cell_class(day.start_date, day.end_date, resource, day.tasks);
-			var content = templates.resource_cell_value(day.start_date, day.end_date, resource, day.tasks);
-
-			if (css || content){
-				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
-				var el = document.createElement('div');
-				el.className = ["gantt_resource_marker", css].join(" ");
-
-				el.style.cssText = [
-					'left:' + sizes.left + 'px',
-					'width:' + sizes.width + 'px',
-					'height:' + (config.row_height - 1) + 'px',
-					'line-height:' + (config.row_height - 1) + 'px',
-					'top:' + sizes.top + 'px'
-				].join(";");
-
-				if(content)
-					el.innerHTML = content;
-
-				cells.push(el);
-			}
-
+	function isInViewPort(item, view, viewport){
+		var position = view.getItemTop(item.id);
+		var height = view.getItemHeight(item);
+		if(viewport.y > position + height || viewport.y_end < position){
+			return false;
+		}else{
+			return true;
 		}
-
-		var row = null;
-		if(cells.length){
-			row = document.createElement("div");
-			for(var i = 0; i < cells.length; i++){
-				row.appendChild(cells[i]);
-			}
-		}
-
-		return row;
 	}
 
+	function generateRenderResourceLine(){
+		function renderResourceLine(resource, timeline, viewport) {
+			if(!isInViewPort(resource, timeline, viewport)){
+				return null;
+			}
+			var config = timeline.$getConfig(),
+				templates = timeline.$getTemplates();
+			var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
 
+			var cells = [];
+			for (var i = 0; i < timetable.length; i++) {
+
+				var day = timetable[i];
+
+				var css = templates.resource_cell_class(day.start_date, day.end_date, resource, day.tasks);
+				var content = templates.resource_cell_value(day.start_date, day.end_date, resource, day.tasks);
+
+				if (css || content){
+					var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
+					var el = document.createElement('div');
+					el.className = ["gantt_resource_marker", css].join(" ");
+
+					el.style.cssText = [
+						'left:' + sizes.left + 'px',
+						'width:' + sizes.width + 'px',
+						'height:' + (config.row_height - 1) + 'px',
+						'line-height:' + (config.row_height - 1) + 'px',
+						'top:' + sizes.top + 'px'
+					].join(";");
+
+					if(content)
+						el.innerHTML = content;
+
+					cells.push(el);
+				}
+
+			}
+
+			var row = null;
+			if(cells.length){
+				row = document.createElement("div");
+				for(var i = 0; i < cells.length; i++){
+					row.appendChild(cells[i]);
+				}
+			}
+
+			return row;
+		}
+		return smartRender(renderResourceLine, function(){}, isInViewPort);
+	}
+	
 	function renderBar(level, start, end, timeline){
 		var top = (1 - (level*1||0))*100;
 		var left = timeline.posFromDate(start);
@@ -15661,108 +15743,139 @@ function createResourceMethods(gantt){
 		return element;
 	}
 
-	function renderHistogramLine(capacity, timeline, maxCapacity){
-		var scale = timeline.getScale();
+	function isColumnVisible(columnIndex, scale, viewPort){
+		var width = scale.width[columnIndex];
+		var cellLeftCoord = scale.left[columnIndex] - width;
+		var cellRightCoord = scale.left[columnIndex] + width;
+		return (width > 0 && cellLeftCoord <= viewPort.x_end && cellRightCoord >= viewPort.x);//do not render skipped columns
+	}
 
-		var el = document.createElement("div");
 
-		for(var i = 0; i < scale.trace_x.length; i++){
-			var colStart = scale.trace_x[i];
-			var colEnd = scale.trace_x[i + 1] || gantt.date.add(colStart, scale.step, scale.unit);
-			var col = scale.trace_x[i].valueOf();
-			var level = Math.min(capacity[col]/maxCapacity, 1) || 0;
-			if(level < 0){
+
+	function generateRenderResourceHistogram(){
+
+		var renderedHistogramCells = {};
+		var renderedHistogramRows = {};
+
+		function renderHistogramLine(capacity, timeline, maxCapacity, viewPort){
+			var scale = timeline.getScale();
+
+			var el = document.createElement("div");
+
+			for(var i = 0; i < scale.trace_x.length; i++){
+				if(!isColumnVisible(i, scale, viewPort)){
+					continue;
+				}
+
+				var colStart = scale.trace_x[i];
+				var colEnd = scale.trace_x[i + 1] || gantt.date.add(colStart, scale.step, scale.unit);
+				var col = scale.trace_x[i].valueOf();
+				var level = Math.min(capacity[col]/maxCapacity, 1) || 0;
+				// do not render histogram for lines with below zero capacity, as it's reserved for folders
+				if(level < 0){
+					return null;
+				}
+
+				var nextLevel = Math.min(capacity[colEnd.valueOf()]/maxCapacity, 1) || 0;
+				var bar = renderBar(level, colStart, colEnd, timeline);
+				if(bar){
+					el.appendChild(bar);
+				}
+				var connection = renderConnection(level, nextLevel, timeline.posFromDate(colEnd));
+				if(connection){
+					el.appendChild(connection);
+				}
+
+			}
+			return el;
+		}
+
+		function renderResourceHistogram(resource, timeline, viewport) {
+			if(!isInViewPort(resource, timeline, viewport)){
 				return null;
 			}
+			var config = timeline.$getConfig(),
+				templates = timeline.$getTemplates();
+			var scale = timeline.getScale();
+			var timetable = getResourceLoad(resource, config.resource_property, scale, timeline);
 
-			var nextLevel = Math.min(capacity[colEnd.valueOf()]/maxCapacity, 1) || 0;
+			var cells = [];
+			var capacityMatrix = {};
+			var maxCapacity = resource.capacity || timeline.$config.capacity || 24;
+			renderedHistogramCells[resource.id] = {};
+			renderedHistogramRows[resource.id] = null;
+			for (var i = 0; i < timetable.length; i++) {
 
-
-			var bar = renderBar(level, colStart, colEnd, timeline);
-			if(bar){
-				el.appendChild(bar);
-			}
-			var connection = renderConnection(level, nextLevel, timeline.posFromDate(colEnd));
-			if(connection){
-				el.appendChild(connection);
-			}
-
-		}
-
-
-		return el;
-	}
-
-	function renderResourceHistogram(resource, timeline) {
-		var config = timeline.$getConfig(),
-			templates = timeline.$getTemplates();
-		var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
-
-		var cells = [];
-		var capacityMatrix = {};
-		var maxCapacity = resource.capacity || timeline.$config.capacity || 24;
-		for (var i = 0; i < timetable.length; i++) {
-
-			var day = timetable[i];
-
-			var css = templates.histogram_cell_class(day.start_date, day.end_date, resource, day.tasks);
-			var content = templates.histogram_cell_label(day.start_date, day.end_date, resource, day.tasks);
-			var fill = templates.histogram_cell_allocated(day.start_date, day.end_date, resource, day.tasks);
-			var capacity = templates.histogram_cell_capacity(day.start_date, day.end_date, resource, day.tasks);
-			capacityMatrix[day.start_date.valueOf()] = capacity || 0;
-			if(css || content){
-				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
-				var el = document.createElement('div');
-				el.className = ["gantt_histogram_cell", css].join(" ");
-
-				el.style.cssText = [
-					'left:' + sizes.left + 'px',
-					'width:' + sizes.width + 'px',
-					'height:' + (config.row_height - 1) + 'px',
-					'line-height:' + (config.row_height - 1) + 'px',
-					'top:' + (sizes.top + 1) + 'px'
-				].join(";");
-
-
-				if (content) {
-					content = "<div class='gantt_histogram_label'>" + content +"</div>";
+				var day = timetable[i];
+				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+				if(!isColumnVisible(columnIndex, scale, viewport)){
+					continue;
 				}
 
-				if (fill) {
+				var css = templates.histogram_cell_class(day.start_date, day.end_date, resource, day.tasks);
+				var content = templates.histogram_cell_label(day.start_date, day.end_date, resource, day.tasks);
+				var fill = templates.histogram_cell_allocated(day.start_date, day.end_date, resource, day.tasks);
+				var capacity = templates.histogram_cell_capacity(day.start_date, day.end_date, resource, day.tasks);
+				capacityMatrix[day.start_date.valueOf()] = capacity || 0;
+				if(css || content){
+					var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
+					var el = document.createElement('div');
+					el.className = ["gantt_histogram_cell", css].join(" ");
 
-					content = "<div class='gantt_histogram_fill' style='height:"+(Math.min(fill/maxCapacity||0, 1)*100)+"%;'></div>" + content;
+					el.style.cssText = [
+						'left:' + sizes.left + 'px',
+						'width:' + sizes.width + 'px',
+						'height:' + (config.row_height - 1) + 'px',
+						'line-height:' + (config.row_height - 1) + 'px',
+						'top:' + (sizes.top + 1) + 'px'
+					].join(";");
+
+
+					if (content) {
+						content = "<div class='gantt_histogram_label'>" + content +"</div>";
+					}
+
+					if (fill) {
+						content = "<div class='gantt_histogram_fill' style='height:"+(Math.min(fill/maxCapacity||0, 1)*100)+"%;'></div>" + content;
+					}
+
+					if (content) {
+						el.innerHTML = content;
+					}
+
+					cells.push(el);
+					renderedHistogramCells[resource.id][columnIndex] = el;
 				}
 
-				if (content)
-					el.innerHTML = content;
-
-				cells.push(el);
 			}
 
+			var row = null;
+			if (cells.length) {
+				row = document.createElement("div");
+				for (var i = 0; i < cells.length; i++) {
+					row.appendChild(cells[i]);
+				}
+
+				var capacityElement = renderHistogramLine(capacityMatrix, timeline, maxCapacity, viewport);
+
+				if (capacityElement) {
+					capacityElement.setAttribute("data-resource-id", resource.id);
+					capacityElement.style.position = "absolute";
+					capacityElement.style.top = (sizes.top + 1) + "px";
+					capacityElement.style.height = (config.row_height - 1) + "px";
+					capacityElement.style.left = 0;
+					row.appendChild(capacityElement);
+				}
+
+				renderedHistogramRows[resource.id] = row;
+			}
+
+			return row;
 		}
 
-
-		var row = null;
-		if (cells.length) {
-			row = document.createElement("div");
-			for (var i = 0; i < cells.length; i++) {
-				row.appendChild(cells[i]);
-			}
-
-			var capacityElement = renderHistogramLine(capacityMatrix, timeline, maxCapacity);
-
-			if (capacityElement) {
-				capacityElement.setAttribute("data-resource-id", resource.id);
-				capacityElement.style.position = "absolute";
-				capacityElement.style.top = (sizes.top + 1) + "px";
-				capacityElement.style.height = (config.row_height - 1) + "px";
-				capacityElement.style.left = 0;
-				row.appendChild(capacityElement);
-			}
-		}
-
-		return row;
+		return smartRender(renderResourceHistogram, function(){}, isInViewPort);
 	}
+	
 
 	function selectAssignments(resourceId, taskId, result){
 		var property = gantt.config.resource_property;
@@ -15800,8 +15913,8 @@ function createResourceMethods(gantt){
 	}
 
 	return {
-		renderLine: renderResourceLine,
-		renderHistogram: renderResourceHistogram,
+		renderLine: generateRenderResourceLine,
+		renderHistogram: generateRenderResourceHistogram,
 		filterTasks: getTaskBy,
 		getResourceAssignments: getResourceAssignments
 	};
@@ -15850,6 +15963,292 @@ module.exports = function(gantt){
 };
 
 
+
+
+/***/ }),
+
+/***/ "./sources/core/plugins/timeline_zoom.ts":
+/*!***********************************************!*\
+  !*** ./sources/core/plugins/timeline_zoom.ts ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var env = __webpack_require__(/*! ../../utils/env */ "./sources/utils/env.js");
+var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
+var USE_KEY = ["ctrlKey", "altKey", "shiftKey", "metaKey"];
+var _defaultScales = [
+    [
+        {
+            unit: "month",
+            date: "%M",
+            step: 1
+        },
+        {
+            unit: "day",
+            date: "%d",
+            step: 1
+        }
+    ],
+    [
+        {
+            unit: "day",
+            date: "%d %M",
+            step: 1
+        }
+    ],
+    [
+        {
+            unit: "day",
+            date: "%d %M",
+            step: 1
+        },
+        {
+            unit: "hour",
+            date: "%H:00",
+            step: 8
+        },
+    ],
+    [
+        {
+            unit: "day",
+            date: "%d %M",
+            step: 1
+        },
+        {
+            unit: "hour",
+            date: "%H:00",
+            step: 1
+        },
+    ],
+];
+var TimelineZoom = /** @class */ (function () {
+    function TimelineZoom(gantt) {
+        var _this = this;
+        this.zoomIn = function () {
+            var index = _this.getCurrentLevel() - 1;
+            if (index < 0) {
+                return;
+            }
+            _this.setLevel(index);
+        };
+        this.zoomOut = function () {
+            var index = _this.getCurrentLevel() + 1;
+            if (index > _this._levels.length - 1) {
+                return;
+            }
+            _this.setLevel(index);
+        };
+        this.getCurrentLevel = function () {
+            return _this._activeLevelIndex;
+        };
+        this.getLevels = function () {
+            return _this._levels;
+        };
+        this.setLevel = function (level) {
+            var zoomLevel = _this._getZoomIndexByName(level);
+            if (zoomLevel === -1) {
+                _this.$gantt.assert(zoomLevel !== -1, "Invalid zoom level for gantt.ext.zoom.setLevel. " + level + " is not an expected value.");
+            }
+            _this._setLevel(zoomLevel, 0);
+        };
+        this._getZoomIndexByName = function (levelName) {
+            var zoomLevel = -1;
+            if (typeof levelName === "string") {
+                if (!isNaN(Number(levelName)) && _this._levels[Number(levelName)]) {
+                    zoomLevel = Number(levelName);
+                }
+                else {
+                    for (var i = 0; i < _this._levels.length; i++) {
+                        if (_this._levels[i].name === levelName) {
+                            zoomLevel = i;
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                zoomLevel = levelName;
+            }
+            return zoomLevel;
+        };
+        this._getVisibleDate = function () {
+            var scrollPos = _this.$gantt.getScrollState().x;
+            var viewPort = _this.$gantt.$task.offsetWidth;
+            _this._visibleDate = _this.$gantt.dateFromPos(scrollPos + viewPort / 2);
+        };
+        this._setLevel = function (level, cursorOffset) {
+            _this._activeLevelIndex = level;
+            var gantt = _this.$gantt;
+            var nextConfig = gantt.copy(_this._levels[_this._activeLevelIndex]);
+            var chartConfig = gantt.copy(nextConfig);
+            delete chartConfig.name;
+            gantt.mixin(gantt.config, chartConfig, true);
+            var isRendered = !!gantt.$root;
+            if (isRendered) {
+                if (cursorOffset) {
+                    var cursorDate = _this.$gantt.dateFromPos(cursorOffset + _this.$gantt.getScrollState().x);
+                    _this.$gantt.render();
+                    var newPosition = _this.$gantt.posFromDate(cursorDate);
+                    _this.$gantt.scrollTo(newPosition - cursorOffset);
+                }
+                else {
+                    var viewPort = _this.$gantt.$task.offsetWidth;
+                    if (!_this._visibleDate) {
+                        _this._getVisibleDate();
+                    }
+                    var middleDate = _this._visibleDate;
+                    _this.$gantt.render();
+                    var newPosition = _this.$gantt.posFromDate(middleDate);
+                    _this.$gantt.scrollTo(newPosition - viewPort / 2);
+                }
+                _this.callEvent("onAfterZoom", [_this._activeLevelIndex, nextConfig]);
+            }
+        };
+        this._attachWheelEvent = function (config) {
+            var event = env.isFF ? "wheel" : "mousewheel";
+            var el;
+            if (typeof config.element === "function") {
+                el = config.element();
+            }
+            else {
+                el = config.element;
+            }
+            if (!el) {
+                return;
+            }
+            _this._eventAttached = _this.$gantt.event(el, event, function (e) {
+                if (_this._useKey) {
+                    if (USE_KEY.indexOf(_this._useKey) < 0) {
+                        return false;
+                    }
+                    if (!e[_this._useKey]) {
+                        return false;
+                    }
+                }
+                if (typeof _this._handler === "function") {
+                    _this._handler.apply(_this, [e]);
+                    return true;
+                }
+            });
+        };
+        this._defaultHandler = function (e) {
+            var timelineOffset = _this.$gantt.$task.getBoundingClientRect().x;
+            var cursorOffset = e.clientX - timelineOffset;
+            var wheelY = _this.$gantt.env.isFF ? (e.deltaY * -40) : e.wheelDelta;
+            var wheelUp = false;
+            if (wheelY > 0) {
+                wheelUp = true;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            _this._setScaleSettings(wheelUp, cursorOffset);
+        };
+        this._setScaleDates = function () {
+            if (_this._initialStartDate && _this._initialEndDate) {
+                _this.$gantt.config.start_date = _this._initialStartDate;
+                _this.$gantt.config.end_date = _this._initialEndDate;
+            }
+        };
+        this.$gantt = gantt;
+    }
+    TimelineZoom.prototype.init = function (config) {
+        var _this = this;
+        this._initialStartDate = config.startDate;
+        this._initialEndDate = config.endDate;
+        this._activeLevelIndex = config.activeLevelIndex ? config.activeLevelIndex : 0;
+        this._levels = this._mapScales(config.levels || _defaultScales);
+        this._handler = config.handler || this._defaultHandler;
+        this._minColumnWidth = config.minColumnWidth || 60;
+        this._maxColumnWidth = config.maxColumnWidth || 240;
+        this._widthStep = config.widthStep || 3 / 8 * config.minColumnWidth;
+        this._useKey = config.useKey;
+        if (!this._initialized) {
+            eventable(this);
+            this.$gantt.attachEvent("onGanttScroll", function () {
+                _this._getVisibleDate();
+            });
+        }
+        if (this._eventAttached) {
+            this.$gantt.eventRemove(this._eventAttached);
+        }
+        if (config.trigger === "wheel") {
+            if (this.$gantt.$root) {
+                this._attachWheelEvent(config);
+            }
+            else {
+                this.$gantt.attachEvent("onGanttReady", function () {
+                    _this._attachWheelEvent(config);
+                });
+            }
+        }
+        this._initialized = true;
+        this.setLevel(this._activeLevelIndex);
+    };
+    TimelineZoom.prototype._mapScales = function (levels) {
+        return levels.map(function (l) {
+            if (Array.isArray(l)) {
+                return {
+                    scales: l
+                };
+            }
+            else {
+                return l;
+            }
+        });
+    };
+    TimelineZoom.prototype._setScaleSettings = function (wheelUp, cursorOffset) {
+        if (wheelUp) {
+            this._stepUp(cursorOffset);
+        }
+        else {
+            this._stepDown(cursorOffset);
+        }
+    };
+    TimelineZoom.prototype._stepUp = function (cursorOffset) {
+        if (this._activeLevelIndex >= this._levels.length - 1) {
+            return;
+        }
+        var nextLevel = this._activeLevelIndex;
+        this._setScaleDates();
+        if (this._widthStep) {
+            var newColumnWidth = this.$gantt.config.min_column_width + this._widthStep;
+            if (newColumnWidth > this._maxColumnWidth) {
+                newColumnWidth = this._minColumnWidth;
+                nextLevel++;
+            }
+            this.$gantt.config.min_column_width = newColumnWidth;
+        }
+        else {
+            nextLevel++;
+        }
+        this._setLevel(nextLevel, cursorOffset);
+    };
+    TimelineZoom.prototype._stepDown = function (cursorOffset) {
+        if (this._activeLevelIndex < 1) {
+            return;
+        }
+        var nextLevel = this._activeLevelIndex;
+        this._setScaleDates();
+        if (this._widthStep) {
+            var newColumnWidth = this.$gantt.config.min_column_width - this._widthStep;
+            if (newColumnWidth < this._minColumnWidth) {
+                newColumnWidth = this._maxColumnWidth;
+                nextLevel--;
+            }
+            this.$gantt.config.min_column_width = newColumnWidth;
+        }
+        else {
+            nextLevel--;
+        }
+        this._setLevel(nextLevel, cursorOffset);
+    };
+    return TimelineZoom;
+}());
+exports.default = TimelineZoom;
 
 
 /***/ }),
@@ -16387,15 +16786,21 @@ var configurable = function(parentView){
 			if(!parentConfig){
 				parentConfig = parentView ? parentView.$getConfig() : this.$gantt.config;
 			}
-
-			return extendSettings.call(this, "config", parentConfig);
+			if(!this.$config.config){
+				return parentConfig;
+			}else{
+				return extendSettings.call(this, "config", parentConfig);
+			}
 		},
 		$getTemplates: function(){
 			if(!parentTemplates){
 				parentTemplates = parentView ? parentView.$getTemplates() : this.$gantt.templates;
 			}
-
-			return extendSettings.call(this, "templates", parentTemplates);
+			if(!this.$config.templates){
+				return parentTemplates;
+			}else{
+				return extendSettings.call(this, "templates", parentTemplates);
+			}
 		}
 	};
 };
@@ -16549,6 +16954,7 @@ var textEditorFactory = __webpack_require__(/*! ./editors/text */ "./sources/cor
 var utils = __webpack_require__(/*! ../../../../utils/utils */ "./sources/utils/utils.js");
 var domHelpers = __webpack_require__(/*! ../../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
 var eventable = __webpack_require__(/*! ../../../../utils/eventable */ "./sources/utils/eventable.js");
+var linkedPropertiesProcessor = __webpack_require__(/*! ./linked_properties */ "./sources/core/ui/grid/editors/linked_properties.js");
 
 function initConfigs(gantt){
 	gantt.config.editor_types = {
@@ -16639,6 +17045,7 @@ function create(gantt){
 			return el;
 		}
 
+		var updateTaskDateProperties = linkedPropertiesProcessor(gantt);
 
 		var handlers = [];
 		var store = null;
@@ -16851,28 +17258,17 @@ function create(gantt){
 					newValue: this.getValue(),
 					oldValue: this._getItemValue()
 				};
-				if(this.callEvent("onBeforeSave", [editorState]) !== false) {
-					if(this._editor.is_valid(editorState.newValue, editorState.id, editorState.columnName, this._placeholder)){
-
+				if (this.callEvent("onBeforeSave", [editorState]) !== false) {
+					if (this._editor.is_valid(editorState.newValue, editorState.id, editorState.columnName, this._placeholder)) {
 
 						var mapTo = editorConfig.map_to;
 						var value = editorState.newValue;
 						if (mapTo != "auto") {
 							item[mapTo] = value;
-							if (mapTo == "duration") {
-								item.end_date = gantt.calculateEndDate(item);
-							} else if (mapTo == "end_date") {
-								item.start_date = gantt.calculateEndDate({
-									start_date: item.end_date,
-									duration: -item.duration,
-									task: item}
-									);
-							} else if (mapTo == "start_date") {
-								item.end_date = gantt.calculateEndDate(item);
-							}
+							updateTaskDateProperties(item, mapTo, gantt.config.inline_editors_date_processing);
 
 							store.updateItem(itemId);
-						}else{
+						} else {
 							this._editor.save(itemId, grid.getColumn(columnName), this._placeholder);
 						}
 						this.callEvent("onSave", [editorState]);
@@ -16992,6 +17388,9 @@ function create(gantt){
 
 	return inlineEditController;
 }
+
+
+
 
 module.exports = create;
 
@@ -17725,6 +18124,64 @@ module.exports = {
 
 /***/ }),
 
+/***/ "./sources/core/ui/grid/editors/linked_properties.js":
+/*!***********************************************************!*\
+  !*** ./sources/core/ui/grid/editors/linked_properties.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (gantt) {
+	return function processTaskDateProperties(item, mapTo, mode) {
+		if (mode == "keepDates") {
+			keepDatesOnEdit(item, mapTo);
+		} else if (mode == "keepDuration") {
+			keepDurationOnEdit(item, mapTo);
+		} else {
+			defaultActionOnEdit(item, mapTo);
+		}
+	};
+
+	// resize task
+	// resize task when start/end/duration changes
+	function keepDatesOnEdit(item, mapTo) {
+		if (mapTo == "duration") {
+			item.end_date = gantt.calculateEndDate(item);
+		} else if (mapTo == "end_date" || mapTo == "start_date") {
+			item.duration = gantt.calculateDuration(item);
+		}
+	}
+
+	// move task(before 6.2)
+	// move task when start/end dates changes
+	// resize task when duration changes
+	function keepDurationOnEdit(item, mapTo) {
+		if (mapTo == "end_date") {
+			item.start_date = gantt.calculateEndDate({
+				start_date: item.end_date,
+				duration: -item.duration,
+				task: item
+			}
+			);
+		} else if (mapTo == "start_date" || mapTo == "duration") {
+			item.end_date = gantt.calculateEndDate(item);
+		}
+	}
+
+	// default behavior
+	// move task when start date changes
+	// resize task when end date/duration changes
+	function defaultActionOnEdit(item, mapTo) {
+		if (mapTo == "start_date" || mapTo == "duration") {
+			item.end_date = gantt.calculateEndDate(item);
+		} else if (mapTo == "end_date") {
+			item.duration = gantt.calculateDuration(item);
+		}
+	}
+};
+
+/***/ }),
+
 /***/ "./sources/core/ui/grid/grid.js":
 /*!**************************************!*\
   !*** ./sources/core/ui/grid/grid.js ***!
@@ -17744,6 +18201,7 @@ var Grid = function (parent, config, factory, gantt) {
 	this.$parent = parent;
 	eventable(this);
 	this.$state = {};
+	utils.mixin(this, topPositionMixin());
 };
 
 
@@ -17802,7 +18260,7 @@ Grid.prototype = {
 
 	setSize: function (width, height) {
 		this.$config.width = this.$state.width = width;
-		this.$state.height = height;
+		this.$config.height = this.$state.height = height;
 
 		// TODO: maybe inherit and override in a subclass instead of extending here
 
@@ -17862,27 +18320,68 @@ Grid.prototype = {
 
 		return size;
 	},
+
+	_bindStore: function () {
+		if (this.$config.bind){
+			var rowStore = this.$gantt.getDatastore(this.$config.bind);
+			this.$config.rowStore = rowStore;
+			if(rowStore && !rowStore._gridCacheAttached){
+				var self = this;
+				rowStore._gridCacheAttached = true;
+				rowStore.attachEvent("onBeforeFilter", function(){
+					self._resetTopPositionHeight();
+				});
+			}
+		}
+	},
+
 	refresh: function () {
+		this._bindStore();
 
-		if (this.$config.bind)
-			this.$config.rowStore = this.$gantt.getDatastore(this.$config.bind);
-
+		this._resetTopPositionHeight();
 		this._initSmartRenderingPlaceholder();
 
 		this._calculateGridWidth();
 		this._renderGridHeader();
 	},
+
+	getViewPort: function(){
+		var scrollLeft = this.$config.scrollLeft || 0;
+		var scrollTop = this.$config.scrollTop || 0;
+		var height = this.$config.height || 0;
+		var width = this.$config.width || 0;
+		return {
+			y: scrollTop,
+			y_end: scrollTop + height,
+			x: scrollLeft,
+			x_end: scrollLeft + width,
+			height: height,
+			width: width
+		};
+	},
+
 	scrollTo: function (left, top) {
 		if (!this.isVisible())
 			return;
 
+		var scrolled = false;
+
+		this.$config.scrollTop = this.$config.scrollTop || 0;
+		this.$config.scrollLeft = this.$config.scrollLeft || 0;
+
 		if (left * 1 == left) {
-			this.$state.scrollLeft = this.$grid.scrollLeft = left;
+			this.$config.scrollLeft = this.$state.scrollLeft = this.$grid.scrollLeft = left;
+			scrolled = true;
 		}
 
 		// var config = this.$getConfig();
 		if (top * 1 == top) {
-			this.$state.scrollTop = this.$grid_data.scrollTop = top;
+			this.$config.scrollTop = this.$state.scrollTop = this.$grid_data.scrollTop = top;
+			scrolled = true;
+		}
+
+		if(scrolled){
+			this.callEvent("onScroll", [this.$config.scrollLeft, this.$config.scrollTop]);
 		}
 	},
 
@@ -17927,7 +18426,7 @@ Grid.prototype = {
 		var self = this;
 		var layers = [
 			{
-				renderer: gantt.$ui.layers.gridLine,
+				renderer: gantt.$ui.layers.gridLine(),
 				container: this.$grid_data,
 				filter: [function () {
 					return self.isVisible();
@@ -17947,7 +18446,9 @@ Grid.prototype = {
 
 		var layers = this.$gantt.$services.getService("layers");
 		var taskRenderer = layers.getDataRender(this.$config.bind);
-
+		var getViewPort = function(){
+			return self.getViewPort();
+		};
 		if (!taskRenderer) {
 			taskRenderer = layers.createDataRender({
 				name: this.$config.bind,
@@ -17959,12 +18460,19 @@ Grid.prototype = {
 		for (var i = 0; taskLayers && i < taskLayers.length; i++) {
 			var layer = taskLayers[i];
 			layer.host = this;
+			layer.getViewPort = getViewPort;
 			var bar_layer = taskRenderer.addLayer(layer);
 			this._taskLayers.push(bar_layer);
+			this.attachEvent("onScroll", (function(layer){
+				return function(){
+					if(layer.requestUpdate){
+						layer.requestUpdate();
+					}
+				};
+			})(layer));
 		}
 
-		if (this.$config.bind)
-			this.$config.rowStore = this.$gantt.getDatastore(this.$config.bind);
+		this._bindStore();
 
 		this._initSmartRenderingPlaceholder();
 	},
@@ -18314,8 +18822,6 @@ Grid.prototype = {
 		this.detachAllEvents();
 	}
 };
-
-utils.mixin(Grid.prototype, topPositionMixin());
 
 module.exports = Grid;
 
@@ -19271,7 +19777,7 @@ var uiFactory = __webpack_require__(/*! ./ui_factory */ "./sources/core/ui/ui_fa
 var gridEditorsFactory = __webpack_require__(/*! ./grid/editors/controller */ "./sources/core/ui/grid/editors/controller.js");
 
 
-var renderTaskBar = __webpack_require__(/*! ./render/task_bar_render */ "./sources/core/ui/render/task_bar_render.js"),
+var renderTaskBar = __webpack_require__(/*! ./render/task_bar_smart_render */ "./sources/core/ui/render/task_bar_smart_render.js"),
 	renderSplitTaskBar = __webpack_require__(/*! ./render/task_split_render */ "./sources/core/ui/render/task_split_render.js"),
 	renderTaskBg = __webpack_require__(/*! ./render/task_bg_render */ "./sources/core/ui/render/task_bg_render.js"),
 	renderLink = __webpack_require__(/*! ./render/link_render */ "./sources/core/ui/render/link_render.js"),
@@ -19338,11 +19844,21 @@ function initUI(gantt){
 		mouseEvents: mouseEvents.init(gantt),
 		layersApi: layersEngine.init(),
 		render:{
-			gridLine: gridRenderer(gantt),
-			taskBg: renderTaskBg(gantt),
-			taskBar: renderTaskBar(gantt),
-			taskSplitBar: renderSplitTaskBar(gantt),
-			link: renderLink(gantt)
+			gridLine: function(){
+				return gridRenderer(gantt);
+			},
+			taskBg: function(){
+				return renderTaskBg(gantt);
+			},
+			taskBar: function(){
+				return renderTaskBar(gantt);
+			},
+			taskSplitBar: function(){
+				return renderSplitTaskBar(gantt);
+			},
+			link: function(){
+				return renderLink(gantt);
+			}
 		},
 		layersService: {
 			getDataRender: function(name){
@@ -21663,6 +22179,19 @@ module.exports = create;
 
 /***/ }),
 
+/***/ "./sources/core/ui/render/is_legacy_smart_render.js":
+/*!**********************************************************!*\
+  !*** ./sources/core/ui/render/is_legacy_smart_render.js ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(gantt){
+	return gantt.config.smart_rendering && gantt._smart_render;
+};
+
+/***/ }),
+
 /***/ "./sources/core/ui/render/layer_engine.js":
 /*!************************************************!*\
   !*** ./sources/core/ui/render/layer_engine.js ***!
@@ -21672,7 +22201,8 @@ module.exports = create;
 
 var renderFactoryProvider = __webpack_require__(/*! ./render_factory */ "./sources/core/ui/render/render_factory.js");
 var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js"),
-	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js");
+	domHelpers = __webpack_require__(/*! ../../../utils/dom_helpers */ "./sources/utils/dom_helpers.js"),
+	isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
 
 var layerFactory = function(gantt){
 
@@ -21752,10 +22282,24 @@ var layerFactory = function(gantt){
 					if(!config.container){
 						config.container = document.createElement("div");
 					}
+					var self = this;
+					config.requestUpdate = function(){
+						if(gantt.config.smart_rendering && !isLegacyRender(gantt)){
+							if(self.renderers[config.id]){
+								self.onUpdateRequest(self.renderers[config.id]);
+							}
+						}
+						
+					};
 				}
+
 				this._add(config);
 				return (config ? config.id : undefined);
 			},
+			onUpdateRequest: function(layer){
+
+			},
+
 			eachLayer: function(code){
 				for (var i in this.renderers) {
 					code(this.renderers[i]);
@@ -21815,8 +22359,11 @@ module.exports = layerFactory;
   !*** ./sources/core/ui/render/link_render.js ***!
   \***********************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
+var isLinkInViewPort = __webpack_require__(/*! ./viewport/link_checker */ "./sources/core/ui/render/viewport/link_checker.js");
+var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
 
 function createLinkRender(gantt){
 
@@ -22256,8 +22803,12 @@ function getMilestonePosition(task, view){
 	return pos;
 }
 
-return _render_link_element;
-
+return smartRender(
+	_render_link_element,
+	function(){},
+	isLinkInViewPort,
+	gantt.config.smart_rendering && !isLegacyRender(gantt)
+	);
 }
 
 module.exports = createLinkRender;
@@ -22286,9 +22837,23 @@ var rendererFactory = function(gantt){
 		if (!layer.renderer)
 			gantt.assert(false, "Invalid renderer call");
 
-		var renderOne = function(item){
-			return layer.renderer.call(this, item, layer.host);
-		} ;
+		var renderMethod = null;
+		var updateMethod = null;
+
+		if(typeof layer.renderer === "function"){
+			renderMethod = layer.renderer;
+		}else{
+			renderMethod = layer.renderer.render;
+			updateMethod = layer.renderer.update;
+		}
+
+		var renderOne = function(item, viewPort){
+			var rendererViewPort = viewPort;
+			if(!rendererViewPort && layer.getViewPort){
+				rendererViewPort = layer.getViewPort();
+			}
+			return renderMethod.call(this, item, layer.host, rendererViewPort || null);
+		};
 
 		var filter = layer.filter;
 
@@ -22296,7 +22861,7 @@ var rendererFactory = function(gantt){
 			node.setAttribute(services.config().layer_attribute, true);
 
 		task_area_renderers[id] = {
-			render_item: function (item, container) {
+			render_item: function (item, container, viewPort) {
 				container = container || node;
 
 				if (filter) {
@@ -22306,7 +22871,7 @@ var rendererFactory = function(gantt){
 					}
 				}
 
-				var dom = renderOne.call(gantt, item);
+				var dom = renderOne.call(gantt, item, viewPort);
 				this.append(item, dom, container);
 
 			},
@@ -22327,11 +22892,42 @@ var rendererFactory = function(gantt){
 
 				var buffer = document.createDocumentFragment();
 				this.clear(container);
+				var viewPort = null;
+				if(layer.getViewPort){
+					viewPort = layer.getViewPort();
+				}
 				for (var i = 0, vis = items.length; i < vis; i++) {
-					this.render_item(items[i], buffer);
+					this.render_item(items[i], buffer, viewPort);
 				}
 
-				container.appendChild(buffer);
+				container.appendChild(buffer, container);
+			},
+			update_items: function (items, container) {
+				container = container || node;
+				if(!updateMethod){
+					return;
+				}
+
+				var buffer = document.createDocumentFragment();
+				var viewPort = null;
+				if(layer.getViewPort){
+					viewPort = layer.getViewPort();
+				}
+
+				for (var i = 0, vis = items.length; i < vis; i++) {
+					var item = items[i];
+					var itemNode = this.rendered[item.id];
+					if (itemNode && itemNode.parentNode) {
+						updateMethod.call(gantt, item, layer.host, this, viewPort);
+					}else{
+						this.render_item(items[i], buffer, viewPort);
+					}
+
+					
+				}
+				if(buffer.childNodes.length){
+					container.appendChild(buffer, container);
+				}
 			},
 			append: function (item, node, container) {
 				if (!node) {
@@ -22407,6 +23003,42 @@ var rendererFactory = function(gantt){
 };
 
 module.exports = rendererFactory;
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/smart_render_wrapper.js":
+/*!********************************************************!*\
+  !*** ./sources/core/ui/render/smart_render_wrapper.js ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function wrapSmartRender(renderOne, updateOne, isInViewPort, smartRendering){
+	if(!smartRendering){
+		return renderOne;
+	}else{
+		return {
+			render: function(item, view, viewport){
+				if(!isInViewPort.call(this, item, view, viewport)){
+					return null;
+				}
+				return renderOne.call(this, item, view, viewport);
+			},
+			update: function(item, view, engine, viewport){
+				if(!isInViewPort.call(this, item, view, viewport)){
+					engine.hide(item.id);
+				}else if(engine.rendered[item.id]){
+					updateOne.call(this, item, view, engine, viewport);
+					engine.restore(item);
+				}else{
+					renderOne.call(this, item, view, viewport);
+				}
+			}
+		};
+	}
+
+
+};
 
 /***/ }),
 
@@ -22678,7 +23310,7 @@ function createTaskRenderer(gantt){
 		if (gantt.isSummaryTask(task))
 			css.push("gantt_dependent_task");
 
-		if (gantt.isSplitTask(task)) {
+		if (gantt.isSplitTask(task) && ((cfg.open_split_tasks && !task.$open) || !cfg.open_split_tasks)) {
 			css.push("gantt_split_parent");
 		}
 
@@ -22758,39 +23390,214 @@ module.exports = createTaskRenderer;
 
 /***/ }),
 
+/***/ "./sources/core/ui/render/task_bar_smart_render.js":
+/*!*********************************************************!*\
+  !*** ./sources/core/ui/render/task_bar_smart_render.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
+var isBarInViewPort = __webpack_require__(/*! ./viewport/task_bar_checker */ "./sources/core/ui/render/viewport/task_bar_checker.js");
+var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
+var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+module.exports = function createTaskRenderer(gantt){
+	var defaultRender = createBaseBarRender(gantt);
+
+	return smartRender(
+		defaultRender,
+		function(){},
+		isBarInViewPort,
+		gantt.config.smart_rendering && !isLegacyRender(gantt)
+	);
+};
+
+/***/ }),
+
 /***/ "./sources/core/ui/render/task_bg_render.js":
 /*!**************************************************!*\
   !*** ./sources/core/ui/render/task_bg_render.js ***!
   \**************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
+var isRowInViewPort = __webpack_require__(/*! ./viewport/task_row_checker */ "./sources/core/ui/render/viewport/task_row_checker.js");
+var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+function getIndexRange(scale, viewportLeft, viewPortRight){
+	var firstCellIndex = 0;
+	var lastCellIndex = scale.left.length - 1;
+	for(var i = 0; i < scale.left.length; i++){
+		var left = scale.left[i];
+		if(left < viewportLeft){
+			firstCellIndex = i;
+		}
+		if(left > viewPortRight){
+			lastCellIndex = i;
+			break;
+		}
+	}
+	return {
+		start: firstCellIndex,
+		end: lastCellIndex
+	};
+}
 
 function createTaskBgRender(gantt){
-	//this.getTaskTop
-	function _render_bg_line(item, view) {
+	var renderedCells = {};
+	var visibleCells = {};
+
+	function isRendered(item, columnIndex){
+		if(renderedCells[item.id][columnIndex] && renderedCells[item.id][columnIndex].parentNode){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	function detachRenderedCell(itemId, columnIndex){
+		if(renderedCells[itemId] && renderedCells[itemId][columnIndex] &&
+			renderedCells[itemId][columnIndex].parentNode
+			){
+				renderedCells[itemId][columnIndex].parentNode.removeChild(renderedCells[itemId][columnIndex]);
+			}
+	}
+
+	function getCellTemplate(view){
+		var templates = view.$getTemplates();
+		var cssTemplate;
+		if (typeof templates.task_cell_class !== "undefined") {
+			cssTemplate = templates.task_cell_class;
+			// eslint-disable-next-line no-console
+			var log = console.warn || console.log;
+			log('gantt.templates.task_cell_class template is deprecated and will be removed soon. Please use gantt.templates.timeline_cell_class instead.');
+		} else {
+			cssTemplate = templates.timeline_cell_class;
+		}
+		return cssTemplate;
+	}
+
+	function renderCells(item, view, engine, viewPort){
+		var config = view.$getConfig();
+		var cfg = view.getScale();
+		var count = cfg.count;
+		var cssTemplate = getCellTemplate(view);
+
+		if (config.show_task_cells) {
+			if(!renderedCells[item.id]){
+				renderedCells[item.id] = {};
+			}
+			if(!visibleCells[item.id]){
+				visibleCells[item.id] = {};
+			}
+
+			var range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
+
+			var row = engine.rendered[item.id];
+
+			for(var i in visibleCells[item.id]){
+				var index = visibleCells[item.id][i];
+
+				if(Number(index) < range.start || Number(index) > range.end){
+					detachRenderedCell(item.id, index);
+				}
+			}
+			visibleCells[item.id][columnIndex] = {};
+		
+			// TODO: do not iterate all cell, only ones in the viewport and once that are already rendered
+			for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
+				var cell = renderOneCell(cfg, columnIndex, item, viewPort, count, cssTemplate, config);
+				if(!cell && isRendered(item, columnIndex)){
+					detachRenderedCell(item.id, columnIndex);
+				}else if (cell && !cell.parentNode){
+					row.appendChild(cell);
+				}
+			}
+		}
+	}
+
+	function isColumnVisible(columnIndex, scale, viewPort){
+		var width = scale.width[columnIndex];
+		if(width <= 0){
+			return false;
+		}
+		if(!gantt.config.smart_rendering || isLegacyRender(gantt)){
+			return true;
+		}
+		var cellLeftCoord = scale.left[columnIndex] - width;
+		var cellRightCoord = scale.left[columnIndex] + width;
+		return (cellLeftCoord <= viewPort.x_end && cellRightCoord >= viewPort.x);//do not render skipped columns
+	}
+
+	function renderOneCell(scale, columnIndex, item, viewPort, count, cssTemplate, config){
+		var width = scale.width[columnIndex],
+			cssclass = "";
+
+		if (isColumnVisible(columnIndex, scale, viewPort)) {//do not render skipped columns
+			
+			var cssTemplateContent = cssTemplate(item, scale.trace_x[columnIndex]);
+
+			if(config.static_background){
+				// if cell render in static background is not allowed, or if it's a blank cell
+				if(!(config.static_background_cells && cssTemplateContent)){
+					return null;
+				}
+			}
+
+			if(renderedCells[item.id][columnIndex]){
+				visibleCells[item.id][columnIndex] = columnIndex;
+				return renderedCells[item.id][columnIndex];
+			}
+			var cell = document.createElement("div");
+			cell.style.width = (width) + "px";
+
+			cssclass = "gantt_task_cell" + (columnIndex == count - 1 ? " gantt_last_cell" : "");
+			if (cssTemplateContent) {
+				cssclass += " " + cssTemplateContent;
+			}
+			cell.className = cssclass;
+
+			if(gantt.config.smart_rendering){
+				cell.style.position = "absolute";
+				cell.style.left = scale.left[columnIndex] + "px";
+				renderedCells[item.id][columnIndex] = cell;
+				visibleCells[item.id][columnIndex] = columnIndex;
+			}
+			return cell;
+		}
+		return null;
+	}
+
+	function _render_bg_line(item, view, viewPort) {
 		var config = view.$getConfig(),
 			templates = view.$getTemplates();
 		var cfg = view.getScale();
 		var count = cfg.count;
+
+		if(config.static_background && !config.static_background_cells){
+			return null;
+		}
+
 		var row = document.createElement("div");
+
+		var cellTemplate = getCellTemplate(view);
+
+		var range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
+
+		if(!config.smart_rendering || isLegacyRender(gantt)){
+			range = {
+				start: 0,
+				end: count - 1
+			};
+		}
 		if (config.show_task_cells) {
-			for (var j = 0; j < count; j++) {
-				var width = cfg.width[j],
-					cssclass = "";
-
-				if (width > 0) {//do not render skipped columns
-					var cell = document.createElement("div");
-					cell.style.width = (width) + "px";
-
-					cssclass = "gantt_task_cell" + (j == count - 1 ? " gantt_last_cell" : "");
-					cssTemplate = templates.task_cell_class(item, cfg.trace_x[j]);
-					if (cssTemplate)
-						cssclass += " " + cssTemplate;
-					cell.className = cssclass;
-
+			renderedCells[item.id] = {};
+			visibleCells[item.id] = {};
+			for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
+				var cell = renderOneCell(cfg, columnIndex, item, viewPort, count, cellTemplate, config);
+				if(cell){
 					row.appendChild(cell);
 				}
-
 			}
 		}
 		var odd = gantt.getGlobalTaskIndex(item.id) % 2 !== 0;
@@ -22801,8 +23608,6 @@ function createTaskBgRender(gantt){
 		if(store.isSelected(item.id)) {
 			css += " gantt_selected";
 		}
-
-		//var row = "<div class='" + css + "' " + this.config.task_attribute + "='" + item.id + "'>" + cells.join("") + "</div>";
 
 		row.className = css;
 
@@ -22820,10 +23625,16 @@ function createTaskBgRender(gantt){
 		return row;
 	}
 
-	return _render_bg_line;
+	return smartRender(
+		_render_bg_line,
+		renderCells,
+		isRowInViewPort,
+		gantt.config.smart_rendering && !isLegacyRender(gantt)
+	);
 }
 
 module.exports = createTaskBgRender;
+
 
 /***/ }),
 
@@ -22835,12 +23646,20 @@ module.exports = createTaskBgRender;
 /***/ (function(module, exports, __webpack_require__) {
 
 var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
-
+var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
+var isRowInViewPort = __webpack_require__(/*! ./viewport/task_row_checker */ "./sources/core/ui/render/viewport/task_row_checker.js");
+var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
 function createGridLineRender(gantt){
-	function _render_grid_item(item, view) {
-		//if (!_is_grid_visible.call(this))
-		//	return null;
 
+	function isInViewPort(item, view, viewport){
+		if(gantt.$keyboardNavigation && gantt.$keyboardNavigation.dispatcher.isTaskFocused(item.id)){
+			return true;
+		}
+
+		return isRowInViewPort(item, view, viewport);
+	}
+
+	function _render_grid_item(item, view, viewport) {
 		var columns = view.getGridColumns();
 		var config = view.$getConfig(),
 			templates = view.$getTemplates();
@@ -22883,7 +23702,7 @@ function createGridLineRender(gantt){
 				for (var j = 0; j < item.$level; j++)
 					tree.push(templates.grid_indent(item));
 
-				has_child = store.hasChild(item.id) && !(gantt.isSplitTask(item));
+				has_child = store.hasChild(item.id) && !(gantt.isSplitTask(item) && !gantt.config.open_split_tasks);
 				if (has_child) {
 					tree.push(templates.grid_open(item));
 					tree.push(templates.grid_folder(item));
@@ -22942,7 +23761,14 @@ function createGridLineRender(gantt){
 		return el;
 	}
 
-	return _render_grid_item;
+	//return _render_grid_item;
+
+	return smartRender(
+		_render_grid_item,
+		function(){},
+		isInViewPort,
+		gantt.config.smart_rendering && !isLegacyRender(gantt)
+	);
 }
 
 module.exports = createGridLineRender;
@@ -22958,11 +23784,15 @@ module.exports = createGridLineRender;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
+var isBarInViewPort = __webpack_require__(/*! ./viewport/task_bar_checker */ "./sources/core/ui/render/viewport/task_bar_checker.js");
+var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
+var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
 function createTaskRenderer(gantt){
-	var defaultRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js")(gantt);
+	var defaultRender = createBaseBarRender(gantt);
 
-	return function show_children(task, timeline) {
-		if (gantt.isSplitTask(task)) {
+	function renderSplitTask(task, timeline) {
+		if (gantt.isSplitTask(task) && ((gantt.config.open_split_tasks && !task.$open) || !gantt.config.open_split_tasks)) {
 			var el = document.createElement('div'),
 				sizes = gantt.getTaskPosition(task);
 
@@ -22986,10 +23816,141 @@ function createTaskRenderer(gantt){
 			return el;
 		}
 		return false;
-	};
+	}
+
+	return smartRender(
+		renderSplitTask,
+		function(){},
+		isBarInViewPort,
+		gantt.config.smart_rendering && !isLegacyRender(gantt)
+	);
 }
 
 module.exports = createTaskRenderer;
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/link_checker.js":
+/*!*********************************************************!*\
+  !*** ./sources/core/ui/render/viewport/link_checker.js ***!
+  \*********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+
+module.exports = function isLinkInViewPort(item, view, viewport){
+	var source = view.$gantt.getTask(item.source);
+	var target = view.$gantt.getTask(item.target);
+
+	// check vertical visibility first since it's a lighter check
+	var sourceTop = view.getItemTop(source.id);
+	var sourceHeight = view.getItemHeight(source);
+
+	var targetTop = view.getItemTop(target.id);
+	var targetHeight = view.getItemHeight(target);
+
+	if(viewport.y > sourceTop + sourceHeight && 
+		viewport.y > targetTop + targetHeight){
+		return false;
+	}
+
+	if(viewport.y_end < targetTop && 
+		viewport.y_end < targetHeight){
+		return false;
+	}
+
+	var padding = 100;
+	var sourceLeft = view.posFromDate(source.start_date);
+	var sourceRight = view.posFromDate(source.end_date);
+	var targetLeft = view.posFromDate(target.start_date);
+	var targetRight = view.posFromDate(target.end_date);
+	
+	if(sourceLeft > sourceRight){
+		// rtl
+		var tmp = sourceRight;
+		sourceRight = sourceLeft;
+		sourceLeft = tmp;
+	}
+	if(targetLeft > targetRight){
+		// rtl
+		var tmp = targetRight;
+		targetRight = targetLeft;
+		targetLeft = tmp;
+	}
+	sourceLeft += -padding; // add buffer for custom elements
+	sourceRight += padding;
+	targetLeft += -padding; // add buffer for custom elements
+	targetRight += padding;
+
+	if(viewport.x > sourceRight && 
+		viewport.x > targetRight){
+		return false;
+	}
+
+	if(viewport.x_end < sourceLeft && 
+		viewport.x_end < targetLeft){
+		return false;
+	}
+	return true;
+};
+
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/task_bar_checker.js":
+/*!*************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/task_bar_checker.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isRowInViewPort = __webpack_require__(/*! ./task_row_checker */ "./sources/core/ui/render/viewport/task_row_checker.js");
+
+module.exports = function isInViewPort(item, view, viewport){
+
+	if(!isRowInViewPort(item, view, viewport)){
+		return false;
+	}
+
+	var left = view.posFromDate(item.start_date);
+	var right = view.posFromDate(item.end_date);
+	
+	if(left > right){
+		// rtl
+		var tmp = right;
+		right = left;
+		left = tmp;
+	}
+
+	left -= 200; // add buffer for custom elements
+	right += 200;
+
+	if(viewport.x > right || viewport.x_end < left){
+		return false;
+	}
+		
+	return true;
+};
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/task_row_checker.js":
+/*!*************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/task_row_checker.js ***!
+  \*************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function isInViewPort(item, view, viewport){
+	var position = view.getItemTop(item.id);
+	var height = view.getItemHeight(item);
+	if(viewport.y > position + height || viewport.y_end < position){
+		return false;
+	}else{
+		return true;
+	}
+};
 
 /***/ }),
 
@@ -23001,7 +23962,12 @@ module.exports = createTaskRenderer;
 /***/ (function(module, exports) {
 
 function createMixin(){
+	var topCache = {};
 	return {
+		_resetTopPositionHeight: function(){
+			topCache = {};
+		},
+
 		/**
 		 * Get top coordinate by row index (order)
 		 * @param {number} index
@@ -23016,6 +23982,9 @@ function createMixin(){
 		 */
 		getItemTop: function (taskId) {
 			if(this.$config.rowStore){
+				if(topCache[taskId] !== undefined){
+					return topCache[taskId];
+				}
 				var store = this.$config.rowStore;
 				if(!store) return 0;
 
@@ -23031,8 +24000,8 @@ function createMixin(){
 						}
 					}
 				}
-
-				return this.getRowTop(itemIndex);
+				topCache[taskId] = this.getRowTop(itemIndex);
+				return topCache[taskId];
 			}else{
 				return 0;
 			}
@@ -23668,18 +24637,69 @@ function ScaleHelper(gantt){
 				scales[i].index = i;
 			}
 		},
-		primaryScale: function () {
+		_isLegacyMode: function(config){
+			var scaleConfig = config || services.config();
+			return scaleConfig.scale_unit || scaleConfig.date_scale || scaleConfig.subscales;
+		},
+		_prepareScaleObject: function(scale){
+			var format = scale.format;
+			if(!format){
+				format = scale.template || scale.date || "%d %M";
+			}
 
-			var config = services.getService("templateLoader");
-			config.initTemplate("date_scale", undefined, undefined, services.config(), services.templates());
-
+			if(typeof format === "string"){
+				format = gantt.date.date_to_str(format);
+			}
 			return {
-				unit: services.config().scale_unit,
-				step: services.config().step,
-				template: services.templates().date_scale,
-				date: services.config().date_scale,
-				css: services.templates().scale_cell_class
+				unit: scale.unit || "day",
+				step: scale.step || 1,
+				format: format,
+				css: scale.css
 			};
+		},
+		primaryScale: function(config) {
+			var templates = services.getService("templateLoader");
+			var legacyMode = this._isLegacyMode(config);
+
+			var scaleConfig = config || services.config();
+
+			var result;
+			if(legacyMode){
+				templates.initTemplate("date_scale", undefined, undefined, scaleConfig, services.templates());
+				result = {
+					unit: services.config().scale_unit,
+					step: services.config().step,
+					template: services.templates().date_scale,
+					date: services.config().date_scale,
+					css: services.templates().scale_cell_class
+				};
+			}else{
+				var primaryScale = scaleConfig.scales[0];
+				result = {
+					unit: primaryScale.unit,
+					step: primaryScale.step,
+					template: primaryScale.template,
+					format: primaryScale.format,
+					date: primaryScale.date,
+					css: primaryScale.css || services.templates().scale_cell_class
+				};
+			}
+
+			return this._prepareScaleObject(result);
+		},
+		getSubScales: function(config) {
+			var legacyMode = this._isLegacyMode(config);
+			var scaleConfig = config || services.config();
+			var scales;
+			if(legacyMode){
+				scales = scaleConfig.subscales || [];
+			}else{
+				scales = scaleConfig.scales.slice(1);
+			}
+			
+			return scales.map(function(scale){
+				return this._prepareScaleObject(scale);
+			}.bind(this));
 		},
 
 		prepareConfigs: function (scales, min_coll_width, container_width, scale_height, minDate, maxDate, rtl) {
@@ -24506,6 +25526,8 @@ var Timeline = function(parent, config, factory, gantt){
 	this.$config = utils.mixin({}, config || {});
 	this.$scaleHelper = new ScaleHelper(gantt);
 	this.$gantt = gantt;
+	this._posFromDateCache = {};
+	utils.mixin(this, topPositionMixin());
 	eventable(this);
 };
 
@@ -24552,6 +25574,7 @@ Timeline.prototype = {
 		}
 
 		this._attachLayers(this.$gantt);
+
 		this.callEvent("onReady", []);
 		//this.refresh();
 	},
@@ -24618,14 +25641,24 @@ Timeline.prototype = {
 		if(!this.isVisible())
 			return;
 
+		var scrolled = false;
+
+		this.$config.scrollTop = this.$config.scrollTop || 0;
+		this.$config.scrollLeft = this.$config.scrollLeft || 0;
 		if(top*1 === top){
 			this.$config.scrollTop = top;
 			this.$task_data.scrollTop = this.$config.scrollTop;
+			scrolled = true;
 		}
 		if (left*1 === left){
 			this.$task.scrollLeft = left;
 			this.$config.scrollLeft = this.$task.scrollLeft;
 			this._refreshScales();
+			scrolled = true;
+		}
+
+		if(scrolled){
+			this.callEvent("onScroll", [this.$config.scrollLeft, this.$config.scrollTop]);
 		}
 	},
 
@@ -24636,12 +25669,27 @@ Timeline.prototype = {
 		var config = this.$getConfig();
 		if (!config.smart_scales) return;
 
-		var x = this.$config.scrollLeft;
-		var width = this.$config.width;
+		var viewPort = this.getViewPort();
 
 		var scales = this._scales;
-		this.$task_scale.innerHTML = this._getScaleChunkHtml(scales, x, x + width);
+		this.$task_scale.innerHTML = this._getScaleChunkHtml(scales, viewPort.x, viewPort.x_end);
 	},
+
+	getViewPort: function(){
+		var scrollLeft = this.$config.scrollLeft || 0;
+		var scrollTop = this.$config.scrollTop || 0;
+		var height = this.$config.height || 0;
+		var width = this.$config.width || 0;
+		return {
+			y: scrollTop,
+			y_end: scrollTop + height,
+			x: scrollLeft,
+			x_end: scrollLeft + width,
+			height: height,
+			width: width
+		};
+	},
+
 	_createLayerConfig: function(){
 		var self = this;
 		var taskFilter = function(){
@@ -24651,23 +25699,23 @@ Timeline.prototype = {
 		var taskLayers = [
 			{
 				expose: true,
-				renderer: this.$gantt.$ui.layers.taskBar,
+				renderer: this.$gantt.$ui.layers.taskBar(),
 				container: this.$task_bars,
 				filter: [taskFilter]
 			},
 			{
-				renderer: this.$gantt.$ui.layers.taskSplitBar,
+				renderer: this.$gantt.$ui.layers.taskSplitBar(),
 				filter: [taskFilter],
 				container: this.$task_bars,
 				append: true
 			},
 			{
-				renderer: this.$gantt.$ui.layers.taskBg,
+				renderer: this.$gantt.$ui.layers.taskBg(),
 				container: this.$task_bg,
 				filter: [
-					function(){
-						return !self.$getConfig().static_background;
-					},
+					//function(){
+					//	return !self.$getConfig().static_background;
+					//},
 					taskFilter
 				]
 			}
@@ -24676,7 +25724,7 @@ Timeline.prototype = {
 		var linkLayers = [
 			{
 				expose: true,
-				renderer: this.$gantt.$ui.layers.link,
+				renderer: this.$gantt.$ui.layers.link(),
 				container: this.$task_links,
 				filter: [taskFilter]
 			}
@@ -24694,13 +25742,22 @@ Timeline.prototype = {
 		this._linkLayers = [];
 
 		var self = this;
-
+		var getViewPort = function(){
+			return self.getViewPort();
+		};
 		var layers = this.$gantt.$services.getService("layers");
+
+		function subscribeSmartRender(layer){
+			self.attachEvent("onScroll", function(){
+				if(layer.requestUpdate){
+					layer.requestUpdate();
+				}
+			});
+		}
 
 		if(this.$config.bind){
 
-			self.$config.rowStore = self.$gantt.getDatastore(self.$config.bind);
-
+			this._bindStore();
 			var taskRenderer = layers.getDataRender(this.$config.bind);
 
 			if(!taskRenderer){
@@ -24717,14 +25774,26 @@ Timeline.prototype = {
 				var layer = taskLayers[i];
 
 				if(typeof layer == "string"){
-					layer = this.$gantt.$ui.layers[layer];
+					layer = this.$gantt.$ui.layers[layer]();
 				}
 
-				if(typeof layer == "function"){
+				if(typeof layer == "function" || (layer && layer.render && layer.update)){
 					layer = {renderer: layer};
 				}
 
 				layer.host = this;
+				if(!layer.viewPort){
+					var self = this;
+					layer.getViewPort = function(){
+						if(!self.getViewPort){
+							return null;
+						}
+						return self.getViewPort();
+					};
+				}
+
+				layer.getViewPort = getViewPort;
+				subscribeSmartRender(layer);
 				var bar_layer = taskRenderer.addLayer(layer);
 				this._taskLayers.push(bar_layer);
 				if(layer.expose){
@@ -24750,11 +25819,13 @@ Timeline.prototype = {
 			for(var i = 0; linkLayers && i < linkLayers.length; i++){
 
 				if(typeof layer == "string"){
-					layer = this.$gantt.$ui.layers[layer];
+					layer = this.$gantt.$ui.layers[layer]();
 				}
 
 				var layer = linkLayers[i];
 				layer.host = this;
+				layer.getViewPort = getViewPort;
+				subscribeSmartRender(layer);
 				var linkLayer = linkRenderer.addLayer(layer);
 				this._taskLayers.push(linkLayer);
 				if(linkLayers[i].expose){
@@ -24780,8 +25851,23 @@ Timeline.prototype = {
 			var config = self.$getConfig();
 			if(config.static_background) {
 				var store = self.$gantt.getDatastore(self.$config.bind);
+				var staticBgContainer = self.$task_bg_static;
+				if(!staticBgContainer){
+					staticBgContainer = document.createElement("div");
+					staticBgContainer.className = "gantt_task_bg";
+					self.$task_bg_static = staticBgContainer;
+					if(self.$task_bg.nextSibling){
+						self.$task_data.insertBefore(staticBgContainer, self.$task_bg.nextSibling);
+					}else{
+						self.$task_data.appendChild(staticBgContainer);
+					}
+				}
 				if (store) {
-					staticRender.render(self.$task_bg, config, self.getScale(), config.row_height * store.countVisible());
+					staticRender.render(staticBgContainer, config, self.getScale(), config.row_height * store.countVisible());
+				}
+			}else if(config.static_background){
+				if(self.$task_bg_static && self.$task_bg_static.parentNode){
+					self.$task_bg_static.parentNode.removeChild(self.$task_bg_static);
 				}
 			}
 		});
@@ -24833,6 +25919,7 @@ Timeline.prototype = {
 			var cfgs = helpers.prepareConfigs(scales, config.min_column_width, availWidth, scale_height - 1, state.min_date, state.max_date, config.rtl);
 			var cfg = this._tasks = cfgs[cfgs.length - 1];
 			this._scales = cfgs;
+			this._posFromDateCache = {};
 
 			scales_html = this._getScaleChunkHtml(cfgs, 0, this.$config.width);
 
@@ -24872,10 +25959,12 @@ Timeline.prototype = {
 		var globalTemplates = this.$gantt.$services.templates();
 
 		var cells = [];
-		var date = null, content = null, css = null;
+		var date = null, css = null;
 
-		if (config.template || config.date) {
-			content = config.template || this.$gantt.date.date_to_str(config.date);
+		var content = config.format || config.template || config.date;
+
+		if(typeof content === "string"){
+			content = this.$gantt.date.date_to_str(content);
 		}
 
 		var startIndex = 0,
@@ -24954,6 +26043,11 @@ Timeline.prototype = {
 		if (!this.isVisible())
 			return 0;
 
+		var dateValue = String(date.valueOf());
+
+		if(this._posFromDateCache[dateValue] !== undefined){
+			return this._posFromDateCache[dateValue];
+		}
 		var ind = this.columnIndexByDate(date);
 		this.$gantt.assert(ind >= 0, "Invalid day index");
 
@@ -24974,7 +26068,10 @@ Timeline.prototype = {
 			}
 
 		}
-		return Math.round(pos);
+
+		var roundPos = Math.round(pos);
+		this._posFromDateCache[dateValue] = roundPos;
+		return Math.round(roundPos);
 	},
 
 	_getNextVisibleColumn: function (startIndex, columns, ignores) {
@@ -25093,7 +26190,7 @@ Timeline.prototype = {
 	_getScales: function _get_scales() {
 		var config = this.$getConfig();
 		var helpers = this.$scaleHelper;
-		var scales = [helpers.primaryScale()].concat(config.subscales);
+		var scales = [helpers.primaryScale(config)].concat(helpers.getSubScales(config));
 
 		helpers.sortScales(scales);
 		return scales;
@@ -25102,16 +26199,27 @@ Timeline.prototype = {
 	_getColumnDuration: function _get_coll_duration(scale, date) {
 		return this.$gantt.date.add(date, scale.step, scale.unit) - date;
 	},
-
-	refresh: function(){
-		if(this.$config.bind) {
-			this.$config.rowStore = this.$gantt.getDatastore(this.$config.bind);
+	_bindStore: function () {
+		if (this.$config.bind){
+			var rowStore = this.$gantt.getDatastore(this.$config.bind);
+			this.$config.rowStore = rowStore;
+			if(rowStore && !rowStore._timelineCacheAttached){
+				var self = this;
+				rowStore._timelineCacheAttached = true;
+				rowStore.attachEvent("onBeforeFilter", function(){
+					self._resetTopPositionHeight();
+				});
+			}
 		}
+	},
+	refresh: function(){
+		this._bindStore();
 
 		if(this.$config.bindLinks) {
 			this.$config.linkStore = this.$gantt.getDatastore(this.$config.bindLinks);
 		}
 
+		this._resetTopPositionHeight();
 		this._initStaticBackgroundRender();
 		this._render_tasks_scales();
 	},
@@ -25142,8 +26250,6 @@ Timeline.prototype = {
 
 	}
 };
-
-utils.mixin(Timeline.prototype, topPositionMixin());
 
 module.exports = Timeline;
 
@@ -27723,8 +28829,13 @@ function makeEventable(obj){
 	};
 	obj.detachEvent=function(id){
 		if (id){
-			var list = id.split(':');           //get EventName and ID
-			eventHost[list[0]].removeEvent(list[1]); //remove event
+			var list = id.split(':');//get EventName and ID
+			var eventName = list[0];
+			var eventId = list[1];
+
+			if(eventHost[eventName]){
+				eventHost[eventName].removeEvent(eventId); //remove event
+			}
 		}
 	};
 	obj.detachAllEvents = function(){
@@ -27960,6 +29071,21 @@ function objectKeys(obj) {
 	return result;
 }
 
+function requestAnimationFrame(callback) {
+	var w = window;
+	var foundRequestAnimationFrame = w.requestAnimationFrame
+		|| w.webkitRequestAnimationFrame
+		|| w.msRequestAnimationFrame
+		|| w.mozRequestAnimationFrame
+		|| w.oRequestAnimationFrame
+		|| function(cb) { setTimeout(cb, 1000/60); };
+	return foundRequestAnimationFrame(callback);
+}
+
+function isEventable(obj) {
+	return obj.attachEvent && obj.detachEvent;
+}
+
 module.exports = {
 	getSecondsInUnit: getSecondsInUnit,
 	forEach: forEach,
@@ -27977,7 +29103,9 @@ module.exports = {
 	isNumberObject: isNumberObject,
 	isBooleanObject: isBooleanObject,
 	delay: delay,
-	objectKeys: objectKeys
+	objectKeys: objectKeys,
+	requestAnimationFrame: requestAnimationFrame,
+	isEventable: isEventable
 };
 
 /***/ }),

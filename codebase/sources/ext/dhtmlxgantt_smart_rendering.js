@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.7 Standard
+dhtmlxGantt v.6.2.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -131,7 +131,9 @@ gantt._smart_render = {
 
 		return {
 			y: scrollPos.y,
-			y_end: scrollPos.y + viewSize.y
+			y_end: scrollPos.y + viewSize.y,
+			x: scrollPos.x,
+			x_end: scrollPos.x + viewSize.x
 		};
 	},
 	getScrollSizes: function(){

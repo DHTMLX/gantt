@@ -1,3 +1,15 @@
+
+### 6.2.0
+- Smart rendering is now embedded into the component
+- Smart rendering works for rows and cells in all timelines
+- static_background allows rendering highlighted cells
+- Ability to expand/collapse split tasks (PRO)
+- Add new Zoom module, add the ability to zoom by mousewheel
+- New options for inline editors
+- Simplified scales API
+- Fix bug that caused multiple selected tasks to lose CSS classes after repaint
+- Fix script error when destroying Gantt from data processor handler
+
 ### 6.1.7
 - Fix incorrect behavior of getClosestWorkTime
 - Fix issue with the autoscroll which happened after toggling visibility of the timeline

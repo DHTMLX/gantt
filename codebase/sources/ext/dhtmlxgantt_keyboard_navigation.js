@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.7 Standard
+dhtmlxGantt v.6.2.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -2078,8 +2078,13 @@ function makeEventable(obj){
 	};
 	obj.detachEvent=function(id){
 		if (id){
-			var list = id.split(':');           //get EventName and ID
-			eventHost[list[0]].removeEvent(list[1]); //remove event
+			var list = id.split(':');//get EventName and ID
+			var eventName = list[0];
+			var eventId = list[1];
+
+			if(eventHost[eventName]){
+				eventHost[eventName].removeEvent(eventId); //remove event
+			}
 		}
 	};
 	obj.detachAllEvents = function(){

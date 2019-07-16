@@ -215,7 +215,7 @@ interface GanttTemplates {
 	 * @param item the task object assigned to the row
 	 * @param date the date of a cell
 	*/
-	task_cell_class(item: any, date: Date): string;
+	timeline_cell_class(item: any, date: Date): string;
 
 	/**
 	 * specifies the CSS class that will be applied to task bars

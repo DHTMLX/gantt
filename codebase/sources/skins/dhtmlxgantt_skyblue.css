@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.1.7 Standard
+dhtmlxGantt v.6.2.0 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -1608,6 +1608,13 @@ div.dhx_modal_cover {
   top: 0;
   height: inherit;
   width: inherit;
+}
+.gantt_click_drag_rect {
+  position: absolute;
+  left: 0;
+  top: 0;
+  outline: 1px solid #3f98db;
+  background-color: rgba(52, 152, 219, 0.3);
 }
 .gantt_layout_content {
   width: 100%;
