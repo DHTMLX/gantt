@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.0 Standard
+dhtmlxGantt v.6.2.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -980,8 +980,9 @@ module.exports = function(gantt) {
 
 			scrollHorizontal: function scrollHorizontal(dir) {
 				var date = gantt.dateFromPos(gantt.getScrollState().x);
-				var step = dir < 0 ? -gantt.config.step : gantt.config.step;
-				date = gantt.date.add(date, step, gantt.config.scale_unit);
+				var scale = gantt.getScale();
+				var step = dir < 0 ? -scale.step : scale.step;
+				date = gantt.date.add(date, step, scale.unit);
 				gantt.scrollTo(gantt.posFromDate(date));
 			},
 

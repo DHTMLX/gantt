@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.0 Standard
+dhtmlxGantt v.6.2.1 Standard
 This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
 
 (c) Dinamenta, UAB.
@@ -11708,7 +11708,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.0";
+	this.version = "6.2.1";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -23692,6 +23692,11 @@ function createGridLineRender(gantt){
 
 				if (helpers.isDate(value))
 					value = templates.date_grid(value, item);
+
+				if (value === null || value === undefined) {
+					value = "";
+				}
+
 				textValue = value;
 				value = "<div class='gantt_tree_content'>" + value + "</div>";
 			}
@@ -23913,6 +23918,9 @@ module.exports = function isInViewPort(item, view, viewport){
 		return false;
 	}
 
+	if(!item.start_date || !item.end_date){
+		return false;
+	}
 	var left = view.posFromDate(item.start_date);
 	var right = view.posFromDate(item.end_date);
 	
@@ -25023,7 +25031,7 @@ function createTaskDND(timeline, gantt){
 			this._domEvents.attach(data, "mousedown", gantt.bind(function (e) {
 				this.on_mouse_down(e || event);
 			}, this));
-			this._domEvents.attach(data, "mouseup", gantt.bind(function (e) {
+			this._domEvents.attach(gantt.$root, "mouseup", gantt.bind(function (e) {
 				this.on_mouse_up(e || event);
 			}, this));
 		},
@@ -26042,6 +26050,10 @@ Timeline.prototype = {
 	posFromDate: function posFromDate(date) {
 		if (!this.isVisible())
 			return 0;
+
+		if(!date){
+			return 0;
+		}
 
 		var dateValue = String(date.valueOf());
 

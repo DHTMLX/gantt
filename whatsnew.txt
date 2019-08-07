@@ -1,3 +1,11 @@
+### 6.2.1
+- Fix IE11 compatibility of the click-drag feature
+- Fix the script error which happened when the user tried to add a new task into an empty chart with the resource view
+- Fix the incorrect behavior of the grouping extension which caused assigning an incorrect group value to new tasks
+- Fix a script error in the keyboard navigation extension thrown from the Alt+Arrow key shortcut
+- Filtering in the resource control is changed to ignore text case
+- Task dragging and drag-and-drop may finish on mouseup on any gantt element
+- Fix the script error which happened after saving an unscheduled task
 
 ### 6.2.0
 - Smart rendering is now embedded into the component
