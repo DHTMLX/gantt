@@ -1,4 +1,16 @@
+### 6.2.2
+
+- Add the `gantt.license` property
+- Add the `onLinkCreated` API event for new links, similarly to the `onTaskCreated` functionality for new tasks
+- `gantt.moveTask` returns false when the action is prevented using onBeforeTaskMove
+- Fix the issue which caused a link line to disappear when the render method is called while a user creates a new link
+- Fix the issue when markers were not displayed when their start date was set earlier than the minimal date of the time scale
+- Fix the issue when markers were not displayed when gantt was initialized with the `gantt.config.show_chart = false` config
+- Fix a disappearing modal overlay of the lightbox when a user changed the type of a task
+- Fix the issue in keyboard navigation presets, when onAfterTaskUpdate was fired after Shift+left arrow hotkey even if the action was canceled using onBeforeTaskMove
+
 ### 6.2.1
+
 - Fix IE11 compatibility of the click-drag feature
 - Fix the script error which happened when the user tried to add a new task into an empty chart with the resource view
 - Fix the incorrect behavior of the grouping extension which caused assigning an incorrect group value to new tasks
@@ -8,6 +20,7 @@
 - Fix the script error which happened after saving an unscheduled task
 
 ### 6.2.0
+
 - Smart rendering is now embedded into the component
 - Smart rendering works for rows and cells in all timelines
 - static_background allows rendering highlighted cells
@@ -19,6 +32,7 @@
 - Fix script error when destroying Gantt from data processor handler
 
 ### 6.1.7
+
 - Fix incorrect behavior of getClosestWorkTime
 - Fix issue with the autoscroll which happened after toggling visibility of the timeline
 - Fix bug in the Multiselect extension which caused selected tasks to lose highlight after chart repaint
@@ -27,16 +41,19 @@
 - Fix unexpected behavior which prevented the lightbox and inline editors from overriding constraint dates
 
 ### 6.1.6
+
 - Fix issue with not working click handlers of QuickInfo popup after a second gantt.init call
 - Fix issue with QuickInfo popup not showing up if show_chart config is set to false
 - Fix incorrect `action` argument for dataProcessor router after vertical drag-and-drop
 - Fix issue when gantt.createTask ignores the `index` parameter
 
 ### 6.1.5
+
 - Fix script error on a second gantt.init call when show_chart config is disabled
 - Fix incorrect position of order_branch placeholder in the marker mode
 
 ### 6.1.4
+
 - Fix script error on reinitialization of gantt in the IE browser
 - Fix incorrect behavior of Tooltip extension when gantt.destructor is called
 - Fix incorrect work of inline editors in keyboard_navigation_cell mode when grid contains hidden columns
@@ -44,6 +61,7 @@
 - Fix regression in GPL build which caused a script error on a second gantt.init call
 
 ### 6.1.3
+
 - gantt.createTask/gantt.addTask should use root_id config value instead of hardcoded 0 id
 - Performance increase for worktime calculations for minute and hour duration units
 - Minor performance increase for rendering large lists of tasks in the smart rendering mode
@@ -64,6 +82,7 @@
 - Fix the bug which caused a task not to be recognized as a part of critical path after id change
 
 ### 6.1.2
+
 - Keyboard navigation: add a method for getting the active cell
 - Fix incorrect work of the resource panel after creating a new datastore to overwrite the previous one
 - Fix incorrect values of query parameters in the POST mode of dataProcessor
@@ -73,6 +92,7 @@
 - Fix SalesForce compatibility: new resize listener was broken in SF, fallback is added
 
 ### 6.1.1
+
 - Add missing locale options for the resource lightbox control
 - Fix script error when using gantt.destructor together with the dataProcessor
 - Fix script error when using gantt.destructor together with the resource panel
@@ -82,6 +102,7 @@
 - Fix issues with lightbox and the tooltip extension in the full-screen mode
 
 ### 6.1.0
+
 - Ability to add an overlay for the Gantt Chart (PRO)
 - Time constraints for tasks (PRO)
 - Routing options for dataProcessor
@@ -90,6 +111,7 @@
 - Ability to import dhtmlxGantt as an ES6 module
 
 ### 6.0.7
+
 - reduce the number of redundant repaints of the resource diagram
 - fix script error from the resource diagram after deleting a task
 - fix script error from the fullscreen extension after exiting fullscreen mode on the `Esc` key
@@ -98,11 +120,13 @@
 - fix default mapping of inline editors. Inline editors shouldn't block keyboard shortcuts on task cells
 
 ### 6.0.4
+
 - fix incorrect task position after task vertical dnd in order_branch='marker' mode
 - fix script error after deleting a sub-tree which contains selected task
 - fix script error on Save/Cancel lightbox containing resource filters
 
 ### 6.0.2
+
 - Fix referenceError: getResourceAssignments is not defined when importing Gantt into Vue.js project
 - Fix script error on deleting task after assigning resource to it via resource form
 - Fix JS error in resource diagram after second initialization of Gantt
@@ -110,6 +134,7 @@
 - Fix page freeze on gantt.parse if tasks tree contains cyclic references, script error is thrown instead
 
 ### 6.0
+
 - Advanced resource management
 - New lightbox control for resource management
 - Resource histogram
@@ -123,6 +148,7 @@
 - Performance update for auto scheduling
 
 ### 5.2
+
 - Inline editing in grid
 - Split task support
 - Updated keyboard navigation
@@ -135,6 +161,7 @@
 - Various bugfixes
 
 ### 5.1
+
 - Resource load diagram
 - RTL mode
 - Horizontal scroll for grid and other layout improvements
@@ -146,12 +173,14 @@
 - Many bugfixes
 
 ### 5.0
+
 - Major architecture overhaul
 - Added global layout config
 - Added material skin
 - Various bugfixes
 
 ### 4.2
+
 - Work Time calendars at the task and resource levels
 - WBS code (outline numbers) calculation
 - Autoscroll for drag and drop operations
@@ -164,6 +193,7 @@
 - various fixes
 
 ### 4.1
+
 - Added keyboard navigation
 - Added WAI-ARIA support
 - Added High-contrast themes
@@ -177,6 +207,7 @@
 - Bugfixes with dataProcessor and REST mode support
 
 ### 4.0
+
 - Added Smart rendering of big data sets feature
 - Added Undo/Redo feature
 - Public API improvements - public helpers for popups, ajax, environment variables
@@ -186,6 +217,7 @@
 - Minor bugfixes
 
 ### 3.3
+
 - Added dependency Auto Scheduling feature *
 - Added support for Fullscreen mode
 - Added support of unscheduled tasks
@@ -198,6 +230,7 @@
 * The marked functionality requires Commercial or Enterprise license, and not provided under GPL
 
 ### 3.2
+
 - Added ability to group tasks by custom properties
 - Added multiple selection
 - Added export to iCal and to Excel
@@ -207,6 +240,7 @@
 - New samples and API events
 
 ### 3.1
+
 - Added ability to drag tasks on touch devices
 - Incorrect tooltip behavior on expand/collapse task tree fixed
 - Order of API events during gantt initialization fixed
@@ -217,6 +251,7 @@
 - Improvements in time range calculation
 
 ### 3.0
+
 - Support of Baselines, Deadlines and other custom elements of the timeline *
 - Critical path support *
 
@@ -235,6 +270,7 @@
 
 
 ### 2.1
+
 - Milestone and Projects support
 - Custom configuration of the lightbox for different task types
 - Non-linear scales, ability to skip time from the scale

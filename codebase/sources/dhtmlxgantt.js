@@ -1,8 +1,11 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.1 Standard
-This software is covered by GPL license. You also can obtain Commercial or Enterprise license to use it in non-GPL project - please contact sales@dhtmlx.com. Usage without proper license is prohibited.
+dhtmlxGantt v.6.2.2 Standard
+
+This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
+
+To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
 (c) Dinamenta, UAB.
 
@@ -10586,7 +10589,7 @@ TreeDataStore.prototype = utils.mixin({
 			}
 
 			if(this.callEvent("onBeforeItemMove", [sid, parent, tindex]) === false)
-				return;
+				return false;
 
 			this._replace_branch_child(source_pid, sid);
 			tbranch = this.getChildren(parent);
@@ -11349,7 +11352,7 @@ var createTasksDatastoreFacade = function(){
 		this.$data.tasksStore.close(id);
 	},
 	moveTask: function (sid, tindex, parent) {
-		this.$data.tasksStore.move.apply(this.$data.tasksStore, arguments);
+		return this.$data.tasksStore.move.apply(this.$data.tasksStore, arguments);
 	},
 	sort: function(field, desc, parent, silent) {
 		var render = !silent;//4th argument to cancel redraw after sorting
@@ -11708,7 +11711,8 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.1";
+	this.version = "6.2.2";
+	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
 	this.keys = {
@@ -13802,6 +13806,7 @@ module.exports = function (gantt) {
 			var box = this.getLightbox(type ? type : undefined);
 			this._center_lightbox(this.getLightbox());
 			this._set_lightbox_values(updTask, box);
+			this.showCover();
 		} else {
 			this.resetLightbox();
 			this.getLightbox(type ? type : undefined);
@@ -24231,8 +24236,11 @@ var initLinksDND = function(timeline, gantt) {
 			var type = gantt._get_link_type(drag.link_from_start, drag.link_to_start);
 
 			var link = {source : drag.link_source_id, target: drag.link_target_id, type:type};
-			if(link.type && gantt.isLinkAllowed(link))
-				gantt.addLink(link);
+			if(link.type && gantt.isLinkAllowed(link)) {
+				if(gantt.callEvent("onLinkCreated", [link])){
+					gantt.addLink(link);
+				}
+			}
 		}
 
 		resetDndState();
@@ -24380,7 +24388,7 @@ var initLinksDND = function(timeline, gantt) {
 
 	}
 	function getDirectionLine(){
-		if(!dnd._direction){
+		if(!dnd._direction || !dnd._direction.parentNode){
 			dnd._direction = document.createElement("div");
 			timeline.$task_links.appendChild(dnd._direction);
 		}
@@ -24394,6 +24402,11 @@ var initLinksDND = function(timeline, gantt) {
 			dnd._direction = null;
 		}
 	}
+	gantt.attachEvent("onGanttRender", gantt.bind(function() {
+		if(dnd._direction){
+			showDirectingLine(this._dir_start.x, this._dir_start.y, this._dir_end.x, this._dir_end.y);
+		}
+	}, this));
 };
 
 module.exports = {
