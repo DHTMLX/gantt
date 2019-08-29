@@ -1,13 +1,13 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.2 Standard
+dhtmlxGantt v.6.2.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
-(c) Dinamenta, UAB.
+(c) XB Software Ltd.
 
 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -144,27 +144,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	var backupElementSizes = {
 		width:null,
 		height:null,
+		top:null,
+		position:null,
 		modified: false
 	};
 
-	// ie11 doesn't expand gantt root element to fullscreen automatically
-	function workaroundIESizing(){
+	// expand gantt root element to fullscreen automatically
+	function setFullScreenSizes(){
 		var root = gantt.$root;
-		if(root.offsetWidth < window.innerWidth){
-			backupElementSizes.width = root.style.width;
-			backupElementSizes.height = root.style.height;
-			root.style.width = '100vw';
-			root.style.height = '100vh';
-			backupElementSizes.modified = true;
-		}
+		backupElementSizes.width = root.style.width;
+		backupElementSizes.height = root.style.height;
+		backupElementSizes.top = root.style.top;
+		backupElementSizes.position = root.style.position;
+		root.style.width = '100vw';
+		root.style.height = '100vh';
+		root.style.top = '0';
+		root.style.position = 'absolute';
+		backupElementSizes.modified = true;
 	}
 
-	function workaroundIESizingEnd(){
+	function setNotFullScreenSizes(){
 		var root = gantt.$root;
 		if(backupElementSizes.modified){
 			root.style.width = backupElementSizes.width;
 			root.style.height = backupElementSizes.height;
+			root.style.top = backupElementSizes.top;
+			root.style.position = backupElementSizes.position;
 			backupElementSizes.modified = false;
+		}
+	}
+
+	function prepareGanttContainer(isGanttExpanded){
+		if(isGanttExpanded){
+			setFullScreenSizes();
+			setTimeout(function(){
+				gantt.render();
+			});
+		}
+		else {
+			setNotFullScreenSizes();
+			gantt.render();
 		}
 	}
 
@@ -175,27 +194,29 @@ return /******/ (function(modules) { // webpackBootstrap
 		}
 
 		var isGanttExpanded = isExpanded();
+		prepareGanttContainer(isGanttExpanded);
 		if(isGanttExpanded){
 			expanded = true;
-			workaroundIESizing();
 			setTimeout(function(){
 				gantt.callEvent("onExpand");
 			});
 		}else if (expanded){
 			expanded = false;
-			workaroundIESizingEnd();
 			setTimeout(function(){
 				gantt.callEvent("onCollapse");
 			});
 		}
 	}
 
-	gantt.event(document, "webkitfullscreenchange", onFullScreenChange);
-	gantt.event(document, "mozfullscreenchange", onFullScreenChange);
-	gantt.event(document, "MSFullscreenChange", onFullScreenChange);
-//For IE on Win 10
-	gantt.event(document, "fullscreenChange", onFullScreenChange);
-	gantt.event(document, "fullscreenchange", onFullScreenChange);
+	function addDOMEvents(){
+		gantt.event(document, "webkitfullscreenchange", onFullScreenChange);
+		gantt.event(document, "mozfullscreenchange", onFullScreenChange);
+		gantt.event(document, "MSFullscreenChange", onFullScreenChange);
+		//For IE on Win 10
+		gantt.event(document, "fullscreenChange", onFullScreenChange);
+		gantt.event(document, "fullscreenchange", onFullScreenChange);
+	}	
+	gantt.attachEvent("onGanttReady", addDOMEvents);
 
 	function cantFullscreen(){
 		if(!gantt.$container){

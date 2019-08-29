@@ -1,13 +1,13 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.2 Standard
+dhtmlxGantt v.6.2.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
-(c) Dinamenta, UAB.
+(c) XB Software Ltd.
 
 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -144,6 +144,21 @@ gantt.attachEvent("onGanttReady", function () {
 });
 gantt.attachEvent("onDestroy", function () {
     tooltipManager.destructor();
+});
+gantt.attachEvent("onLightbox", function () {
+    tooltipManager.hideTooltip();
+});
+var isLinkCreate = function () {
+    var state = gantt.getState();
+    return !!state.link_source_id;
+};
+gantt.attachEvent("onBeforeTooltip", function () {
+    if (isLinkCreate()) {
+        return false;
+    }
+});
+gantt.attachEvent("onGanttScroll", function () {
+    tooltipManager.hideTooltip();
 });
 
 
@@ -308,10 +323,14 @@ var TooltipManager = /** @class */ (function () {
         this.tooltip = new tooltip_1.Tooltip();
         this._listeners = {};
         this._domEvents = domEventsScope();
+        this._initDelayedFunctions();
     }
     TooltipManager.prototype.destructor = function () {
         this.tooltip.hide();
         this._domEvents.detachAll();
+    };
+    TooltipManager.prototype.hideTooltip = function () {
+        this.delayHide();
     };
     TooltipManager.prototype.attach = function (config) {
         var _this = this;
@@ -326,19 +345,25 @@ var TooltipManager = /** @class */ (function () {
             if (domHelpers.isChildOf(eventTarget, _this.tooltip.getNode())) {
                 return;
             }
+            var doOnMouseEnter = function () {
+                watchableTarget = targetNode;
+                config.onmouseenter(event, targetNode);
+            };
             if (watchableTarget) {
-                if (targetNode) {
+                if (targetNode && targetNode === watchableTarget) {
                     config.onmousemove(event, targetNode);
                 }
                 else {
                     config.onmouseleave(event, watchableTarget);
                     watchableTarget = null;
+                    if (targetNode && targetNode !== watchableTarget) {
+                        doOnMouseEnter();
+                    }
                 }
             }
             else {
                 if (targetNode) {
-                    watchableTarget = targetNode;
-                    config.onmouseenter(event, targetNode);
+                    doOnMouseEnter();
                 }
             }
         };
@@ -367,38 +392,55 @@ var TooltipManager = /** @class */ (function () {
             }
             return clone;
         };
-        var delayShow = helpers.delay(function (event, html) {
-            _this.tooltip.setContent(html);
-            _this.tooltip.show(event);
-        }, gantt.config.tooltip_timeout || 1);
-        var delayHide = helpers.delay(function () {
-            delayShow.$cancelTimeout();
-            _this.tooltip.hide();
-        }, gantt.config.tooltip_hide_timeout || 1);
+        this._initDelayedFunctions();
         this.attach({
             selector: config.selector,
             global: config.global,
             onmouseenter: function (event, node) {
                 var html = config.html(event, node);
                 if (html) {
-                    delayShow(cloneDomEvent(event), html);
+                    _this.delayShow(cloneDomEvent(event), html);
                 }
             },
             onmousemove: function (event, node) {
                 var html = config.html(event, node);
                 if (html) {
-                    delayShow(cloneDomEvent(event), html);
+                    _this.delayShow(cloneDomEvent(event), html);
                 }
                 else {
-                    delayShow.$cancelTimeout();
-                    delayHide();
+                    _this.delayShow.$cancelTimeout();
+                    _this.delayHide();
                 }
             },
             onmouseleave: function () {
-                delayShow.$cancelTimeout();
-                delayHide();
+                _this.delayShow.$cancelTimeout();
+                _this.delayHide();
             },
         });
+    };
+    TooltipManager.prototype._initDelayedFunctions = function () {
+        var _this = this;
+        // reset delayed functions in order to apply current values of tooltip_timeout
+        if (this.delayShow) {
+            this.delayShow.$cancelTimeout();
+        }
+        if (this.delayHide) {
+            this.delayHide.$cancelTimeout();
+        }
+        this.tooltip.hide();
+        this.delayShow = helpers.delay(function (event, html) {
+            if (gantt.callEvent("onBeforeTooltip", [event]) === false) {
+                _this.tooltip.hide();
+            }
+            else {
+                _this.tooltip.setContent(html);
+                _this.tooltip.show(event);
+            }
+        }, gantt.config.tooltip_timeout || 1);
+        this.delayHide = helpers.delay(function () {
+            _this.delayShow.$cancelTimeout();
+            _this.tooltip.hide();
+        }, gantt.config.tooltip_hide_timeout || 1);
     };
     return TooltipManager;
 }());

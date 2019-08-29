@@ -1,13 +1,13 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.2 Standard
+dhtmlxGantt v.6.2.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
-(c) Dinamenta, UAB.
+(c) XB Software Ltd.
 
 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/*!************************************************!*\
+  !*** ./node_modules/webpack/buildin/global.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6586,7 +6586,8 @@ module.exports = function () {
         wai_aria_attributes: true,
         smart_scales: true,
         rtl: false,
-        placeholder_task: false
+        placeholder_task: false,
+        horizontal_scroll_key: "shiftKey"
     };
     return result;
 };
@@ -11358,10 +11359,11 @@ var createTasksDatastoreFacade = function(){
 		var render = !silent;//4th argument to cancel redraw after sorting
 
 		this.$data.tasksStore.sort(field, desc, parent);
+		this.callEvent("onAfterSort", [field, desc, parent]);
+
 		if (render) {
 			this.render();
 		}
-		this.callEvent("onAfterSort", [field, desc, parent]);
 	}
 };
 };
@@ -11711,7 +11713,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.2";
+	this.version = "6.2.3";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -12464,7 +12466,7 @@ module.exports = function (gantt) {
 		var mapping = gantt._resolve_default_mapping(config);
 
 		if (!typeSelect._eventsInitialized) {
-			typeSelect.addEventListener("input", function (e) {
+			typeSelect.addEventListener("change", function (e) {
 				toggleTimeSelect(timeSelects, e.target.value);
 			});
 			typeSelect._eventsInitialized = true;
@@ -15557,34 +15559,40 @@ function createResourceMethods(gantt){
 		return res;
 	}
 
+	var falsyValuePreffix = String(Math.random());
+	function resourceHashFunction(value){
+		if (value === null){
+			return falsyValuePreffix + String(value);
+		}
+		return String(value);
+	}
+
 	function getResourceTasks(property, resourceIds) {
 		var res;
-
 		var cacheKey = resourceIds.join("_") + "_" + property;
-
 		var resourceHash = {};
-		for (var i = 0; i < resourceIds.length; i++) {
-			resourceHash[resourceIds[i]] = true;
-		}
+		helpers.forEach(resourceIds, function(resourceId) {
+			resourceHash[resourceHashFunction(resourceId)] = true;
+		});
 
 		if (!resourceTaskCache[cacheKey]) {
 			res = resourceTaskCache[cacheKey] = [];
 			gantt.eachTask(function (task) {
-				if (task.type == gantt.config.types.project)
-					return;
-
-				var resourceValue;
-				if (!helpers.isArray(task[property])) {
-					resourceValue = [task[property]];
-				} else {
-					resourceValue = task[property];
-				}
-
-				helpers.forEach(resourceValue, function(value) {
-					if(value && (resourceHash[value]  || resourceHash[value.resource_id])) {
-						res.push(task);
+				if (task.type == gantt.config.types.project) return;
+				if (property in task) {
+					var resourceValue;
+					if (!helpers.isArray(task[property])) {
+						resourceValue = [task[property]];
+					} else {
+						resourceValue = task[property];
 					}
-				});
+					helpers.forEach(resourceValue, function(value) {
+						if (resourceHash[resourceHashFunction(value)] || (value && resourceHash[resourceHashFunction(value.resource_id)])) {
+							res.push(task);
+						}
+					});
+
+				}
 			});
 		} else {
 			res = resourceTaskCache[cacheKey];
@@ -21009,6 +21017,7 @@ var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/uti
 var ScrollbarCell = (function (_super) {
 	"use strict";
 
+	var SCROLL_MODIFIER_KEYS = ["altKey", "shiftKey", "metaKey"]; // it's no way to disable ctrl+wheel
 	__extends(ScrollbarCell, _super);
 	function ScrollbarCell(parent, config, factory, gantt) {
 
@@ -21440,11 +21449,18 @@ var ScrollbarCell = (function (_super) {
 		var wx = ff ? (e.deltaX*-20) : e.wheelDeltaX*2;
 		var wy = ff ? (e.deltaY*-40) : e.wheelDelta;
 
-		if(e.shiftKey && !(e.deltaX || e.wheelDeltaX)){
-			// shift+mousewheel for horizontal scroll
-			wx = wy*2;
-			wy = 0;
+		var horizontalScrollModifier = this.$gantt.config.horizontal_scroll_key;
+
+		if (horizontalScrollModifier !== false) {
+			if (SCROLL_MODIFIER_KEYS.indexOf(horizontalScrollModifier) >= 0) {
+				if(e[horizontalScrollModifier] && !(e.deltaX || e.wheelDeltaX)){
+					// shift+mousewheel for horizontal scroll
+					wx = wy*2;
+					wy = 0;
+				}
+			}
 		}
+
 
 		if (wx && Math.abs(wx) > Math.abs(wy)){
 			if(this._isVertical()){
@@ -24041,7 +24057,9 @@ var initLinksDND = function(timeline, gantt) {
 		_link_target_task,
 		_link_target_task_start,
 		_link_source_task,
-		_link_source_task_start;
+		_link_source_task_start,
+		markerDefaultOffset = 10,
+		scrollDefaultSize = 18;
 
 
 	function getVisibleMilestoneWidth() {
@@ -24166,9 +24184,50 @@ var initLinksDND = function(timeline, gantt) {
 		return res;
 	}
 
+	function getVieportSize(){
+		var root = gantt.$root;
+		return { right: root.offsetWidth, bottom: root.offsetHeight };
+	}
+	function getMarkerSize (marker){
+		var width = 0, height = 0;
+		if(marker){
+			width = marker.offsetWidth || 0;
+			height = marker.offsetHeight || 0;
+		}
+		return { width: width, height: height };
+	}
+
+	function getPosition(e, marker){
+		var oldPos = dnd.getPosition(e);
+
+		var markerSize = getMarkerSize(marker);
+		var viewportSize = getVieportSize();
+
+		var offsetX = gantt.config.tooltip_offset_x || markerDefaultOffset;
+		var offsetY = gantt.config.tooltip_offset_y || markerDefaultOffset;
+
+		var scrollSize = gantt.config.scroll_size || scrollDefaultSize;
+
+		var position = {
+			y: oldPos.y + offsetY,
+			x: oldPos.x + offsetX,
+			bottom: oldPos.y + markerSize.height + offsetY + scrollSize,
+			right: oldPos.x + markerSize.width + offsetX + scrollSize
+		};
+
+		if(position.bottom > viewportSize.bottom){
+			position.y = viewportSize.bottom - markerSize.height - offsetY;
+		}
+
+		if(position.right > viewportSize.right){
+			position.x = viewportSize.right - markerSize.width - offsetX;
+		}
+		return position;
+	}
+
 	dnd.attachEvent("onDragMove", gantt.bind(function(obj,e) {
 		var dd = dnd.config;
-		var pos = dnd.getPosition(e);
+		var pos = getPosition(e, dd.marker);
 		advanceMarker(dd.marker, pos);
 		var landing = !!domHelpers.locateClassName(e, link_landing_hover_area);
 
@@ -24280,8 +24339,8 @@ var initLinksDND = function(timeline, gantt) {
 	}
 
 	function advanceMarker(marker, pos){
-		marker.style.left = pos.x + 5 + "px";
-		marker.style.top = pos.y + 5 + "px";
+		marker.style.left = pos.x + "px";
+		marker.style.top = pos.y + "px";
 	}
 
 	function resetDndState(){

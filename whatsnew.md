@@ -1,3 +1,16 @@
+### 6.2.3
+
+- Fix the incorrect work of the Constraint control in IE11 and MS Edge browsers
+- Fix the size of the Gantt element in Fullscreen mode
+- Fix the issue with onExpand and onCollapse events not being called from Fullscreen mode
+- Correct the Tooltip position when the mouse pointer is near the left/right edge of the screen
+- The Tooltip should now be hidden when the Lightbox is opened
+- The Tooltip should now be hidden when the chart is scrolled
+- Fix the incorrect work of Tooltip which caused the tooltip not to be updated when mouse pointer moved between two elements matching the same selector
+- Fix the incorrect work of getTaskBy when null or 0 is provided as a second argument
+- Fix the issue with WBS column not being updated after sorting the gantt
+- Fix the incorrect display of static_background in Material skin
+
 ### 6.2.2
 
 - Add the `gantt.license` property

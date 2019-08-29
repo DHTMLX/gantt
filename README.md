@@ -1,4 +1,4 @@
-# dhtmlxGantt v.6.2.2
+# dhtmlxGantt v.6.2.3
 
 dhtmlxGantt is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
 
@@ -70,13 +70,13 @@ gantt.parse({
 
 ## License
 
-dhtmlxGantt v.6.2.2 Standard
+dhtmlxGantt v.6.2.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
-(c) Dinamenta, UAB.
+(c) XB Software Ltd.
 
 
 ## Useful links
