@@ -1,3 +1,9 @@
+### 6.2.4
+
+- Fix the issue with task branches being collapsed after updating data using gantt.parse
+- Fix the incorrect work of smart rendering in the resource view
+- Fix the issue which caused the Zoom module to attach redundant DOM event handlers on each re-initialization of the Gantt 
+
 ### 6.2.3
 
 - Fix the incorrect work of the Constraint control in IE11 and MS Edge browsers

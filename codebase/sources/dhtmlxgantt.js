@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.3 Standard
+dhtmlxGantt v.6.2.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -6586,8 +6586,7 @@ module.exports = function () {
         wai_aria_attributes: true,
         smart_scales: true,
         rtl: false,
-        placeholder_task: false,
-        horizontal_scroll_key: "shiftKey"
+        placeholder_task: false
     };
     return result;
 };
@@ -9424,8 +9423,8 @@ DataStore.prototype = {
 			if(this.callEvent("onItemLoading", [item])){
 				if (!this.pull.hasOwnProperty(item.id)) {
 					this.fullOrder.push(item.id);
-					loaded.push(item);
 				}
+				loaded.push(item);
 				this.pull[item.id] = item;
 			}
 		}
@@ -10106,7 +10105,6 @@ function initDataStores(gantt){
 		if (task.parent === undefined) {
 			this.setParent(task, this.config.root_id);
 		}
-
 		return task;
 	}
 
@@ -11713,7 +11711,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.3";
+	this.version = "6.2.4";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -11835,6 +11833,9 @@ module.exports = function() {
 	__webpack_require__(/*! ./load */ "./sources/core/load.js")(gantt);
 	__webpack_require__(/*! ./worktime/work_time */ "./sources/core/worktime/work_time.js")(gantt);
 	__webpack_require__(/*! ./data */ "./sources/core/data.js")(gantt);
+
+	__webpack_require__(/*! ../publish_helpers/void_script_second */ "./sources/publish_helpers/void_script_second.ts").default(gantt);
+
 	__webpack_require__(/*! ./lightbox */ "./sources/core/lightbox/index.js")(gantt);
 	__webpack_require__(/*! ./lightbox_optional_time */ "./sources/core/lightbox_optional_time.js")(gantt);
 	__webpack_require__(/*! ./data_task_types */ "./sources/core/data_task_types.gpl.js")(gantt);
@@ -11851,7 +11852,7 @@ module.exports = function() {
 	__webpack_require__(/*! ../locale */ "./sources/locale/index.js")(gantt);
 	__webpack_require__(/*! ./gantt_core */ "./sources/core/gantt_core.js")(gantt);
 	__webpack_require__(/*! ./destructor */ "./sources/core/destructor.js")(gantt);
-
+	__webpack_require__(/*! ../publish_helpers/void_script_third */ "./sources/publish_helpers/void_script_third.ts").default(gantt);
 	return gantt;
 };
 
@@ -15679,41 +15680,66 @@ function createResourceMethods(gantt){
 	}
 
 	function generateRenderResourceLine(){
+
+		var renderedResourceLines = {};
+
+		function renderResourceLineCell(resource, day, templates, config, timeline){
+			var css = templates.resource_cell_class(day.start_date, day.end_date, resource, day.tasks);
+			var content = templates.resource_cell_value(day.start_date, day.end_date, resource, day.tasks);
+
+			if (css || content){
+				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
+				var el = document.createElement('div');
+				el.className = ["gantt_resource_marker", css].join(" ");
+
+				el.style.cssText = [
+					'left:' + sizes.left + 'px',
+					'width:' + sizes.width + 'px',
+					'height:' + (config.row_height - 1) + 'px',
+					'line-height:' + (config.row_height - 1) + 'px',
+					'top:' + sizes.top + 'px'
+				].join(";");
+
+				if(content)
+					el.innerHTML = content;
+				
+				return el;
+			}
+			return null;
+		}
+
+		function detachRenderedResourceLine(id, index){
+			if(renderedResourceLines[id] && renderedResourceLines[id][index] &&
+				renderedResourceLines[id][index].parentNode
+				){
+					renderedResourceLines[id][index].parentNode.removeChild(renderedResourceLines[id][index]);
+				}
+		}
+
 		function renderResourceLine(resource, timeline, viewport) {
 			if(!isInViewPort(resource, timeline, viewport)){
 				return null;
 			}
 			var config = timeline.$getConfig(),
 				templates = timeline.$getTemplates();
+			var scale = timeline.getScale();
 			var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
 
 			var cells = [];
+			renderedResourceLines[resource.id] = {};
 			for (var i = 0; i < timetable.length; i++) {
 
 				var day = timetable[i];
-
-				var css = templates.resource_cell_class(day.start_date, day.end_date, resource, day.tasks);
-				var content = templates.resource_cell_value(day.start_date, day.end_date, resource, day.tasks);
-
-				if (css || content){
-					var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
-					var el = document.createElement('div');
-					el.className = ["gantt_resource_marker", css].join(" ");
-
-					el.style.cssText = [
-						'left:' + sizes.left + 'px',
-						'width:' + sizes.width + 'px',
-						'height:' + (config.row_height - 1) + 'px',
-						'line-height:' + (config.row_height - 1) + 'px',
-						'top:' + sizes.top + 'px'
-					].join(";");
-
-					if(content)
-						el.innerHTML = content;
-
-					cells.push(el);
+				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+				if(!isColumnVisible(columnIndex, scale, viewport)){
+					continue;
 				}
 
+				var cell = renderResourceLineCell(resource, day, templates, config, timeline);
+				if(cell){
+					cells.push(cell);
+					renderedResourceLines[resource.id][columnIndex] = cell;
+				}
 			}
 
 			var row = null;
@@ -15723,10 +15749,42 @@ function createResourceMethods(gantt){
 					row.appendChild(cells[i]);
 				}
 			}
-
 			return row;
 		}
-		return smartRender(renderResourceLine, function(){}, isInViewPort);
+
+		function updateResourceLine(resource, timeline, engine, viewport) {
+			if(!isInViewPort(resource, timeline, viewport)){
+				return null;
+			}
+			var row = engine.rendered[resource.id];
+			var config = timeline.$getConfig(),
+				templates = timeline.$getTemplates();
+			var scale = timeline.getScale();
+			var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
+
+			for (var i = 0; i < timetable.length; i++) {
+
+				var day = timetable[i];
+				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+				if(!isColumnVisible(columnIndex, scale, viewport)){
+					detachRenderedResourceLine(resource.id, columnIndex);
+					continue;
+				}
+
+				if(!renderedResourceLines[resource.id] || !renderedResourceLines[resource.id][columnIndex]){
+					var cell = renderResourceLineCell(resource, day, templates, config, timeline);
+					if(cell){
+						row.appendChild(cell);
+						renderedResourceLines[resource.id][columnIndex] = cell;
+					}
+				}
+				else if(renderedResourceLines[resource.id] && renderedResourceLines[resource.id][columnIndex] && !renderedResourceLines[resource.id][columnIndex].parentNode){
+					row.appendChild(renderedResourceLines[resource.id][columnIndex]);
+				}
+			}
+		}
+
+		return smartRender(renderResourceLine, updateResourceLine, isInViewPort, true);
 	}
 	
 	function renderBar(level, start, end, timeline){
@@ -15769,6 +15827,17 @@ function createResourceMethods(gantt){
 
 		var renderedHistogramCells = {};
 		var renderedHistogramRows = {};
+		var renderedHistogramCapacity = {};
+
+		function detachRenderedHistogramCell(id, index){
+
+			var renderedRow = renderedHistogramCells[id];
+			if(renderedRow && renderedRow[index] && 
+				renderedRow[index].parentNode
+				){
+					renderedRow[index].parentNode.removeChild(renderedRow[index]);
+				}
+		}
 
 		function renderHistogramLine(capacity, timeline, maxCapacity, viewPort){
 			var scale = timeline.getScale();
@@ -15803,6 +15872,58 @@ function createResourceMethods(gantt){
 			return el;
 		}
 
+		function renderCapacityElement(resource, sizes, capacityMatrix, config, timeline, maxCapacity, viewport){
+
+			var renderedElement = renderedHistogramCapacity[resource.id];
+			if(renderedElement && renderedElement.parentNode){
+				renderedElement.parentNode.removeChild(renderedElement);
+			}
+
+			var capacityElement = renderHistogramLine(capacityMatrix, timeline, maxCapacity, viewport);
+			if (capacityElement) {
+				capacityElement.setAttribute("data-resource-id", resource.id);
+				capacityElement.style.position = "absolute";
+				capacityElement.style.top = (sizes.top + 1) + "px";
+				capacityElement.style.height = (config.row_height - 1) + "px";
+				capacityElement.style.left = 0;
+			}
+			return capacityElement;
+		}
+
+		function renderHistogramCell(resource, sizes, maxCapacity, config, templates, day){
+			var css = templates.histogram_cell_class(day.start_date, day.end_date, resource, day.tasks);
+			var content = templates.histogram_cell_label(day.start_date, day.end_date, resource, day.tasks);
+			var fill = templates.histogram_cell_allocated(day.start_date, day.end_date, resource, day.tasks);
+			if(css || content){
+				var el = document.createElement('div');
+				el.className = ["gantt_histogram_cell", css].join(" ");
+
+				el.style.cssText = [
+					'left:' + sizes.left + 'px',
+					'width:' + sizes.width + 'px',
+					'height:' + (config.row_height - 1) + 'px',
+					'line-height:' + (config.row_height - 1) + 'px',
+					'top:' + (sizes.top + 1) + 'px'
+				].join(";");
+
+
+				if (content) {
+					content = "<div class='gantt_histogram_label'>" + content +"</div>";
+				}
+
+				if (fill) {
+					content = "<div class='gantt_histogram_fill' style='height:"+(Math.min(fill/maxCapacity||0, 1)*100)+"%;'></div>" + content;
+				}
+
+				if (content) {
+					el.innerHTML = content;
+				}
+
+				return el;
+			}
+			return null;
+		}
+
 		function renderResourceHistogram(resource, timeline, viewport) {
 			if(!isInViewPort(resource, timeline, viewport)){
 				return null;
@@ -15817,49 +15938,23 @@ function createResourceMethods(gantt){
 			var maxCapacity = resource.capacity || timeline.$config.capacity || 24;
 			renderedHistogramCells[resource.id] = {};
 			renderedHistogramRows[resource.id] = null;
+			renderedHistogramCapacity[resource.id] = null;
 			for (var i = 0; i < timetable.length; i++) {
-
 				var day = timetable[i];
 				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
 				if(!isColumnVisible(columnIndex, scale, viewport)){
 					continue;
 				}
 
-				var css = templates.histogram_cell_class(day.start_date, day.end_date, resource, day.tasks);
-				var content = templates.histogram_cell_label(day.start_date, day.end_date, resource, day.tasks);
-				var fill = templates.histogram_cell_allocated(day.start_date, day.end_date, resource, day.tasks);
 				var capacity = templates.histogram_cell_capacity(day.start_date, day.end_date, resource, day.tasks);
 				capacityMatrix[day.start_date.valueOf()] = capacity || 0;
-				if(css || content){
-					var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
-					var el = document.createElement('div');
-					el.className = ["gantt_histogram_cell", css].join(" ");
+				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
 
-					el.style.cssText = [
-						'left:' + sizes.left + 'px',
-						'width:' + sizes.width + 'px',
-						'height:' + (config.row_height - 1) + 'px',
-						'line-height:' + (config.row_height - 1) + 'px',
-						'top:' + (sizes.top + 1) + 'px'
-					].join(";");
-
-
-					if (content) {
-						content = "<div class='gantt_histogram_label'>" + content +"</div>";
-					}
-
-					if (fill) {
-						content = "<div class='gantt_histogram_fill' style='height:"+(Math.min(fill/maxCapacity||0, 1)*100)+"%;'></div>" + content;
-					}
-
-					if (content) {
-						el.innerHTML = content;
-					}
-
+				var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day);
+				if(el){
 					cells.push(el);
 					renderedHistogramCells[resource.id][columnIndex] = el;
 				}
-
 			}
 
 			var row = null;
@@ -15869,24 +15964,63 @@ function createResourceMethods(gantt){
 					row.appendChild(cells[i]);
 				}
 
-				var capacityElement = renderHistogramLine(capacityMatrix, timeline, maxCapacity, viewport);
-
-				if (capacityElement) {
-					capacityElement.setAttribute("data-resource-id", resource.id);
-					capacityElement.style.position = "absolute";
-					capacityElement.style.top = (sizes.top + 1) + "px";
-					capacityElement.style.height = (config.row_height - 1) + "px";
-					capacityElement.style.left = 0;
+				var capacityElement = renderCapacityElement(resource, sizes, capacityMatrix, config, timeline, maxCapacity, viewport);
+				if(capacityElement){
 					row.appendChild(capacityElement);
+					renderedHistogramCapacity[resource.id] = capacityElement;
 				}
-
 				renderedHistogramRows[resource.id] = row;
 			}
 
 			return row;
 		}
 
-		return smartRender(renderResourceHistogram, function(){}, isInViewPort);
+		function updateResourceHistogram(resource, timeline, engine, viewport) {
+			if(!isInViewPort(resource, timeline, viewport)){
+				return null;
+			}
+			var row = engine.rendered[resource.id];
+
+			var config = timeline.$getConfig(),
+				templates = timeline.$getTemplates();
+			var scale = timeline.getScale();
+			var timetable = getResourceLoad(resource, config.resource_property, scale, timeline);
+			var maxCapacity = resource.capacity || timeline.$config.capacity || 24;
+			var capacityMatrix = {};
+
+			for (var i = 0; i < timetable.length; i++) {
+				var day = timetable[i];
+				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+				var capacity = templates.histogram_cell_capacity(day.start_date, day.end_date, resource, day.tasks);
+				capacityMatrix[day.start_date.valueOf()] = capacity || 0;
+				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
+
+				if(!isColumnVisible(columnIndex, scale, viewport)){
+					detachRenderedHistogramCell(resource.id, columnIndex);
+					continue;
+				}
+
+				var renderedCell = renderedHistogramCells[resource.id];
+				if(!renderedCell || !renderedCell[columnIndex]){
+					var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day);
+					if(el){
+						row.appendChild(el);
+						renderedHistogramCells[resource.id][columnIndex] = el;
+					}
+				}
+				else if(renderedCell && renderedCell[columnIndex] && !renderedCell[columnIndex].parentNode){
+					row.appendChild(renderedCell[columnIndex]);
+				}
+			}
+
+			var capacityElement = renderCapacityElement(resource, sizes, capacityMatrix, config, timeline, maxCapacity, viewport);
+			if(capacityElement){
+				row.appendChild(capacityElement);
+				renderedHistogramCapacity[resource.id] = capacityElement;
+			}
+		}
+
+		return smartRender(renderResourceHistogram, updateResourceHistogram, isInViewPort, true);
 	}
 	
 
@@ -16133,20 +16267,20 @@ var TimelineZoom = /** @class */ (function () {
             if (!el) {
                 return;
             }
-            _this._eventAttached = _this.$gantt.event(el, event, function (e) {
-                if (_this._useKey) {
-                    if (USE_KEY.indexOf(_this._useKey) < 0) {
+            _this._domEvents.attach(el, event, _this.$gantt.bind(function (e) {
+                if (this._useKey) {
+                    if (USE_KEY.indexOf(this._useKey) < 0) {
                         return false;
                     }
-                    if (!e[_this._useKey]) {
+                    if (!e[this._useKey]) {
                         return false;
                     }
                 }
-                if (typeof _this._handler === "function") {
-                    _this._handler.apply(_this, [e]);
+                if (typeof this._handler === "function") {
+                    this._handler.apply(this, [e]);
                     return true;
                 }
-            });
+            }, _this));
         };
         this._defaultHandler = function (e) {
             var timelineOffset = _this.$gantt.$task.getBoundingClientRect().x;
@@ -16167,6 +16301,7 @@ var TimelineZoom = /** @class */ (function () {
             }
         };
         this.$gantt = gantt;
+        this._domEvents = this.$gantt._createDomEventScope();
     }
     TimelineZoom.prototype.init = function (config) {
         var _this = this;
@@ -16185,9 +16320,7 @@ var TimelineZoom = /** @class */ (function () {
                 _this._getVisibleDate();
             });
         }
-        if (this._eventAttached) {
-            this.$gantt.eventRemove(this._eventAttached);
-        }
+        this._domEvents.detachAll();
         if (config.trigger === "wheel") {
             if (this.$gantt.$root) {
                 this._attachWheelEvent(config);
@@ -21017,7 +21150,6 @@ var __extends = __webpack_require__(/*! ../../../utils/extends */ "./sources/uti
 var ScrollbarCell = (function (_super) {
 	"use strict";
 
-	var SCROLL_MODIFIER_KEYS = ["altKey", "shiftKey", "metaKey"]; // it's no way to disable ctrl+wheel
 	__extends(ScrollbarCell, _super);
 	function ScrollbarCell(parent, config, factory, gantt) {
 
@@ -21449,18 +21581,11 @@ var ScrollbarCell = (function (_super) {
 		var wx = ff ? (e.deltaX*-20) : e.wheelDeltaX*2;
 		var wy = ff ? (e.deltaY*-40) : e.wheelDelta;
 
-		var horizontalScrollModifier = this.$gantt.config.horizontal_scroll_key;
-
-		if (horizontalScrollModifier !== false) {
-			if (SCROLL_MODIFIER_KEYS.indexOf(horizontalScrollModifier) >= 0) {
-				if(e[horizontalScrollModifier] && !(e.deltaX || e.wheelDeltaX)){
-					// shift+mousewheel for horizontal scroll
-					wx = wy*2;
-					wy = 0;
-				}
-			}
+		if(e.shiftKey && !(e.deltaX || e.wheelDeltaX)){
+			// shift+mousewheel for horizontal scroll
+			wx = wy*2;
+			wy = 0;
 		}
-
 
 		if (wx && Math.abs(wx) > Math.abs(wy)){
 			if(this._isVertical()){
@@ -27647,6 +27772,10 @@ CalendarWorkTimeStrategy.prototype = {
 			var current = start;
 			while (added < duration) {
 				var next = this._nextDate(current, "day", step);
+				// reset to day start in case DST switch happens in the process
+				next.setHours(0);
+				next.setMinutes(0);
+				next.setSeconds(0);
 				if (this._isWorkTime(step > 0 ? new Date(next.valueOf() - 1) : new Date(next.valueOf() + 1), "day")) {
 					var hours = this._getHoursPerDay(current);
 					if (added + hours >= duration) {
@@ -28445,6 +28574,40 @@ module.exports = function (gantt) {
 	}
 };
 };
+
+/***/ }),
+
+/***/ "./sources/publish_helpers/void_script_second.ts":
+/*!*******************************************************!*\
+  !*** ./sources/publish_helpers/void_script_second.ts ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+// all builds except for evaluation version get this mockup
+// the evaluation build gets actual codes
+exports.default = (function () { });
+
+
+/***/ }),
+
+/***/ "./sources/publish_helpers/void_script_third.ts":
+/*!******************************************************!*\
+  !*** ./sources/publish_helpers/void_script_third.ts ***!
+  \******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+// all builds except for evaluation version get this mockup
+// the evaluation build gets actual codes
+exports.default = (function () { });
+
 
 /***/ }),
 
