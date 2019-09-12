@@ -1,3 +1,10 @@
+### 6.2.5
+
+- Fix incorrect initial values of subtasks in the onBeforeTaskChanged event handler after dragging a project with subtasks
+- Fix incorrect work of the grouping extension when auto task types are enabled
+- Fix the script error after returning the false value from the onTaskLoading event handler
+- Add clearer error messages for the exceptions that can be thrown from gantt.load and gantt.parse
+
 ### 6.2.4
 
 - Fix the issue with task branches being collapsed after updating data using gantt.parse

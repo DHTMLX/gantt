@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.4 Standard
+dhtmlxGantt v.6.2.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!************************************************!*\
-  !*** ./node_modules/webpack/buildin/global.js ***!
-  \************************************************/
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10103,7 +10103,7 @@ function initDataStores(gantt){
 		task.$source = [];
 		task.$target = [];
 		if (task.parent === undefined) {
-			this.setParent(task, this.config.root_id);
+			task.parent = this.config.root_id;
 		}
 		return task;
 	}
@@ -11711,7 +11711,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.4";
+	this.version = "6.2.5";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -14115,6 +14115,11 @@ module.exports = function(gantt) {
 	* */
 
 	gantt.on_load = function (resp, type) {
+		if(resp.xmlDoc && resp.xmlDoc.status === 404){ // work if we don't have a file at current url
+			this.assert(false, "Failed to load the data from <a href='" + resp.xmlDoc.responseURL + "' target='_blank'>" 
+				+ resp.xmlDoc.responseURL + "</a>, server returns 404");
+			return;
+		}
 		this.callEvent("onBeforeParse", []);
 		if (!type)
 			type = "json";
@@ -14179,16 +14184,34 @@ module.exports = function(gantt) {
 		return !task.$ignore;
 	});
 
+	function jsonParseError(data){
+		gantt.assert(false, "Can't parse data: incorrect value of gantt.parse or gantt.load method. "
+			+ "Actual argument value: " + JSON.stringify(data));
+		throw new Error("Invalid argument for gantt.parse or gantt.load. An object or a JSON string of format https://docs.dhtmlx.com/gantt/desktop__supported_data_formats.html#json is expected. Actual argument value: "
+			+ JSON.stringify(data));
+	}
+
 	gantt.json = {
 		parse: function (data) {
-			gantt.assert(data, "Invalid data");
+			if(!data){
+				jsonParseError(data);
+			}
 
 			if (typeof data == "string") {
-				if (window.JSON)
-					data = JSON.parse(data);
-				else {
+				if (window.JSON){
+					try{
+						data = JSON.parse(data);
+					}
+					catch(e) {
+						jsonParseError(data);
+					}
+				} else {
 					gantt.assert(false, "JSON is not supported");
 				}
+			}
+
+			if(!data.data){
+				jsonParseError(data);
 			}
 
 			if (data.dhx_security)
@@ -14256,6 +14279,13 @@ module.exports = function(gantt) {
 	</data>
 	*/
 
+	function xmlParseError(data){
+		gantt.assert(false, "Can't parse data: incorrect value of gantt.parse or gantt.load method. "
+			+ "Actual argument value: " + JSON.stringify(data));
+		throw new Error("Invalid argument for gantt.parse or gantt.load. An XML of format https://docs.dhtmlx.com/gantt/desktop__supported_data_formats.html#xmldhtmlxgantt20 is expected. Actual argument value: "
+			+ JSON.stringify(data));
+	}
+
 	gantt.xml = {
 		_xmlNodeToJSON: function (node, attrs_only) {
 			var t = {};
@@ -14303,7 +14333,9 @@ module.exports = function(gantt) {
 			}
 
 			var xml = gantt.ajax.xmltop(toptag, loader.xmlDoc);
-			if (!xml || xml.tagName != toptag) throw "Invalid XML data";
+			if (!xml || xml.tagName != toptag) {
+				xmlParseError(text);
+			}
 
 			var skey = xml.getAttribute("dhx_security");
 			if (skey)
@@ -14827,8 +14859,10 @@ module.exports = function(gantt) {
 	}
 
 	function updateTaskType(task, targetType) {
-		task.type = targetType;
-		gantt.updateTask(task.id);
+		if(!gantt.getState().group_mode){
+			task.type = targetType;
+			gantt.updateTask(task.id);
+		}
 	}
 
 	function getTaskTypeToUpdate(task) {
@@ -16416,7 +16450,7 @@ var createWbs = (function(gantt){
 		return (!this._isGroupSort() && this._needRecalc);
 	},
 	_isGroupSort: function() {
-		return !!(gantt._groups && gantt._groups.is_active());
+		return !!(gantt.getState().group_mode);
 	},
 	_getWBSCode: function(task) {
 		if(!task) return "";
@@ -25645,7 +25679,7 @@ function createTaskDND(timeline, gantt){
 					gantt.eachTask(function(child){
 						this.dragMultiple[child.id] = gantt.mixin({
 							id: child.id,
-							obj: child
+							obj: gantt.copy(child)
 						}, this.drag);
 					}, task.id, this);
 				}
