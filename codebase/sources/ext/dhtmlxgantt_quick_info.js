@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.5 Standard
+dhtmlxGantt v.6.2.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -374,9 +374,12 @@ gantt._get_event_counter_part = function(id, offset, viewport){
 	var top = offset + domEv.offsetTop + domEv.offsetHeight;
 
 	var node = domEv;
-	while (node && node !== viewport){
-		left += node.offsetLeft;
-		node = node.offsetParent;
+
+	if (this.utils.dom.isChildOf(node, viewport)) {
+		while (node && node !== viewport){
+			left += node.offsetLeft;
+			node = node.offsetParent;
+		}
 	}
 
 	var scroll = this.getScrollState();

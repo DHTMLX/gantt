@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.5 Standard
+dhtmlxGantt v.6.2.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -11711,7 +11711,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.5";
+	this.version = "6.2.6";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -18507,10 +18507,18 @@ Grid.prototype = {
 			this.$config.rowStore = rowStore;
 			if(rowStore && !rowStore._gridCacheAttached){
 				var self = this;
-				rowStore._gridCacheAttached = true;
-				rowStore.attachEvent("onBeforeFilter", function(){
+				rowStore._gridCacheAttached = rowStore.attachEvent("onBeforeFilter", function(){
 					self._resetTopPositionHeight();
 				});
+			}
+		}
+	},
+	_unbindStore: function(){
+		if (this.$config.bind){
+			var rowStore = this.$gantt.getDatastore(this.$config.bind);
+			if(rowStore._gridCacheAttached){
+				rowStore.detachEvent(rowStore._gridCacheAttached);
+				rowStore._gridCacheAttached = false;
 			}
 		}
 	},
@@ -18988,11 +18996,11 @@ Grid.prototype = {
 			this._mouseDelegates.destructor();
 			this._mouseDelegates = null;
 		}
+		this._unbindStore();
 		this.$grid = null;
 		this.$grid_scale = null;
 		this.$grid_data = null;
 		this.$gantt = null;
-
 		if (this.$config.rowStore) {
 			this.$config.rowStore.detachEvent(this._staticBgHandler);
 			this.$config.rowStore = null;
@@ -26448,10 +26456,18 @@ Timeline.prototype = {
 			this.$config.rowStore = rowStore;
 			if(rowStore && !rowStore._timelineCacheAttached){
 				var self = this;
-				rowStore._timelineCacheAttached = true;
-				rowStore.attachEvent("onBeforeFilter", function(){
+				rowStore._timelineCacheAttached = rowStore.attachEvent("onBeforeFilter", function(){
 					self._resetTopPositionHeight();
 				});
+			}
+		}
+	},
+	_unbindStore: function(){
+		if (this.$config.bind){
+			var rowStore = this.$gantt.getDatastore(this.$config.bind);
+			if(rowStore._timelineCacheAttached){
+				rowStore.detachEvent(rowStore._timelineCacheAttached);
+				rowStore._timelineCacheAttached = false;
 			}
 		}
 	},
@@ -26470,7 +26486,7 @@ Timeline.prototype = {
 	destructor: function(){
 		var gantt = this.$gantt;
 		this._clearLayers(gantt);
-
+		this._unbindStore();
 		this.$task = null;
 		this.$task_scale = null;
 		this.$task_data = null;

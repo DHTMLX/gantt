@@ -1,3 +1,9 @@
+### 6.2.6
+
+- Fix the regression in v6.2 Smart Rendering which in some cases caused incorrect vertical positions of tasks after re-initialization of the Gantt
+- Fix the issue with QuickInfo popup not being displayed for unscheduled tasks
+- Fix incorrect work of extension files with the Ultimate build of Gantt
+
 ### 6.2.5
 
 - Fix incorrect initial values of subtasks in the onBeforeTaskChanged event handler after dragging a project with subtasks
