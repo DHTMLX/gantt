@@ -1,3 +1,9 @@
+### 6.2.7
+
+- Fix the issue with vertical resizing of grids with horizontal scroll in complex layouts
+- Fix the incorrect work of the resource histogram when the scale step is greater than one
+- Fix the reopened bug with collapsed branches after calling gantt.parse from v6.2.4 bugfix
+
 ### 6.2.6
 
 - Fix the regression in v6.2 Smart Rendering which in some cases caused incorrect vertical positions of tasks after re-initialization of the Gantt

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.6 Standard
+dhtmlxGantt v.6.2.7 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -10102,6 +10102,14 @@ function initDataStores(gantt){
 
 		task.$source = [];
 		task.$target = [];
+
+		var originalTask = this.$data.tasksStore.getItem(task.id);
+		if (originalTask && !utils.defined(task.open)) {
+			// if a task with the same id is already in the gantt and the new object doesn't specify the `open` state -
+			// restore the `open` state we already have in the chart
+			task.$open = originalTask.$open;
+		}
+
 		if (task.parent === undefined) {
 			task.parent = this.config.root_id;
 		}
@@ -11711,7 +11719,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.2.6";
+	this.version = "6.2.7";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -15562,7 +15570,7 @@ module.exports = function addPlaceholder(gantt){
 /***/ (function(module, exports, __webpack_require__) {
 
 var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
-var smartRender = __webpack_require__(/*! ../ui/render/smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
+var getRectangle = __webpack_require__(/*! ../ui/render/viewport/get_bg_row_rectangle */ "./sources/core/ui/render/viewport/get_bg_row_rectangle.js");
 
 function createResourceMethods(gantt){
 
@@ -15656,20 +15664,21 @@ function createResourceMethods(gantt){
 		}else{
 			tasks = getTaskBy(resourceProperty, resource.id);
 		}
-		var step = scale.unit;
+		var scaleUnit = scale.unit;
+		var scaleStep = scale.step;
 		var timegrid = {};
 
 		for (var i = 0; i < tasks.length; i++) {
 			var task = tasks[i];
 
-			var currDate = gantt.date[step + "_start"](new Date(task.start_date));
+			var currDate = gantt.date[scaleUnit + "_start"](new Date(task.start_date));
 
 			while (currDate < task.end_date) {
 
 				var date = currDate;
-				currDate = gantt.date.add(currDate, 1, step);
+				currDate = gantt.date.add(currDate, scaleStep, scaleUnit);
 
-				if (!gantt.isWorkTime({date: date, task: task, unit: step})) {
+				if (!gantt.isWorkTime({date: date, task: task, unit: scaleUnit})) {
 					continue;
 				}
 
@@ -15688,7 +15697,7 @@ function createResourceMethods(gantt){
 
 		for(var i = 0; i < scale.trace_x.length; i++){
 			start = new Date(scale.trace_x[i]);
-			end = gantt.date.add(start, 1, step);
+			end = gantt.date.add(start, scaleStep, scaleUnit);
 			tasks = timegrid[start.valueOf()] || [];
 			if(tasks.length || config.resource_render_empty_cells){
 				timetable.push({
@@ -15701,16 +15710,6 @@ function createResourceMethods(gantt){
 		}
 
 		return timetable;
-	}
-
-	function isInViewPort(item, view, viewport){
-		var position = view.getItemTop(item.id);
-		var height = view.getItemHeight(item);
-		if(viewport.y > position + height || viewport.y_end < position){
-			return false;
-		}else{
-			return true;
-		}
 	}
 
 	function generateRenderResourceLine(){
@@ -15751,9 +15750,6 @@ function createResourceMethods(gantt){
 		}
 
 		function renderResourceLine(resource, timeline, viewport) {
-			if(!isInViewPort(resource, timeline, viewport)){
-				return null;
-			}
 			var config = timeline.$getConfig(),
 				templates = timeline.$getTemplates();
 			var scale = timeline.getScale();
@@ -15786,11 +15782,7 @@ function createResourceMethods(gantt){
 			return row;
 		}
 
-		function updateResourceLine(resource, timeline, engine, viewport) {
-			if(!isInViewPort(resource, timeline, viewport)){
-				return null;
-			}
-			var row = engine.rendered[resource.id];
+		function updateResourceLine(resource, node, timeline, viewport) {
 			var config = timeline.$getConfig(),
 				templates = timeline.$getTemplates();
 			var scale = timeline.getScale();
@@ -15808,17 +15800,21 @@ function createResourceMethods(gantt){
 				if(!renderedResourceLines[resource.id] || !renderedResourceLines[resource.id][columnIndex]){
 					var cell = renderResourceLineCell(resource, day, templates, config, timeline);
 					if(cell){
-						row.appendChild(cell);
+						node.appendChild(cell);
 						renderedResourceLines[resource.id][columnIndex] = cell;
 					}
 				}
 				else if(renderedResourceLines[resource.id] && renderedResourceLines[resource.id][columnIndex] && !renderedResourceLines[resource.id][columnIndex].parentNode){
-					row.appendChild(renderedResourceLines[resource.id][columnIndex]);
+					node.appendChild(renderedResourceLines[resource.id][columnIndex]);
 				}
 			}
 		}
 
-		return smartRender(renderResourceLine, updateResourceLine, isInViewPort, true);
+		return {
+			render: renderResourceLine,
+			update: updateResourceLine,
+			getRectangle: getRectangle
+		};
 	}
 	
 	function renderBar(level, start, end, timeline){
@@ -15959,9 +15955,6 @@ function createResourceMethods(gantt){
 		}
 
 		function renderResourceHistogram(resource, timeline, viewport) {
-			if(!isInViewPort(resource, timeline, viewport)){
-				return null;
-			}
 			var config = timeline.$getConfig(),
 				templates = timeline.$getTemplates();
 			var scale = timeline.getScale();
@@ -16009,12 +16002,7 @@ function createResourceMethods(gantt){
 			return row;
 		}
 
-		function updateResourceHistogram(resource, timeline, engine, viewport) {
-			if(!isInViewPort(resource, timeline, viewport)){
-				return null;
-			}
-			var row = engine.rendered[resource.id];
-
+		function updateResourceHistogram(resource, node, timeline, viewport) {
 			var config = timeline.$getConfig(),
 				templates = timeline.$getTemplates();
 			var scale = timeline.getScale();
@@ -16038,23 +16026,27 @@ function createResourceMethods(gantt){
 				if(!renderedCell || !renderedCell[columnIndex]){
 					var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day);
 					if(el){
-						row.appendChild(el);
+						node.appendChild(el);
 						renderedHistogramCells[resource.id][columnIndex] = el;
 					}
 				}
 				else if(renderedCell && renderedCell[columnIndex] && !renderedCell[columnIndex].parentNode){
-					row.appendChild(renderedCell[columnIndex]);
+					node.appendChild(renderedCell[columnIndex]);
 				}
 			}
 
 			var capacityElement = renderCapacityElement(resource, sizes, capacityMatrix, config, timeline, maxCapacity, viewport);
 			if(capacityElement){
-				row.appendChild(capacityElement);
+				node.appendChild(capacityElement);
 				renderedHistogramCapacity[resource.id] = capacityElement;
 			}
 		}
 
-		return smartRender(renderResourceHistogram, updateResourceHistogram, isInViewPort, true);
+		return {
+			render: renderResourceHistogram,
+			update: updateResourceHistogram,
+			getRectangle: getRectangle
+		};
 	}
 	
 
@@ -17000,6 +16992,25 @@ module.exports = function(obj, parent){
 
 var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "./sources/core/ui/render/layer_engine.js");
 
+function initLayer(layer, gantt){
+	if(!layer.view){
+		return;
+	}
+
+	var view = layer.view;
+	if(typeof view === "string"){
+		view = gantt.$ui.getView(view);
+	}
+
+	if(view && view.attachEvent){
+		view.attachEvent("onScroll", function(){
+			if(layer.requestUpdate){
+				layer.requestUpdate();
+			}
+		});
+	}
+}
+
 var createLayerEngine = function(gantt){
 	var factory = createLayerFactory(gantt);
 	return {
@@ -17024,7 +17035,8 @@ var createLayerEngine = function(gantt){
 					}else{
 						return true;
 					}
-				}
+				},
+				initLayer
 			);
 
 			gantt.$services.setService("layer:" + name, function(){
@@ -17072,12 +17084,15 @@ var createLayerEngine = function(gantt){
 
 			return {
 				addTaskLayer: function(config){
+					if(typeof config === "function"){
+						config = {
+							renderer: config
+						};
+					}
+					config.view = "timeline";
+
 					return taskLayers.addLayer(config);
 				},
-
-				/*getTaskLayer: function(id){
-					return taskLayers.getLayer(id);
-				},*/
 
 				_getTaskLayers: function(){
 					return taskLayers.getLayers();
@@ -17085,27 +17100,27 @@ var createLayerEngine = function(gantt){
 				removeTaskLayer: function(id){
 					taskLayers.removeLayer(id);
 				},
-				/*eachTaskLayer: function(code){
-					taskLayers.eachLayer(code);
-				},*/
+
 				_clearTaskLayers: function(){
 					taskLayers.clear();
 				},
 				addLinkLayer: function(config){
+					if(typeof config === "function"){
+						config = {
+							renderer: config
+						};
+					}
+					config.view = "timeline";
 					return linkLayers.addLayer(config);
 				},
-				/*getLinkLayer: function(id){
-					return linkLayers.getLayer(id);
-				},*/
+
 				_getLinkLayers: function(){
 					return linkLayers.getLayers();
 				},
 				removeLinkLayer: function(id){
 					linkLayers.removeLayer(id);
 				},
-				/*eachLinkLayer: function(code){
-					linkLayers.eachLayer(code);
-				},*/
+
 				_clearLinkLayers: function(){
 					linkLayers.clear();
 				}
@@ -18634,9 +18649,7 @@ Grid.prototype = {
 
 		var layers = this.$gantt.$services.getService("layers");
 		var taskRenderer = layers.getDataRender(this.$config.bind);
-		var getViewPort = function(){
-			return self.getViewPort();
-		};
+
 		if (!taskRenderer) {
 			taskRenderer = layers.createDataRender({
 				name: this.$config.bind,
@@ -18647,17 +18660,10 @@ Grid.prototype = {
 		var taskLayers = this.$config.layers;
 		for (var i = 0; taskLayers && i < taskLayers.length; i++) {
 			var layer = taskLayers[i];
-			layer.host = this;
-			layer.getViewPort = getViewPort;
+			layer.view = this;
+
 			var bar_layer = taskRenderer.addLayer(layer);
 			this._taskLayers.push(bar_layer);
-			this.attachEvent("onScroll", (function(layer){
-				return function(){
-					if(layer.requestUpdate){
-						layer.requestUpdate();
-					}
-				};
-			})(layer));
 		}
 
 		this._bindStore();
@@ -18922,8 +18928,7 @@ Grid.prototype = {
 			this.$config.width = cols_width - 1;
 			config.grid_width = cols_width;
 			if (changed) {
-				this.$parent._setContentSize(this.$config.width, this.$config.height);
-				//				this.$parent.$config.width = cols_width;
+				this.$parent._setContentSize(this.$config.width, null);
 			}
 		}
 
@@ -21759,10 +21764,14 @@ var ViewCell = (function (_super) {
 
 	ViewCell.prototype._setContentSize = function(x, y){
 		var borders = this._getBorderSizes();
-		var outerX = x + borders.horizontal;
-		var outerY = y + borders.vertical;
-		this.$config.width = outerX;
-		this.$config.height = outerY;
+		if(typeof x === "number"){
+			var outerX = x + borders.horizontal;
+			this.$config.width = outerX;
+		}
+		if(typeof y === "number"){
+			var outerY = y + borders.vertical;
+			this.$config.height = outerY;
+		}
 	};
 
 	ViewCell.prototype.setSize = function(x, y){
@@ -21984,7 +21993,7 @@ var initializer = (function() {
 									gantt.config.grid_width = mainGrid.$config.original_grid_width;
 									mainGrid.$parent.$config.width = gantt.config.grid_width;
 								} else {
-									mainGrid.$parent._setContentSize(mainGrid.$config.width, mainGrid.$config.height);
+									mainGrid.$parent._setContentSize(mainGrid.$config.width, null);
 									gantt.$layout._syncCellSizes(mainGrid.$parent.$config.group, gantt.config.grid_width);
 								}
 							} else {
@@ -22396,12 +22405,12 @@ var layerFactory = function(gantt){
 
 	var renderFactory = renderFactoryProvider(gantt);
 	return {
-	createGroup: function (get_container, rel_root, defaultFilters) {
+	createGroup: function (getContainer, relativeRoot, defaultFilters, initLayer) {
 
 		var renderGroup = {
 			tempCollection: [],
 			renderers: {},
-			container: get_container,
+			container: getContainer,
 			filters: [],
 			getLayers: function () {
 				this._add();// add pending layers
@@ -22437,7 +22446,7 @@ var layerFactory = function(gantt){
 						if (topmost) {
 							container.appendChild(node);
 						} else {
-							var rel = rel_root ? rel_root() : container.firstChild;
+							var rel = relativeRoot ? relativeRoot() : container.firstChild;
 							if (rel)
 								container.insertBefore(node, rel);
 							else
@@ -22449,12 +22458,16 @@ var layerFactory = function(gantt){
 						layer,
 						node
 					);
+
+					if (initLayer) {
+						initLayer(layer, gantt);
+					}
+
 					this.tempCollection.splice(i, 1);
 					i--;
 				}
 			},
 			addLayer: function (config) {
-				//config = prepareConfig(config);
 				if(config){
 					if(typeof config == "function"){
 						config = {renderer: config};
@@ -22549,9 +22562,7 @@ module.exports = layerFactory;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
-var isLinkInViewPort = __webpack_require__(/*! ./viewport/link_checker */ "./sources/core/ui/render/viewport/link_checker.js");
-var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+var getLinkRectangle = __webpack_require__(/*! ./viewport/get_link_rectangle */ "./sources/core/ui/render/viewport/get_link_rectangle.js");
 
 function createLinkRender(gantt){
 
@@ -22991,12 +23002,12 @@ function getMilestonePosition(task, view){
 	return pos;
 }
 
-return smartRender(
-	_render_link_element,
-	function(){},
-	isLinkInViewPort,
-	gantt.config.smart_rendering && !isLegacyRender(gantt)
-	);
+
+return {
+	render: _render_link_element,
+	update: null,
+	getRectangle: getLinkRectangle
+};
 }
 
 module.exports = createLinkRender;
@@ -23008,14 +23019,27 @@ module.exports = createLinkRender;
   !*** ./sources/core/ui/render/render_factory.js ***!
   \**************************************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+var isInViewPort = __webpack_require__(/*! ./viewport/is_in_viewport */ "./sources/core/ui/render/viewport/is_in_viewport.js");
+var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+var basicGetRectangle = __webpack_require__(/*! ./viewport/get_grid_row_rectangle */ "./sources/core/ui/render/viewport/get_grid_row_rectangle.js");
 var rendererFactory = function(gantt){
 	var services = gantt.$services;
 
 	//hash of dom elements is needed to redraw single bar/link
 	var task_area_pulls = {},
 		task_area_renderers = {};
+
+	function getView(layer){
+		var view = null;
+		if (typeof layer.view === "string") {
+			view = gantt.$ui.getView(layer.view);
+		} else if (layer.view) {
+			view = layer.view;
+		}
+		return view;
+	}
 
 	function getRenderer(id, layer, node) {
 
@@ -23027,21 +23051,19 @@ var rendererFactory = function(gantt){
 
 		var renderMethod = null;
 		var updateMethod = null;
+		var getRectangle = null;
 
 		if(typeof layer.renderer === "function"){
 			renderMethod = layer.renderer;
+			getRectangle = basicGetRectangle;
 		}else{
 			renderMethod = layer.renderer.render;
 			updateMethod = layer.renderer.update;
-		}
-
-		var renderOne = function(item, viewPort){
-			var rendererViewPort = viewPort;
-			if(!rendererViewPort && layer.getViewPort){
-				rendererViewPort = layer.getViewPort();
+			getRectangle = layer.renderer.getRectangle;
+			if (!getRectangle && getRectangle !== null) {
+				getRectangle = basicGetRectangle;
 			}
-			return renderMethod.call(this, item, layer.host, rendererViewPort || null);
-		};
+		}
 
 		var filter = layer.filter;
 
@@ -23059,9 +23081,21 @@ var rendererFactory = function(gantt){
 					}
 				}
 
-				var dom = renderOne.call(gantt, item, viewPort);
-				this.append(item, dom, container);
+				var view = getView(layer);
+				var rendererViewPort = viewPort;
+				if(!rendererViewPort && view && view.$getConfig().smart_rendering){
+					rendererViewPort = view.getViewPort();
+				}
 
+				var dom = null;
+				if(!isLegacyRender(gantt) && getRectangle && rendererViewPort){
+					if(isInViewPort(rendererViewPort, getRectangle(item, view, gantt))){
+						dom = renderMethod.call(gantt, item, view, rendererViewPort);
+					}
+				}else{
+					dom = renderMethod.call(gantt, item, view, rendererViewPort);
+				}
+				this.append(item, dom, container);
 			},
 
 			clear: function (container) {
@@ -23080,10 +23114,13 @@ var rendererFactory = function(gantt){
 
 				var buffer = document.createDocumentFragment();
 				this.clear(container);
+
 				var viewPort = null;
-				if(layer.getViewPort){
-					viewPort = layer.getViewPort();
+				var view = getView(layer);
+				if(view && view.$getConfig().smart_rendering){
+					viewPort = view.getViewPort();
 				}
+
 				for (var i = 0, vis = items.length; i < vis; i++) {
 					this.render_item(items[i], buffer, viewPort);
 				}
@@ -23091,27 +23128,43 @@ var rendererFactory = function(gantt){
 				container.appendChild(buffer, container);
 			},
 			update_items: function (items, container) {
-				container = container || node;
-				if(!updateMethod){
+				var view = getView(layer);
+				if(!view || !view.$getConfig().smart_rendering || isLegacyRender(gantt)){
 					return;
 				}
 
+				if(!this.rendered){
+					return;
+				}
+
+				if(!getRectangle){
+					return;
+				}
+
+				container = container || node;
+
 				var buffer = document.createDocumentFragment();
+
 				var viewPort = null;
-				if(layer.getViewPort){
-					viewPort = layer.getViewPort();
+				if(view){
+					viewPort = view.getViewPort();
 				}
 
 				for (var i = 0, vis = items.length; i < vis; i++) {
 					var item = items[i];
 					var itemNode = this.rendered[item.id];
 					if (itemNode && itemNode.parentNode) {
-						updateMethod.call(gantt, item, layer.host, this, viewPort);
-					}else{
+						if (!isInViewPort(viewPort, getRectangle(item, view, gantt))) {
+							this.hide(item.id);
+						} else {
+							if(updateMethod){
+								updateMethod.call(gantt, item, itemNode, view, viewPort);
+							}
+							this.restore(item);
+						}
+					} else {
 						this.render_item(items[i], buffer, viewPort);
 					}
-
-					
 				}
 				if(buffer.childNodes.length){
 					container.appendChild(buffer, container);
@@ -23191,42 +23244,6 @@ var rendererFactory = function(gantt){
 };
 
 module.exports = rendererFactory;
-
-/***/ }),
-
-/***/ "./sources/core/ui/render/smart_render_wrapper.js":
-/*!********************************************************!*\
-  !*** ./sources/core/ui/render/smart_render_wrapper.js ***!
-  \********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = function wrapSmartRender(renderOne, updateOne, isInViewPort, smartRendering){
-	if(!smartRendering){
-		return renderOne;
-	}else{
-		return {
-			render: function(item, view, viewport){
-				if(!isInViewPort.call(this, item, view, viewport)){
-					return null;
-				}
-				return renderOne.call(this, item, view, viewport);
-			},
-			update: function(item, view, engine, viewport){
-				if(!isInViewPort.call(this, item, view, viewport)){
-					engine.hide(item.id);
-				}else if(engine.rendered[item.id]){
-					updateOne.call(this, item, view, engine, viewport);
-					engine.restore(item);
-				}else{
-					renderOne.call(this, item, view, viewport);
-				}
-			}
-		};
-	}
-
-
-};
 
 /***/ }),
 
@@ -23585,19 +23602,16 @@ module.exports = createTaskRenderer;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
-var isBarInViewPort = __webpack_require__(/*! ./viewport/task_bar_checker */ "./sources/core/ui/render/viewport/task_bar_checker.js");
+var getBarRectangle = __webpack_require__(/*! ./viewport/get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
 var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
-var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+
 module.exports = function createTaskRenderer(gantt){
 	var defaultRender = createBaseBarRender(gantt);
-
-	return smartRender(
-		defaultRender,
-		function(){},
-		isBarInViewPort,
-		gantt.config.smart_rendering && !isLegacyRender(gantt)
-	);
+	return {
+		render: defaultRender,
+		update: null,
+		getRectangle: getBarRectangle
+	};
 };
 
 /***/ }),
@@ -23609,8 +23623,7 @@ module.exports = function createTaskRenderer(gantt){
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
-var isRowInViewPort = __webpack_require__(/*! ./viewport/task_row_checker */ "./sources/core/ui/render/viewport/task_row_checker.js");
+var getRowRectangle = __webpack_require__(/*! ./viewport/get_bg_row_rectangle */ "./sources/core/ui/render/viewport/get_bg_row_rectangle.js");
 var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
 function getIndexRange(scale, viewportLeft, viewPortRight){
 	var firstCellIndex = 0;
@@ -23665,7 +23678,7 @@ function createTaskBgRender(gantt){
 		return cssTemplate;
 	}
 
-	function renderCells(item, view, engine, viewPort){
+	function renderCells(item, node, view, viewPort){
 		var config = view.$getConfig();
 		var cfg = view.getScale();
 		var count = cfg.count;
@@ -23680,8 +23693,6 @@ function createTaskBgRender(gantt){
 			}
 
 			var range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
-
-			var row = engine.rendered[item.id];
 
 			for(var i in visibleCells[item.id]){
 				var index = visibleCells[item.id][i];
@@ -23698,7 +23709,7 @@ function createTaskBgRender(gantt){
 				if(!cell && isRendered(item, columnIndex)){
 					detachRenderedCell(item.id, columnIndex);
 				}else if (cell && !cell.parentNode){
-					row.appendChild(cell);
+					node.appendChild(cell);
 				}
 			}
 		}
@@ -23770,13 +23781,15 @@ function createTaskBgRender(gantt){
 
 		var cellTemplate = getCellTemplate(view);
 
-		var range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
+		var range;
 
-		if(!config.smart_rendering || isLegacyRender(gantt)){
+		if(!viewPort || !config.smart_rendering || isLegacyRender(gantt)){
 			range = {
 				start: 0,
 				end: count - 1
 			};
+		} else {
+			range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
 		}
 		if (config.show_task_cells) {
 			renderedCells[item.id] = {};
@@ -23813,12 +23826,11 @@ function createTaskBgRender(gantt){
 		return row;
 	}
 
-	return smartRender(
-		_render_bg_line,
-		renderCells,
-		isRowInViewPort,
-		gantt.config.smart_rendering && !isLegacyRender(gantt)
-	);
+	return {
+		render: _render_bg_line,
+		update: renderCells,
+		getRectangle: getRowRectangle
+	};
 }
 
 module.exports = createTaskBgRender;
@@ -23834,18 +23846,9 @@ module.exports = createTaskBgRender;
 /***/ (function(module, exports, __webpack_require__) {
 
 var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
-var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
-var isRowInViewPort = __webpack_require__(/*! ./viewport/task_row_checker */ "./sources/core/ui/render/viewport/task_row_checker.js");
-var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+var getRowRectangle = __webpack_require__(/*! ./viewport/get_grid_row_rectangle */ "./sources/core/ui/render/viewport/get_grid_row_rectangle.js");
+
 function createGridLineRender(gantt){
-
-	function isInViewPort(item, view, viewport){
-		if(gantt.$keyboardNavigation && gantt.$keyboardNavigation.dispatcher.isTaskFocused(item.id)){
-			return true;
-		}
-
-		return isRowInViewPort(item, view, viewport);
-	}
 
 	function _render_grid_item(item, view, viewport) {
 		var columns = view.getGridColumns();
@@ -23954,19 +23957,14 @@ function createGridLineRender(gantt){
 		return el;
 	}
 
-	//return _render_grid_item;
-
-	return smartRender(
-		_render_grid_item,
-		function(){},
-		isInViewPort,
-		gantt.config.smart_rendering && !isLegacyRender(gantt)
-	);
+	return {
+		render: _render_grid_item,
+		update: null,
+		getRectangle: getRowRectangle
+	};
 }
 
 module.exports = createGridLineRender;
-
-
 
 /***/ }),
 
@@ -23977,10 +23975,9 @@ module.exports = createGridLineRender;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var smartRender = __webpack_require__(/*! ./smart_render_wrapper */ "./sources/core/ui/render/smart_render_wrapper.js");
-var isBarInViewPort = __webpack_require__(/*! ./viewport/task_bar_checker */ "./sources/core/ui/render/viewport/task_bar_checker.js");
+var getBarRectangle = __webpack_require__(/*! ./viewport/get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
 var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
-var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
+
 function createTaskRenderer(gantt){
 	var defaultRender = createBaseBarRender(gantt);
 
@@ -24010,142 +24007,144 @@ function createTaskRenderer(gantt){
 		}
 		return false;
 	}
-
-	return smartRender(
-		renderSplitTask,
-		function(){},
-		isBarInViewPort,
-		gantt.config.smart_rendering && !isLegacyRender(gantt)
-	);
+	return {
+		render: renderSplitTask,
+		update: null,
+		getRectangle: getBarRectangle
+	};
 }
 
 module.exports = createTaskRenderer;
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/viewport/link_checker.js":
-/*!*********************************************************!*\
-  !*** ./sources/core/ui/render/viewport/link_checker.js ***!
-  \*********************************************************/
+/***/ "./sources/core/ui/render/viewport/get_bar_rectangle.js":
+/*!**************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_bar_rectangle.js ***!
+  \**************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-
-
-module.exports = function isLinkInViewPort(item, view, viewport){
-	var source = view.$gantt.getTask(item.source);
-	var target = view.$gantt.getTask(item.target);
-
-	// check vertical visibility first since it's a lighter check
-	var sourceTop = view.getItemTop(source.id);
-	var sourceHeight = view.getItemHeight(source);
-
-	var targetTop = view.getItemTop(target.id);
-	var targetHeight = view.getItemHeight(target);
-
-	if(viewport.y > sourceTop + sourceHeight && 
-		viewport.y > targetTop + targetHeight){
-		return false;
+module.exports = function(item, view){
+	if(!item.start_date || !item.end_date){
+		return null;
 	}
+	var padding = 200;
+	var startCoord = view.posFromDate(item.start_date);
+	var endCoord = view.posFromDate(item.end_date);
+	var left = Math.min(startCoord, endCoord) - padding;
+	var right = Math.max(startCoord, endCoord) + padding;
 
-	if(viewport.y_end < targetTop && 
-		viewport.y_end < targetHeight){
-		return false;
-	}
-
-	var padding = 100;
-	var sourceLeft = view.posFromDate(source.start_date);
-	var sourceRight = view.posFromDate(source.end_date);
-	var targetLeft = view.posFromDate(target.start_date);
-	var targetRight = view.posFromDate(target.end_date);
-	
-	if(sourceLeft > sourceRight){
-		// rtl
-		var tmp = sourceRight;
-		sourceRight = sourceLeft;
-		sourceLeft = tmp;
-	}
-	if(targetLeft > targetRight){
-		// rtl
-		var tmp = targetRight;
-		targetRight = targetLeft;
-		targetLeft = tmp;
-	}
-	sourceLeft += -padding; // add buffer for custom elements
-	sourceRight += padding;
-	targetLeft += -padding; // add buffer for custom elements
-	targetRight += padding;
-
-	if(viewport.x > sourceRight && 
-		viewport.x > targetRight){
-		return false;
-	}
-
-	if(viewport.x_end < sourceLeft && 
-		viewport.x_end < targetLeft){
-		return false;
-	}
-	return true;
+	return {
+		top: view.getItemTop(item.id),
+		height: view.getItemHeight(item.id),
+		left: left,
+		width: right - left
+	};
 };
-
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/viewport/task_bar_checker.js":
-/*!*************************************************************!*\
-  !*** ./sources/core/ui/render/viewport/task_bar_checker.js ***!
-  \*************************************************************/
+/***/ "./sources/core/ui/render/viewport/get_bg_row_rectangle.js":
+/*!*****************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_bg_row_rectangle.js ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(item, view){
+	return {
+		top: view.getItemTop(item.id),
+		height: view.getItemHeight(item.id),
+		left: 0,
+		right: Infinity
+	};
+};
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/get_grid_row_rectangle.js":
+/*!*******************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_grid_row_rectangle.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function(item, view){
+	return {
+		top: view.getItemTop(item.id),
+		height: view.getItemHeight(item.id),
+		left: 0,
+		right: Infinity
+	};
+};
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/get_link_rectangle.js":
+/*!***************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_link_rectangle.js ***!
+  \***************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isRowInViewPort = __webpack_require__(/*! ./task_row_checker */ "./sources/core/ui/render/viewport/task_row_checker.js");
 
-module.exports = function isInViewPort(item, view, viewport){
 
-	if(!isRowInViewPort(item, view, viewport)){
-		return false;
+var barRectangle = __webpack_require__(/*! ./get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
+
+module.exports = function getLinkBox(item, view, gantt){
+	if(!gantt.isTaskExists(item.source)){
+		return null;
 	}
 
-	if(!item.start_date || !item.end_date){
-		return false;
+	if(!gantt.isTaskExists(item.target)){
+		return null;
 	}
-	var left = view.posFromDate(item.start_date);
-	var right = view.posFromDate(item.end_date);
-	
-	if(left > right){
-		// rtl
-		var tmp = right;
-		right = left;
-		left = tmp;
+	var sourceBox = barRectangle(gantt.getTask(item.source), view, gantt);
+	var targetBox = barRectangle(gantt.getTask(item.target), view, gantt);
+
+	if(!sourceBox || !targetBox){
+		return null;
 	}
 
-	left -= 200; // add buffer for custom elements
-	right += 200;
+	var padding = 100;
+	var left = Math.min(sourceBox.left, targetBox.left) - padding;
+	var right = Math.max(sourceBox.left + sourceBox.width, targetBox.left + targetBox.width) + padding;
+	var top = Math.min(sourceBox.top, targetBox.top) - padding;
+	var bottom = Math.min(sourceBox.top + sourceBox.height, targetBox.top + targetBox.height) + padding;
 
-	if(viewport.x > right || viewport.x_end < left){
-		return false;
-	}
-		
-	return true;
+	return {
+		top: top,
+		height: bottom - top,
+		left: left,
+		width: right - left
+	};
 };
+
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/viewport/task_row_checker.js":
-/*!*************************************************************!*\
-  !*** ./sources/core/ui/render/viewport/task_row_checker.js ***!
-  \*************************************************************/
+/***/ "./sources/core/ui/render/viewport/is_in_viewport.js":
+/*!***********************************************************!*\
+  !*** ./sources/core/ui/render/viewport/is_in_viewport.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = function isInViewPort(item, view, viewport){
-	var position = view.getItemTop(item.id);
-	var height = view.getItemHeight(item);
-	if(viewport.y > position + height || viewport.y_end < position){
+module.exports = function(viewport, box){
+	if(!box){
 		return false;
-	}else{
-		return true;
 	}
+
+	if(box.left > viewport.x_end || box.left + box.width < viewport.x){
+		return false;
+	}
+
+	if(box.top > viewport.y_end || box.top + box.height < viewport.y){
+		return false;
+	}
+
+	return true;
 };
 
 /***/ }),
@@ -25989,18 +25988,8 @@ Timeline.prototype = {
 		this._linkLayers = [];
 
 		var self = this;
-		var getViewPort = function(){
-			return self.getViewPort();
-		};
-		var layers = this.$gantt.$services.getService("layers");
 
-		function subscribeSmartRender(layer){
-			self.attachEvent("onScroll", function(){
-				if(layer.requestUpdate){
-					layer.requestUpdate();
-				}
-			});
-		}
+		var layers = this.$gantt.$services.getService("layers");
 
 		if(this.$config.bind){
 
@@ -26028,19 +26017,8 @@ Timeline.prototype = {
 					layer = {renderer: layer};
 				}
 
-				layer.host = this;
-				if(!layer.viewPort){
-					var self = this;
-					layer.getViewPort = function(){
-						if(!self.getViewPort){
-							return null;
-						}
-						return self.getViewPort();
-					};
-				}
+				layer.view = this;
 
-				layer.getViewPort = getViewPort;
-				subscribeSmartRender(layer);
 				var bar_layer = taskRenderer.addLayer(layer);
 				this._taskLayers.push(bar_layer);
 				if(layer.expose){
@@ -26070,9 +26048,9 @@ Timeline.prototype = {
 				}
 
 				var layer = linkLayers[i];
-				layer.host = this;
-				layer.getViewPort = getViewPort;
-				subscribeSmartRender(layer);
+				layer.view = this;
+			//	layer.getViewPort = getViewPort;
+			//	subscribeSmartRender(layer);
 				var linkLayer = linkRenderer.addLayer(layer);
 				this._taskLayers.push(linkLayer);
 				if(linkLayers[i].expose){

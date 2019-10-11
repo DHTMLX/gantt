@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.6 Standard
+dhtmlxGantt v.6.2.7 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
