@@ -1,6 +1,6 @@
 # dhtmlxGantt v.6.2.7
 
-dhtmlxGantt is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
+dhtmlxGantt is a JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
 
 It can show the dependencies between tasks as lines and allows you to set up different relationships between tasks (finish-to-start, start-to-start, finish-to-finish, start-to-finish).
 
