@@ -1,3 +1,25 @@
+### 6.3
+
+- Ability to specify decimal units for the duration of tasks
+- Ability to scroll the timeline via mouse click and drag
+- Ability to drag and drop multiple tasks horizontally
+
+- Ability to display tasks outside the explicit start_date and end_date range of the time scale
+- Add a new task_end_date template for formatting end dates of tasks
+- Ability to add custom actions to the Undo stack
+- Ability to connect custom layers to smart rendering
+- Inline editors for predecessors now support formatted values of links
+- Remove default limits for input values in date inline editors
+- Ability to specify the root node for the Fullscreen extension
+- Ability either to change or disable horizontal scroll by shiftKey+mousewheel
+- Roboto font was removed from Material skin and has to be imported manually
+
+- Fix crashes of the resource histogram when smart rendering is switched off
+- Fix compatibility with r.js compressor
+- Fix various conflicts between keyboard navigation and inline editors
+- Fix the incorrect state of the DataProcessor when tasks and links were modified sequentially from a custom router
+- A correct data object of Task/Link is now also passed into delete call of a custom router
+
 ### 6.2.7
 
 - Fix the issue with vertical resizing of grids with horizontal scroll in complex layouts

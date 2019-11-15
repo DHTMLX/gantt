@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.7 Standard
+dhtmlxGantt v.6.3.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1295,6 +1295,9 @@ div.dhx_modal_cover {
   border-left-width: 0;
   border-right-width: 0;
 }
+.gantt_duration .gantt_duration_value.gantt_duration_value_formatted {
+  width: 70px;
+}
 .gantt_duration .gantt_duration_dec,
 .gantt_duration .gantt_duration_inc {
   width: 20px;
@@ -1628,6 +1631,10 @@ div.dhx_modal_cover {
   top: 0;
   outline: 1px solid #3f98db;
   background-color: rgba(52, 152, 219, 0.3);
+}
+.gantt_timeline_move_available,
+.gantt_timeline_move_available * {
+  cursor: move;
 }
 .gantt_layout_content {
   width: 100%;

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.2.7 Standard
+dhtmlxGantt v.6.3.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -14,11 +14,11 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
-	else {
-		var a = factory();
-		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
-	}
+		define("ext/dhtmlxgantt_keyboard_navigation", [], factory);
+	else if(typeof exports === 'object')
+		exports["ext/dhtmlxgantt_keyboard_navigation"] = factory();
+	else
+		root["ext/dhtmlxgantt_keyboard_navigation"] = factory();
 })(window, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
