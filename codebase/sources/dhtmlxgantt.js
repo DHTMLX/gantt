@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.0 Standard
+dhtmlxGantt v.6.3.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/*!************************************************!*\
+  !*** ./node_modules/webpack/buildin/global.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7785,6 +7785,7 @@ module.exports = function(gantt) {
 
 	gantt.createTask = function (item, parent, index) {
 		item = item || {};
+
 		if (!gantt.defined(item.id))
 			item.id = gantt.uid();
 
@@ -11864,7 +11865,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.3.0";
+	this.version = "6.3.1";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -12143,10 +12144,17 @@ module.exports = function(gantt){
 
 	gantt.$click={
 		buttons:{
-			"edit":function(id){
+			"edit": function(id) {
+				if (gantt.isReadonly(gantt.getTask(id))) {
+					return;
+				}
 				gantt.showLightbox(id);
 			},
-			"delete":function(id){
+			"delete": function(id) {
+				var task = gantt.getTask(id);
+				if (gantt.isReadonly(task)) {
+					return;
+				}
 				var question = gantt.locale.labels.confirm_deleting;
 				var title = gantt.locale.labels.confirm_deleting_title;
 
@@ -12156,7 +12164,6 @@ module.exports = function(gantt){
 						return;
 					}
 
-					var task = gantt.getTask(id);
 					if(task.$new){
 						gantt.silent(function(){
 							gantt.deleteTask(id, true);
@@ -13276,7 +13283,6 @@ module.exports = function (gantt) {
 	});
 
 	gantt.showLightbox = function (id) {
-		if (!id || gantt.isReadonly(this.getTask(id))) return;
 		if (!this.callEvent("onBeforeLightbox", [id])) return;
 
 		var task = this.getTask(id);
@@ -22553,7 +22559,7 @@ var createMouseHandler = (function(domHelpers) {
 					return;
 
 				if (id !== null && gantt.getTask(id)) {
-					if (res && gantt.config.details_on_dblclick) {
+					if (res && gantt.config.details_on_dblclick && !gantt.isReadonly()) {
 						gantt.showLightbox(id);
 					}
 				}
@@ -24401,7 +24407,7 @@ module.exports = function getLinkBox(item, view, gantt){
 	var left = Math.min(sourceBox.left, targetBox.left) - padding;
 	var right = Math.max(sourceBox.left + sourceBox.width, targetBox.left + targetBox.width) + padding;
 	var top = Math.min(sourceBox.top, targetBox.top) - padding;
-	var bottom = Math.min(sourceBox.top + sourceBox.height, targetBox.top + targetBox.height) + padding;
+	var bottom = Math.max(sourceBox.top + sourceBox.height, targetBox.top + targetBox.height) + padding;
 
 	return {
 		top: top,

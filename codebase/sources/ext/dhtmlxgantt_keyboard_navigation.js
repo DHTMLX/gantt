@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.0 Standard
+dhtmlxGantt v.6.3.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1140,6 +1140,9 @@ module.exports = function(gantt) {
 
 				// add new task
 				"ctrl+enter": function () {
+					if (gantt.isReadonly(this)) {
+						return;
+					}
 					gantt.createTask({}, this.taskId);
 				}
 			}
@@ -1540,7 +1543,10 @@ module.exports = function(gantt) {
 						gantt.close(this.taskId);
 					}
 				},
-				"shift+right": function(){
+				"shift+right": function() {
+					if (gantt.isReadonly(this)) {
+						return;
+					}
 					var prevId = gantt.getPrevSibling(this.taskId);
 					if(gantt.isTaskExists(prevId) && !gantt.isChildOf(this.taskId, prevId)){
 						var parent = gantt.getTask(prevId);
@@ -1550,7 +1556,10 @@ module.exports = function(gantt) {
 							gantt.updateTask(this.taskId);
 					}
 				},
-				"shift+left": function(){
+				"shift+left": function() {
+					if (gantt.isReadonly(this)) {
+						return;
+					}
 					var parent = gantt.getParent(this.taskId);
 					if(gantt.isTaskExists(parent)){
 						var result =  gantt.moveTask(this.taskId, gantt.getTaskIndex(parent) + 1, gantt.getParent(parent));
@@ -1579,16 +1588,25 @@ module.exports = function(gantt) {
 
 				// delete task
 				"delete": function (e) {
+					if (gantt.isReadonly(this)) {
+						return;
+					}
 					gantt.$click.buttons["delete"](this.taskId);
 				},
 
 				// open lightbox
 				"enter": function () {
+					if (gantt.isReadonly(this)) {
+						return;
+					}
 					gantt.showLightbox(this.taskId);
 				},
 
 				// add subtask
 				"ctrl+enter": function () {
+					if (gantt.isReadonly(this)) {
+						return;
+					}
 					gantt.createTask({}, this.taskId);
 				}
 			}

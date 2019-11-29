@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.0 Standard
+dhtmlxGantt v.6.3.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -146,6 +146,7 @@ var backupElementSizes = {
     top: null,
     left: null,
     position: null,
+    zIndex: null,
     modified: false
 };
 var backupPositioning = null;
@@ -201,6 +202,7 @@ function setFullScreenSizes() {
     root.style.top = "0px";
     root.style.left = "0px";
     root.style.position = "absolute";
+    root.style.zIndex = 1;
     backupElementSizes.modified = true;
     backupPositioning = resetParentPositioning(root);
 }
@@ -244,6 +246,7 @@ function updateSizes(source, target) {
     target.top = source.top;
     target.left = source.left;
     target.position = source.position;
+    target.zIndex = source.zIndex;
 }
 function addDOMEvents() {
     gantt.event(document, "webkitfullscreenchange", onFullScreenChange);

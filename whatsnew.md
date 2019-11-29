@@ -1,3 +1,10 @@
+### 6.3.1
+
+- Fix the regression in the smart rendering which caused links not to be rendered in some cases.
+- Fix the bug that allowed modifying and creating new tasks with keyboard navigation when the read-only mode is activated
+- Fix the display issue with Fullscreen extension which allowed some page elements to be displayed over the gantt in the fullscreen mode
+- Fix the bug that caused the drag-timeline extension to reset the value of the readonly config
+
 ### 6.3
 
 - Ability to specify decimal units for the duration of tasks

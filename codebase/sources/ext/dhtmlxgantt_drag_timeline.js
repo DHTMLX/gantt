@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.0 Standard
+dhtmlxGantt v.6.3.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -187,9 +187,13 @@ var EventsManager = /** @class */ (function () {
         this._stopDrag = function (event) {
             _this._trace = [];
             gantt.$root.classList.remove("gantt_noselect");
-            gantt.config.readonly = _this._originalReadonly;
+            if (_this._originalReadonly !== undefined) {
+                gantt.config.readonly = _this._originalReadonly;
+            }
+            if (_this._originAutoscroll !== undefined) {
+                gantt.config.autoscroll = _this._originAutoscroll;
+            }
             var useKey = gantt.config.drag_timeline.useKey;
-            gantt.config.autoscroll = _this._originAutoscroll;
             if (useKey && event[useKey] !== true) {
                 return;
             }
