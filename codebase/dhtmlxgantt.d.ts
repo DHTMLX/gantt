@@ -1,11 +1,10 @@
-// Type definitions for dhtmlxGantt 6.1.0
+// Type definitions for dhtmlxGantt 6.3.0
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
-
 
 type GanttCallback = (...args: any[]) => any;
 
 
-type GanttEventName = "onAfterAutoSchedule"|"onAfterBatchUpdate"|"onAfterLightbox"|"onAfterLinkAdd"|"onAfterLinkDelete"|"onAfterLinkUpdate"|"onAfterQuickInfo"|"onAfterRedo"|"onAfterSort"|"onAfterTaskAdd"|"onAfterTaskAutoSchedule"|"onAfterTaskDelete"|"onAfterTaskDrag"|"onAfterTaskMove"|"onAfterTaskUpdate"|"onAfterUndo"|"onAjaxError"|"onAutoScheduleCircularLink"|"onBeforeAutoSchedule"|"onBeforeBatchUpdate"|"onBeforeCollapse"|"onBeforeDataRender"|"onBeforeExpand"|"onBeforeGanttReady"|"onBeforeGanttRender"|"onBeforeLightbox"|"onBeforeLinkAdd"|"onBeforeLinkDelete"|"onBeforeLinkDisplay"|"onBeforeLinkUpdate"|"onBeforeMultiSelect"|"onBeforeParse"|"onBeforeRedo"|"onBeforeRedoStack"|"onBeforeRowDragEnd"|"onBeforeRowDragMove"|"onBeforeTaskAdd"|"onBeforeTaskAutoSchedule"|"onBeforeTaskChanged"|"onBeforeTaskDelete"|"onBeforeTaskDisplay"|"onBeforeTaskDrag"|"onBeforeTaskMove"|"onBeforeTaskMultiSelect"|"onBeforeTaskSelected"|"onBeforeTaskUpdate"|"onBeforeUndo"|"onBeforeUndoStack"|"onCircularLinkError"|"onClear"|"onCollapse"|"onColumnResize"|"onColumnResizeEnd"|"onColumnResizeStart"|"onContextMenu"|"onDataProcessorReady"|"onDataRender"|"onDestroy"|"onEmptyClick"|"onError"|"onExpand"|"onGanttLayoutReady"|"onGanttReady"|"onGanttRender"|"onGanttScroll"|"onGridHeaderClick"|"onGridResize"|"onGridResizeEnd"|"onGridResizeStart"|"onLightbox"|"onLightboxButton"|"onLightboxCancel"|"onLightboxChange"|"onLightboxDelete"|"onLightboxSave"|"onLinkClick"|"onLinkDblClick"|"onLinkIdChange"|"onLinkValidation"|"onLoadEnd"|"onLoadStart"|"onMouseMove"|"onMultiSelect"|"onOptionsLoad"|"onParse"|"onQuickInfo"|"onRowDragEnd"|"onRowDragStart"|"onScaleAdjusted"|"onScaleClick"|"onTaskClick"|"onTaskClosed"|"onTaskCreated"|"onTaskDblClick"|"onTaskDrag"|"onTaskIdChange"|"onTaskLoading"|"onTaskMultiSelect"|"onTaskOpened"|"onTaskRowClick"|"onTaskSelected"|"onTaskUnselected"|"onTemplatesReady";
+type GanttEventName = "onAfterAutoSchedule"|"onAfterBatchUpdate"|"onAfterLightbox"|"onAfterLinkAdd"|"onAfterLinkDelete"|"onAfterLinkUpdate"|"onAfterQuickInfo"|"onAfterRedo"|"onAfterSort"|"onAfterTaskAdd"|"onAfterTaskAutoSchedule"|"onAfterTaskDelete"|"onAfterTaskDrag"|"onAfterTaskMove"|"onAfterTaskUpdate"|"onAfterUndo"|"onAjaxError"|"onAutoScheduleCircularLink"|"onBeforeAutoSchedule"|"onBeforeBatchUpdate"|"onBeforeCollapse"|"onBeforeDataRender"|"onBeforeExpand"|"onBeforeGanttReady"|"onBeforeGanttRender"|"onBeforeLightbox"|"onBeforeLinkAdd"|"onBeforeLinkDelete"|"onBeforeLinkDisplay"|"onBeforeLinkUpdate"|"onBeforeMultiSelect"|"onBeforeParse"|"onBeforeRedo"|"onBeforeRedoStack"|"onBeforeRowDragEnd"|"onBeforeRowDragMove"|"onBeforeTaskAdd"|"onBeforeTaskAutoSchedule"|"onBeforeTaskChanged"|"onBeforeTaskDelete"|"onBeforeTaskDisplay"|"onBeforeTaskDrag"|"onBeforeTaskMove"|"onBeforeTaskMultiSelect"|"onBeforeTaskSelected"|"onBeforeTaskUpdate"|"onBeforeUndo"|"onBeforeUndoStack"|"onCircularLinkError"|"onClear"|"onCollapse"|"onColumnResize"|"onColumnResizeEnd"|"onColumnResizeStart"|"onContextMenu"|"onDataProcessorReady"|"onDataRender"|"onDestroy"|"onEmptyClick"|"onError"|"onExpand"|"onGanttLayoutReady"|"onGanttReady"|"onGanttRender"|"onGanttScroll"|"onGridHeaderClick"|"onGridResize"|"onGridResizeEnd"|"onGridResizeStart"|"onLightbox"|"onLightboxButton"|"onLightboxCancel"|"onLightboxChange"|"onLightboxDelete"|"onLightboxSave"|"onLinkClick"|"onLinkCreated"|"onLinkDblClick"|"onLinkIdChange"|"onLinkValidation"|"onLoadEnd"|"onLoadStart"|"onMouseMove"|"onMultiSelect"|"onOptionsLoad"|"onParse"|"onQuickInfo"|"onRowDragEnd"|"onRowDragStart"|"onScaleAdjusted"|"onScaleClick"|"onTaskClick"|"onTaskClosed"|"onTaskCreated"|"onTaskDblClick"|"onTaskDrag"|"onTaskIdChange"|"onTaskLoading"|"onTaskMultiSelect"|"onTaskOpened"|"onTaskRowClick"|"onTaskSelected"|"onTaskUnselected"|"onTemplatesReady";
 
 
 interface GanttTemplates {
@@ -14,14 +13,9 @@ interface GanttTemplates {
 	 * specifies the content of start date or end date columns in grid
 	 * @param date the date which needs formatting
 	 * @param task the task object
+	 * @param column the name of the column that called the template
 	*/
-	date_grid(date: Date, task: any): string;
-
-	/**
-	 * specifies the date format of the time scale (X-Axis)
-	 * @param date the date which needs formatting
-	*/
-	date_scale(date: Date): string;
+	date_grid(date: Date, task: any, column: string): string;
 
 	/**
 	 * specifies the text of tooltips that are displayed when the user creates a new dependency link
@@ -42,6 +36,12 @@ interface GanttTemplates {
 	drag_link_class(from: string|number, from_start: boolean, to: string|number, to_start: boolean): string;
 
 	/**
+	 * сonverts a date object to a date string. Used to send data back to the server
+	 * @param date the date which needs formatting
+	*/
+	format_date(date: Date): string;
+
+	/**
 	 * specifies the custom content inserted before the labels of child items in the tree column
 	 * @param task the task object
 	*/
@@ -50,8 +50,9 @@ interface GanttTemplates {
 	/**
 	 * specifies the format of dates in the "Start time" column
 	 * @param date the date which needs formatting
+	 * @param column the name of the column that called the template
 	*/
-	grid_date_format(date: Date): string;
+	grid_date_format(date: Date, column: string): string;
 
 	/**
 	 * specifies the icon of child items in the tree column
@@ -141,6 +142,12 @@ interface GanttTemplates {
 	link_description(link: any): string;
 
 	/**
+	 * converts date string into a Date object
+	 * @param date the string which need to be parsed
+	*/
+	parse_date(date: string): Date;
+
+	/**
 	 * specifies the text in the completed part of the task bar
 	 * @param start the date when a task is scheduled to begin
 	 * @param end the date when a task is scheduled to be completed
@@ -211,13 +218,6 @@ interface GanttTemplates {
 	scale_row_class(scale: any): string;
 
 	/**
-	 * specifies the CSS class that will be applied to the cells of the timeline area
-	 * @param item the task object assigned to the row
-	 * @param date the date of a cell
-	*/
-	timeline_cell_class(item: any, date: Date): string;
-
-	/**
 	 * specifies the CSS class that will be applied to task bars
 	 * @param start the date when a task is scheduled to begin
 	 * @param end the date when a task is scheduled to be completed
@@ -230,6 +230,12 @@ interface GanttTemplates {
 	 * @param date the date which needs formatting
 	*/
 	task_date(date: Date): string;
+
+	/**
+	 * specifies the format for the end dates of tasks in the lightbox
+	 * @param date the date which needs formatting
+	*/
+	task_end_date(date: Date): string;
 
 	/**
 	 * specifies the CSS class that will be applied to the row of the timeline area
@@ -266,6 +272,13 @@ interface GanttTemplates {
 	 * @param date the date which needs formatting
 	*/
 	time_picker(date: Date): string;
+
+	/**
+	 * specifies the CSS class that will be applied to the cells of the timeline area
+	 * @param item the task object assigned to the row
+	 * @param date the date of a cell
+	*/
+	timeline_cell_class(item: any, date: Date): string;
 
 	/**
 	 * specifies the format of start and end dates displayed in the tooltip
@@ -326,12 +339,17 @@ interface GanttConfigOptions {
 	auto_scheduling: boolean;
 
 	/**
+	 * disables usage of time contraints for tasks
+	*/
+	auto_scheduling_compatibility: boolean;
+
+	/**
 	 * allows or forbids creating links from parent tasks (projects) to their children
 	*/
 	auto_scheduling_descendant_links: boolean;
 
 	/**
-	 * defines whether gantt will do autoscheduling on data loading
+	 * defines whether gantt will do autoscheduling on data loading/parsing
 	*/
 	auto_scheduling_initial: boolean;
 
@@ -406,6 +424,11 @@ interface GanttConfigOptions {
 	cascade_delete: boolean;
 
 	/**
+	 * enables advanced drag-n-drop
+	*/
+	click_drag: any;
+
+	/**
 	 * configures the columns of the table
 	*/
 	columns: any[];
@@ -419,6 +442,11 @@ interface GanttConfigOptions {
 	 * enables adjusting the task's start and end dates to the work time (while dragging)
 	*/
 	correct_work_time: boolean;
+
+	/**
+	 * sets the date format that is used to parse data from a data set and to send dates back to the server
+	*/
+	date_format: string;
 
 	/**
 	 * sets the format of dates in the "Start time" column of the table
@@ -461,6 +489,11 @@ interface GanttConfigOptions {
 	drag_move: boolean;
 
 	/**
+	 * enables the possibility to drag several selected tasks at once
+	*/
+	drag_multiple: boolean;
+
+	/**
 	 * enables the possibility to change the task progress by dragging the progress knob
 	*/
 	drag_progress: boolean;
@@ -474,6 +507,11 @@ interface GanttConfigOptions {
 	 * enables the possibility to resize tasks by drag-and-drop
 	*/
 	drag_resize: boolean;
+
+	/**
+	 * configures the behavior of the dhtmlxgantt_drag_timeline extension
+	*/
+	drag_timeline: any;
 
 	/**
 	 * sets the number of 'gantt.config.duration_unit' units that will correspond to one  unit of the 'duration' data property.
@@ -531,6 +569,11 @@ interface GanttConfigOptions {
 	highlight_critical_path: boolean;
 
 	/**
+	 * enables/disables horizontal scroll by the Shift|Alt|Meta key + mouse wheel movement
+	*/
+	horizontal_scroll_key: string|boolean;
+
+	/**
 	 * defines whether tasks should inherit work calendars from their summary parents
 	*/
 	inherit_calendar: boolean;
@@ -544,6 +587,11 @@ interface GanttConfigOptions {
 	 * sets whether the timeline area will be initially scrolled to display the earliest task
 	*/
 	initial_scroll: boolean;
+
+	/**
+	 * keeps the duration of a task unchanged during editing of the start/end of a task
+	*/
+	inline_editors_date_processing: string;
 
 	/**
 	 * 'says' to preserve the initial grid's width while resizing columns within
@@ -631,12 +679,17 @@ interface GanttConfigOptions {
 	multiselect_one_level: boolean;
 
 	/**
+	 * enables the possibility to expand/collapse split tasks by clicking the +/- button
+	*/
+	open_split_tasks: boolean;
+
+	/**
 	 * openes all branches initially
 	*/
 	open_tree_initially: boolean;
 
 	/**
-	 * activates the 'branch' mode that allows reordering tasks within the same nesting level
+	 * activates the 'branch' mode that allows vertically reordering tasks within the same tree level
 	*/
 	order_branch: string|boolean;
 
@@ -661,12 +714,12 @@ interface GanttConfigOptions {
 	prevent_default_scroll: boolean;
 
 	/**
-	 * specifies the end date of the project
+	 * specifies the end date of a project
 	*/
 	project_end: Date;
 
 	/**
-	 * specifies the start date of the project
+	 * specifies the start date of a project
 	*/
 	project_start: Date;
 
@@ -741,7 +794,7 @@ interface GanttConfigOptions {
 	scale_height: number;
 
 	/**
-	 * sets the minimal scale unit (in case multiple scales are used) as the interval of leading/closing empty space
+	 * sets the minimal scale unit (in case multiple scales are used) as the interval of the leading/closing empty space
 	*/
 	scale_offset_minimal: boolean;
 
@@ -751,7 +804,12 @@ interface GanttConfigOptions {
 	scale_unit: string;
 
 	/**
-	 * enables backwards scheduling
+	 * defines configuration settings of the time scale
+	*/
+	scales: any[];
+
+	/**
+	 * enables backward scheduling
 	*/
 	schedule_from_end: boolean;
 
@@ -816,6 +874,11 @@ interface GanttConfigOptions {
 	show_task_cells: boolean;
 
 	/**
+	 * enables showing tasks that are outside the specified date range in the Gantt chart
+	*/
+	show_tasks_outside_timescale: boolean;
+
+	/**
 	 * enables showing unscheduled tasks
 	*/
 	show_unscheduled: boolean;
@@ -856,12 +919,17 @@ interface GanttConfigOptions {
 	static_background: boolean;
 
 	/**
+	 * enables rendering of highlighted cells in the static_background mode
+	*/
+	static_background_cells: boolean;
+
+	/**
 	 * sets the step of the time scale (X-Axis)
 	*/
 	step: number;
 
 	/**
-	 * specifies the second time scale(s)
+	 * specifies the second time scale(s) (deprecated)
 	*/
 	subscales: any[];
 
@@ -1096,6 +1164,11 @@ interface GanttStatic {
 	keys: GanttHotkeys;
 
 	/**
+	 * returns the license name of dhtmlxGantt
+	*/
+	license: any;
+
+	/**
 	 * a locale object (region-specific labels) of the Gantt chart
 	*/
 	locale: GanttLocale;
@@ -1175,10 +1248,10 @@ interface GanttStatic {
 	/**
 	 * adds a new task
 	 * @param task the task object
-	 * @param parent the parent's id
+	 * @param parent optional, optional, the parent's id
 	 * @param index optional, optional, the position the task will be added into (0 or greater)
 	*/
-	addTask(task: any, parent: string, index?: number): string|number;
+	addTask(task: any, parent?: string|number, index?: number): string|number;
 
 	/**
 	 * displays an additional layer with custom elements for a task in the timeline area
@@ -1400,7 +1473,7 @@ interface GanttStatic {
 	destructor(): void;
 
 	/**
-	 * detaches all events from dhtmlxGantt (both custom and inner)
+	 * detaches all events from dhtmlxGantt (both custom and inner ones)
 	*/
 	detachAllEvents(): void;
 
@@ -1425,9 +1498,9 @@ interface GanttStatic {
 	eachSelectedTask(code: GanttCallback): void;
 
 	/**
-	 * iterates over all child tasks in the Gantt chart
+	 * iterates over all child tasks of a specific task or the of whole Gantt chart
 	 * @param code a function that will iterate over tasks. Takes a task object as a parameter
-	 * @param parent optional, the parent id. If specified, the function will iterate over childs of the <br> specified parent
+	 * @param parent optional, the parent id. If specified, the function will iterate over children of the <br> specified parent
 	 * @param master optional, the object, that 'this'  will refer to
 	*/
 	eachTask(code: GanttCallback, parent?: string|number, master?: any): void;
@@ -1546,7 +1619,7 @@ interface GanttStatic {
 	 * returns the constraint type applied to the task
 	 * @param task a task object
 	*/
-	getConstraintType(task: any): void;
+	getConstraintType(task: any): string;
 
 	/**
 	 * returns the configuration object of a datastore
@@ -1852,7 +1925,7 @@ interface GanttStatic {
 
 	/**
 	 * groups tasks by the specified task's attribute
-	 * @param config the grouping configuration object
+	 * @param config the grouping configuration object, or false to ungroup tasks
 	*/
 	groupBy(config: any): void;
 
@@ -1989,7 +2062,7 @@ interface GanttStatic {
 	 * @param type optional, <i>('json', 'xml', 'oldxml')</i> the data type. The default value - <i>'json'</i>
 	 * @param callback optional, the callback function
 	*/
-	load(url: string, type?: string, callback?: GanttCallback): void;
+	load(url: string, type?: string, callback?: GanttCallback): any;
 
 	/**
 	 * gets the id of a task from the specified HTML event
@@ -2023,7 +2096,7 @@ interface GanttStatic {
 	 * @param tindex the index of the position that the task will be moved to <br> (the index within a branch)
 	 * @param parent optional, the parent id. If specified, the <b>tindex</b> will  refer to the  index in the <br> <b>'parent'</b> branch
 	*/
-	moveTask(sid: string|number, tindex: number, parent?: string|number): void;
+	moveTask(sid: string|number, tindex: number, parent?: string|number): boolean;
 
 	/**
 	 * opens the branch with the specified id
@@ -2134,7 +2207,7 @@ interface GanttStatic {
 	 * @param x value of horizontal scroll or 'null' (if the scroll position shouldn't be changed)
 	 * @param y value of vertical scroll or 'null' (if the scroll position shouldn't be changed)
 	*/
-	scrollTo(x: number, y: number): void;
+	scrollTo(x: number|null, y: number|null): void;
 
 	/**
 	 * selects the specified task

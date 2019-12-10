@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.1 Standard
+dhtmlxGantt v.6.3.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -197,7 +197,7 @@ var Tooltip = /** @class */ (function () {
             this.hide();
             container.appendChild(node);
         }
-        if (left instanceof MouseEvent) {
+        if (this._isLikeMouseEvent(left)) {
             var position = this._calculateTooltipPosition(left);
             top = position.top;
             left = position.left;
@@ -219,6 +219,10 @@ var Tooltip = /** @class */ (function () {
         var node = this.getNode();
         node.innerHTML = html;
         return this;
+    };
+    // it is for salesforce, because it proxies event to it own events
+    Tooltip.prototype._isLikeMouseEvent = function (event) {
+        return "clientX" in event && "clientY" in event;
     };
     Tooltip.prototype._getViewPort = function () {
         return this._root || document.body;

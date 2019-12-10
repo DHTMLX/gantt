@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.1 Standard
+dhtmlxGantt v.6.3.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -121,7 +121,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var EventsManager = /** @class */ (function () {
     function EventsManager() {
         this._mouseDown = false;
-        this._eventsIds = [];
+        this._domEvents = gantt._createDomEventScope();
     }
     EventsManager.prototype.attach = function (selectedRegion, useKey) {
         var _this = this;
@@ -149,7 +149,7 @@ var EventsManager = /** @class */ (function () {
             selectedRegion.setEnd(scheduledDndCoordinates);
             scheduledDndCoordinates = null;
         };
-        this._eventsIds[this._eventsIds.length] = gantt.event(_target, "mousedown", function (event) {
+        this._domEvents.attach(_target, "mousedown", function (event) {
             scheduledDndCoordinates = null;
             if (gantt.utils.dom.closest(event.target, ".gantt_task_line, .gantt_task_link")) {
                 return;
@@ -163,7 +163,7 @@ var EventsManager = /** @class */ (function () {
             }
             scheduledDndCoordinates = _this._getCoordinates(event, selectedRegion);
         });
-        this._eventsIds[this._eventsIds.length] = gantt.event(document.body, "mouseup", function (event) {
+        this._domEvents.attach(document.body, "mouseup", function (event) {
             scheduledDndCoordinates = null;
             if (useKey && event[useKey] !== true) {
                 return;
@@ -174,7 +174,7 @@ var EventsManager = /** @class */ (function () {
                 selectedRegion.dragEnd(coordinates);
             }
         });
-        this._eventsIds[this._eventsIds.length] = gantt.event(_target, "mousemove", function (event) {
+        this._domEvents.attach(_target, "mousemove", function (event) {
             if (useKey && event[useKey] !== true) {
                 return;
             }
@@ -195,10 +195,10 @@ var EventsManager = /** @class */ (function () {
         });
     };
     EventsManager.prototype.detach = function () {
-        this._restoreOriginPosition();
-        this._eventsIds.forEach(function (eventId) {
-            gantt.eventRemove(eventId);
-        });
+        this._domEvents.detachAll();
+        if (this._restoreOriginPosition) {
+            this._restoreOriginPosition();
+        }
         var state = gantt.$services.getService("state");
         state.unregisterProvider("clickDrag");
     };

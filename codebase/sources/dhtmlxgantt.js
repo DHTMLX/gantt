@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.1 Standard
+dhtmlxGantt v.6.3.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!************************************************!*\
-  !*** ./node_modules/webpack/buildin/global.js ***!
-  \************************************************/
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8860,6 +8860,9 @@ var DataProcessor = /** @class */ (function () {
     DataProcessor.prototype.storeItem = function (item) {
         this._storage.storeItem(item);
     };
+    DataProcessor.prototype.url = function (url) {
+        this.serverProcessor = this._serverProcessor = url;
+    };
     DataProcessor.prototype._beforeSendData = function (data, rowId) {
         if (!this.callEvent("onBeforeUpdate", [rowId, this.getState(rowId), data])) {
             return false;
@@ -9561,7 +9564,7 @@ DataStore.prototype = {
 		for(var i = 0, len = data.length; i< len; i++){
 			item = data[i];
 			if(this.$initItem){
-				item = this.$initItem(item);
+				item = this.$initItem(utils.copy(item));
 			}
 			if(this.callEvent("onItemLoading", [item])){
 				if (!this.pull.hasOwnProperty(item.id)) {
@@ -11865,7 +11868,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.3.1";
+	this.version = "6.3.2";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

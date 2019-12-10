@@ -1,3 +1,11 @@
+### 6.3.2
+
+- Fix the script error which happened when gantt.destructor was called when the click-drag feature was enabled
+- gantt.parse no longer modifies data objects passed into arguments, deep copies are made instead
+- TypeScript type definitions were updated
+- onBeforeBranchLoading and onAfterBranchLoading public events were added so it would be possible to modify the url or dynamic parameters of dynamic loading requests
+- Added a public method for changing the url of the dataProcessor after its initialization
+
 ### 6.3.1
 
 - Fix the regression in the smart rendering which caused links not to be rendered in some cases.
