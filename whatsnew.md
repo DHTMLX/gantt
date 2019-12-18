@@ -1,3 +1,14 @@
+### 6.3.3
+
+- Fix the incorrect resizing behavior of grid that disabled the Timeline in some cases
+- gantt.parse should now correctly update the project tree when a parent task is loaded after its children
+- Fix compatibility with SalesForce Lightning Aura components framework (Evaluation build)
+- Fix the incorrect position of the Tooltip in SalesForce environment
+- Fix the incorrect Tooltip position when the gantt container has a vertical margin
+- Add missing WAI-ARIA attributes to elements inside the gantt
+- Fix the incorrect work of the min_duration config
+- Fix the incorrect work of link formatters with custom instances of the gantt
+
 ### 6.3.2
 
 - Fix the script error which happened when gantt.destructor was called when the click-drag feature was enabled

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.2 Standard
+dhtmlxGantt v.6.3.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -243,14 +243,17 @@ var Tooltip = /** @class */ (function () {
         var offsetY = gantt.config.tooltip_offset_y;
         var container = document.body;
         var mouse = domHelpers.getRelativeEventPosition(event, container);
+        var containerPos = domHelpers.getNodePosition(container);
+        mouse.y += containerPos.y; // to fix margin collapsing
         tooltip.top = mouse.y;
         tooltip.left = mouse.x;
         tooltip.top += offsetY;
         tooltip.left += offsetX;
         tooltip.bottom = tooltip.top + tooltip.height;
         tooltip.right = tooltip.left + tooltip.width;
+        var scrollTop = window.scrollY + container.scrollTop; // to fix margin collapsing
         // edge cases when the tooltip element can be partially hidden by edges of the viewport
-        if (tooltip.top < viewport.top) {
+        if (tooltip.top < viewport.top - scrollTop) {
             tooltip.top = viewport.top;
             tooltip.bottom = tooltip.top + tooltip.height;
         }

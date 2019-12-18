@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.2 Standard
+dhtmlxGantt v.6.3.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7307,7 +7307,7 @@ module.exports = function(gantt){
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var LinkFormatterSimple = /** @class */ (function () {
-    function LinkFormatterSimple() {
+    function LinkFormatterSimple(gantt) {
         var _this = this;
         this.format = function (link) {
             var wbs = _this._getWBSCode(link.source);
@@ -7326,19 +7326,19 @@ var LinkFormatterSimple = /** @class */ (function () {
                 id: undefined,
                 source: source,
                 target: null,
-                type: gantt.config.links.finish_to_start,
+                type: _this._gantt.config.links.finish_to_start,
                 lag: 0
             };
         };
         this._getWBSCode = function (source) {
-            var pred = gantt.getTask(source);
-            return gantt.getWBSCode(pred);
+            var pred = _this._gantt.getTask(source);
+            return _this._gantt.getWBSCode(pred);
         };
         this._findSource = function (value) {
             var reqTemplate = new RegExp("^[0-9\.]+", "i");
             if (reqTemplate.exec(value)) {
                 var wbs = reqTemplate.exec(value)[0];
-                var task = gantt.getTaskByWBSCode(wbs);
+                var task = _this._gantt.getTaskByWBSCode(wbs);
                 if (task) {
                     return task.id;
                 }
@@ -7346,10 +7346,11 @@ var LinkFormatterSimple = /** @class */ (function () {
             return null;
         };
         this._linkReg = /^[0-9\.]+/;
+        this._gantt = gantt;
     }
-    LinkFormatterSimple.create = function (settings) {
+    LinkFormatterSimple.create = function (settings, gantt) {
         if (settings === void 0) { settings = null; }
-        return new LinkFormatterSimple();
+        return new LinkFormatterSimple(gantt);
     };
     return LinkFormatterSimple;
 }());
@@ -11868,7 +11869,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.3.2";
+	this.version = "6.3.3";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -12123,6 +12124,10 @@ module.exports = function(gantt){
 		var resizeWatcher = document.createElement('iframe');
 		resizeWatcher.className = "gantt_container_resize_watcher";
 		resizeWatcher.tabIndex = -1;
+		if(gantt.config.wai_aria_attributes){
+			resizeWatcher.setAttribute("role", "none");
+			resizeWatcher.setAttribute("aria-hidden", true);
+		}
 
 		// in some environments (namely, in SalesForce) iframe.contentWindow is not available
 		gantt.$root.appendChild(resizeWatcher);
@@ -15544,9 +15549,11 @@ module.exports = function(gantt){
 			if(!settings.enter){
 				settings.enter = gantt.config.duration_unit;
 			}
-			return DurationFormatter.create(settings);
+			return DurationFormatter.create(settings, gantt);
 		},
-		linkFormatter: LinkFormatter.create
+		linkFormatter: function(settings){
+			return LinkFormatter.create(settings, gantt);
+		}
 	};
 };
 
@@ -23467,6 +23474,10 @@ var rendererFactory = function(gantt){
 				}
 			},
 			append: function (item, node, container) {
+				if(!this.rendered){
+					return;
+				}
+
 				if (!node) {
 					if (this.rendered[item.id]) {
 						this.remove_item(item.id);
@@ -24210,7 +24221,7 @@ function createGridLineRender(gantt){
 			if (this.defined(col.align))
 				style += "text-align:" + col.align + ";";
 
-			var aria = gantt._waiAria.gridCellAttrString(col, textValue);
+			var aria = gantt._waiAria.gridCellAttrString(col, textValue, item);
 
 			tree.push(value);
 			if(config.rtl){
@@ -24733,6 +24744,9 @@ var initLinksDND = function(timeline, gantt) {
 			this._dir_end = getLinePos(t, !!_link_target_task_start,shift, config);
 		}else{
 			this._dir_end = domHelpers.getRelativeEventPosition(e, timeline.$task_data);
+			if(gantt.env.isEdge){ // to fix margin collapsing
+				this._dir_end.y += window.scrollY;
+			}
 		}
 
 		var targetChanged = !(prevLanding == landing && prevTarget == targ && prevToStart == to_start);
@@ -25601,13 +25615,25 @@ function createTaskDND(timeline, gantt) {
 				}
 			}
 
+			var minDurationInUnits = this._calculateMinDuration(cfg.min_duration, cfg.duration_unit);
 			if (task.end_date - task.start_date < cfg.min_duration) {
 				if (drag.left)
-					task.start_date = gantt.calculateEndDate({start_date: task.end_date, duration: -1, task: task});
+					task.start_date = gantt.calculateEndDate(task.end_date, -minDurationInUnits, cfg.duration_unit, task);
 				else
-					task.end_date = gantt.calculateEndDate({start_date: task.start_date, duration: 1, task: task});
+					task.end_date = gantt.calculateEndDate(task.start_date, minDurationInUnits, cfg.duration_unit, task);
 			}
 			gantt._init_task_timing(task);
+		},
+		_calculateMinDuration: function(duration, unit) {
+			var inMs = {
+				"minute": 60000,
+				"hour": 3600000,
+				"day": 86400000,
+				"week": 604800000,
+				"month": 2419200000,
+				"year": 31356000000
+			};
+			return Math.ceil(duration / inMs[unit]);
 		},
 		_resize_progress: function(task, shift, drag) {
 			var coords_x = this._drag_task_coords(task, drag);
@@ -25730,7 +25756,6 @@ function createTaskDND(timeline, gantt) {
 
 				var shift = pos.x - drag.start_x;
 				var task = gantt.getTask(drag.id);
-
 				if (this._handlers[drag.mode]) {
 					if (drag.mode === config.drag_mode.move) {
 						var dragHash = {};
@@ -27043,10 +27068,6 @@ module.exports = function(gantt){
 
 			div.setAttribute("aria-label", stripHTMLLite(gantt.templates.tooltip_text(task.start_date, task.end_date, task)));
 
-			if(gantt.isReadonly(task)){
-				div.setAttribute("aria-readonly", true);
-			}
-
 			if(task.$dataprocessor_class){
 				div.setAttribute("aria-busy", true);
 			}
@@ -27188,8 +27209,13 @@ module.exports = function(gantt){
 			return "role='rowgroup'";
 		},
 
-		gridCellAttrString: function(column, textValue){
-			return this.getAttributeString({"role":"gridcell", "aria-label": textValue});
+		gridCellAttrString: function(column, textValue, task){
+			var attributes = {"role":"gridcell", "aria-label": textValue};
+			if(!column.editor || gantt.isReadonly(task)){
+				attributes["aria-readonly"] = true;
+			}
+
+			return this.getAttributeString(attributes);
 		},
 
 		gridAddButtonAttrString: function(column){
