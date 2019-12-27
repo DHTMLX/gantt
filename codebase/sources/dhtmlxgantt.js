@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.3 Standard
+dhtmlxGantt v.6.3.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -11869,7 +11869,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.3.3";
+	this.version = "6.3.4";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -15751,6 +15751,34 @@ module.exports = function addPlaceholder(gantt){
 		gantt.attachEvent("onParse", callIfEnabled(insertPlaceholder));
 	});
 
+	function isPlaceholderTask(taskId){
+		if(gantt.config.types.placeholder && gantt.isTaskExists(taskId)){
+			var task = gantt.getTask(taskId);
+			if(task.type == gantt.config.types.placeholder){
+				return true;
+			}
+		}
+		return false;
+	}
+	function isPlaceholderLink(link){
+		if(isPlaceholderTask(link.source) || isPlaceholderTask(link.target)){
+			return true;
+		}
+		return false;
+	}
+	gantt.attachEvent("onLinkValidation", function(link){
+		if(isPlaceholderLink(link)){
+			return false;
+		}
+		return true;
+	});
+	gantt.attachEvent("onBeforeLinkAdd", function(id,link){
+		if(isPlaceholderLink(link)){
+			return false;
+		}
+		return true;
+	});
+
 	gantt.attachEvent("onBeforeUndoStack", function(action){
 		for(var i = 0; i < action.commands.length; i++){
 			var command = action.commands[i];
@@ -15958,14 +15986,14 @@ function createResourceMethods(gantt){
 				templates = timeline.$getTemplates();
 			var scale = timeline.getScale();
 			var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
-
+			var smartRendering = !!viewport;//no viewport means smart rendering is disabled
 			var cells = [];
 			renderedResourceLines[resource.id] = {};
 			for (var i = 0; i < timetable.length; i++) {
 
 				var day = timetable[i];
 				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
-				if(!isColumnVisible(columnIndex, scale, viewport)){
+				if(smartRendering && !isColumnVisible(columnIndex, scale, viewport)){
 					continue;
 				}
 
@@ -18782,8 +18810,16 @@ Grid.prototype = {
 
 		var config = this.$getConfig();
 		if (outerWidth !== width) {
-			config.grid_width = outerWidth;
-			this.$config.width = outerWidth - 1;
+			if(outerWidth !== undefined){
+				config.grid_width = outerWidth;
+				this.$config.width = outerWidth - 1;
+			}else{
+				if(!isNaN(innerWidth)){
+					this._setColumnsWidth(innerWidth);
+					config.grid_width = innerWidth;
+					this.$config.width = innerWidth - 1;
+				}
+			}
 		}
 
 		var dataHeight = Math.max(this.$state.height - config.scale_height, 0);
@@ -27351,6 +27387,12 @@ var calendarArgumentsHelper = function(gantt){
 			} else {
 				config = utils.mixin({}, config);
 			}
+
+			if(!helpers.isValidDate(config.date)){
+				gantt.assert(false, "Invalid date argument for getWorkHours method");
+				throw new Error("Invalid date argument for getWorkHours method");
+			}
+
 			return config;
 		},
 		setWorkTimeArguments: function () {
@@ -27374,6 +27416,11 @@ var calendarArgumentsHelper = function(gantt){
 			}
 
 			processedConfig.unit = processedConfig.unit || gantt.config.duration_unit;
+
+			if(!helpers.isValidDate(processedConfig.date)){
+				gantt.assert(false, "Invalid date argument for isWorkTime method");
+				throw new Error("Invalid date argument for isWorkTime method");
+			}
 
 			return processedConfig;
 		},
@@ -27403,6 +27450,10 @@ var calendarArgumentsHelper = function(gantt){
 			processedConfig.dir = config.dir || 'any';
 			processedConfig.unit = config.unit || gantt.config.duration_unit;
 
+			if(!helpers.isValidDate(processedConfig.date)){
+				gantt.assert(false, "Invalid date argument for getClosestWorkTime method");
+				throw new Error("Invalid date argument for getClosestWorkTime method");
+			}
 			return processedConfig;
 		},
 
@@ -27424,6 +27475,16 @@ var calendarArgumentsHelper = function(gantt){
 			config.unit = config.unit || gantt.config.duration_unit;
 			config.step = config.step || gantt.config.duration_step;
 			config.start_date = config.start_date || config.start || config.date;
+
+			if(!helpers.isValidDate(config.start_date)){
+				gantt.assert(false, "Invalid start_date argument for getDuration method");
+				throw new Error("Invalid start_date argument for getDuration method");
+			}
+
+			if(!helpers.isValidDate(config.end_date)){
+				gantt.assert(false, "Invalid end_date argument for getDuration method");
+				throw new Error("Invalid end_date argument for getDuration method");
+			}
 
 			return config;
 		},
@@ -27467,10 +27528,20 @@ var calendarArgumentsHelper = function(gantt){
 			}
 			if(config.id){
 				processedConfig.task = config;
+
+				// received a task object as an argument
+				// ignore 'unit' and 'step' properties in this case, since it's likely a part of data model of a task
+				processedConfig.unit = null;
+				processedConfig.step = null;
 			}
 
 			processedConfig.unit = processedConfig.unit || gantt.config.duration_unit;
 			processedConfig.step = processedConfig.step || gantt.config.duration_step;
+
+			if(!helpers.isValidDate(processedConfig.start_date)){
+				gantt.assert(false, "Invalid start_date argument for calculateEndDate method");
+				throw new Error("Invalid start_date argument for calculateEndDate method");
+			}
 
 			return processedConfig;
 		}
@@ -29609,6 +29680,10 @@ function isDate(obj) {
 	}
 }
 
+function isValidDate(obj){
+	return isDate(obj) && !isNaN(obj.getTime());
+}
+
 function arrayFilter(arr, callback) {
 	var result = [];
 
@@ -29747,6 +29822,7 @@ module.exports = {
 	throttle: throttle,
 	isArray: isArray,
 	isDate: isDate,
+	isValidDate: isValidDate,
 	isStringObject: isStringObject,
 	isNumberObject: isNumberObject,
 	isBooleanObject: isBooleanObject,

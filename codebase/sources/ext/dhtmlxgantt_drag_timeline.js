@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.3 Standard
+dhtmlxGantt v.6.3.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -415,6 +415,10 @@ function isDate(obj) {
 	}
 }
 
+function isValidDate(obj){
+	return isDate(obj) && !isNaN(obj.getTime());
+}
+
 function arrayFilter(arr, callback) {
 	var result = [];
 
@@ -553,6 +557,7 @@ module.exports = {
 	throttle: throttle,
 	isArray: isArray,
 	isDate: isDate,
+	isValidDate: isValidDate,
 	isStringObject: isStringObject,
 	isNumberObject: isNumberObject,
 	isBooleanObject: isBooleanObject,

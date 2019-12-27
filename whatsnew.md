@@ -1,3 +1,12 @@
+### 6.3.4
+
+- Fix crashes of the resource load diagram when smart rendering is switched off
+- Fix issue with the custom task property named "unit", as gantt considered it as a duration unit value and multiplied the task duration after its dragging
+- Fix the incorrect Tooltip position when the autosize config is enabled
+- Fix the incorrect alignment behavior of grid cells when both the scrollable property and autofit config are set to true
+- Creating a link between a task in the timeline and a placeholder in the grid is now blocked
+- Fix the bug with the auto scheduling extension that caused gantt to freeze when a task has the constraint type (SNET/FNET/SNLT/FNLT) with no date specified, or with an invalid date
+
 ### 6.3.3
 
 - Fix the incorrect resizing behavior of grid that disabled the Timeline in some cases
