@@ -1,14 +1,23 @@
-# dhtmlxGantt v.6.3.4
+# dhtmlxGantt #
 
-dhtmlxGantt is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
+[![dhtmlx.com](https://img.shields.io/badge/made%20by-DHTMLX-blue)](https://dhtmlx.com/)
+[![npm: v.6.3.4](https://img.shields.io/badge/npm-v.6.3.4-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
+[![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+
+[Getting started](#getting-started) | [Features](#features) | [Support](#support) | [License](#license) | [Useful links](#links)
+
+[dhtmlxGantt](https://dhtmlx.com/docs/products/dhtmlxGantt) is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
 
 It can show the dependencies between tasks as lines and allows you to set up different relationships between tasks (finish-to-start, start-to-start, finish-to-finish, start-to-finish).
 
 dhtmlxGantt provides a flexible API and a large number of event handlers, which gives you the freedom to customize it for your needs.
 
-[https://dhtmlx.com/docs/products/dhtmlxGantt](https://dhtmlx.com/docs/products/dhtmlxGantt)
+![gantt-demo](https://dhtmlx.com/blog/wp-content/uploads/2019/11/MS-Project.gif)
 
-## Getting started
+[Check more samples >](https://docs.dhtmlx.com/gantt/samples/?_ga=2.207689174.557456657.1578902403-1229728879.1572866128)
+
+<a name="getting-started"></a>
+## Getting started ##
 
 Add files:
 
@@ -47,7 +56,7 @@ gantt.parse({
 
 ==> [Check the live demo](https://snippet.dhtmlx.com/a69d7378a)
 
-### Complete guides
+### Complete guides ###
 
 - [Angular](https://dhtmlx.com/blog/dhtmlx-gantt-chart-usage-angularjs-2-framework/)
 - [React](https://dhtmlx.com/blog/create-react-gantt-chart-component-dhtmlxgantt/)
@@ -60,15 +69,33 @@ gantt.parse({
   - [Slim framework](https://docs.dhtmlx.com/gantt/desktop__howtostart_php_laravel.html)
 - [Ruby on Rails](https://docs.dhtmlx.com/gantt/desktop__howtostart_ruby.html)
 
-#### All tutorials
+#### All tutorials ####
 
 [https://docs.dhtmlx.com/gantt/desktop__howtostart_guides.html](https://docs.dhtmlx.com/gantt/desktop__howtostart_guides.html)
 
-#### Video guides
+#### Video guides ####
 
 [https://www.youtube.com/user/dhtmlx/videos](https://www.youtube.com/user/dhtmlx/videos)
 
-## License
+<a name="features"></a>
+## Features ##
+
+
+<a name="support"></a>
+## Support ##
+
+Star our GitHub repo
+
+Check our [roadmap](https://trello.com/b/fhOySHPj/gantt-roadmap) for future updates
+
+Read us on [Medium](https://medium.com/@dhtmlx)
+
+Follow us on [Twitter](https://twitter.com/dhtmlx)
+
+Like our page on [Facebook](https://www.facebook.com/dhtmlx/)
+
+<a name="license"></a>
+## License ##
 
 dhtmlxGantt v.6.3.4 Standard
 
@@ -78,7 +105,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
 
 (c) XB Software Ltd.
 
-
+<a name="links"></a>
 ## Useful links
 
 - [Online  documentation](https://docs.dhtmlx.com/gantt/)
