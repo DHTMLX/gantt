@@ -14,7 +14,7 @@ dhtmlxGantt provides a flexible API and a large number of event handlers, which 
 
 ![gantt-demo](https://dhtmlx.com/blog/wp-content/uploads/2019/11/MS-Project.gif)
 
-[Check more samples >](https://docs.dhtmlx.com/gantt/samples/?_ga=2.207689174.557456657.1578902403-1229728879.1572866128)
+[Check more samples >](https://docs.dhtmlx.com/gantt/samples/)
 
 <a name="getting-started"></a>
 ## Getting started ##
@@ -82,6 +82,7 @@ gantt.parse({
 
 | Functionality | GNU GPL v2 | Commercial	| Enterprise	| Ultimate |
 |---	|---	|---	|---	|---	|
+| [Standard features](https://docs.dhtmlx.com/gantt/desktop__editions_comparison.html)  	|  :heavy_check_mark:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
 | Auto scheduling  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
 | Baselines, deadlines and other custom elements  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
 | Critical path calculation 	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
