@@ -80,19 +80,48 @@ gantt.parse({
 <a name="features"></a>
 ## Features ##
 
+| Functionality | GNU GPL v2 | Commercial	| Enterprise	| Ultimate |
+|---	|---	|---	|---	|---	|
+| Auto scheduling  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Baselines, deadlines and other custom elements  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Critical path calculation 	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Custom content in the overlay  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Custom tasks types 	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Decimal units for tasks durations  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Dynamic loading  |  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Expanding/collapsing split tasks  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Free local module for MS Project export/import 	|  :x: 	|   :x:	|  :x: 	|   :heavy_check_mark:	|
+| Free local PDF/PNG export module 	|  :x: 	|  :x: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| MS Project link formatting  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Multiple resources per task  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Online export to PDF/PNG without watermark 	|  :x:	|  1 year 	|  1 year 	|   Perpetual	|
+| Project-level work calendars  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Project and milestones task types  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Resizing grid columns and the grid itself from the UI	|  :x: |  :heavy_check_mark: |  :heavy_check_mark: 	|  :heavy_check_mark:	|
+| Resource histogram 	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Resource management 	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| S-curve to show the progress of a project  |  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Setting task types automatically |  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Several Gantt charts on 1 page | :x: | :x: |  :heavy_check_mark: | :heavy_check_mark: 	|
+| Simple API for hiding/showing columns of the grid  |  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Splitting tasks into subtasks 	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Tasks grouping  	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Time constraints for tasks  |  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+| Working calendar for the whole project	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
+
 
 <a name="support"></a>
 ## Support ##
 
-Star our GitHub repo
+Star our GitHub repo :star:
 
-Check our [roadmap](https://trello.com/b/fhOySHPj/gantt-roadmap) for future updates
+Check our [roadmap](https://trello.com/b/fhOySHPj/gantt-roadmap) for future updates :wrench:
 
-Read us on [Medium](https://medium.com/@dhtmlx)
+Read us on [Medium](https://medium.com/@dhtmlx) :newspaper:
 
-Follow us on [Twitter](https://twitter.com/dhtmlx)
+Follow us on [Twitter](https://twitter.com/dhtmlx) :bird:
 
-Like our page on [Facebook](https://www.facebook.com/dhtmlx/)
+Like our page on [Facebook](https://www.facebook.com/dhtmlx/) :thumbsup:
 
 <a name="license"></a>
 ## License ##
