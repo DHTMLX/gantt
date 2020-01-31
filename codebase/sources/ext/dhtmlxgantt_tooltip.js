@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.4 Standard
+dhtmlxGantt v.6.3.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1079,6 +1079,13 @@ module.exports = {
 
 var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
 
+function isCustomType(object){
+	var constructorString = object.constructor.toString();
+	var plainObjectConstructor = ({}).constructor.toString();
+
+	return constructorString !== plainObjectConstructor;
+}
+
 function copy(object) {
 	var i, result; // iterator, types array, result
 
@@ -1104,7 +1111,12 @@ function copy(object) {
 				result = new Boolean(object);
 				break;
 			default:
-				result = {};
+				if(isCustomType(object)){
+					result = Object.create(object);
+				}else{
+					result = {};
+				}
+
 				for (i in object) {
 					if (Object.prototype.hasOwnProperty.apply(object, [i]))
 						result[i] = copy(object[i]);

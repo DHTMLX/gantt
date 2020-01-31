@@ -1,3 +1,12 @@
+### 6.3.5
+
+- Fix the issue with task grouping which caused vertical scroll position to reset after moving any task with drag and drop
+- Fix the script error which happened when drag_timeline config was set to null
+- Fix the incorrect position of highlighted cells when static_background and static_background_cells are enabled and smart_rendering is disabled
+- Fix the issue with the onAfterBranchLoading event not being called
+- Fix the incorrect work of smart rendering when the value of task_height is less than the value of row_height
+- A public method for rebuilding gantt layout after changing its config is added
+
 ### 6.3.4
 
 - Fix crashes of the resource load diagram when smart rendering is switched off

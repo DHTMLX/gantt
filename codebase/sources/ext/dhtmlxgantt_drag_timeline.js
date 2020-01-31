@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.4 Standard
+dhtmlxGantt v.6.3.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -193,13 +193,13 @@ var EventsManager = /** @class */ (function () {
             if (_this._originAutoscroll !== undefined) {
                 gantt.config.autoscroll = _this._originAutoscroll;
             }
-            var useKey = gantt.config.drag_timeline.useKey;
-            if (useKey && event[useKey] !== true) {
-                return;
+            if (gantt.config.drag_timeline) {
+                var useKey = gantt.config.drag_timeline.useKey;
+                if (useKey && event[useKey] !== true) {
+                    return;
+                }
             }
-            if (_this._mouseDown) {
-                _this._mouseDown = false;
-            }
+            _this._mouseDown = false;
         };
         this._startDrag = function (event) {
             _this._originAutoscroll = gantt.config.autoscroll;
@@ -227,6 +227,9 @@ var EventsManager = /** @class */ (function () {
         var _this = this;
         this._timeline = timeline;
         this._domEvents.attach(timeline.$task, "mousedown", function (event) {
+            if (!gantt.config.drag_timeline) {
+                return;
+            }
             var _a = gantt.config.drag_timeline, useKey = _a.useKey, ignore = _a.ignore, enabled = _a.enabled;
             if (enabled === false) {
                 return;
@@ -251,12 +254,18 @@ var EventsManager = /** @class */ (function () {
             _this._startDrag(event);
         });
         this._domEvents.attach(document, "keydown", function (event) {
+            if (!gantt.config.drag_timeline) {
+                return;
+            }
             var useKey = gantt.config.drag_timeline.useKey;
             if (useKey && event[useKey] === true) {
                 _this._applyDndReadyStyles();
             }
         });
         this._domEvents.attach(document, "keyup", function (event) {
+            if (!gantt.config.drag_timeline) {
+                return;
+            }
             var useKey = gantt.config.drag_timeline.useKey;
             if (useKey && event[useKey] === false) {
                 _this._clearDndReadyStyles();
@@ -276,6 +285,9 @@ var EventsManager = /** @class */ (function () {
             _this._stopDrag(event);
         });
         this._domEvents.attach(gantt.$root, "mousemove", function (event) {
+            if (!gantt.config.drag_timeline) {
+                return;
+            }
             var useKey = gantt.config.drag_timeline.useKey;
             if (useKey && event[useKey] !== true) {
                 return;

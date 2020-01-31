@@ -1,7 +1,7 @@
 # dhtmlxGantt #
 
 [![dhtmlx.com](https://img.shields.io/badge/made%20by-DHTMLX-blue)](https://dhtmlx.com/)
-[![npm: v.6.3.4](https://img.shields.io/badge/npm-v.6.3.4-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
+[![npm: v.6.3.5](https://img.shields.io/badge/npm-v.6.3.5-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
 [Getting started](#getting-started) | [Features](#features) | [Support](#support) | [License](#license) | [Useful links](#links)
@@ -58,6 +58,7 @@ gantt.parse({
 
 ### Complete guides ###
 
+- [Vue.js](https://dhtmlx.com/blog/use-dhtmlxgantt-vue-js-framework-demo/)
 - [Angular](https://dhtmlx.com/blog/dhtmlx-gantt-chart-usage-angularjs-2-framework/)
 - [React](https://dhtmlx.com/blog/create-react-gantt-chart-component-dhtmlxgantt/)
 - [Node](https://docs.dhtmlx.com/gantt/desktop__howtostart_nodejs.html)
@@ -127,13 +128,14 @@ Like our page on [Facebook](https://www.facebook.com/dhtmlx/) :thumbsup:
 <a name="license"></a>
 ## License ##
 
-dhtmlxGantt v.6.3.4 Standard
+dhtmlxGantt v.6.3.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
 
 (c) XB Software Ltd.
+
 
 <a name="links"></a>
 ## Useful links
