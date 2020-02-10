@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.5 Standard
+dhtmlxGantt v.6.3.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -222,6 +222,9 @@ var Tooltip = /** @class */ (function () {
     };
     // it is for salesforce, because it proxies event to it own events
     Tooltip.prototype._isLikeMouseEvent = function (event) {
+        if (!event || typeof event !== "object") {
+            return false;
+        }
         return "clientX" in event && "clientY" in event;
     };
     Tooltip.prototype._getViewPort = function () {

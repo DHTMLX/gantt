@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.5 Standard
+dhtmlxGantt v.6.3.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/*!************************************************!*\
+  !*** ./node_modules/webpack/buildin/global.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6520,8 +6520,8 @@ module.exports = function () {
         duration_step: 1,
         task_date: "%d %F %Y",
         time_picker: "%H:%i",
-        task_attribute: "data-task-id",
-        link_attribute: "data-link-id",
+        task_attribute: "task_id",
+        link_attribute: "link_id",
         layer_attribute: "data-layer",
         buttons_left: [
             "gantt_save_btn",
@@ -6564,9 +6564,9 @@ module.exports = function () {
         // min width for grid column (when resizing)
         min_grid_column_width: 70,
         // name of the attribute with column index for resize element
-        grid_resizer_column_attribute: "data-column-index",
+        grid_resizer_column_attribute: "column_index",
         // name of the attribute with column index for resize element
-        // grid_resizer_attribute: "grid_resizer", // - usage of this parameter is not found in code
+        grid_resizer_attribute: "grid_resizer",
         // grid width can be increased after the column has been resized
         keep_grid_width: false,
         // grid width can be adjusted
@@ -6593,8 +6593,7 @@ module.exports = function () {
             useKey: undefined,
             ignore: ".gantt_task_line, .gantt_task_link"
         },
-        drag_multiple: true,
-        csp: "auto"
+        drag_multiple: true
     };
     return result;
 };
@@ -6607,7 +6606,7 @@ module.exports = function () {
   !*** ./sources/core/common/date.js ***!
   \*************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
 /*
  %d - the day as a number with a leading zero ( 01 to 31 );
@@ -6629,24 +6628,7 @@ module.exports = function () {
  %A - displays AM (for times from midnight until noon) and PM (for times from noon until midnight).
 */
 
-var fastVersion = __webpack_require__(/*! ./date_parsers/fast_version */ "./sources/core/common/date_parsers/fast_version.ts").default;
-var cspCompliantVersion = __webpack_require__(/*! ./date_parsers/csp_compliant_version */ "./sources/core/common/date_parsers/csp_compliant_version.ts").default;
-
 module.exports = function(gantt) {
-	function useCsp() {
-		var result = false;
-		if (gantt.config.csp === "auto") {
-			try {
-				new Function("result = false;");
-			} catch(e) {
-				result = true;
-			}
-		} else {
-			result = gantt.config.csp;
-		}
-		return result;
-	}
-
 	var dateHelper = {
 		init: function () {
 			var locale = gantt.locale;
@@ -6786,18 +6768,111 @@ module.exports = function(gantt) {
 			return new Date(date.valueOf());
 		},
 		date_to_str: function (format, utc) {
-			var result = fastVersion;
-			if (useCsp()) {
-				result = cspCompliantVersion;
-			}
-			return result.date_to_str(format, utc, gantt);
+			format = format.replace(/%[a-zA-Z]/g, function (a) {
+				switch (a) {
+					case "%d":
+						return "\"+to_fixed(date.getDate())+\"";
+					case "%m":
+						return "\"+to_fixed((date.getMonth()+1))+\"";
+					case "%j":
+						return "\"+date.getDate()+\"";
+					case "%n":
+						return "\"+(date.getMonth()+1)+\"";
+					case "%y":
+						return "\"+to_fixed(date.getFullYear()%100)+\"";
+					case "%Y":
+						return "\"+date.getFullYear()+\"";
+					case "%D":
+						return "\"+locale.date.day_short[date.getDay()]+\"";
+					case "%l":
+						return "\"+locale.date.day_full[date.getDay()]+\"";
+					case "%M":
+						return "\"+locale.date.month_short[date.getMonth()]+\"";
+					case "%F":
+						return "\"+locale.date.month_full[date.getMonth()]+\"";
+					case "%h":
+						return "\"+to_fixed((date.getHours()+11)%12+1)+\"";
+					case "%g":
+						return "\"+((date.getHours()+11)%12+1)+\"";
+					case "%G":
+						return "\"+date.getHours()+\"";
+					case "%H":
+						return "\"+to_fixed(date.getHours())+\"";
+					case "%i":
+						return "\"+to_fixed(date.getMinutes())+\"";
+					case "%a":
+						return "\"+(date.getHours()>11?\"pm\":\"am\")+\"";
+					case "%A":
+						return "\"+(date.getHours()>11?\"PM\":\"AM\")+\"";
+					case "%s":
+						return "\"+to_fixed(date.getSeconds())+\"";
+					case "%W":
+						return "\"+to_fixed(getISOWeek(date))+\"";
+					case "%w":
+						return "\"+to_fixed(getWeek(date))+\"";
+					default:
+						return a;
+				}
+			});
+			if (utc) format = format.replace(/date\.get/g, "date.getUTC");
+			var dateToStr = new Function("date", "to_fixed", "locale", "getISOWeek", "getWeek", "return \"" + format + "\";");
+
+			return function (date) {
+				return dateToStr(date, dateHelper.to_fixed, gantt.locale, dateHelper.getISOWeek, dateHelper.getWeek);
+			};
 		},
 		str_to_date: function (format, utc) {
-			var result = fastVersion;
-			if (useCsp()) {
-				result = cspCompliantVersion;
+			var splt = "var temp=date.match(/[a-zA-Z]+|[0-9]+/g);";
+			var mask = format.match(/%[a-zA-Z]/g);
+			for (var i = 0; i < mask.length; i++) {
+				switch (mask[i]) {
+					case "%j":
+					case "%d":
+						splt += "set[2]=temp[" + i + "]||1;";
+						break;
+					case "%n":
+					case "%m":
+						splt += "set[1]=(temp[" + i + "]||1)-1;";
+						break;
+					case "%y":
+						splt += "set[0]=temp[" + i + "]*1+(temp[" + i + "]>50?1900:2000);";
+						break;
+					case "%g":
+					case "%G":
+					case "%h":
+					case "%H":
+						splt += "set[3]=temp[" + i + "]||0;";
+						break;
+					case "%i":
+						splt += "set[4]=temp[" + i + "]||0;";
+						break;
+					case "%Y":
+						splt += "set[0]=temp[" + i + "]||0;";
+						break;
+					case "%a":
+					case "%A":
+						splt += "set[3]=set[3]%12+((temp[" + i + "]||'').toLowerCase()=='am'?0:12);";
+						break;
+					case "%s":
+						splt += "set[5]=temp[" + i + "]||0;";
+						break;
+					case "%M":
+						splt += "set[1]=locale.date.month_short_hash[temp[" + i + "]]||0;";
+						break;
+					case "%F":
+						splt += "set[1]=locale.date.month_full_hash[temp[" + i + "]]||0;";
+						break;
+					default:
+						break;
+				}
 			}
-			return result.str_to_date(format, utc);
+			var code = "set[0],set[1],set[2],set[3],set[4],set[5]";
+			if (utc) code = " Date.UTC(" + code + ")";
+			var strToDate = new Function("date", "locale", "var set=[0,0,1,0,0,0]; " + splt + " return new Date(" + code + ");");
+
+			return function (dateString) {
+				return strToDate(dateString, gantt.locale);
+			};
 		},
 		getISOWeek: function (ndate) {
 			return gantt.date._getWeekNumber(ndate, true);
@@ -6833,13 +6908,16 @@ module.exports = function(gantt) {
 			if (date && !date.getFullYear) {
 				if (typeof(format) !== "function") {
 					if (typeof(format) === "string") {
-						if (format === "parse_date" || format === "xml_date") {
-							format = gantt.defined(gantt.templates.xml_date) ? gantt.templates.xml_date : gantt.templates.parse_date;
+						if (format === "parse_date") {
+							format = gantt.templates.parse_date;
+							if (gantt.defined(gantt.templates.xml_date) && gantt.templates.parse_date !== gantt.templates.xml_date) {
+								format = gantt.templates.xml_date;
+							}
 						} else {
 							format = gantt.defined(gantt.templates[format]) ? gantt.templates[format] : gantt.date.str_to_date(format);
 						}
 					} else {
-						format = gantt.defined(gantt.templates.xml_date) ? gantt.templates.xml_date : gantt.templates.parse_date;
+						format = gantt.templates.xml_date !== gantt.templates.parse_date ? gantt.templates.xml_date : gantt.templates.parse_date;
 					}
 				}
 				if (date) {
@@ -6853,233 +6931,6 @@ module.exports = function(gantt) {
 	};
 	return dateHelper;
 };
-
-/***/ }),
-
-/***/ "./sources/core/common/date_parsers/csp_compliant_version.ts":
-/*!*******************************************************************!*\
-  !*** ./sources/core/common/date_parsers/csp_compliant_version.ts ***!
-  \*******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var dateToStr = function (format, utc, gantt) {
-    return function (date) {
-        format.replace(/%[a-zA-Z]/g, function (a) {
-            switch (a) {
-                case "%d": return utc ? gantt.date.to_fixed(date.getUTCDate()) : gantt.date.to_fixed(date.getDate());
-                case "%m": return utc ? gantt.date.to_fixed((date.getUTCMonth() + 1)) : gantt.date.to_fixed((date.getMonth() + 1));
-                case "%j": return utc ? date.getUTCDate() : date.getDate();
-                case "%n": return utc ? (date.getUTCMonth() + 1) : (date.getMonth() + 1);
-                case "%y": return utc ? gantt.date.to_fixed(date.getUTCFullYear() % 100) : gantt.date.to_fixed(date.getFullYear() % 100);
-                case "%Y": return utc ? date.getUTCFullYear() : date.getFullYear();
-                case "%D": return utc ? gantt.locale.date.day_short[date.getUTCDay()] : gantt.locale.date.day_short[date.getDay()];
-                case "%l": return utc ? gantt.locale.date.day_full[date.getUTCDay()] : gantt.locale.date.day_full[date.getDay()];
-                case "%M": return utc ? gantt.locale.date.month_short[date.getUTCMonth()] : gantt.locale.date.month_short[date.getMonth()];
-                case "%F": return utc ? gantt.locale.date.month_full[date.getUTCMonth()] : gantt.locale.date.month_full[date.getMonth()];
-                case "%h": return utc ? gantt.date.to_fixed((date.getUTCHours() + 11) % 12 + 1) : gantt.date.to_fixed((date.getHours() + 11) % 12 + 1);
-                case "%g": return utc ? ((date.getUTCHours() + 11) % 12 + 1) : ((date.getHours() + 11) % 12 + 1);
-                case "%G": return utc ? date.getUTCHours() : date.getHours();
-                case "%H": return utc ? gantt.date.to_fixed(date.getUTCHours()) : gantt.date.to_fixed(date.getHours());
-                case "%i": return utc ? gantt.date.to_fixed(date.getUTCMinutes()) : gantt.date.to_fixed(date.getMinutes());
-                case "%a": return utc ? (date.getUTCHours() > 11 ? "pm" : "am") : (date.getHours() > 11 ? "pm" : "am");
-                case "%A": return utc ? (date.getUTCHours() > 11 ? "PM" : "AM") : (date.getHours() > 11 ? "PM" : "AM");
-                case "%s": return utc ? gantt.date.to_fixed(date.getUTCSeconds()) : gantt.date.to_fixed(date.getSeconds());
-                case "%W": return utc ? gantt.date.to_fixed(gantt.date.getUTCISOWeek(date)) : gantt.date.to_fixed(gantt.date.getISOWeek(date));
-                default: return a;
-            }
-        });
-    };
-};
-var strToDate = function (format, utc) {
-    return function (date) {
-        var set = [0, 0, 1, 0, 0, 0];
-        var temp = date.match(/[a-zA-Z]+|[0-9]+/g);
-        var mask = format.match(/%[a-zA-Z]/g);
-        for (var i = 0; i < mask.length; i++) {
-            switch (mask[i]) {
-                case "%j":
-                case "%d":
-                    set[2] = temp[i] || 1;
-                    break;
-                case "%n":
-                case "%m":
-                    set[1] = (temp[i] || 1) - 1;
-                    break;
-                case "%y":
-                    set[0] = temp[i] * 1 + (temp[i] > 50 ? 1900 : 2000);
-                    break;
-                case "%g":
-                case "%G":
-                case "%h":
-                case "%H":
-                    set[3] = temp[i] || 0;
-                    break;
-                case "%i":
-                    set[4] = temp[i] || 0;
-                    break;
-                case "%Y":
-                    set[0] = temp[i] || 0;
-                    break;
-                case "%a":
-                case "%A":
-                    set[3] = set[3] % 12 + ((temp[i] || "").toLowerCase() === "am" ? 0 : 12);
-                    break;
-                case "%s":
-                    set[5] = temp[i] || 0;
-                    break;
-                case "%M":
-                    set[1] = gantt.locale.date.month_short_hash[temp[i]] || 0;
-                    break;
-                case "%F":
-                    set[1] = gantt.locale.date.month_full_hash[temp[i]] || 0;
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (utc) {
-            return new Date(Date.UTC(set[0], set[1], set[2], set[3], set[4], set[5]));
-        }
-        return new Date(set[0], set[1], set[2], set[3], set[4], set[5]);
-    };
-};
-var cspVersion = {
-    date_to_str: dateToStr,
-    str_to_date: strToDate
-};
-exports.default = cspVersion;
-
-
-/***/ }),
-
-/***/ "./sources/core/common/date_parsers/fast_version.ts":
-/*!**********************************************************!*\
-  !*** ./sources/core/common/date_parsers/fast_version.ts ***!
-  \**********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var dateToStr = function (format, utc, gantt) {
-    format = format.replace(/%[a-zA-Z]/g, function (a) {
-        switch (a) {
-            case "%d":
-                return "\"+to_fixed(date.get" + (utc ? "UTC" : "") + "Date())+\"";
-            case "%m":
-                return "\"+to_fixed((date.get" + (utc ? "UTC" : "") + "Month()+1))+\"";
-            case "%j":
-                return "\"+date.get" + (utc ? "UTC" : "") + "Date()+\"";
-            case "%n":
-                return "\"+(date.get" + (utc ? "UTC" : "") + "Month()+1)+\"";
-            case "%y":
-                return "\"+to_fixed(date.get" + (utc ? "UTC" : "") + "FullYear()%100)+\"";
-            case "%Y":
-                return "\"+date.get" + (utc ? "UTC" : "") + "FullYear()+\"";
-            case "%D":
-                return "\"+locale.date.day_short[date.get" + (utc ? "UTC" : "") + "Day()]+\"";
-            case "%l":
-                return "\"+locale.date.day_full[date.get" + (utc ? "UTC" : "") + "Day()]+\"";
-            case "%M":
-                return "\"+locale.date.month_short[date.get" + (utc ? "UTC" : "") + "Month()]+\"";
-            case "%F":
-                return "\"+locale.date.month_full[date.get" + (utc ? "UTC" : "") + "Month()]+\"";
-            case "%h":
-                return "\"+to_fixed((date.get" + (utc ? "UTC" : "") + "Hours()+11)%12+1)+\"";
-            case "%g":
-                return "\"+((date.get" + (utc ? "UTC" : "") + "Hours()+11)%12+1)+\"";
-            case "%G":
-                return "\"+date.get" + (utc ? "UTC" : "") + "Hours()+\"";
-            case "%H":
-                return "\"+to_fixed(date.get" + (utc ? "UTC" : "") + "Hours())+\"";
-            case "%i":
-                return "\"+to_fixed(date.get" + (utc ? "UTC" : "") + "Minutes())+\"";
-            case "%a":
-                return "\"+(date.get" + (utc ? "UTC" : "") + "Hours()>11?\"pm\":\"am\")+\"";
-            case "%A":
-                return "\"+(date.get" + (utc ? "UTC" : "") + "Hours()>11?\"PM\":\"AM\")+\"";
-            case "%s":
-                return "\"+to_fixed(date.get" + (utc ? "UTC" : "") + "Seconds())+\"";
-            case "%W":
-                return "\"+to_fixed(getISOWeek(date))+\"";
-            case "%w":
-                return "\"+to_fixed(getWeek(date))+\"";
-            default:
-                return a;
-        }
-    });
-    // tslint:disable-next-line: function-constructor
-    var dateToStrFn = new Function("date", "to_fixed", "locale", "getISOWeek", "getWeek", "return \"" + format + "\";");
-    return function (date) {
-        return dateToStrFn(date, gantt.date.to_fixed, gantt.locale, gantt.date.getISOWeek, gantt.date.getWeek);
-    };
-};
-var strToDate = function (format, utc) {
-    var splt = "var temp=date.match(/[a-zA-Z]+|[0-9]+/g);";
-    var mask = format.match(/%[a-zA-Z]/g);
-    for (var i = 0; i < mask.length; i++) {
-        switch (mask[i]) {
-            case "%j":
-            case "%d":
-                splt += "set[2]=temp[" + i + "]||1;";
-                break;
-            case "%n":
-            case "%m":
-                splt += "set[1]=(temp[" + i + "]||1)-1;";
-                break;
-            case "%y":
-                splt += "set[0]=temp[" + i + "]*1+(temp[" + i + "]>50?1900:2000);";
-                break;
-            case "%g":
-            case "%G":
-            case "%h":
-            case "%H":
-                splt += "set[3]=temp[" + i + "]||0;";
-                break;
-            case "%i":
-                splt += "set[4]=temp[" + i + "]||0;";
-                break;
-            case "%Y":
-                splt += "set[0]=temp[" + i + "]||0;";
-                break;
-            case "%a":
-            case "%A":
-                splt += "set[3]=set[3]%12+((temp[" + i + "]||'').toLowerCase()=='am'?0:12);";
-                break;
-            case "%s":
-                splt += "set[5]=temp[" + i + "]||0;";
-                break;
-            case "%M":
-                splt += "set[1]=locale.date.month_short_hash[temp[" + i + "]]||0;";
-                break;
-            case "%F":
-                splt += "set[1]=locale.date.month_full_hash[temp[" + i + "]]||0;";
-                break;
-            default:
-                break;
-        }
-    }
-    var code = "set[0],set[1],set[2],set[3],set[4],set[5]";
-    if (utc) {
-        code = " Date.UTC(" + code + ")";
-    }
-    // tslint:disable-next-line: function-constructor
-    var strToDateFn = new Function("date", "locale", "var set=[0,0,1,0,0,0]; " + splt + " return new Date(" + code + ");");
-    return function (dateString) {
-        return strToDateFn(dateString, gantt.locale);
-    };
-};
-var fastVersion = {
-    date_to_str: dateToStr,
-    str_to_date: strToDate
-};
-exports.default = fastVersion;
-
 
 /***/ }),
 
@@ -7181,15 +7032,13 @@ module.exports = function(gantt){
 				return dndActive;
 			}, this);
 
-			var mousemoveContainer = this.config.mousemoveContainer || document.body;
-
 			var mouseup = utils.bind(function (e) {
-				gantt.eventRemove(mousemoveContainer, inputMethod.move, limited_mousemove);
+				gantt.eventRemove(document.body, inputMethod.move, limited_mousemove);
 				gantt.eventRemove(document.body, inputMethod.up, mouseup);
 				return this.dragEnd(domElement);
 			}, this);
 
-			gantt.event(mousemoveContainer, inputMethod.move, limited_mousemove);
+			gantt.event(document.body, inputMethod.move, limited_mousemove);
 			gantt.event(document.body, inputMethod.up, mouseup);
 		},
 		checkPositionChange: function (pos) {
@@ -7704,10 +7553,10 @@ module.exports = function(gantt) {
 		initTemplate("task_date", true, undefined, gantt.config, gantt.templates);
 
 		gantt.mixin(gantt.templates, {
-			xml_format: undefined, // deprecated
+			xml_format: format_date, // deprecated
 			format_date: format_date,
 
-			xml_date: undefined, // deprecated
+			xml_date: parse_date, // deprecated
 			parse_date: parse_date,
 
 			progress_text: function (start, end, task) {
@@ -9260,7 +9109,7 @@ var DataProcessor = /** @class */ (function () {
             }
             var value = rawItem[key];
             if (helpers.isDate(value)) {
-                processedItem[key] = this.$gantt.defined(this.$gantt.templates.xml_format) ? this.$gantt.templates.xml_format(value) : this.$gantt.templates.format_date(value);
+                processedItem[key] = this.$gantt.templates.xml_format !== this.$gantt.templates.format_date ? this.$gantt.templates.xml_format(value) : this.$gantt.templates.format_date(value);
             }
             else if (value === null) {
                 processedItem[key] = "";
@@ -9525,7 +9374,7 @@ var DataProcessorEvents = /** @class */ (function () {
                         continue;
                     case "start_date":
                     case "end_date":
-                        property = gantt.defined(gantt.templates.xml_date) ? gantt.templates.xml_date(property) : gantt.templates.parse_date(property);
+                        property = gantt.templates.xml_date !== gantt.templates.parse_date ? gantt.templates.xml_date(property) : gantt.templates.parse_date(property);
                         break;
                     case "duration":
                         objData.end_date = gantt.calculateEndDate({ start_date: objData.start_date, duration: property, task: objData });
@@ -12020,7 +11869,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.3.5";
+	this.version = "6.3.6";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -12211,6 +12060,8 @@ module.exports = function(gantt){
 
 
 	var dropLayout = (function dropLayout(){
+		this._clearTaskLayers();
+		this._clearLinkLayers();
 		if(this.$layout){
 			this.$layout.destructor();
 			this.$layout = null;
@@ -12265,9 +12116,6 @@ module.exports = function(gantt){
 
 		var config = this.$services.getService("templateLoader");
 		config.initTemplates(this);
-
-		this._clearTaskLayers();
-		this._clearLinkLayers();
 
 		dropLayout();
 		this.$root = domHelpers.toNode(node);
@@ -14582,7 +14430,7 @@ module.exports = function(gantt) {
 				copy[key] = obj[key];
 
 				if (helpers.isDate(copy[key])) {
-					copy[key] = gantt.defined(gantt.templates.xml_format) ? gantt.templates.xml_format(copy[key]) : gantt.templates.format_date(copy[key]);
+					copy[key] = gantt.templates.xml_format !== gantt.templates.formate_date ? gantt.templates.xml_format(copy[key]) : gantt.templates.formate_date(copy[key]);
 				}
 			}
 			return copy;
@@ -16121,7 +15969,6 @@ function createResourceMethods(gantt){
 			if (css || content){
 				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
 				var el = document.createElement('div');
-				el.setAttribute(timeline.$config.item_attribute, resource.id);
 				el.className = ["gantt_resource_marker", css].join(" ");
 
 				el.style.cssText = [
@@ -16311,7 +16158,6 @@ function createResourceMethods(gantt){
 			var capacityElement = renderHistogramLine(capacityMatrix, timeline, maxCapacity, viewport);
 			if (capacityElement) {
 				capacityElement.setAttribute("data-resource-id", resource.id);
-				capacityElement.setAttribute(timeline.$config.item_attribute, resource.id);
 				capacityElement.style.position = "absolute";
 				capacityElement.style.top = (sizes.top + 1) + "px";
 				capacityElement.style.height = (config.row_height - 1) + "px";
@@ -16320,14 +16166,14 @@ function createResourceMethods(gantt){
 			return capacityElement;
 		}
 
-		function renderHistogramCell(resource, sizes, maxCapacity, config, templates, day, timeline){
+		function renderHistogramCell(resource, sizes, maxCapacity, config, templates, day){
 			var css = templates.histogram_cell_class(day.start_date, day.end_date, resource, day.tasks);
 			var content = templates.histogram_cell_label(day.start_date, day.end_date, resource, day.tasks);
 			var fill = templates.histogram_cell_allocated(day.start_date, day.end_date, resource, day.tasks);
 			if(css || content){
 				var el = document.createElement('div');
 				el.className = ["gantt_histogram_cell", css].join(" ");
-				el.setAttribute(timeline.$config.item_attribute, resource.id);
+
 				el.style.cssText = [
 					'left:' + sizes.left + 'px',
 					'width:' + sizes.width + 'px',
@@ -16379,7 +16225,7 @@ function createResourceMethods(gantt){
 				capacityMatrix[day.start_date.valueOf()] = capacity || 0;
 				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
 
-				var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day, timeline);
+				var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day);
 				if(el){
 					cells.push(el);
 					renderedHistogramCells[resource.id][columnIndex] = el;
@@ -16427,7 +16273,7 @@ function createResourceMethods(gantt){
 
 				var renderedCell = renderedHistogramCells[resource.id];
 				if(!renderedCell || !renderedCell[columnIndex]){
-					var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day, timeline);
+					var el = renderHistogramCell(resource, sizes, maxCapacity, config, templates, day);
 					if(el){
 						node.appendChild(el);
 						renderedHistogramCells[resource.id][columnIndex] = el;
@@ -17630,8 +17476,6 @@ function create(gantt){
 			var el = document.createElement("div");
 			el.className = "gantt_grid_editor_placeholder";
 			el.setAttribute(grid.$config.item_attribute, itemId);
-			el.setAttribute(grid.$config.bind + "_id", itemId);// for backward compatibility
-
 			el.setAttribute("data-column-name", columnName);
 
 			var visibleIndex = findVisibleIndex(grid, columnName);
@@ -18911,7 +18755,7 @@ Grid.prototype = {
 
 		var attr = this.$getConfig()[this.$config.bind + "_attribute"];
 		if (!attr && this.$config.bind) {
-			attr = "data-" + this.$config.bind + "-id";
+			attr = this.$config.bind + "_id";
 		}
 		this.$config.item_attribute = attr || null;
 
@@ -23110,7 +22954,6 @@ function _render_link_element(link, view) {
 
 	if(view.$config.link_attribute){
 		div.setAttribute(view.$config.link_attribute, link.id);
-		div.setAttribute("link_id", link.id);
 	}
 
 	for (var i = 0; i < lines.length; i++) {
@@ -23816,7 +23659,6 @@ function createTaskRenderer(gantt) {
 
 		if(view.$config.item_attribute) {
 			div.setAttribute(view.$config.item_attribute, task.id);
-			div.setAttribute(view.$config.bind + "_id", task.id); // 'task_id'/'resource_id' for backward compatibility
 		}
 
 		if (cfg.show_progress && taskType != cfg.types.milestone) {
@@ -24339,7 +24181,6 @@ function createTaskBgRender(gantt){
 
 		if(view.$config.item_attribute){
 			row.setAttribute(view.$config.item_attribute, item.id);
-			row.setAttribute(view.$config.bind + "_id", item.id); // 'task_id'/'resource_id' for backward compatibility
 		}
 
 		return row;
@@ -24469,7 +24310,6 @@ function createGridLineRender(gantt){
 
 		if(view.$config.item_attribute){
 			el.setAttribute(view.$config.item_attribute, item.id);
-			el.setAttribute(view.$config.bind + "_id", item.id); // 'task_id'/'resource_id' for backward compatibility
 		}
 
 		gantt._waiAria.taskRowAttr(item, el);
@@ -24523,6 +24363,9 @@ function createTaskRenderer(gantt){
 				element.className += " gantt_split_child";
 
 				el.appendChild(element);
+				if(timeline._taskRenderer){
+					timeline._taskRenderer.rendered[child.id] = element;
+				}
 			}
 			return el;
 		}
@@ -24777,13 +24620,8 @@ var initLinksDND = function(timeline, gantt) {
 
 	state.registerProvider("linksDnD", getDndState);
 
-	var dnd = new DnD(timeline.$task_bars, { 
-		sensitivity : 0, 
-		updates_per_second : 60,
-		mousemoveContainer: gantt.$root
-	});
-
-	var start_marker = "task_start_date",
+	var dnd = new DnD(timeline.$task_bars, { sensitivity : 0, updates_per_second : 60 }),
+		start_marker = "task_start_date",
 		end_marker = "task_end_date",
 		link_edge_marker = "gantt_link_point",
 		link_landing_hover_area = "gantt_link_control";
@@ -26384,10 +26222,10 @@ Timeline.prototype = {
 		var attr = config[this.$config.bind + "_attribute"];
 		var linksAttr = config[this.$config.bindLinks + "_attribute"];
 		if(!attr && this.$config.bind){
-			attr = "data-" + this.$config.bind + "-id";
+			attr = this.$config.bind + "_id";
 		}
 		if(!linksAttr && this.$config.bindLinks){
-			linksAttr = "data-" + this.$config.bindLinks + "-id";
+			linksAttr = this.$config.bindLinks + "_id";
 		}
 		this.$config.item_attribute = attr || null;
 		this.$config.link_attribute = linksAttr || null;

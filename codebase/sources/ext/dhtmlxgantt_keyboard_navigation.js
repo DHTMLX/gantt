@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.5 Standard
+dhtmlxGantt v.6.3.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -426,7 +426,7 @@ return /******/ (function(modules) { // webpackBootstrap
 				getShortcutHandler: function(shortcut, scope){
 					var commands = gantt.$keyboardNavigation.shortcuts.parse(shortcut);
 					if(commands.length){
-						return this.getCommandHandler(commands[0], scope);
+						return keyNavFacade.getCommandHandler(commands[0], scope);
 					}
 				},
 				getCommandHandler: function(command, scope){

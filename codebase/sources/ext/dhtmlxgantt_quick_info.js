@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.5 Standard
+dhtmlxGantt v.6.3.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -166,7 +166,7 @@ gantt.showQuickInfo = function(id){
 	this.hideQuickInfo(true);
 	var offset = 6; // offset TASK <> QI-BOX in 'px'
 	var container = getContainer();
-	var pos = this._get_event_counter_part(id, offset, container.viewport);
+	var pos = this._get_event_counter_part(id, offset, container.xViewport, container.yViewport);
 
 	if (pos){
 		this._quick_info_box = this._init_quick_info(pos, id);
@@ -217,20 +217,23 @@ function getContainer() {
 	if (container && container.offsetHeight && container.offsetWidth) {
 		return {
 			parent: container,
-			viewport: gantt.$task
+			xViewport: gantt.$task,
+			yViewport: gantt.$task_data
 		};
 	}
 	container = gantt.$grid_data;
 	if (container && container.offsetHeight && container.offsetWidth) {
 		return {
 			parent: container,
-			viewport: gantt.$grid
+			xViewport: gantt.$grid,
+			yViewport: gantt.$grid_data
 		};
 	}
 
 	return {
 		parent: gantt.$layout,
-		viewport: gantt.$layout
+		xViewport: gantt.$layout,
+		yViewport: gantt.$layout
 	};
 }
 
@@ -242,16 +245,30 @@ gantt._show_quick_info = function(pos, offset){
 			qi.parentNode.nodeName.toLowerCase() == "#document-fragment")//IE8
 			container.parent.appendChild(qi);
 		var width = qi.offsetWidth;
-		var height = qi.offsetHeight;
+		var popupHeight = qi.offsetHeight;
 
 		var scrolls = gantt.getScrollState();
-		var viewPort = container.viewport;
-		var screenWidth = viewPort.offsetWidth + scrolls.x - width;
+		var xViewport = container.xViewport;
+		var yViewport = container.yViewport;
+		var screenWidth = xViewport.offsetWidth + scrolls.x - width;
 
-		//pos.dy = (pos.top + height - scrolls.y > (gantt._y - gantt.config.scale_height)*0.96) ? 1 : 0; // uncomment to show QI at the bottom of task always
+		var relativePopupTop = pos.top - scrolls.y;
+		var relativePopupBottom = relativePopupTop + popupHeight;
+
+		var top = pos.top;
+		if(relativePopupBottom > yViewport.offsetHeight / 2){
+			top = pos.top - (popupHeight + pos.height + 2*offset);
+			if(top < scrolls.y && relativePopupBottom <= yViewport.offsetHeight){
+				top = pos.top;
+			}
+		}
+
+		if (top < scrolls.y) {
+			top = scrolls.y;
+		}
 
 		qi.style.left = Math.min(Math.max(scrolls.x, pos.left - pos.dx*(width - pos.width)), screenWidth) + "px";
-		qi.style.top = pos.top - (pos.dy ? (height + pos.height + 2*offset) : 0) + "px";
+		qi.style.top = top + "px";
 	} else {
 		qi.style.top = 20 + "px";
 		if (pos.dx == 1){
@@ -344,7 +361,7 @@ gantt._init_quick_info = function(pos, id){
 		});
 		if (gantt.config.quick_info_detached) {
 			var container = getContainer();
-			gantt.event(container, "scroll", function () { gantt.hideQuickInfo(); });
+			gantt.event(container.parent, "scroll", function () { gantt.hideQuickInfo(); });
 		}
 	}
 
@@ -362,7 +379,7 @@ gantt._qi_button_click = function(node){
 	} else
 		gantt._qi_button_click(node.parentNode);
 };
-gantt._get_event_counter_part = function(id, offset, viewport){
+gantt._get_event_counter_part = function(id, offset, xViewport, yViewport){
 	var domEv = gantt.getTaskNode(id);
 	if (!domEv) {
 		domEv = gantt.getTaskRowNode(id);
@@ -375,8 +392,8 @@ gantt._get_event_counter_part = function(id, offset, viewport){
 
 	var node = domEv;
 
-	if (this.utils.dom.isChildOf(node, viewport)) {
-		while (node && node !== viewport){
+	if (this.utils.dom.isChildOf(node, xViewport)) {
+		while (node && node !== xViewport){
 			left += node.offsetLeft;
 			node = node.offsetParent;
 		}
@@ -385,8 +402,8 @@ gantt._get_event_counter_part = function(id, offset, viewport){
 	var scroll = this.getScrollState();
 
 	if(node){
-		var dx = (left + domEv.offsetWidth/2) - scroll.x > (gantt.$container.offsetWidth/2) ? 1 : 0;
-		var dy = (top + domEv.offsetHeight/2) - scroll.y > (gantt.$container.offsetHeight/2) ? 1 : 0;
+		var dx = (left + domEv.offsetWidth/2) - scroll.x > (xViewport.offsetWidth/2) ? 1 : 0;
+		var dy = (top + domEv.offsetHeight/2) - scroll.y > (yViewport.offsetHeight/2) ? 1 : 0;
 
 		return { left:left, top:top, dx:dx, dy:dy,
 			width:domEv.offsetWidth, height:domEv.offsetHeight };

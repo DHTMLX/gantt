@@ -1,3 +1,12 @@
+### 6.3.6
+
+- Fix the regression in gantt.resetLayout which caused the script error
+- Fix the issue with the QuickInfo popup which caused it to be positioned behind the resource panel in some cases
+- Fix the script error thrown from the gantt.getShortcutHandler method
+- Fix the script error thrown from the tooltip.show(x, y) method
+- gantt.getTaskNode now returns the correct HTML element for split tasks
+- Fix the issue with horizontal scrollbars not being displayed when visibility groups are specified in some layout configurations
+
 ### 6.3.5
 
 - Fix the issue with task grouping which caused vertical scroll position to reset after moving any task with drag and drop
