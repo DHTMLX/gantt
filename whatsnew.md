@@ -1,3 +1,7 @@
+### 6.3.7
+
+- Significant performance improvement for smart rendering of chart and resource panel
+
 ### 6.3.6
 
 - Fix the regression in gantt.resetLayout which caused the script error

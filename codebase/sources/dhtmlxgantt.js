@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.6 Standard
+dhtmlxGantt v.6.3.7 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!************************************************!*\
-  !*** ./node_modules/webpack/buildin/global.js ***!
-  \************************************************/
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -10306,15 +10306,35 @@ var storeRenderCreator = function(name, gantt){
 				renderers[i].clear();
 			}
 
-			var data = store.getVisibleItems();
+			var allData = store.getVisibleItems();
 
+			var loadedRanges = {};
 			for (var i = 0; i < renderers.length; i++) {
-				renderers[i].render_items(data);
+				var layer = renderers[i];
+				var layerData = allData;
+				if(layer.get_visible_range){
+					var range = layer.get_visible_range(store);
+					var key = range.start + " - " + range.end;
+					if(loadedRanges[key]){
+						layerData = loadedRanges[key];
+					}else{
+						layerData = store.getIndexRange(range.start, range.end);
+						loadedRanges[key] = layerData;
+					}
+					
+				}
+				renderers[i].render_items(layerData);
 			}
 		},
 		updateItems: function(layer) {
 			if(layer.update_items){
-				var data = store.getVisibleItems();
+				var data;
+				if(layer.get_visible_range){
+					var range = layer.get_visible_range(store);
+					data = store.getIndexRange(range.start, range.end);
+				}else{
+					data = store.getVisibleItems();
+				}
 				layer.update_items(data);
 			}
 		}
@@ -11686,7 +11706,13 @@ function createLayoutFacade(){
 			if (!timeline || !timeline.isVisible()) {
 				return null;
 			} else {
-				return timeline._taskRenderer.rendered[id];
+				var node = timeline._taskRenderer.rendered[id];
+				if(!node){
+					var domAttr = timeline.$config.item_attribute;
+					node = timeline.$task_bars.querySelector("[" +domAttr+ "='"+id+"']");
+				}
+
+				return node || null;
 			}
 		},
 
@@ -11869,7 +11895,7 @@ __webpack_require__(/*! css/skins/terrace.less */ "./sources/css/skins/terrace.l
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ./../constants */ "./sources/constants/index.js");
-	this.version = "6.3.6";
+	this.version = "6.3.7";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -15817,6 +15843,8 @@ module.exports = function addPlaceholder(gantt){
 
 var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 var getRectangle = __webpack_require__(/*! ../ui/render/viewport/get_bg_row_rectangle */ "./sources/core/ui/render/viewport/get_bg_row_rectangle.js");
+var getVisibleRange = __webpack_require__(/*! ../ui/render/viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
+var getVisibleCellsRange = __webpack_require__(/*! ../ui/render/viewport/get_visible_cells_range */ "./sources/core/ui/render/viewport/get_visible_cells_range.js");
 
 function createResourceMethods(gantt){
 
@@ -15951,8 +15979,9 @@ function createResourceMethods(gantt){
 					end_date: end,
 					tasks: tasks
 				});
+			}else{
+				timetable.push(null);
 			}
-
 		}
 
 		return timetable;
@@ -16003,10 +16032,15 @@ function createResourceMethods(gantt){
 			var smartRendering = !!viewport;//no viewport means smart rendering is disabled
 			var cells = [];
 			renderedResourceLines[resource.id] = {};
-			for (var i = 0; i < timetable.length; i++) {
 
-				var day = timetable[i];
-				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+			var range = getVisibleCellsRange(scale, viewport);
+			for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
+
+				var day = timetable[columnIndex];
+				if(!day){
+					continue;
+				}
+
 				if(smartRendering && !isColumnVisible(columnIndex, scale, viewport)){
 					continue;
 				}
@@ -16034,10 +16068,22 @@ function createResourceMethods(gantt){
 			var scale = timeline.getScale();
 			var timetable = getResourceLoad(resource, config.resource_property, timeline.getScale(), timeline);
 
-			for (var i = 0; i < timetable.length; i++) {
+			var range = getVisibleCellsRange(scale, viewport);
 
-				var day = timetable[i];
-				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+			var checkedColumns = {};
+			if(renderedResourceLines && renderedResourceLines[resource.id]){
+				for(var i in renderedResourceLines[resource.id]){
+					checkedColumns[i] = i;
+				}
+			}
+
+			for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
+				var day = timetable[columnIndex];
+				checkedColumns[columnIndex] = false;
+				if(!day){
+					continue;
+				}
+
 				if(!isColumnVisible(columnIndex, scale, viewport)){
 					detachRenderedResourceLine(resource.id, columnIndex);
 					continue;
@@ -16054,12 +16100,19 @@ function createResourceMethods(gantt){
 					node.appendChild(renderedResourceLines[resource.id][columnIndex]);
 				}
 			}
+
+			for(var i in checkedColumns){
+				if(checkedColumns[i] !== false){
+					detachRenderedResourceLine(resource.id, i);
+				}
+			}
 		}
 
 		return {
 			render: renderResourceLine,
 			update: updateResourceLine,
-			getRectangle: getRectangle
+			getRectangle: getRectangle,
+			getVisibleRange: getVisibleRange
 		};
 	}
 	
@@ -16090,11 +16143,11 @@ function createResourceMethods(gantt){
 		return element;
 	}
 
-	function isColumnVisible(columnIndex, scale, viewPort){
+	function isColumnVisible(columnIndex, scale, viewport){
 		var width = scale.width[columnIndex];
 		var cellLeftCoord = scale.left[columnIndex] - width;
 		var cellRightCoord = scale.left[columnIndex] + width;
-		return (width > 0 && cellLeftCoord <= viewPort.x_end && cellRightCoord >= viewPort.x);//do not render skipped columns
+		return (width > 0 && cellLeftCoord <= viewport.x_end && cellRightCoord >= viewport.x);//do not render skipped columns
 	}
 
 
@@ -16115,16 +16168,13 @@ function createResourceMethods(gantt){
 				}
 		}
 
-		function renderHistogramLine(capacity, timeline, maxCapacity, viewPort){
+		function renderHistogramLine(capacity, timeline, maxCapacity, viewport){
 			var scale = timeline.getScale();
 
 			var el = document.createElement("div");
-			var smartRendering = !!viewPort;//no viewport means smart rendering is disabled
-			for(var i = 0; i < scale.trace_x.length; i++){
-				if(smartRendering && !isColumnVisible(i, scale, viewPort)){
-					continue;
-				}
-
+			
+			var range = getVisibleCellsRange(scale, viewport);
+			for (var i = range.start; i <= range.end; i++) {
 				var colStart = scale.trace_x[i];
 				var colEnd = scale.trace_x[i + 1] || gantt.date.add(colStart, scale.step, scale.unit);
 				var col = scale.trace_x[i].valueOf();
@@ -16214,9 +16264,15 @@ function createResourceMethods(gantt){
 			renderedHistogramCapacity[resource.id] = null;
 
 			var smartRendering = !!viewport;//no viewport means smart rendering is disabled
-			for (var i = 0; i < timetable.length; i++) {
-				var day = timetable[i];
-				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+
+			var range = getVisibleCellsRange(scale, viewport);
+			for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
+
+				var day = timetable[columnIndex];
+				if(!day){
+					continue;
+				}
+
 				if(smartRendering && !isColumnVisible(columnIndex, scale, viewport)){
 					continue;
 				}
@@ -16259,9 +16315,23 @@ function createResourceMethods(gantt){
 			var capacityMatrix = {};
 
 			var smartRendering = !!viewport;//no viewport means smart rendering is disabled
-			for (var i = 0; i < timetable.length; i++) {
-				var day = timetable[i];
-				var columnIndex = scale.trace_indexes[day.start_date.valueOf()];
+			
+			var range = getVisibleCellsRange(scale, viewport);
+
+			var checkedColumns = {};
+			if(renderedHistogramCells && renderedHistogramCells[resource.id]){
+				for(var i in renderedHistogramCells[resource.id]){
+					checkedColumns[i] = i;
+				}
+			}
+
+			for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
+				var day = timetable[columnIndex];
+				checkedColumns[columnIndex] = false;
+				if(!day){
+					continue;
+				}
+
 				var capacity = templates.histogram_cell_capacity(day.start_date, day.end_date, resource, day.tasks);
 				capacityMatrix[day.start_date.valueOf()] = capacity || 0;
 				var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
@@ -16284,6 +16354,12 @@ function createResourceMethods(gantt){
 				}
 			}
 
+			for(var i in checkedColumns){
+				if(checkedColumns[i] !== false){
+					detachRenderedHistogramCell(resource.id, i);
+				}
+			}
+
 			var capacityElement = renderCapacityElement(resource, sizes, capacityMatrix, config, timeline, maxCapacity, viewport);
 			if(capacityElement){
 				node.appendChild(capacityElement);
@@ -16294,7 +16370,8 @@ function createResourceMethods(gantt){
 		return {
 			render: renderResourceHistogram,
 			update: updateResourceHistogram,
-			getRectangle: getRectangle
+			getRectangle: getRectangle,
+			getVisibleRange: getVisibleRange
 		};
 	}
 	
@@ -22915,7 +22992,7 @@ module.exports = layerFactory;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getLinkRectangle = __webpack_require__(/*! ./viewport/get_link_rectangle */ "./sources/core/ui/render/viewport/get_link_rectangle.js");
+var isInViewPort = __webpack_require__(/*! ./viewport/is_link_in_viewport */ "./sources/core/ui/render/viewport/is_link_in_viewport.js");
 
 function createLinkRender(gantt){
 
@@ -23359,7 +23436,8 @@ function getMilestonePosition(task, view){
 return {
 	render: _render_link_element,
 	update: null,
-	getRectangle: getLinkRectangle
+	//getRectangle: getLinkRectangle
+	isInViewPort: isInViewPort
 };
 }
 
@@ -23374,7 +23452,7 @@ module.exports = createLinkRender;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var isInViewPort = __webpack_require__(/*! ./viewport/is_in_viewport */ "./sources/core/ui/render/viewport/is_in_viewport.js");
+var genericViewPortChecker = __webpack_require__(/*! ./viewport/is_in_viewport */ "./sources/core/ui/render/viewport/is_in_viewport.js");
 var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
 var basicGetRectangle = __webpack_require__(/*! ./viewport/get_grid_row_rectangle */ "./sources/core/ui/render/viewport/get_grid_row_rectangle.js");
 var rendererFactory = function(gantt){
@@ -23405,6 +23483,7 @@ var rendererFactory = function(gantt){
 		var renderMethod = null;
 		var updateMethod = null;
 		var getRectangle = null;
+		var specializedViewPortChecker = null;
 
 		if(typeof layer.renderer === "function"){
 			renderMethod = layer.renderer;
@@ -23412,7 +23491,13 @@ var rendererFactory = function(gantt){
 		}else{
 			renderMethod = layer.renderer.render;
 			updateMethod = layer.renderer.update;
-			getRectangle = layer.renderer.getRectangle;
+			
+			if(layer.renderer.isInViewPort){
+				specializedViewPortChecker = layer.renderer.isInViewPort;
+			}else{
+				getRectangle = layer.renderer.getRectangle;
+			}
+
 			if (!getRectangle && getRectangle !== null) {
 				getRectangle = basicGetRectangle;
 			}
@@ -23441,8 +23526,14 @@ var rendererFactory = function(gantt){
 				}
 
 				var dom = null;
-				if(!isLegacyRender(gantt) && getRectangle && rendererViewPort){
-					if(isInViewPort(rendererViewPort, getRectangle(item, view, gantt))){
+				if(!isLegacyRender(gantt) && (getRectangle || specializedViewPortChecker) && rendererViewPort){
+					var isVisible = false;
+					if(specializedViewPortChecker){
+						isVisible = specializedViewPortChecker(item, rendererViewPort, view, gantt);
+					}else{
+						isVisible = genericViewPortChecker(rendererViewPort, getRectangle(item, view, gantt));
+					}
+					if(isVisible){
 						dom = renderMethod.call(gantt, item, view, rendererViewPort);
 					}
 				}else{
@@ -23461,6 +23552,21 @@ var rendererFactory = function(gantt){
 				container = container || node;
 				if (container)
 					container.innerHTML = "";
+			},
+			get_visible_range: function(datastore){
+				var view = getView(layer);
+				var viewport;
+				if(view && view.$getConfig().smart_rendering){
+					viewport = view.getViewPort();
+				}
+
+				if(!(view && viewport && layer.renderer && layer.renderer.getVisibleRange)){
+					return {
+						start: 0,
+						end: datastore.count()
+					};
+				}
+				return layer.renderer.getVisibleRange(gantt, view, datastore, viewport);
 			},
 			render_items: function (items, container) {
 				container = container || node;
@@ -23490,7 +23596,7 @@ var rendererFactory = function(gantt){
 					return;
 				}
 
-				if(!getRectangle){
+				if(!(getRectangle || specializedViewPortChecker)){
 					return;
 				}
 
@@ -23503,20 +23609,38 @@ var rendererFactory = function(gantt){
 					viewPort = view.getViewPort();
 				}
 
+				var nodesToRemove = {};
+				for(var i in this.rendered){
+					nodesToRemove[i] = true;
+				}
 				for (var i = 0, vis = items.length; i < vis; i++) {
 					var item = items[i];
 					var itemNode = this.rendered[item.id];
+					nodesToRemove[item.id] = false;
 					if (itemNode && itemNode.parentNode) {
-						if (!isInViewPort(viewPort, getRectangle(item, view, gantt))) {
-							this.hide(item.id);
+						var isVisible = false;
+						if(specializedViewPortChecker){
+							isVisible = specializedViewPortChecker(item, viewPort, view, gantt);
+						}else{
+							isVisible = genericViewPortChecker(viewPort, getRectangle(item, view, gantt));
+						}
+
+						if (!isVisible) {
+							nodesToRemove[item.id] = true;
 						} else {
 							if(updateMethod){
 								updateMethod.call(gantt, item, itemNode, view, viewPort);
 							}
-							this.restore(item);
+							this.restore(item, buffer);
 						}
 					} else {
 						this.render_item(items[i], buffer, viewPort);
+					}
+				}
+
+				for(var i in nodesToRemove){
+					if(nodesToRemove[i]){
+						this.hide(i);
 					}
 				}
 				if(buffer.childNodes.length){
@@ -23560,14 +23684,14 @@ var rendererFactory = function(gantt){
 					item.parentNode.removeChild(item);
 				}
 			},
-			restore: function (item) {
+			restore: function (item, container) {
 				var dom = this.rendered[item.id];
 				if (dom) {
 					if (!dom.parentNode) {
-						this.append(item, dom, node);
+						this.append(item, dom, container || node);
 					}
 				} else {
-					this.render_item(item, node);
+					this.render_item(item, container || node);
 				}
 			},
 			change_id: function (oldid, newid) {
@@ -23962,7 +24086,8 @@ module.exports = createTaskRenderer;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getBarRectangle = __webpack_require__(/*! ./viewport/get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
+var isInViewPort = __webpack_require__(/*! ./viewport/is_bar_in_viewport */ "./sources/core/ui/render/viewport/is_bar_in_viewport.js");
+var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
 
 module.exports = function createTaskRenderer(gantt){
@@ -23970,7 +24095,9 @@ module.exports = function createTaskRenderer(gantt){
 	return {
 		render: defaultRender,
 		update: null,
-		getRectangle: getBarRectangle
+		//getRectangle: getBarRectangle
+		isInViewPort: isInViewPort,
+		getVisibleRange: getVisibleRange
 	};
 };
 
@@ -23985,24 +24112,8 @@ module.exports = function createTaskRenderer(gantt){
 
 var getRowRectangle = __webpack_require__(/*! ./viewport/get_bg_row_rectangle */ "./sources/core/ui/render/viewport/get_bg_row_rectangle.js");
 var isLegacyRender = __webpack_require__(/*! ./is_legacy_smart_render */ "./sources/core/ui/render/is_legacy_smart_render.js");
-function getIndexRange(scale, viewportLeft, viewPortRight){
-	var firstCellIndex = 0;
-	var lastCellIndex = scale.left.length - 1;
-	for(var i = 0; i < scale.left.length; i++){
-		var left = scale.left[i];
-		if(left < viewportLeft){
-			firstCellIndex = i;
-		}
-		if(left > viewPortRight){
-			lastCellIndex = i;
-			break;
-		}
-	}
-	return {
-		start: firstCellIndex,
-		end: lastCellIndex
-	};
-}
+var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
+var getVisibleCellsRange = __webpack_require__(/*! ./viewport/get_visible_cells_range */ "./sources/core/ui/render/viewport/get_visible_cells_range.js");
 
 function createTaskBgRender(gantt){
 	var renderedCells = {};
@@ -24052,7 +24163,7 @@ function createTaskBgRender(gantt){
 				visibleCells[item.id] = {};
 			}
 
-			var range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
+			var range = getVisibleCellsRange(cfg, viewPort);
 
 			for(var i in visibleCells[item.id]){
 				var index = visibleCells[item.id][i];
@@ -24147,7 +24258,7 @@ function createTaskBgRender(gantt){
 				end: count - 1
 			};
 		} else {
-			range = getIndexRange(cfg, viewPort.x, viewPort.x_end);
+			range = getVisibleCellsRange(cfg, viewPort.x);
 		}
 		if (config.show_task_cells) {
 			renderedCells[item.id] = {};
@@ -24189,7 +24300,8 @@ function createTaskBgRender(gantt){
 	return {
 		render: _render_bg_line,
 		update: renderCells,
-		getRectangle: getRowRectangle
+		getRectangle: getRowRectangle,
+		getVisibleRange: getVisibleRange
 	};
 }
 
@@ -24207,6 +24319,7 @@ module.exports = createTaskBgRender;
 
 var helpers = __webpack_require__(/*! ../../../utils/helpers */ "./sources/utils/helpers.js");
 var getRowRectangle = __webpack_require__(/*! ./viewport/get_grid_row_rectangle */ "./sources/core/ui/render/viewport/get_grid_row_rectangle.js");
+var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 
 function createGridLineRender(gantt){
 
@@ -24321,7 +24434,8 @@ function createGridLineRender(gantt){
 	return {
 		render: _render_grid_item,
 		update: null,
-		getRectangle: getRowRectangle
+		getRectangle: getRowRectangle,
+		getVisibleRange: getVisibleRange
 	};
 }
 
@@ -24336,8 +24450,9 @@ module.exports = createGridLineRender;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var getBarRectangle = __webpack_require__(/*! ./viewport/get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
 var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
+var isInViewPort = __webpack_require__(/*! ./viewport/is_bar_in_viewport */ "./sources/core/ui/render/viewport/is_bar_in_viewport.js");
+var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 
 function createTaskRenderer(gantt){
 	var defaultRender = createBaseBarRender(gantt);
@@ -24363,9 +24478,6 @@ function createTaskRenderer(gantt){
 				element.className += " gantt_split_child";
 
 				el.appendChild(element);
-				if(timeline._taskRenderer){
-					timeline._taskRenderer.rendered[child.id] = element;
-				}
 			}
 			return el;
 		}
@@ -24374,38 +24486,13 @@ function createTaskRenderer(gantt){
 	return {
 		render: renderSplitTask,
 		update: null,
-		getRectangle: getBarRectangle
+		//getRectangle: getBarRectangle
+		isInViewPort: isInViewPort,
+		getVisibleRange: getVisibleRange
 	};
 }
 
 module.exports = createTaskRenderer;
-
-/***/ }),
-
-/***/ "./sources/core/ui/render/viewport/get_bar_rectangle.js":
-/*!**************************************************************!*\
-  !*** ./sources/core/ui/render/viewport/get_bar_rectangle.js ***!
-  \**************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = function(item, view){
-	if(!item.start_date || !item.end_date){
-		return null;
-	}
-	var padding = 200;
-	var startCoord = view.posFromDate(item.start_date);
-	var endCoord = view.posFromDate(item.end_date);
-	var left = Math.min(startCoord, endCoord) - padding;
-	var right = Math.max(startCoord, endCoord) + padding;
-	var config = view.$getConfig();
-	return {
-		top: view.getItemTop(item.id),
-		height: config.row_height,
-		left: left,
-		width: right - left
-	};
-};
 
 /***/ }),
 
@@ -24447,46 +24534,93 @@ module.exports = function(item, view){
 
 /***/ }),
 
-/***/ "./sources/core/ui/render/viewport/get_link_rectangle.js":
-/*!***************************************************************!*\
-  !*** ./sources/core/ui/render/viewport/get_link_rectangle.js ***!
-  \***************************************************************/
+/***/ "./sources/core/ui/render/viewport/get_visible_bars_range.js":
+/*!*******************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_visible_bars_range.js ***!
+  \*******************************************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-
-
-var barRectangle = __webpack_require__(/*! ./get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
-
-module.exports = function getLinkBox(item, view, gantt){
-	if(!gantt.isTaskExists(item.source)){
-		return null;
-	}
-
-	if(!gantt.isTaskExists(item.target)){
-		return null;
-	}
-	var sourceBox = barRectangle(gantt.getTask(item.source), view, gantt);
-	var targetBox = barRectangle(gantt.getTask(item.target), view, gantt);
-
-	if(!sourceBox || !targetBox){
-		return null;
-	}
-
-	var padding = 100;
-	var left = Math.min(sourceBox.left, targetBox.left) - padding;
-	var right = Math.max(sourceBox.left + sourceBox.width, targetBox.left + targetBox.width) + padding;
-	var top = Math.min(sourceBox.top, targetBox.top) - padding;
-	var bottom = Math.max(sourceBox.top + sourceBox.height, targetBox.top + targetBox.height) + padding;
-
+module.exports = function getVisibleTasksRange(gantt, view, datastore, viewport){
+	var config = view.$getConfig();
+	var height = config.row_height;
+	var buffer = 5;
+	var indexStart = Math.max(0, Math.floor(viewport.y / height) - buffer);
+	var indexEnd =  Math.min(datastore.count(), Math.ceil(viewport.y_end / height) + buffer);
 	return {
-		top: top,
-		height: bottom - top,
-		left: left,
-		width: right - left
+		start: indexStart,
+		end: indexEnd
 	};
 };
 
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/get_visible_cells_range.js":
+/*!********************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_visible_cells_range.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function getVisibleCellsRange(scale, viewport){
+	var firstCellIndex = 0;
+	var lastCellIndex = scale.left.length - 1;
+	if(viewport){
+		for(var i = 0; i < scale.left.length; i++){
+			var left = scale.left[i];
+			if(left < viewport.x){
+				firstCellIndex = i;
+			}
+			if(left > viewport.x_end){
+				lastCellIndex = i;
+				break;
+			}
+		}
+	}
+
+	return {
+		start: firstCellIndex,
+		end: lastCellIndex
+	};
+};
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/is_bar_in_viewport.js":
+/*!***************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/is_bar_in_viewport.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+// optimized checker for task bars smart rendering
+
+// first check the vertical position since it's easier to calculate
+module.exports = function isBarInViewport(item, viewport, view, gantt){
+	if(!item.start_date || !item.end_date){
+		return null;
+	}
+
+	var config = view.$getConfig();
+	var top = view.getItemTop(item.id);
+	var height = config.row_height;
+
+	if(top > viewport.y_end || top + height < viewport.y){
+		return false;
+	}
+
+	var padding = 200;
+	var startCoord = view.posFromDate(item.start_date);
+	var endCoord = view.posFromDate(item.end_date);
+	var left = Math.min(startCoord, endCoord) - padding;
+	var right = Math.max(startCoord, endCoord) + padding;
+
+	if(left > viewport.x_end || right < viewport.x){
+		return false;
+	}
+
+	return true;
+};
 
 /***/ }),
 
@@ -24512,6 +24646,77 @@ module.exports = function(viewport, box){
 
 	return true;
 };
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/is_link_in_viewport.js":
+/*!****************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/is_link_in_viewport.js ***!
+  \****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+
+// optimized checker for links smart rendering
+
+// first check the vertical position since it's easier to calculate
+
+module.exports = function isLinkInViewPort(item, viewport, view, gantt){
+	var source = view.$gantt.getTask(item.source);
+	var target = view.$gantt.getTask(item.target);
+	var config = view.$getConfig();
+	// check vertical visibility first since it's a lighter check
+	var sourceTop = view.getItemTop(source.id);
+	var sourceHeight = config.row_height;
+
+	var targetTop = view.getItemTop(target.id);
+	var targetHeight = config.row_height;
+
+	if(viewport.y > sourceTop + sourceHeight && 
+		viewport.y > targetTop + targetHeight){
+		return false;
+	}
+
+	if(viewport.y_end < targetTop && 
+		viewport.y_end < targetTop + targetHeight){
+		return false;
+	}
+
+	var padding = 100;
+	var sourceLeft = view.posFromDate(source.start_date);
+	var sourceRight = view.posFromDate(source.end_date);
+	var targetLeft = view.posFromDate(target.start_date);
+	var targetRight = view.posFromDate(target.end_date);
+	
+	if(sourceLeft > sourceRight){
+		// rtl
+		var tmp = sourceRight;
+		sourceRight = sourceLeft;
+		sourceLeft = tmp;
+	}
+	if(targetLeft > targetRight){
+		// rtl
+		var tmp = targetRight;
+		targetRight = targetLeft;
+		targetLeft = tmp;
+	}
+	sourceLeft += -padding; // add buffer for custom elements
+	sourceRight += padding;
+	targetLeft += -padding; // add buffer for custom elements
+	targetRight += padding;
+
+	if(viewport.x > sourceRight && 
+		viewport.x > targetRight){
+		return false;
+	}
+
+	if(viewport.x_end < sourceLeft && 
+		viewport.x_end < targetLeft){
+		return false;
+	}
+	return true;
+};
+
 
 /***/ }),
 
