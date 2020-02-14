@@ -4,7 +4,7 @@
 [![npm: v.6.3.7](https://img.shields.io/badge/npm-v.6.3.7-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
-[Getting started](#getting-started) | [Features](#features) | [Support](#support) | [License](#license) | [Useful links](#links)
+[Getting started](#getting-started) | [Features](#features) | [Follow us](#followus) | [License](#license) | [Useful links](#links)
 
 [dhtmlxGantt](https://dhtmlx.com/docs/products/dhtmlxGantt) is an open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.
 
@@ -112,8 +112,8 @@ gantt.parse({
 | Working calendar for the whole project	|  :x:	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|  :heavy_check_mark: 	|
 
 
-<a name="support"></a>
-## Support ##
+<a name="followus"></a>
+## Follow us ##
 
 Star our GitHub repo :star:
 
