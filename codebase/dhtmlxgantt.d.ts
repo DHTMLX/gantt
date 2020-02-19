@@ -2339,13 +2339,13 @@ interface GanttStatic {
 	updateTask(id: string): void;
 }
 
-declare var gantt: GanttStatic;
+export declare var gantt: GanttStatic;
 
 declare module "gantt" {
     export = gantt;
 }
 
-declare var Gantt: GanttEnterprise;
+export declare var Gantt: GanttEnterprise;
 
 declare module "Gantt" {
     export = Gantt;
