@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.6.3.7 Standard
+dhtmlxGantt v.7.0.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -737,8 +737,14 @@ label.gantt_resource_row select {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
 }
+.gantt_row {
+  display: flex;
+}
+.gantt_row > div {
+  flex-shrink: 0;
+  flex-grow: 0;
+}
 .gantt_cell {
-  display: inline-block;
   vertical-align: top;
   border-right: 1px solid #D7D7D7;
   padding-left: 6px;
@@ -748,6 +754,10 @@ label.gantt_resource_row select {
   white-space: nowrap;
   font-size: 14px;
   font-weight: 500;
+}
+.gantt_cell_tree {
+  display: flex;
+  flex-wrap: nowrap;
 }
 .gantt_grid_scale .gantt_last_cell,
 .gantt_grid_data .gantt_last_cell,
@@ -803,10 +813,14 @@ label.gantt_resource_row select {
   width: 5000px;
   height: 1px;
 }
+.gantt_tree_indent,
+.gantt_tree_icon {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
 .gantt_tree_indent {
   width: 15px;
   height: 100%;
-  display: inline-block;
 }
 .gantt_tree_content,
 .gantt_tree_icon {
@@ -815,13 +829,13 @@ label.gantt_resource_row select {
 .gantt_tree_icon {
   width: 28px;
   height: 100%;
-  display: inline-block;
   background-repeat: no-repeat;
   background-position: center center;
 }
 .gantt_tree_content {
   height: 100%;
-  display: inline-block;
+  white-space: nowrap;
+  min-width: 0;
 }
 .gantt_tree_icon.gantt_open {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAACXBIWXMAAAuUAAALlAF37bb0AAAAIGNIUk0AAHolAACAgwAA+f8AAIDoAABSCAABFVgAADqXAAAXb9daH5AAAAH/SURBVHgBAO8BEP4B////AAAAAAB1dXWV2NjYa+7u7gAJCQkA////AAAAAAAAAAAAvb29AAAAAAACAAAAAAAAAAAGBgZqKysrvREREQD7+/sACAgIAAgICAAICAgAAAAAAAAAAAACAAAAAAAAAAD6+vr1BAQEQisrK8YQEBAA9vb2AP39/QD9/f0AAAAAAAAAAAACAAAAAAAAAAABAQEA+fn5AAUFBTkqKirWCAgIBPLy8gD5+fkAAAAAAAAAAAACAAAAAAAAAAAAAAAAAQEBAPn5+QADAwMpMjIy3xkZGRsEBAQAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAEBAQD4+PgABQUFHCQkJKoVFRUwAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAP///wAICAgA+/v76N3d3Vvx8fHgAAAAAAAAAAAEAAAAAAAAAAAAAAAA////AAcHBwD9/f3b0dHRLfDw8PkGBgYAAAAAAAAAAAAEAAAAAAAAAAD///8ABwcHAPv7+8vY2Ng29/f3AA4ODgAAAAAAAAAAAAAAAAACAAAAAAAAAAAGBgYL+/v7w9LS0jbu7u4ACAgIAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAD4+Pia2traPvj4+AAMDAwA////AAAAAAAAAAAAAAAAAAAAAAABAAD//z9HdQMRW/QpAAAAAElFTkSuQmCC);
@@ -894,6 +908,39 @@ label.gantt_resource_row select {
 }
 #gantt_ajax_dots span.gantt_dot_visible {
   opacity: 1;
+}
+.gantt_column_drag_marker {
+  border: 1px solid #CECECE;
+  opacity: 0.8;
+}
+.gantt_grid_head_cell_dragged {
+  border: 1px solid #CECECE;
+  opacity: 0.3;
+}
+.gantt_grid_target_marker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background-color: #87A4BC;
+  transform: translateX(-1px);
+}
+.gantt_grid_target_marker::before,
+.gantt_grid_target_marker::after {
+  display: block;
+  content: "";
+  position: absolute;
+  left: -5px;
+  width: 0px;
+  height: 0px;
+  border: 6px solid rgba(0, 0, 0, 0);
+}
+.gantt_grid_target_marker::before {
+  border-top-color: #87A4BC;
+}
+.gantt_grid_target_marker::after {
+  bottom: 0;
+  border-bottom-color: #87A4BC;
 }
 .gantt_message_area {
   position: fixed;
@@ -2050,6 +2097,13 @@ div.dhx_modal_cover {
 .gantt_timeline_move_available,
 .gantt_timeline_move_available * {
   cursor: move;
+}
+.gantt_rtl .gantt_grid {
+  text-align: right;
+}
+.gantt_rtl .gantt_row,
+.gantt_rtl .gantt_cell {
+  flex-direction: row-reverse;
 }
 .gantt_layout_content {
   width: 100%;

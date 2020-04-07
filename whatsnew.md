@@ -1,3 +1,25 @@
+### 7.0.0
+
+- Nodejs-compatible build of dhtmlxGantt is now available
+- Update TypeScript type definitions
+- Extensions and Locales are now bundled with dhtmlxgantt.js core file and are enabled from config
+- Ability to specify work time in minutes
+- Ability to merge several work time calendars
+- Changed default work hours from 8:00-17:00 to 8:00-12:00, 13:00-17:00
+- Simpler format for entering work time intervals for Calendars
+- Extend the API of the QuickInfo extension
+- CSP mode is enabled by default
+- All custom HTML attributes were changed to `data-` attributes
+- Add the ability to use `text-overflow:ellipsis` on grid cells
+- Add the ability to reorder grid columns by drag and drop
+- Add support for 'elastic' column width for the scrollable grid
+- gantt.templates.xml_date/gantt.templates.xml_format were replaced with gantt.templates.parse_date/gantt.templates.format_date
+- gantt.config.xml_date was replaced with gantt.config.date_format
+- Fix the bug which caused a column to change width after hiding and showing the column again
+- Fix the bug which disabled the ability to select any task when the multiselect extension was disabled via the `multiselect` config
+- Fix the incorrect work of `gantt.sort` for tasks with equal start dates
+- Fix drag and drop of a link when Gantt is initialized inside a Web Component 
+
 ### 6.3.7
 
 - Significant performance improvement for smart rendering of chart and resource panel
