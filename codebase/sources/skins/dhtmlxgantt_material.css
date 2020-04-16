@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.0 Standard
+dhtmlxGantt v.7.0.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1461,7 +1461,8 @@ div.dhx_modal_cover {
   -webkit-box-shadow: inset 0px 0px 1px 1px #4d90fe;
   box-shadow: inset 0px 0px 1px 1px #4d90fe;
 }
-.gantt_split_parent {
+.gantt_split_parent,
+.gantt_split_subproject {
   opacity: 0.1;
   pointer-events: none;
 }

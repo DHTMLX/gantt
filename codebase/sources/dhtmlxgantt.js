@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.0 Standard
+dhtmlxGantt v.7.0.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -9100,7 +9100,7 @@ var DataProcessor = /** @class */ (function () {
             var taskState_1 = this.getState(rowId);
             var taskAction = this.getActionByState(taskState_1);
             var ganttMode_1 = this.getGanttMode();
-            var _onResolvedCreateUpdate = function (tag) {
+            var _onResolvedCreateUpdate_1 = function (tag) {
                 var action = taskState_1 || "updated";
                 var sid = rowId;
                 var tid = rowId;
@@ -9138,15 +9138,22 @@ var DataProcessor = /** @class */ (function () {
                     throw new Error("Incorrect router return value. A Promise or a response object is expected");
                 }
                 if (actionPromise.then) {
-                    actionPromise.then(_onResolvedCreateUpdate);
+                    actionPromise.then(_onResolvedCreateUpdate_1).catch(function (error) {
+                        if (error && error.action) {
+                            _onResolvedCreateUpdate_1(error);
+                        }
+                        else {
+                            _onResolvedCreateUpdate_1({ action: "error", value: error });
+                        }
+                    });
                 }
                 else {
                     // custom method may return a response object in case of sync action
-                    _onResolvedCreateUpdate(actionPromise);
+                    _onResolvedCreateUpdate_1(actionPromise);
                 }
             }
             else {
-                _onResolvedCreateUpdate(null);
+                _onResolvedCreateUpdate_1(null);
             }
             return;
         }
@@ -13235,279 +13242,6 @@ module.exports = function(gantt){
 
 /***/ }),
 
-/***/ "./sources/core/plugins/column_grid_dnd/column_grid_dnd.ts":
-/*!*****************************************************************!*\
-  !*** ./sources/core/plugins/column_grid_dnd/column_grid_dnd.ts ***!
-  \*****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var domHelpers = __webpack_require__(/*! ../../ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
-var scrollable_grid_1 = __webpack_require__(/*! ./scrollable_grid */ "./sources/core/plugins/column_grid_dnd/scrollable_grid.ts");
-var COLUMN_ID_ATTR_NAME = "data-column-id";
-var ColumnsGridDnd = /** @class */ (function () {
-    function ColumnsGridDnd(gantt, grid) {
-        var _this = this;
-        this._targetMarker = null;
-        this.calculateCurrentPosition = function (eventX) {
-            var gridBoundingRect = _this.$grid.$grid.getBoundingClientRect();
-            var maxLeft = gridBoundingRect.right;
-            var minLeft = gridBoundingRect.left;
-            var x = eventX;
-            if (x > maxLeft) {
-                x = maxLeft;
-            }
-            if (x < minLeft) {
-                x = minLeft;
-            }
-            return x;
-        };
-        this.$gantt = gantt;
-        this.$grid = grid;
-    }
-    ColumnsGridDnd.prototype.init = function () {
-        var DND = this.$gantt.$services.getService("dnd");
-        this._dnd = new DND(this.$grid.$grid_scale, { updates_per_second: 60 });
-        this._scrollableGrid = new scrollable_grid_1.default({
-            gantt: this.$gantt,
-            grid: this.$grid,
-            dnd: this._dnd,
-            getCurrentX: this.calculateCurrentPosition
-        });
-        this.attachEvents();
-    };
-    ColumnsGridDnd.prototype.attachEvents = function () {
-        var _this = this;
-        this._dnd.attachEvent("onBeforeDragStart", function (obj, e) {
-            _this._gridConfig = _this.$grid.$getConfig();
-            _this._originAutoscroll = _this.$gantt.config.autoscroll;
-            _this.$gantt.config.autoscroll = false;
-            _this._draggedCell = _this.$gantt.utils.dom.closest(e.target, ".gantt_grid_head_cell");
-            if (!_this._draggedCell) {
-                return false;
-            }
-            return true;
-        });
-        this._dnd.attachEvent("onAfterDragStart", function (obj, e) {
-            _this._dnd.config.column = _this._draggedCell.getAttribute(COLUMN_ID_ATTR_NAME);
-            _this._dnd.config.marker.innerHTML = _this._draggedCell.outerHTML;
-            _this._dnd.config.marker.classList.add("gantt_column_drag_marker");
-            _this._dnd.config.marker.style.height = _this._gridConfig.scale_height + "px";
-            _this._dnd.config.marker.style.lineHeight = _this._gridConfig.scale_height + "px";
-            _this._draggedCell.classList.add("gantt_grid_head_cell_dragged");
-        });
-        this._dnd.attachEvent("onDragMove", function (obj, e) {
-            _this._dragX = e.clientX;
-            var x = _this.calculateCurrentPosition(e.clientX);
-            _this.setMarkerPosition(x);
-            _this.drawTargetMarker(_this.findColumnsIndexes());
-            return true;
-        });
-        this._dnd.attachEvent("onDragEnd", function () {
-            _this.$gantt.config.autoscroll = _this._originAutoscroll;
-            _this._draggedCell.classList.remove("gantt_grid_head_cell_dragged");
-            _this.cleanTargetMarker();
-            _this.reorderColumns();
-        });
-    };
-    ColumnsGridDnd.prototype.reorderColumns = function () {
-        var _a = this.findColumnsIndexes(), targetIndex = _a.targetIndex, draggedIndex = _a.draggedIndex;
-        if (targetIndex === draggedIndex) {
-            return;
-        }
-        var columns = this.$grid.$getConfig().columns;
-        var draggedColumn = columns[draggedIndex];
-        var targetColumn = columns[targetIndex];
-        if (this.$grid.callEvent("onBeforeColumnReorder", [{ draggedColumn: draggedColumn, targetColumn: targetColumn, draggedIndex: draggedIndex, targetIndex: targetIndex }]) === false) {
-            return;
-        }
-        columns.splice(draggedIndex, 1);
-        columns.splice(targetIndex, 0, draggedColumn);
-        this.$gantt.render();
-        this.$grid.callEvent("onAfterColumnReorder", [{ draggedColumn: draggedColumn, targetColumn: targetColumn, draggedIndex: draggedIndex, targetIndex: targetIndex }]);
-    };
-    ColumnsGridDnd.prototype.findColumnsIndexes = function () {
-        var draggedId = this._dnd.config.column;
-        var columns = this.$grid.$getConfig().columns;
-        var targetIndex;
-        var draggedIndex;
-        var xBefore;
-        var xAfter;
-        var currentColumn = { startX: 0, endX: 0 };
-        var start = 0;
-        var end = columns.length - 1;
-        var compare = function (a, b) { return a <= b; };
-        var next = function (index) { return ++index; };
-        if (this.$gantt.config.rtl) {
-            start = columns.length - 1;
-            end = 0;
-            compare = function (a, b) { return a >= b; };
-            next = function (index) { return --index; };
-        }
-        var columnRelativePos;
-        var relativeX = this._dragX - this.$grid.$grid.getBoundingClientRect().left + this._scrollableGrid.getCorrection();
-        for (var i = start; compare(i, end); i = next(i)) {
-            if (targetIndex !== undefined && draggedIndex !== undefined) {
-                break;
-            }
-            currentColumn.startX = currentColumn.endX;
-            currentColumn.endX += columns[i].width;
-            if (relativeX >= currentColumn.startX && relativeX <= currentColumn.endX) {
-                targetIndex = i;
-                xBefore = currentColumn.startX;
-                xAfter = currentColumn.endX;
-                columnRelativePos = (relativeX - currentColumn.startX) / (currentColumn.endX - currentColumn.startX);
-            }
-            if (draggedId === columns[i].name) {
-                draggedIndex = i;
-            }
-        }
-        return {
-            targetIndex: targetIndex,
-            draggedIndex: draggedIndex,
-            xBefore: xBefore,
-            xAfter: xAfter,
-            columnRelativePos: columnRelativePos
-        };
-    };
-    ColumnsGridDnd.prototype.setMarkerPosition = function (x, y) {
-        if (y === void 0) { y = 10; }
-        var marker = this._dnd.config.marker;
-        var gridOffset = this._dnd._obj.getBoundingClientRect();
-        marker.style.top = gridOffset.y + y + "px";
-        marker.style.left = x + "px";
-    };
-    ColumnsGridDnd.prototype.drawTargetMarker = function (_a) {
-        var targetIndex = _a.targetIndex, draggedIndex = _a.draggedIndex, xBefore = _a.xBefore, xAfter = _a.xAfter, columnRelativePos = _a.columnRelativePos;
-        if (!this._targetMarker) {
-            this._targetMarker = document.createElement("div");
-            domHelpers.addClassName(this._targetMarker, "gantt_grid_target_marker");
-            this._targetMarker.style.display = "none";
-            this._targetMarker.style.height = this._gridConfig.scale_height + "px";
-        }
-        // marker can be detached after gantt.render
-        if (!this._targetMarker.parentNode) {
-            this.$grid.$grid_scale.appendChild(this._targetMarker);
-        }
-        var nextPosition;
-        if (targetIndex > draggedIndex) {
-            nextPosition = xAfter;
-        }
-        else if (targetIndex < draggedIndex) {
-            nextPosition = xBefore;
-        }
-        else {
-            if (columnRelativePos > 0.5) {
-                nextPosition = xAfter;
-            }
-            else {
-                nextPosition = xBefore;
-            }
-        }
-        this._targetMarker.style.left = nextPosition + "px";
-        this._targetMarker.style.display = "block";
-    };
-    ColumnsGridDnd.prototype.cleanTargetMarker = function () {
-        if (this._targetMarker && this._targetMarker.parentNode) {
-            this.$grid.$grid_scale.removeChild(this._targetMarker);
-        }
-        this._targetMarker = null;
-    };
-    return ColumnsGridDnd;
-}());
-exports.default = ColumnsGridDnd;
-
-
-/***/ }),
-
-/***/ "./sources/core/plugins/column_grid_dnd/scrollable_grid.ts":
-/*!*****************************************************************!*\
-  !*** ./sources/core/plugins/column_grid_dnd/scrollable_grid.ts ***!
-  \*****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var SENSITIVITY = 20;
-var TIMEOUT = 50;
-var SCROLLSTEP = 10;
-var ScrollableGrid = /** @class */ (function () {
-    function ScrollableGrid(params) {
-        this._scrollOrder = 0;
-        var gantt = params.gantt, grid = params.grid, dnd = params.dnd, getCurrentX = params.getCurrentX;
-        this.$gantt = gantt;
-        this.$grid = grid;
-        this._dnd = dnd;
-        this.getCurrentX = getCurrentX;
-        this._scrollView = this.$gantt.$ui.getView(this.$grid.$config.scrollX);
-        this.attachEvents();
-    }
-    ScrollableGrid.prototype.attachEvents = function () {
-        var _this = this;
-        if (this.isScrollable()) {
-            this._dnd.attachEvent("onDragMove", function (obj, e) {
-                var gridBoundingRect = _this.$grid.$grid.getBoundingClientRect();
-                var maxLeft = gridBoundingRect.right;
-                var minLeft = gridBoundingRect.left;
-                var currentX = _this.getCurrentX(e.clientX);
-                if (currentX >= maxLeft - SENSITIVITY) {
-                    _this.autoscrollRight();
-                    _this.autoscrollStart();
-                }
-                if (currentX <= minLeft + SENSITIVITY) {
-                    _this.autoscrollLeft();
-                    _this.autoscrollStart();
-                }
-                if (currentX < maxLeft - SENSITIVITY && currentX > minLeft + SENSITIVITY) {
-                    _this.autoscrollStop();
-                }
-                return true;
-            });
-            this._dnd.attachEvent("onDragEnd", function () {
-                _this.autoscrollStop();
-            });
-        }
-    };
-    ScrollableGrid.prototype.autoscrollStart = function () {
-        var _this = this;
-        if (this._scrollOrder === 0) {
-            return;
-        }
-        var scrollStep = SCROLLSTEP * this._scrollOrder;
-        var scrollState = this._scrollView.getScrollState();
-        this._scrollView.scrollTo(scrollState.position + scrollStep);
-        setTimeout(function () { _this.autoscrollStart(); }, TIMEOUT);
-    };
-    ScrollableGrid.prototype.autoscrollRight = function () {
-        this._scrollOrder = 1;
-    };
-    ScrollableGrid.prototype.autoscrollLeft = function () {
-        this._scrollOrder = -1;
-    };
-    ScrollableGrid.prototype.autoscrollStop = function () {
-        this._scrollOrder = 0;
-    };
-    ScrollableGrid.prototype.getCorrection = function () {
-        if (!this.isScrollable()) {
-            return 0;
-        }
-        return this._scrollView.getScrollState().position;
-    };
-    ScrollableGrid.prototype.isScrollable = function () {
-        return !!this._scrollView;
-    };
-    return ScrollableGrid;
-}());
-exports.default = ScrollableGrid;
-
-
-/***/ }),
-
 /***/ "./sources/core/plugins/formatters.js":
 /*!********************************************!*\
   !*** ./sources/core/plugins/formatters.js ***!
@@ -14376,10 +14110,12 @@ function create(gantt){
 		}
 
 		function _getEditorPosition(itemId, columnName) {
+			var config = grid.$getConfig();
 			var top = grid.getItemTop(itemId);
 			var height = grid.getItemHeight(itemId);
 			var cols = grid.getGridColumns();
 			var left = 0,
+				right = 0,
 				width = 0;
 
 			for (var i = 0; i < cols.length; i++) {
@@ -14387,14 +14123,29 @@ function create(gantt){
 					width = cols[i].width;
 					break;
 				}
-				left += cols[i].width;
+				if (config.rtl) {
+					right += cols[i].width;
+				}	else {
+					left += cols[i].width;
+				}			
+				
 			}
-			return {
-				top: top,
-				left: left,
-				height: height,
-				width: width
-			};
+			if (config.rtl) {
+				return {
+					top: top,
+					right: right,
+					height: height,
+					width: width
+				};
+			} else {
+				return {
+					top: top,
+					left: left,
+					height: height,
+					width: width
+				};
+			}
+			
 		}
 
 		function findVisibleIndex(grid, columnName) {
@@ -14408,6 +14159,7 @@ function create(gantt){
 		}
 
 		function _createPlaceholder(itemId, columnName) {
+			var config = grid.$getConfig();
 			var pos = _getEditorPosition(itemId, columnName);
 			var el = document.createElement("div");
 			el.className = "gantt_grid_editor_placeholder";
@@ -14419,12 +14171,21 @@ function create(gantt){
 			var visibleIndex = findVisibleIndex(grid, columnName);
 			el.setAttribute("data-column-index", visibleIndex);
 
-			el.style.cssText = [
-				"top:" + pos.top + "px",
-				"left:" + pos.left + "px",
-				"width:" + pos.width + "px",
-				"height:" + pos.height + "px"
-			].join(";");
+			if (config.rtl) {
+				el.style.cssText = [
+					"top:" + pos.top + "px",
+					"right:" + pos.right + "px",
+					"width:" + pos.width + "px",
+					"height:" + pos.height + "px"
+				].join(";");
+			} else {
+				el.style.cssText = [
+					"top:" + pos.top + "px",
+					"left:" + pos.left + "px",
+					"width:" + pos.width + "px",
+					"height:" + pos.height + "px"
+				].join(";");
+			}
 
 			return el;
 		}
@@ -15665,7 +15426,7 @@ var domHelpers = __webpack_require__(/*! ../utils/dom_helpers */ "./sources/core
 	gridResize = __webpack_require__(/*! ./grid_resize */ "./sources/core/ui/grid/grid_resize.gpl.js"),
 	topPositionMixin = __webpack_require__(/*! ../row_position_mixin */ "./sources/core/ui/row_position_mixin.js");
 
-var ColumnDnd = __webpack_require__(/*! ../../plugins/column_grid_dnd */ "./sources/core/plugins/column_grid_dnd/column_grid_dnd.ts").default;
+var ColumnDnd = __webpack_require__(/*! ../plugins/column_grid_dnd */ "./sources/core/ui/plugins/column_grid_dnd/index.ts").default;
 
 var Grid = function (parent, config, factory, gantt) {
 	this.$config = utils.mixin({}, config || {});
@@ -22079,6 +21840,296 @@ module.exports = function(gantt){
 
 /***/ }),
 
+/***/ "./sources/core/ui/plugins/column_grid_dnd/column_grid_dnd.ts":
+/*!********************************************************************!*\
+  !*** ./sources/core/ui/plugins/column_grid_dnd/column_grid_dnd.ts ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
+var scrollable_grid_1 = __webpack_require__(/*! ./scrollable_grid */ "./sources/core/ui/plugins/column_grid_dnd/scrollable_grid.ts");
+var COLUMN_ID_ATTR_NAME = "data-column-id";
+var ColumnsGridDnd = /** @class */ (function () {
+    function ColumnsGridDnd(gantt, grid) {
+        var _this = this;
+        this._targetMarker = null;
+        this.calculateCurrentPosition = function (eventX) {
+            var gridBoundingRect = _this.$grid.$grid.getBoundingClientRect();
+            var maxLeft = gridBoundingRect.right;
+            var minLeft = gridBoundingRect.left;
+            var x = eventX;
+            if (x > maxLeft) {
+                x = maxLeft;
+            }
+            if (x < minLeft) {
+                x = minLeft;
+            }
+            return x;
+        };
+        this.$gantt = gantt;
+        this.$grid = grid;
+    }
+    ColumnsGridDnd.prototype.init = function () {
+        var DND = this.$gantt.$services.getService("dnd");
+        this._dnd = new DND(this.$grid.$grid_scale, { updates_per_second: 60 });
+        this._scrollableGrid = new scrollable_grid_1.default({
+            gantt: this.$gantt,
+            grid: this.$grid,
+            dnd: this._dnd,
+            getCurrentX: this.calculateCurrentPosition
+        });
+        this.attachEvents();
+    };
+    ColumnsGridDnd.prototype.attachEvents = function () {
+        var _this = this;
+        this._dnd.attachEvent("onBeforeDragStart", function (obj, e) {
+            _this._gridConfig = _this.$grid.$getConfig();
+            _this._originAutoscroll = _this.$gantt.config.autoscroll;
+            _this.$gantt.config.autoscroll = false;
+            _this._draggedCell = _this.$gantt.utils.dom.closest(e.target, ".gantt_grid_head_cell");
+            if (!_this._draggedCell) {
+                return false;
+            }
+            return true;
+        });
+        this._dnd.attachEvent("onAfterDragStart", function (obj, e) {
+            _this._dnd.config.column = _this._draggedCell.getAttribute(COLUMN_ID_ATTR_NAME);
+            _this._dnd.config.marker.innerHTML = _this._draggedCell.outerHTML;
+            _this._dnd.config.marker.classList.add("gantt_column_drag_marker");
+            _this._dnd.config.marker.style.height = _this._gridConfig.scale_height + "px";
+            _this._dnd.config.marker.style.lineHeight = _this._gridConfig.scale_height + "px";
+            _this._draggedCell.classList.add("gantt_grid_head_cell_dragged");
+        });
+        this._dnd.attachEvent("onDragMove", function (obj, e) {
+            _this._dragX = e.clientX;
+            var x = _this.calculateCurrentPosition(e.clientX);
+            _this.setMarkerPosition(x);
+            _this.drawTargetMarker(_this.findColumnsIndexes());
+            return true;
+        });
+        this._dnd.attachEvent("onDragEnd", function () {
+            _this.$gantt.config.autoscroll = _this._originAutoscroll;
+            _this._draggedCell.classList.remove("gantt_grid_head_cell_dragged");
+            _this.cleanTargetMarker();
+            _this.reorderColumns();
+        });
+    };
+    ColumnsGridDnd.prototype.reorderColumns = function () {
+        var _a = this.findColumnsIndexes(), targetIndex = _a.targetIndex, draggedIndex = _a.draggedIndex;
+        if (targetIndex === draggedIndex) {
+            return;
+        }
+        var columns = this.$grid.$getConfig().columns;
+        var draggedColumn = columns[draggedIndex];
+        var targetColumn = columns[targetIndex];
+        if (this.$grid.callEvent("onBeforeColumnReorder", [{ draggedColumn: draggedColumn, targetColumn: targetColumn, draggedIndex: draggedIndex, targetIndex: targetIndex }]) === false) {
+            return;
+        }
+        columns.splice(draggedIndex, 1);
+        columns.splice(targetIndex, 0, draggedColumn);
+        this.$gantt.render();
+        this.$grid.callEvent("onAfterColumnReorder", [{ draggedColumn: draggedColumn, targetColumn: targetColumn, draggedIndex: draggedIndex, targetIndex: targetIndex }]);
+    };
+    ColumnsGridDnd.prototype.findColumnsIndexes = function () {
+        var draggedId = this._dnd.config.column;
+        var columns = this.$grid.$getConfig().columns;
+        var targetIndex;
+        var draggedIndex;
+        var xBefore;
+        var xAfter;
+        var currentColumn = { startX: 0, endX: 0 };
+        var start = 0;
+        var end = columns.length - 1;
+        var compare = function (a, b) { return a <= b; };
+        var next = function (index) { return ++index; };
+        if (this.$gantt.config.rtl) {
+            start = columns.length - 1;
+            end = 0;
+            compare = function (a, b) { return a >= b; };
+            next = function (index) { return --index; };
+        }
+        var columnRelativePos;
+        var relativeX = this._dragX - this.$grid.$grid.getBoundingClientRect().left + this._scrollableGrid.getCorrection();
+        for (var i = start; compare(i, end); i = next(i)) {
+            if (targetIndex !== undefined && draggedIndex !== undefined) {
+                break;
+            }
+            currentColumn.startX = currentColumn.endX;
+            currentColumn.endX += columns[i].width;
+            // if drop on a column or drop after the last column
+            if (relativeX >= currentColumn.startX && (relativeX <= currentColumn.endX || !compare(next(i), end))) {
+                targetIndex = i;
+                xBefore = currentColumn.startX;
+                xAfter = currentColumn.endX;
+                columnRelativePos = (relativeX - currentColumn.startX) / (currentColumn.endX - currentColumn.startX);
+            }
+            if (draggedId === columns[i].name) {
+                draggedIndex = i;
+            }
+        }
+        return {
+            targetIndex: targetIndex,
+            draggedIndex: draggedIndex,
+            xBefore: xBefore,
+            xAfter: xAfter,
+            columnRelativePos: columnRelativePos
+        };
+    };
+    ColumnsGridDnd.prototype.setMarkerPosition = function (x, y) {
+        if (y === void 0) { y = 10; }
+        var marker = this._dnd.config.marker;
+        var gridOffset = this._dnd._obj.getBoundingClientRect();
+        marker.style.top = gridOffset.y + y + "px";
+        marker.style.left = x + "px";
+    };
+    ColumnsGridDnd.prototype.drawTargetMarker = function (_a) {
+        var targetIndex = _a.targetIndex, draggedIndex = _a.draggedIndex, xBefore = _a.xBefore, xAfter = _a.xAfter, columnRelativePos = _a.columnRelativePos;
+        if (!this._targetMarker) {
+            this._targetMarker = document.createElement("div");
+            domHelpers.addClassName(this._targetMarker, "gantt_grid_target_marker");
+            this._targetMarker.style.display = "none";
+            this._targetMarker.style.height = this._gridConfig.scale_height + "px";
+        }
+        // marker can be detached after gantt.render
+        if (!this._targetMarker.parentNode) {
+            this.$grid.$grid_scale.appendChild(this._targetMarker);
+        }
+        var nextPosition;
+        if (targetIndex > draggedIndex) {
+            nextPosition = xAfter;
+        }
+        else if (targetIndex < draggedIndex) {
+            nextPosition = xBefore;
+        }
+        else {
+            if (columnRelativePos > 0.5) {
+                nextPosition = xAfter;
+            }
+            else {
+                nextPosition = xBefore;
+            }
+        }
+        this._targetMarker.style.left = nextPosition + "px";
+        this._targetMarker.style.display = "block";
+    };
+    ColumnsGridDnd.prototype.cleanTargetMarker = function () {
+        if (this._targetMarker && this._targetMarker.parentNode) {
+            this.$grid.$grid_scale.removeChild(this._targetMarker);
+        }
+        this._targetMarker = null;
+    };
+    return ColumnsGridDnd;
+}());
+exports.ColumnsGridDnd = ColumnsGridDnd;
+
+
+/***/ }),
+
+/***/ "./sources/core/ui/plugins/column_grid_dnd/index.ts":
+/*!**********************************************************!*\
+  !*** ./sources/core/ui/plugins/column_grid_dnd/index.ts ***!
+  \**********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var column_grid_dnd_1 = __webpack_require__(/*! ./column_grid_dnd */ "./sources/core/ui/plugins/column_grid_dnd/column_grid_dnd.ts");
+exports.default = column_grid_dnd_1.ColumnsGridDnd;
+
+
+/***/ }),
+
+/***/ "./sources/core/ui/plugins/column_grid_dnd/scrollable_grid.ts":
+/*!********************************************************************!*\
+  !*** ./sources/core/ui/plugins/column_grid_dnd/scrollable_grid.ts ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var SENSITIVITY = 20;
+var TIMEOUT = 50;
+var SCROLLSTEP = 10;
+var ScrollableGrid = /** @class */ (function () {
+    function ScrollableGrid(params) {
+        this._scrollOrder = 0;
+        var gantt = params.gantt, grid = params.grid, dnd = params.dnd, getCurrentX = params.getCurrentX;
+        this.$gantt = gantt;
+        this.$grid = grid;
+        this._dnd = dnd;
+        this.getCurrentX = getCurrentX;
+        this._scrollView = this.$gantt.$ui.getView(this.$grid.$config.scrollX);
+        this.attachEvents();
+    }
+    ScrollableGrid.prototype.attachEvents = function () {
+        var _this = this;
+        if (this.isScrollable()) {
+            this._dnd.attachEvent("onDragMove", function (obj, e) {
+                var gridBoundingRect = _this.$grid.$grid.getBoundingClientRect();
+                var maxLeft = gridBoundingRect.right;
+                var minLeft = gridBoundingRect.left;
+                var currentX = _this.getCurrentX(e.clientX);
+                if (currentX >= maxLeft - SENSITIVITY) {
+                    _this.autoscrollRight();
+                    _this.autoscrollStart();
+                }
+                if (currentX <= minLeft + SENSITIVITY) {
+                    _this.autoscrollLeft();
+                    _this.autoscrollStart();
+                }
+                if (currentX < maxLeft - SENSITIVITY && currentX > minLeft + SENSITIVITY) {
+                    _this.autoscrollStop();
+                }
+                return true;
+            });
+            this._dnd.attachEvent("onDragEnd", function () {
+                _this.autoscrollStop();
+            });
+        }
+    };
+    ScrollableGrid.prototype.autoscrollStart = function () {
+        var _this = this;
+        if (this._scrollOrder === 0) {
+            return;
+        }
+        var scrollStep = SCROLLSTEP * this._scrollOrder;
+        var scrollState = this._scrollView.getScrollState();
+        this._scrollView.scrollTo(scrollState.position + scrollStep);
+        setTimeout(function () { _this.autoscrollStart(); }, TIMEOUT);
+    };
+    ScrollableGrid.prototype.autoscrollRight = function () {
+        this._scrollOrder = 1;
+    };
+    ScrollableGrid.prototype.autoscrollLeft = function () {
+        this._scrollOrder = -1;
+    };
+    ScrollableGrid.prototype.autoscrollStop = function () {
+        this._scrollOrder = 0;
+    };
+    ScrollableGrid.prototype.getCorrection = function () {
+        if (!this.isScrollable()) {
+            return 0;
+        }
+        return this._scrollView.getScrollState().position;
+    };
+    ScrollableGrid.prototype.isScrollable = function () {
+        return !!this.$grid.$config.scrollable;
+    };
+    return ScrollableGrid;
+}());
+exports.default = ScrollableGrid;
+
+
+/***/ }),
+
 /***/ "./sources/core/ui/plugins/dhtmlx_hooks.js":
 /*!*************************************************!*\
   !*** ./sources/core/ui/plugins/dhtmlx_hooks.js ***!
@@ -24578,7 +24629,7 @@ module.exports = createGridLineRender;
 /***/ (function(module, exports, __webpack_require__) {
 
 var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
-var isInViewPort = __webpack_require__(/*! ./viewport/is_bar_in_viewport */ "./sources/core/ui/render/viewport/is_bar_in_viewport.js");
+var isInViewPort = __webpack_require__(/*! ./viewport/is_split_task_in_viewport */ "./sources/core/ui/render/viewport/is_split_task_in_viewport.js");
 var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 
 function createTaskRenderer(gantt){
@@ -24589,22 +24640,26 @@ function createTaskRenderer(gantt){
 			var el = document.createElement('div'),
 				sizes = gantt.getTaskPosition(task);
 
-			var sub_tasks = gantt.getChildren(task.id);
+			if(gantt.hasChild(task.id)){
+				gantt.eachTask(function(child){
+					var isProject = gantt.isSummaryTask(child);
+					if(isProject){
+						gantt.resetProjectDates(child);
+					}
+					var element = defaultRender(child, timeline);
+					if(!element)
+						return;
 
+					var padding = Math.floor((gantt.config.row_height - sizes.height) / 2);
 
-			for (var i = 0; i < sub_tasks.length; i++) {
-				var child = gantt.getTask(sub_tasks[i]);
+					element.style.top = (sizes.top + padding) + "px";
+					element.classList.add("gantt_split_child");
+					if(isProject){
+						element.classList.add("gantt_split_subproject");
+					}
 
-				var element = defaultRender(child, timeline);
-				if(!element)
-					continue;
-
-				var padding = Math.floor((gantt.config.row_height - sizes.height) / 2);
-
-				element.style.top = (sizes.top + padding) + "px";
-				element.className += " gantt_split_child";
-
-				el.appendChild(element);
+					el.appendChild(element);
+				}, task.id);
 			}
 			return el;
 		}
@@ -24829,7 +24884,7 @@ module.exports = function isLinkInViewPort(item, viewport, view, gantt){
 	}
 
 	if(viewport.y_end < targetTop && 
-		viewport.y_end < targetTop + targetHeight){
+		viewport.y_end < sourceTop){
 		return false;
 	}
 
@@ -24868,6 +24923,31 @@ module.exports = function isLinkInViewPort(item, viewport, view, gantt){
 	return true;
 };
 
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/is_split_task_in_viewport.js":
+/*!**********************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/is_split_task_in_viewport.js ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isBarInViewport = __webpack_require__(/*! ./is_bar_in_viewport */ "./sources/core/ui/render/viewport/is_bar_in_viewport.js");
+module.exports = function isSplitTaskInViewport(item, viewport, view, gantt){
+	if (!gantt.isSplitTask(item)) {
+		return false;
+	}
+
+	var range = gantt.getSubtaskDates(item.id);
+
+	return isBarInViewport({
+		id: item.id,
+		start_date: range.start_date,
+		end_date: range.end_date,
+		parent: item.parent
+	}, viewport, view, gantt);
+};
 
 /***/ }),
 
@@ -29336,6 +29416,8 @@ function CalendarWorkTimeStrategy(gantt, argumentsHelper) {
 	this.$gantt = gantt;
 	this._workingUnitsCache = cacheFactory.createCacheObject();
 	this._worktime = null;
+	this._cached_timestamps = {};
+	this._cached_timestamps_count = 0;
 }
 
 CalendarWorkTimeStrategy.prototype = {
@@ -29354,33 +29436,53 @@ CalendarWorkTimeStrategy.prototype = {
 				return i;
 		}
 	},
+	_resetTimestampCache: function(){
+		this._cached_timestamps = {};
+		this._cached_timestamps_count = 0;
+	},
 	_timestamp: function (settings) {
+		// minor optimization, store calculated timestamps to reduce computations
+		// reset cache when number of keys exceeds large number where key lookup may became more expensive than the recalculation
+		if(this._cached_timestamps_count > 1000000){
+			this._resetTimestampCache();
+		}
 
 		var timestamp = null;
 		if ((settings.day || settings.day === 0)) {
 			timestamp = settings.day;
 		} else if (settings.date) {
-			// store worktime datestamp in utc so it could be recognized in different timezones (e.g. opened locally and sent to the export service in different timezone)
-			timestamp = Date.UTC(settings.date.getFullYear(), settings.date.getMonth(), settings.date.getDate());
+			var value = String(settings.date.valueOf());
+			if(this._cached_timestamps[value]){
+				timestamp = this._cached_timestamps[value];
+			}else{
+				// store worktime datestamp in utc so it could be recognized in different timezones (e.g. opened locally and sent to the export service in different timezone)
+				timestamp = Date.UTC(settings.date.getFullYear(), settings.date.getMonth(), settings.date.getDate());
+				this._cached_timestamps[value] = timestamp;
+				this._cached_timestamps_count++;
+			}
+
 		}
 		return timestamp;
 	},
-	_checkIfWorkingUnit: function (date, unit, order) {
-		if (order === undefined) {
-			order = this._getUnitOrder(unit);
-		}
+	_checkIfWorkingUnit: function (date, unit, order, skipLookup) {
+		if(!skipLookup){
+			if (order === undefined) {
+				order = this._getUnitOrder(unit);
+			}
 
-		// disable worktime check for custom time units
-		if (order === undefined) {
-			return true;
-		}
-		if (order) {
-			//check if bigger time unit is a work time (hour < day < month...)
-			//i.e. don't check particular hour if the whole day is marked as not working
-			if (!this._isWorkTime(date, this.units[order - 1], order - 1)) {
-				return false;
+			// disable worktime check for custom time units
+			if (order === undefined) {
+				return true;
+			}
+			if (order) {
+				//check if bigger time unit is a work time (hour < day < month...)
+				//i.e. don't check particular hour if the whole day is marked as not working
+				if (!this._isWorkTime(date, this.units[order - 1], order - 1)) {
+					return false;
+				}
 			}
 		}
+
 		if (!this["_is_work_" + unit])
 			return true;
 		return this["_is_work_" + unit](date);
@@ -29486,6 +29588,12 @@ CalendarWorkTimeStrategy.prototype = {
 
 				} else {
 					units++;
+				}
+			}else{
+				var unitOrder = this._getUnitOrder(unit);
+				var biggerTimeUnit = this.units[unitOrder - 1];
+				if(biggerTimeUnit && !this._isWorkTime(start, biggerTimeUnit)){
+					next = this._getClosestWorkTimeFuture(start, biggerTimeUnit);
 				}
 			}
 			start = next;
@@ -34314,7 +34422,7 @@ function default_1(gantt) {
     gantt.config.tooltip_offset_y = 20;
     gantt.config.tooltip_offset_x = 10;
     gantt.config.tooltip_hide_timeout = 30;
-    var tooltipManager = new tooltipManager_1.TooltipManager();
+    var tooltipManager = new tooltipManager_1.TooltipManager(gantt);
     gantt.ext.tooltips = tooltipManager;
     gantt.attachEvent("onGanttReady", function () {
         tooltipManager.tooltipFor({
@@ -34369,9 +34477,11 @@ exports.default = default_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 var domHelpers = __webpack_require__(/*! ../../core/ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 var Tooltip = /** @class */ (function () {
-    function Tooltip() {
+    function Tooltip(gantt) {
+        this._gantt = gantt;
     }
     Tooltip.prototype.getNode = function () {
+        var gantt = this._gantt;
         if (!this._tooltipNode) {
             this._tooltipNode = document.createElement("div");
             this._tooltipNode.className = "gantt_tooltip";
@@ -34384,6 +34494,7 @@ var Tooltip = /** @class */ (function () {
         return this;
     };
     Tooltip.prototype.show = function (left, top) {
+        var gantt = this._gantt;
         var container = document.body;
         var node = this.getNode();
         if (!domHelpers.isChildOf(node, container)) {
@@ -34401,6 +34512,7 @@ var Tooltip = /** @class */ (function () {
         return this;
     };
     Tooltip.prototype.hide = function () {
+        var gantt = this._gantt;
         var node = this.getNode();
         if (node && node.parentNode) {
             node.parentNode.removeChild(node);
@@ -34424,6 +34536,7 @@ var Tooltip = /** @class */ (function () {
         return this._root || document.body;
     };
     Tooltip.prototype._calculateTooltipPosition = function (event) {
+        var gantt = this._gantt;
         // top/left coordinates inside the viewport by mouse position
         var viewport = this._getViewPortSize();
         var tooltipNode = this.getNode();
@@ -34476,6 +34589,7 @@ var Tooltip = /** @class */ (function () {
         return tooltip;
     };
     Tooltip.prototype._getViewPortSize = function () {
+        var gantt = this._gantt;
         var container = this._getViewPort();
         var viewport = container;
         var scrollTop = window.scrollY + document.body.scrollTop;
@@ -34522,9 +34636,10 @@ var domHelpers = __webpack_require__(/*! ../../core/ui/utils/dom_helpers */ "./s
 var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 var tooltip_1 = __webpack_require__(/*! ./tooltip */ "./sources/ext/tooltip/tooltip.ts");
 var TooltipManager = /** @class */ (function () {
-    function TooltipManager() {
-        this.tooltip = new tooltip_1.Tooltip();
+    function TooltipManager(gantt) {
         this._listeners = {};
+        this.tooltip = new tooltip_1.Tooltip(gantt);
+        this._gantt = gantt;
         this._domEvents = domEventsScope();
         this._initDelayedFunctions();
     }
@@ -34538,6 +34653,7 @@ var TooltipManager = /** @class */ (function () {
     TooltipManager.prototype.attach = function (config) {
         var _this = this;
         var root = document.body;
+        var gantt = this._gantt;
         if (!config.global) {
             root = gantt.$root;
         }
@@ -34623,6 +34739,7 @@ var TooltipManager = /** @class */ (function () {
     };
     TooltipManager.prototype._initDelayedFunctions = function () {
         var _this = this;
+        var gantt = this._gantt;
         // reset delayed functions in order to apply current values of tooltip_timeout
         if (this.delayShow) {
             this.delayShow.$cancelTimeout();
@@ -34665,8 +34782,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var monitor_1 = __webpack_require__(/*! ./monitor */ "./sources/ext/undo/monitor.ts");
 var undo_1 = __webpack_require__(/*! ./undo */ "./sources/ext/undo/undo.ts");
 function default_1(gantt) {
-    var _undo = new undo_1.Undo();
-    var monitor = new monitor_1.Monitor(_undo);
+    var _undo = new undo_1.Undo(gantt);
+    var monitor = new monitor_1.Monitor(_undo, gantt);
     gantt.config.undo = true;
     gantt.config.redo = true;
     /**
@@ -34806,7 +34923,7 @@ var batchActions = [
     "onBeforeBatchUpdate"
 ];
 var Monitor = /** @class */ (function () {
-    function Monitor(undo) {
+    function Monitor(undo, gantt) {
         this._batchAction = null;
         this._batchMode = false;
         this._ignore = false;
@@ -34816,14 +34933,15 @@ var Monitor = /** @class */ (function () {
         this._nestedTasks = {};
         this._nestedLinks = {};
         this._undo = undo;
+        this._gantt = gantt;
         this._attachEvents();
     }
     Monitor.prototype.store = function (id, type, overwrite) {
         if (overwrite === void 0) { overwrite = false; }
-        if (type === gantt.config.undo_types.task) {
+        if (type === this._gantt.config.undo_types.task) {
             return this._storeTask(id, overwrite);
         }
-        if (type === gantt.config.undo_types.link) {
+        if (type === this._gantt.config.undo_types.link) {
             return this._storeLink(id, overwrite);
         }
         return false;
@@ -34914,6 +35032,7 @@ var Monitor = /** @class */ (function () {
         }
     };
     Monitor.prototype.setNestedTasks = function (id, taskIds) {
+        var gantt = this._gantt;
         var task = null;
         var tasks = [];
         var linkIds = this._getLinks(gantt.getTask(id));
@@ -34934,6 +35053,7 @@ var Monitor = /** @class */ (function () {
         this._nestedLinks[id] = links;
     };
     Monitor.prototype.setInitialTask = function (id, overwrite) {
+        var gantt = this._gantt;
         if (overwrite || (!this._initialTasks[id] || !this._batchMode)) {
             var task = gantt.copy(gantt.getTask(id));
             task.$index = gantt.getTaskIndex(id);
@@ -34952,7 +35072,7 @@ var Monitor = /** @class */ (function () {
     };
     Monitor.prototype.setInitialLink = function (id, overwrite) {
         if (!this._initialLinks[id] || !this._batchMode) {
-            this._initialLinks[id] = gantt.copy(gantt.getLink(id));
+            this._initialLinks[id] = this._gantt.copy(this._gantt.getLink(id));
         }
         return this._initialLinks[id];
     };
@@ -34965,6 +35085,7 @@ var Monitor = /** @class */ (function () {
     Monitor.prototype._attachEvents = function () {
         var _this = this;
         var deleteCacheCooldown = null;
+        var gantt = this._gantt;
         var saveInitialAll = function () {
             if (!deleteCacheCooldown) {
                 deleteCacheCooldown = setTimeout(function () {
@@ -35101,6 +35222,7 @@ var Monitor = /** @class */ (function () {
     Monitor.prototype._storeTask = function (taskId, overwrite) {
         var _this = this;
         if (overwrite === void 0) { overwrite = false; }
+        var gantt = this._gantt;
         this.setInitialTask(taskId, overwrite);
         gantt.eachTask(function (child) {
             _this.setInitialTask(child.id);
@@ -35131,7 +35253,7 @@ exports.Monitor = Monitor;
 Object.defineProperty(exports, "__esModule", { value: true });
 var MAX_UNDO_STEPS = 10;
 var Undo = /** @class */ (function () {
-    function Undo() {
+    function Undo(gantt) {
         var _this = this;
         this.maxSteps = MAX_UNDO_STEPS;
         this.undoEnabled = true;
@@ -35142,6 +35264,7 @@ var Undo = /** @class */ (function () {
             },
             invert: function (action) {
                 var _a;
+                var gantt = _this._gantt;
                 var revert = gantt.copy(action);
                 var commands = _this.command;
                 for (var i = 0; i < action.commands.length; i++) {
@@ -35159,6 +35282,7 @@ var Undo = /** @class */ (function () {
             // types of traced actions (gantt.config.undo_actions)
             type: null,
             create: function (value, oldValue, type, entity) {
+                var gantt = _this._gantt;
                 return {
                     entity: entity,
                     type: type,
@@ -35167,20 +35291,23 @@ var Undo = /** @class */ (function () {
                 };
             },
             invert: function (command) {
+                var gantt = _this._gantt;
                 var revert = gantt.copy(command);
-                revert.type = this.inverseCommands(command.type);
+                revert.type = _this.command.inverseCommands(command.type);
                 return revert;
             },
             inverseCommands: function (command) {
+                var gantt = _this._gantt;
+                var types = _this.command.type;
                 switch (command) {
-                    case this.type.update:
-                        return this.type.update;
-                    case this.type.remove:
-                        return this.type.add;
-                    case this.type.add:
-                        return this.type.remove;
-                    case this.type.move:
-                        return this.type.move;
+                    case types.update:
+                        return types.update;
+                    case types.remove:
+                        return types.add;
+                    case types.add:
+                        return types.remove;
+                    case types.move:
+                        return types.move;
                     default:
                         gantt.assert(false, "Invalid command " + command);
                         return null;
@@ -35189,6 +35316,7 @@ var Undo = /** @class */ (function () {
         };
         this._undoStack = [];
         this._redoStack = [];
+        this._gantt = gantt;
     }
     Undo.prototype.getUndoStack = function () {
         return this._undoStack;
@@ -35203,6 +35331,7 @@ var Undo = /** @class */ (function () {
         this._redoStack = [];
     };
     Undo.prototype.updateConfigs = function () {
+        var gantt = this._gantt;
         this.maxSteps = gantt.config.undo_steps || MAX_UNDO_STEPS;
         this.command.entity = gantt.config.undo_types;
         this.command.type = gantt.config.undo_actions;
@@ -35210,6 +35339,7 @@ var Undo = /** @class */ (function () {
         this.redoEnabled = (!!gantt.config.undo) && (!!gantt.config.redo);
     };
     Undo.prototype.undo = function () {
+        var gantt = this._gantt;
         this.updateConfigs();
         if (!this.undoEnabled) {
             return;
@@ -35229,6 +35359,7 @@ var Undo = /** @class */ (function () {
         gantt.callEvent("onAfterUndo", [null]);
     };
     Undo.prototype.redo = function () {
+        var gantt = this._gantt;
         this.updateConfigs();
         if (!this.redoEnabled) {
             return;
@@ -35253,6 +35384,7 @@ var Undo = /** @class */ (function () {
         this._redoStack = [];
     };
     Undo.prototype._push = function (stack, action) {
+        var gantt = this._gantt;
         if (!action.commands.length) {
             return;
         }
@@ -35302,6 +35434,7 @@ var Undo = /** @class */ (function () {
         var command = null;
         var entities = this.command.entity;
         var actions = this.command.type;
+        var gantt = this._gantt;
         var methods = {};
         methods[entities.task] = {
             add: "addTask",
@@ -35363,7 +35496,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.0";
+	this.version = "7.0.1";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

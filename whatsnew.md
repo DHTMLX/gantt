@@ -1,3 +1,16 @@
+### 7.0.1
+
+- Major performance improvement for calculation tasks' duration in the working minutes
+- Fix regression in the Tooltip and Undo extensions which caused the incorrect work when multiple instances of Gantt were created
+- Fix the issue with the reordering of grid columns which caused the timeline to scroll when a mouse pointer moved to the edge of the grid during drag and drop
+- Fix the incorrect position of the column after its dragging and dropping to the right side of the grid border
+- dataProcessor custom router should now work correctly with rejected promises
+- Fix the regression in smart rendering which caused some links not to be visible
+- Split tasks now display not only the first level children but also all nested subtasks
+- Fix the issue with split tasks and smart rendering which happened when a split task had the 'task' type
+- Fix the issue with split tasks which caused the gantt not to calculate the duration of the 'project' tasks nested in a split task
+- Fix the incorrect position of a placeholder after opening an inline editor in the RTL mode
+
 ### 7.0.0
 
 - Nodejs-compatible build of dhtmlxGantt is now available
@@ -18,7 +31,7 @@
 - Fix the bug which caused a column to change width after hiding and showing the column again
 - Fix the bug which disabled the ability to select any task when the multiselect extension was disabled via the `multiselect` config
 - Fix the incorrect work of `gantt.sort` for tasks with equal start dates
-- Fix drag and drop of a link when Gantt is initialized inside a Web Component 
+- Fix drag and drop of a link when Gantt is initialized inside a Web Component
 
 ### 6.3.7
 
@@ -122,7 +135,7 @@
 
 - Fix the issue with task branches being collapsed after updating data using gantt.parse
 - Fix the incorrect work of smart rendering in the resource view
-- Fix the issue which caused the Zoom module to attach redundant DOM event handlers on each re-initialization of the Gantt 
+- Fix the issue which caused the Zoom module to attach redundant DOM event handlers on each re-initialization of the Gantt
 
 ### 6.2.3
 
