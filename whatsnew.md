@@ -1,3 +1,10 @@
+### 7.0.2
+
+- Fix the incorrect work of date formatters when gantt.config.csp is set to true.
+- Fix regression in the Click Drag and Drag Timeline extensions which caused the incorrect work when multiple instances of Gantt were created
+- Fix the incorrect css class of a task row element after returning the error status from the dataProcessor router function
+- Fix the incorrect work of inline editors inside Shadow DOM
+
 ### 7.0.1
 
 - Major performance improvement for calculation tasks' duration in the working minutes

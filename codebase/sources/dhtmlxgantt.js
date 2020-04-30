@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.1 Standard
+dhtmlxGantt v.7.0.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -6871,7 +6871,7 @@ module.exports = function(gantt) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var dateToStr = function (format, utc, gantt) {
     return function (date) {
-        format.replace(/%[a-zA-Z]/g, function (a) {
+        return format.replace(/%[a-zA-Z]/g, function (a) {
             switch (a) {
                 case "%d": return utc ? gantt.date.to_fixed(date.getUTCDate()) : gantt.date.to_fixed(date.getDate());
                 case "%m": return utc ? gantt.date.to_fixed((date.getUTCMonth() + 1)) : gantt.date.to_fixed((date.getMonth() + 1));
@@ -8530,7 +8530,7 @@ var DataProcessor = /** @class */ (function () {
         }
         if (this.callEvent("onRowMark", [id, state, mode, invalid])) {
             // default logic
-            str = this.styles[state ? mode : "clear"] + str;
+            str = this.styles[state ? mode : "clear"] + " " + str;
             this.$gantt[this._methods[0]](id, str);
             if (invalid && invalid.details) {
                 str += this.styles[invalid + "_cell"];
@@ -9134,7 +9134,7 @@ var DataProcessor = /** @class */ (function () {
             if (actionPromise) {
                 // neither promise nor {tid: newId} response object
                 if (!actionPromise.then &&
-                    (actionPromise.id === undefined && actionPromise.tid === undefined)) {
+                    (actionPromise.id === undefined && actionPromise.tid === undefined && actionPromise.action === undefined)) {
                     throw new Error("Incorrect router return value. A Promise or a response object is expected");
                 }
                 if (actionPromise.then) {
@@ -14127,8 +14127,8 @@ function create(gantt){
 					right += cols[i].width;
 				}	else {
 					left += cols[i].width;
-				}			
-				
+				}
+
 			}
 			if (config.rtl) {
 				return {
@@ -14145,7 +14145,7 @@ function create(gantt){
 					width: width
 				};
 			}
-			
+
 		}
 
 		function findVisibleIndex(grid, columnName) {
@@ -14271,7 +14271,7 @@ function create(gantt){
 				this.callEvent("onEditStart", [editorState]);
 			},
 			isVisible: function(){
-				return !!(this._editor && domHelpers.isChildOf(this._placeholder, document.body));
+				return !!(this._editor && domHelpers.isChildOf(this._placeholder, gantt.$root));
 			},
 			show: function (itemId, columnName) {
 				if (this.isVisible()) {
@@ -31001,12 +31001,14 @@ exports.default = gantt;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var EventsManager = /** @class */ (function () {
-    function EventsManager() {
+    function EventsManager(gantt) {
         this._mouseDown = false;
+        this._gantt = gantt;
         this._domEvents = gantt._createDomEventScope();
     }
     EventsManager.prototype.attach = function (selectedRegion, useKey) {
         var _this = this;
+        var gantt = this._gantt;
         var _target = selectedRegion.getViewPort();
         this._originPosition = window.getComputedStyle(_target).display;
         this._restoreOriginPosition = function () {
@@ -31077,6 +31079,7 @@ var EventsManager = /** @class */ (function () {
         });
     };
     EventsManager.prototype.detach = function () {
+        var gantt = this._gantt;
         this._domEvents.detachAll();
         if (this._restoreOriginPosition) {
             this._restoreOriginPosition();
@@ -31143,7 +31146,7 @@ function default_1(gantt) {
         callback: undefined,
         singleRow: false
     };
-    var eventsManager = new eventsManager_1.EventsManager();
+    var eventsManager = new eventsManager_1.EventsManager(gantt);
     gantt.ext.clickDrag = eventsManager;
     gantt.attachEvent("onGanttReady", function () {
         var config = __assign({ viewPort: gantt.$task_data }, defaultConfig);
@@ -31156,7 +31159,7 @@ function default_1(gantt) {
             config.useRequestAnimationFrame = clickDrag.useRequestAnimationFrame === undefined ?
                 defaultConfig.useRequestAnimationFrame : clickDrag.useRequestAnimationFrame;
             config.singleRow = clickDrag.singleRow === undefined ? defaultConfig.singleRow : clickDrag.singleRow;
-            var selectedRegion = new selectedRegion_1.SelectedRegion(config);
+            var selectedRegion = new selectedRegion_1.SelectedRegion(config, gantt);
             gantt.ext.clickDrag.attach(selectedRegion, clickDrag.useKey);
         }
     });
@@ -31189,9 +31192,10 @@ function _countSize(start, end) {
     return -result;
 }
 var SelectedRegion = /** @class */ (function () {
-    function SelectedRegion(config) {
+    function SelectedRegion(config, gantt) {
         var _this = this;
         this._el = document.createElement("div");
+        this._gantt = gantt;
         this._viewPort = config.viewPort;
         this._el.classList.add(config.className);
         if (typeof config.callback === "function") {
@@ -31213,6 +31217,7 @@ var SelectedRegion = /** @class */ (function () {
         this._useRequestAnimationFrame = config.useRequestAnimationFrame;
     }
     SelectedRegion.prototype.setStyles = function () {
+        var gantt = this._gantt;
         if (this._singleRow) {
             var height = gantt.config.row_height;
             this._el.style.height = height + "px";
@@ -31264,11 +31269,13 @@ var SelectedRegion = /** @class */ (function () {
         return this._viewPort;
     };
     SelectedRegion.prototype.setStart = function (startPoint) {
+        var gantt = this._gantt;
         this._startPoint = startPoint;
         this._startDate = gantt.dateFromPos(this._startPoint.relative.left);
         this._viewPort.callEvent("onBeforeDrag", [this._startPoint]);
     };
     SelectedRegion.prototype.setEnd = function (endPoint) {
+        var gantt = this._gantt;
         this._endPoint = endPoint;
         if (this._singleRow) {
             var height = gantt.config.row_height;
@@ -31294,6 +31301,7 @@ var SelectedRegion = /** @class */ (function () {
     };
     SelectedRegion.prototype.dragEnd = function (endPoint) {
         var _a;
+        var gantt = this._gantt;
         if (endPoint.relative.left < 0) {
             endPoint.relative.left = 0;
         }
@@ -31314,6 +31322,7 @@ var SelectedRegion = /** @class */ (function () {
         return this._singleRow;
     };
     SelectedRegion.prototype._getTasksByTop = function (start, end) {
+        var gantt = this._gantt;
         var startValue = start;
         var endValue = end;
         if (start > end) {
@@ -31350,7 +31359,7 @@ exports.SelectedRegion = SelectedRegion;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var EventsManager = /** @class */ (function () {
-    function EventsManager() {
+    function EventsManager(gantt) {
         var _this = this;
         this._mouseDown = false;
         this._calculateDirectionVector = function () {
@@ -31385,6 +31394,7 @@ var EventsManager = /** @class */ (function () {
             _this._timeline.$task.classList.remove("gantt_timeline_move_available");
         };
         this._getScrollPosition = function (timeline) {
+            var gantt = _this._gantt;
             return {
                 x: gantt.$ui.getView(timeline.$config.scrollX).getScrollState().position,
                 y: gantt.$ui.getView(timeline.$config.scrollY).getScrollState().position
@@ -31409,12 +31419,14 @@ var EventsManager = /** @class */ (function () {
             return result;
         };
         this._setScrollPosition = function (timeline, coords) {
+            var gantt = _this._gantt;
             requestAnimationFrame(function () {
                 gantt.$ui.getView(timeline.$config.scrollX).scroll(coords.x);
                 gantt.$ui.getView(timeline.$config.scrollY).scroll(coords.y);
             });
         };
         this._stopDrag = function (event) {
+            var gantt = _this._gantt;
             _this._trace = [];
             gantt.$root.classList.remove("gantt_noselect");
             if (_this._originalReadonly !== undefined) {
@@ -31432,6 +31444,7 @@ var EventsManager = /** @class */ (function () {
             _this._mouseDown = false;
         };
         this._startDrag = function (event) {
+            var gantt = _this._gantt;
             _this._originAutoscroll = gantt.config.autoscroll;
             gantt.config.autoscroll = false;
             gantt.$root.classList.add("gantt_noselect");
@@ -31444,11 +31457,12 @@ var EventsManager = /** @class */ (function () {
             _this._startPoint = { x: event.clientX, y: event.clientY };
             _this._trace.push(_this._startPoint);
         };
+        this._gantt = gantt;
         this._domEvents = gantt._createDomEventScope();
         this._trace = [];
     }
-    EventsManager.create = function () {
-        return new EventsManager();
+    EventsManager.create = function (gantt) {
+        return new EventsManager(gantt);
     };
     EventsManager.prototype.destructor = function () {
         this._domEvents.detachAll();
@@ -31456,6 +31470,7 @@ var EventsManager = /** @class */ (function () {
     EventsManager.prototype.attach = function (timeline) {
         var _this = this;
         this._timeline = timeline;
+        var gantt = this._gantt;
         this._domEvents.attach(timeline.$task, "mousedown", function (event) {
             if (!gantt.config.drag_timeline) {
                 return;
@@ -31554,7 +31569,7 @@ function default_1(gantt) {
         gantt.ext = {};
     }
     gantt.ext.dragTimeline = {
-        create: function () { return eventsManager_1.EventsManager.create(); }
+        create: function () { return eventsManager_1.EventsManager.create(gantt); }
     };
     gantt.config.drag_timeline = {
         enabled: true
@@ -35496,7 +35511,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.1";
+	this.version = "7.0.2";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
