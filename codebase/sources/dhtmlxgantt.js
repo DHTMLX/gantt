@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.2 Standard
+dhtmlxGantt v.7.0.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -15007,7 +15007,7 @@ module.exports = function(gantt){
 
 			if(mapping){
 				return mapping;
-			}else if(gantt.config.keyboard_navigation_cells){
+			}else if(gantt.config.keyboard_navigation_cells && gantt.ext.keyboardNavigation){
 				return keyNavMappings;
 			}else{
 				return defaultMapping;
@@ -29733,7 +29733,7 @@ CalendarWorkTimeStrategy.prototype = {
 	equals: function (calendar) {
 		if(!(calendar instanceof CalendarWorkTimeStrategy)){
 			return false;
-		} 
+		}
 
 		var mySettings = this.getConfig();
 		var thatSettings = calendar.getConfig();
@@ -29757,7 +29757,7 @@ CalendarWorkTimeStrategy.prototype = {
 			var otherHours = mySettings.dates[timestamp];
 
 			// day settings not equal
-			if(myHours !== otherHours && 
+			if(myHours !== otherHours &&
 				// but still can be two arrays with the equivalent hour settings
 				!(Array.isArray(myHours) && Array.isArray(otherHours) && this._arraysEqual(myHours, otherHours))
 				){
@@ -29821,7 +29821,7 @@ CalendarWorkTimeStrategy.prototype = {
 						if(parsed[2]){
 							value += parseInt(parsed[2]);
 						}
-						
+
 						timestampRanges.push(value);
 					});
 
@@ -30171,7 +30171,7 @@ CalendarWorkTimeStrategy.prototype = {
 
 	/**
 	 * Check whether this calendar has working time. Calendar has working time only if there are regular working days of week
-	 * 
+	 *
 	 */
 	hasWorkTime: function () {
 		var worktime = this.getConfig();
@@ -30188,7 +30188,7 @@ CalendarWorkTimeStrategy.prototype = {
 		var hasRegularHours = this._checkWorkHours(worktime.hours);
 
 		var result = false;
-		daysOfWeek.forEach(function(day){
+		daysOfWeek.forEach((function(day){
 			if(result){
 				return;
 			}
@@ -30201,7 +30201,7 @@ CalendarWorkTimeStrategy.prototype = {
 				// workday uses custom hours
 				result = this._checkWorkHours(dayConfig);
 			}
-		});
+		}).bind(this));
 
 		return result;
 
@@ -32016,13 +32016,13 @@ module.exports = function(gantt){
 			});
 
 			gantt.attachEvent("onGanttRender", function(){
-				gantt.eventRemove(document, "keydown", keyDownHandler);
+				gantt.eventRemove(gantt.$root, "keydown", keyDownHandler);
 				gantt.eventRemove(gantt.$container, "focus", focusHandler);
 				gantt.eventRemove(gantt.$container, "mousedown", mousedownHandler);
 
 				if(gantt.config.keyboard_navigation){
 
-					gantt.event(document, "keydown", keyDownHandler);
+					gantt.event(gantt.$root, "keydown", keyDownHandler);
 					gantt.event(gantt.$container, "focus", focusHandler);
 					gantt.event(gantt.$container, "mousedown", mousedownHandler);
 					gantt.$container.setAttribute("tabindex", "0");
@@ -32137,44 +32137,12 @@ module.exports = function(gantt){
 				return true;
 			});
 
-			function getActiveNode(){
-
-				var activeElement = document.activeElement;
-				if(activeElement === document.body && document.getSelection){
-					activeElement = document.getSelection().focusNode || document.body;
-				}
-
-				return activeElement;
-			}
-
 			var interval = setInterval(function(){
 				if(!gantt.config.keyboard_navigation) return;
-
-				var enable;
-				var focusElement = getActiveNode();
-
-				var parent = gantt.$container;
-				// halt key nav when focus is outside gantt or in quick info popup
-				if(!focusElement || gantt._locate_css(focusElement, "gantt_cal_quick_info")){
-					enable = false;
-				}else{
-					while(focusElement != parent &&  focusElement){
-						focusElement = focusElement.parentNode;
-					}
-
-					if(focusElement == parent){
-						enable = true;
-					}else{
-						enable = false;
-					}
-				}
-
-				if(enable && !dispatcher.isEnabled()){
+				if(!dispatcher.isEnabled()){
 					dispatcher.enable();
-				}else if(!enable && dispatcher.isEnabled()){
-					dispatcher.disable();
 				}
-
+				return;
 			}, 500);
 
 			gantt.attachEvent("onDestroy", function(){
@@ -32604,13 +32572,11 @@ module.exports = function(gantt) {
 
 		enable: function () {
 			this.isActive = true;
-			this.globalNode.enable();
 			this.setActiveNode(this.getActiveNode());
 		},
 
 		disable: function () {
 			this.isActive = false;
-			this.globalNode.disable();
 		},
 
 		isEnabled: function () {
@@ -32768,13 +32734,6 @@ module.exports = function(gantt) {
 
 			},
 
-			disable: function () {
-				gantt.$container.setAttribute("tabindex", "0");
-			},
-			enable: function () {
-				if (gantt.$container)
-					gantt.$container.removeAttribute("tabindex");
-			},
 			isEnabled: function () {
 				return gantt.$container.hasAttribute("tabindex");
 			},
@@ -35511,7 +35470,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.2";
+	this.version = "7.0.3";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

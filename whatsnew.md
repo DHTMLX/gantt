@@ -1,3 +1,8 @@
+### 7.0.3
+
+- Fix regression in the setWorkTime method which caused a script error when the working time is set for a specific day
+- Fix the incorrect work of the Keyboard Navigation extension when Gantt is used inside a SalesForce Lightning Web Component
+
 ### 7.0.2
 
 - Fix the incorrect work of date formatters when gantt.config.csp is set to true.
