@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 7.0.3
+// Type definitions for dhtmlxGantt 7.0.4
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -36,7 +36,7 @@ export interface GanttTemplates {
 	drag_link_class(from: string|number, from_start: boolean, to: string|number, to_start: boolean): string;
 
 	/**
-	 * сonverts a date object to a date string. Used to send data back to the server
+	 * converts a date object to a date string. Used to send data back to the server
 	 * @param date the date which needs formatting
 	*/
 	format_date(date: Date): string;
@@ -1064,6 +1064,11 @@ export interface GanttConfigOptions {
 	wai_aria_attributes: boolean;
 
 	/**
+	 * sets both the section and its label on the same line
+	*/
+	wide_form: boolean;
+
+	/**
 	 * enables calculating the duration of tasks in working time instead of calendar time
 	*/
 	work_time: boolean;
@@ -1483,7 +1488,7 @@ export interface GanttStatic {
 	 * returns the index of the column by the date
 	 * @param date a date object
 	*/
-	columnIndexByDate(date: Date): void;
+	columnIndexByDate(date: Date): number;
 
 	/**
 	 * calls a confirm message box
@@ -1510,7 +1515,7 @@ export interface GanttStatic {
 	createCalendar(parentCalendar?: any): void;
 
 	/**
-	 * сreates a new dataProcessor instance and attaches it to gantt
+	 * creates a new dataProcessor instance and attaches it to gantt
 	 * @param config dataProcessor configuration object
 	*/
 	createDataProcessor(config: any): any;
@@ -2474,8 +2479,9 @@ export interface GanttStatic {
 	/**
 	 * updates the specified task
 	 * @param id the task id
+	 * @param newState the new values of the task
 	*/
-	updateTask(id: string): void;
+	updateTask(id: string, newState: any): void;
 }
 
 declare var gantt: GanttStatic;

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.3 Standard
+dhtmlxGantt v.7.0.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -8400,6 +8400,7 @@ var DataProcessor = /** @class */ (function () {
             if (utils.defined(mode.payload)) {
                 this._payload = mode.payload;
             }
+            this._tSend = !!total;
         }
         else {
             this._tMode = mode;
@@ -8414,7 +8415,12 @@ var DataProcessor = /** @class */ (function () {
             this._endnm = true;
             this._serializeAsJson = true;
             this._headers = this._headers || {};
-            this._headers["Content-type"] = "application/json";
+            this._headers["Content-Type"] = "application/json";
+        }
+        else {
+            if (this._headers && !this._headers["Content-Type"]) {
+                this._headers["Content-Type"] = "application/x-www-form-urlencoded";
+            }
         }
         if (this._tMode === "CUSTOM") {
             this._tSend = false;
@@ -10197,7 +10203,10 @@ function initDataStores(gantt){
 		}
 
 		if(action == "add" || action == "move" || action == "delete"){
-			gantt.$layout.resize();
+			if(gantt.$layout){
+				gantt.$layout.resize();
+			}
+
 		}else if(!id){
 			linksStore.refresh();
 		}
@@ -11287,12 +11296,18 @@ function extend(gantt){
 			delete this.$root.gantt;
 		}
 
-		this._eventRemoveAll();
+		if(this._eventRemoveAll){
+			this._eventRemoveAll();
+		}
+
 		if(this.$layout){
 			this.$layout.destructor();
 		}
 
-		this.resetLightbox();
+		if(this.resetLightbox){
+			this.resetLightbox();
+		}
+
 
 		if(this._dp && this._dp.destructor){
 			this._dp.destructor();
@@ -11479,20 +11494,33 @@ var createDatastoreFacade = function(){
 
 	refreshTask: function (taskId, refresh_links) {
 		var task = this.getTask(taskId);
-		if (task && this.isTaskVisible(taskId)) {
-
-			this.$data.tasksStore.refresh(taskId, !!this.getState().drag_id);// do quick refresh during drag and drop
-
+		var self = this;
+		function refreshLinks(){
 			if (refresh_links !== undefined && !refresh_links)
 				return;
 			for (var i = 0; i < task.$source.length; i++) {
-				this.refreshLink(task.$source[i]);
+				self.refreshLink(task.$source[i]);
 			}
 			for (var i = 0; i < task.$target.length; i++) {
-				this.refreshLink(task.$target[i]);
+				self.refreshLink(task.$target[i]);
 			}
+		}
+
+		if (task && this.isTaskVisible(taskId)) {
+			this.$data.tasksStore.refresh(taskId, !!this.getState().drag_id);// do quick refresh during drag and drop
+			refreshLinks();
 		}else if(this.isTaskExists(taskId) && this.isTaskExists(this.getParent(taskId))){
 			this.refreshTask(this.getParent(taskId));
+
+			var hasSplitParent = false;
+			this.eachParent(function(parent){
+				if(hasSplitParent || this.isSplitTask(parent)){
+					hasSplitParent = true;
+				}
+			}, taskId);
+			if(hasSplitParent){
+				refreshLinks();
+			}
 		}
 
 	},
@@ -14193,6 +14221,7 @@ function create(gantt){
 		var updateTaskDateProperties = linkedPropertiesProcessor(gantt);
 
 		var handlers = [];
+		var ganttHandlers = [];
 		var store = null;
 		var controller = {
 			_itemId: null,
@@ -14229,6 +14258,12 @@ function create(gantt){
 
 					if(self.isVisible() && !store.isVisible(self._itemId)){
 						self.hide();
+					}
+				}));
+
+				ganttHandlers.push(gantt.attachEvent("onDataRender", function(){
+					if(self._editor && self._placeholder && !domHelpers.isChildOf(self._placeholder, gantt.$root)){
+						grid.$grid_data.appendChild(self._placeholder);
 					}
 				}));
 
@@ -14371,7 +14406,7 @@ function create(gantt){
 				this._editorType = null;
 				if (!this._placeholder) return;
 
-				if (this._editor) {
+				if (this._editor && this._editor.hide) {
 					this._editor.hide(this._placeholder);
 				}
 				this._editor = null;
@@ -14404,7 +14439,7 @@ function create(gantt){
 					oldValue: this._getItemValue()
 				};
 				if (this.callEvent("onBeforeSave", [editorState]) !== false) {
-					if (this._editor.is_valid(editorState.newValue, editorState.id, editorState.columnName, this._placeholder)) {
+					if (!this._editor.is_valid || this._editor.is_valid(editorState.newValue, editorState.id, editorState.columnName, this._placeholder)) {
 
 						var mapTo = editorConfig.map_to;
 						var value = editorState.newValue;
@@ -14510,6 +14545,13 @@ function create(gantt){
 				handlers.forEach(function(handlerId){
 					store.detachEvent(handlerId);
 				});
+
+				ganttHandlers.forEach(function(handlerId){
+					gantt.detachEvent(handlerId);
+				});
+				handlers = [];
+				ganttHandlers = [];
+
 				store = null;
 				this.hide();
 				this.detachAllEvents();
@@ -17338,8 +17380,8 @@ var Cell = (function () {
 			gravity: this.$config.gravity || 1,
 			minHeight: this.$config.minHeight || 0,
 			minWidth: this.$config.minWidth || 0,
-			maxHeight: this.$config.maxHeight || 100000,
-			maxWidth: this.$config.maxWidth || 100000
+			maxHeight: this.$config.maxHeight || 100000000000,
+			maxWidth: this.$config.maxWidth || 100000000000
 		};
 		if (this.$config.collapsed) {
 			var mode = this.$config.mode === "x";
@@ -17991,9 +18033,9 @@ var Layout = (function (_super) {
 		this._sizes = [];
 		var width = 0;
 		var minWidth = 0;
-		var maxWidth = 100000;
+		var maxWidth = 100000000000;
 		var height = 0;
-		var maxHeight = 100000;
+		var maxHeight = 100000000000;
 		var minHeight = 0;
 
 		for (var i = 0; i < this.$cells.length; i++) {
@@ -21754,7 +21796,13 @@ module.exports = function(gantt){
 			return false;
 		}
 
-		var box = domHelpers.getNodePosition(getAutoscrollContainer());
+		var container = getAutoscrollContainer();
+		if(!container){
+			return;
+		}
+
+		var box = domHelpers.getNodePosition(container);
+
 		var posX = eventPos.x - box.x;
 		var posY = eventPos.y - box.y;
 
@@ -21834,6 +21882,10 @@ module.exports = function(gantt){
 			gantt.eventRemove(document.body, "mousemove", autoscrollInterval);
 			gantt.event(document.body, "mousemove", autoscrollInterval);
 		}
+	});
+
+	gantt.attachEvent("onDestroy", function(){
+		defineScrollInterval(false);
 	});
 
 };
@@ -26219,7 +26271,7 @@ function createTaskDND(timeline, gantt) {
 			this._domEvents.attach(data, "mousedown", gantt.bind(function(e) {
 				this.on_mouse_down(e);
 			}, this));
-			this._domEvents.attach(gantt.$root, "mouseup", gantt.bind(function(e) {
+			this._domEvents.attach(document.body, "mouseup", gantt.bind(function(e) {
 				this.on_mouse_up(e);
 			}, this));
 		},
@@ -28687,13 +28739,14 @@ module.exports = function(gantt) {
 
 		gantt.locate = function(e) {
 			var trg = domHelpers.getTargetNode(e);
-	
-			//ignore empty cells
-			var className = domHelpers.getClassName(trg);
-			if ((className || "").indexOf("gantt_task_cell") >= 0) return null;
-	
+
+			// ignore empty rows/cells of the timeline
+			if(domHelpers.closest(trg, ".gantt_task_row")){
+				return null;
+			}
+
 			var targetAttribute = arguments[1] || this.config.task_attribute;
-	
+
 			var node = domHelpers.locateAttribute(trg, targetAttribute);
 			if(node){
 				return node.getAttribute(targetAttribute);
@@ -28701,11 +28754,11 @@ module.exports = function(gantt) {
 				return null;
 			}
 		};
-	
+
 		gantt._locate_css = function(e, classname, strict){
 			return domHelpers.locateClassName(e, classname, strict);
 		};
-	
+
 		gantt._locateHTML = function(e, attribute) {
 			return domHelpers.locateAttribute(e, attribute || this.config.task_attribute);
 		};
@@ -29604,6 +29657,9 @@ CalendarWorkTimeStrategy.prototype = {
 	_getMinutesPerHour: function (date) {
 		var hourStart = this._getTimeOfDayStamp(date);
 		var hourEnd = this._getTimeOfDayStamp(this._nextDate(date, "hour", 1));
+		if (hourEnd === 0){
+			hourEnd = 24 * 60 * 60;
+		}
 		var worktimes = this._getWorkHours(date);
 
 		for(var i = 0; i < worktimes.length; i++){
@@ -33252,7 +33308,7 @@ module.exports = function(gantt) {
 
 						gantt.scrollTo(null, pos.top - height * 5);
 
-					} else if (gantt.config.show_chart && (pos.left < scroll.x || pos.left > (scroll.x + viewWidth))) {
+					} else if (gantt.config.scroll_on_click && gantt.config.show_chart && (pos.left < scroll.x || pos.left > (scroll.x + viewWidth))) {
 						gantt.scrollTo(pos.left - gantt.config.task_scroll_offset);
 
 					}
@@ -35470,7 +35526,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.3";
+	this.version = "7.0.4";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

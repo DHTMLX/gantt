@@ -1,3 +1,19 @@
+### 7.0.4
+
+- Removed the 10000px limit on the gantt size in the autosize mode, which should allow printing larger charts
+- Drag and drop now finishes when the user releases the mouse button over any part of the document body rather than over the gantt container only
+- Portuguese locale was updated
+- The return type of gantt.columnIndexByDate in type definitions is fixed
+- Fix script errors that were fired when the Gantt instance was destroyed during drag and drop
+- Fix the incorrect calculation of end_date/duration when duration_unit is set to "minute" and the last worktime interval finishes after 23:00
+- Fix the issue which caused groups of the grouping extension to expand whenever the user modified any task
+- Fix the issue which caused the second parameter of dataProcessor.setTransactionMode to be ignored if an object was passed into the first parameter
+- Fix the issue which caused the active inline editor to disappear after repaint of Gantt
+- Fix the issue with the static_background extension which caused mouse click on empty cells to be interpreted as a click on task elements
+- Gantt now dynamically repaints links between split tasks during drag and drop
+- Fix the script error which was thrown from gantt.addTask in node.js package
+- Fix the script error which was thrown from gantt.destructor in node.js package
+
 ### 7.0.3
 
 - Fix regression in the setWorkTime method which caused a script error when the working time is set for a specific day
