@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.4 Standard
+dhtmlxGantt v.7.0.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7604,7 +7604,8 @@ var StateService = (function(){
 	var stateProviders = {};
 
 	function getState(name){
-		if(name){
+		var provider = stateProviders[name];
+		if(provider){
 			return stateProviders[name].method();
 		}else{
 			var res = {};
@@ -8168,7 +8169,7 @@ module.exports = function(gantt) {
 				oldEnd = task.end_date.valueOf();
 
 			gantt.resetProjectDates(task);
-
+			
 			// not refresh parent projects if dates hasn't changed
 			if (oldStart == task.start_date.valueOf() && oldEnd == task.end_date.valueOf()) {
 				has_changed = false;
@@ -9965,7 +9966,7 @@ DataStore.prototype = {
 
 		if(id){
 			// if item changes visible order (e.g. expand-collapse branch) - do a complete repaint
-			if(!quick){
+			if(!quick && !this._quick_refresh){
 				var oldOrder = this.visibleOrder;
 				this.filter();
 				if(!this.arraysEqual(oldOrder, this.visibleOrder)){
@@ -10003,7 +10004,7 @@ DataStore.prototype = {
 			code.call(this, item);
 		}
 	},
-	
+
 	filter: function(rule){
 		this.callEvent("onBeforeFilter", []);
 		var filteredOrder = powerArray.$create();
@@ -11507,7 +11508,7 @@ var createDatastoreFacade = function(){
 		}
 
 		if (task && this.isTaskVisible(taskId)) {
-			this.$data.tasksStore.refresh(taskId, !!this.getState().drag_id);// do quick refresh during drag and drop
+			this.$data.tasksStore.refresh(taskId, !!this.getState("tasksDnd").drag_id || refresh_links === false);// do quick refresh during drag and drop
 			refreshLinks();
 		}else if(this.isTaskExists(taskId) && this.isTaskExists(this.getParent(taskId))){
 			this.refreshTask(this.getParent(taskId));
@@ -11525,7 +11526,7 @@ var createDatastoreFacade = function(){
 
 	},
 	refreshLink: function (linkId) {
-		this.$data.linksStore.refresh(linkId, !!this.getState().drag_id);// do quick refresh during drag and drop
+		this.$data.linksStore.refresh(linkId, !!this.getState("tasksDnd").drag_id);// do quick refresh during drag and drop
 	},
 
 	silent: function(code){
@@ -20062,7 +20063,7 @@ module.exports = function (gantt) {
 	gantt.resizeLightbox = function () {
 		if (!this._lightbox) return;
 
-		var con = this._lightbox.childNodes[1];
+		var con = this._lightbox.querySelector(".gantt_cal_larea");
 		con.style.height = "0px";
 		con.style.height = con.scrollHeight + "px";
 		this._lightbox.style.height = con.scrollHeight + this.config.lightbox_additional_height + "px";
@@ -25247,8 +25248,8 @@ var initLinksDND = function(timeline, gantt) {
 
 	state.registerProvider("linksDnD", getDndState);
 
-	var dnd = new DnD(timeline.$task_bars, { 
-		sensitivity : 0, 
+	var dnd = new DnD(timeline.$task_bars, {
+		sensitivity : 0,
 		updates_per_second : 60,
 		mousemoveContainer: gantt.$root
 	});
@@ -25261,7 +25262,7 @@ var initLinksDND = function(timeline, gantt) {
 	dnd.attachEvent("onBeforeDragStart", gantt.bind(function(obj,e) {
 		var target = (e.target||e.srcElement);
 		resetDndState();
-		if(gantt.getState().drag_id)
+		if(gantt.getState("tasksDnd").drag_id)
 			return false;
 
 		if(domHelpers.locateClassName(target, link_edge_marker)){
@@ -25401,7 +25402,7 @@ var initLinksDND = function(timeline, gantt) {
 
 		var targ = gantt.locate(e),
 			to_start = true;
-		
+
 		// can drag and drop link to another gantt on the page, such links are not supported
 		var sameGantt = domHelpers.isChildOf(e.target || e.srcElement, gantt.$root);
 		if(!sameGantt){
@@ -28462,7 +28463,7 @@ module.exports = function(gantt){
 			this._taskCommonAttr(task, div);
 
 			if(!gantt.isReadonly(task) && gantt.config.drag_move){
-				if(task.id != gantt.getState().drag_id){
+				if(task.id != gantt.getState("tasksDnd").drag_id){
 					div.setAttribute("aria-grabbed", false);
 				}else{
 					div.setAttribute("aria-grabbed", true);
@@ -29461,13 +29462,15 @@ module.exports = {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var cacheFactory = __webpack_require__(/*! ./work_unit_cache */ "./sources/core/worktime/strategy/work_unit_cache/index.ts"),
-	utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
+var createCacheObject = __webpack_require__(/*! ./work_unit_cache */ "./sources/core/worktime/strategy/work_unit_cache/index.ts").createCacheObject;
+var LargerUnitsCache = __webpack_require__(/*! ./work_unit_cache */ "./sources/core/worktime/strategy/work_unit_cache/index.ts").LargerUnitsCache;
+var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
 
 function CalendarWorkTimeStrategy(gantt, argumentsHelper) {
 	this.argumentsHelper = argumentsHelper;
 	this.$gantt = gantt;
-	this._workingUnitsCache = cacheFactory.createCacheObject();
+	this._workingUnitsCache = createCacheObject();
+	this._largeUnitsCache = new LargerUnitsCache(this);
 	this._worktime = null;
 	this._cached_timestamps = {};
 	this._cached_timestamps_count = 0;
@@ -29561,8 +29564,12 @@ CalendarWorkTimeStrategy.prototype = {
 		return false;
 	},
 
-	_getTimeOfDayStamp: function(date) {
-		return date.getHours() * 60 * 60 + date.getMinutes() * 60;
+	_getTimeOfDayStamp: function(date, dayEnd) {
+		var hours = date.getHours();
+		if(!date.getHours() && !date.getMinutes() && dayEnd){
+			hours = 24;
+		}
+		return hours * 60 * 60 + date.getMinutes() * 60;
 	},
 
 	_is_work_minute: function(date){
@@ -29705,18 +29712,57 @@ CalendarWorkTimeStrategy.prototype = {
 		}
 
 		while (start.valueOf() < end.valueOf()) {
-			if (this._isWorkTime(start, "day")) {
-				total += getUnitsPerDay(start);
+			if(end - start > 1000*60*60*24*32 && start.getDate() === 0) {
+				var units = this._largeUnitsCache.getMinutesPerMonth(start);
+				if(unit == "hour"){
+					units = units / 60;
+				}
+				total += units;
+				start = this.$gantt.date.add(start, 1, "month");
+				continue;
+			}else if(end - start > 1000*60*60*24*16) {
+				var weekStart = this.$gantt.date.week_start(new Date(start));
+				if(start.valueOf() === weekStart.valueOf()){
+					var units = this._largeUnitsCache.getMinutesPerWeek(start);
+					if(unit == "hour"){
+						units = units / 60;
+					}
+					total += units;
+					start = this.$gantt.date.add(start, 7, "day");
+					continue;
+				}
 			}
+
+		//	if (this._isWorkTime(start, "day")) {
+			total += getUnitsPerDay(start);
+		//	}
 			start = this._nextDate(start, "day", 1);
 		}
 
 		return total / step;
 	},
 
-	// optimized method for calculating work units duration of large time spans
-	// implemented for hours and minutes units, bigger time units don't benefit from the optimization so much
-	_getWorkUnitsBetweenQuick: function (from, to, unit, step) {
+
+	_getMinutesBetweenSingleDay: function(from, to){
+		var range = this._getIntervalTimestamp(from, to);
+		var worktimes = this._getWorkHours(from);
+		var result = 0;
+
+		for(var i = 0; i < worktimes.length; i++){
+			var interval = worktimes[i];
+			if(range.end >= interval.start && range.start <= interval.end){
+				var minuteFrom = Math.max(interval.start, range.start);
+				var minuteTo = Math.min(interval.end, range.end);
+
+				result += (minuteTo - minuteFrom) / 60;
+				range.start = minuteTo;
+			}
+		}
+
+		return Math.floor(result);
+	},
+
+	_getMinutesBetween: function(from, to, unit, step){
 		var start = new Date(from),
 			end = new Date(to);
 		step = step || 1;
@@ -29725,19 +29771,45 @@ CalendarWorkTimeStrategy.prototype = {
 		var firstDayEnd = this.$gantt.date.add(this.$gantt.date.day_start(new Date(start)), 1, "day");
 
 		if (end.valueOf() <= firstDayEnd.valueOf()) {
-			return this._getWorkUnitsBetweenGeneric(from, to, unit, step);
+			return this._getMinutesBetweenSingleDay(from, to);
 		} else {
 
 			var lastDayStart = this.$gantt.date.day_start(new Date(end));
 			var lastDayEnd = end;
 
-			var startPart = this._getWorkUnitsBetweenGeneric(firstDayStart, firstDayEnd, unit, step);
-			var endPart = this._getWorkUnitsBetweenGeneric(lastDayStart, lastDayEnd, unit, step);
+			var startPart = this._getMinutesBetweenSingleDay(firstDayStart, firstDayEnd);
+			var endPart = this._getMinutesBetweenSingleDay(lastDayStart, lastDayEnd);
 
 			var rangePart = this._getWorkUnitsForRange(firstDayEnd, lastDayStart, unit, step);
 			var total = startPart + rangePart + endPart;
 
 			return total;
+		}
+	},
+	// optimized method for calculating work units duration of large time spans
+	// implemented for hours and minutes units, bigger time units don't benefit from the optimization so much
+	_getHoursBetween: function (from, to, unit, step) {
+		var start = new Date(from),
+			end = new Date(to);
+		step = step || 1;
+
+		var firstDayStart = new Date(start);
+		var firstDayEnd = this.$gantt.date.add(this.$gantt.date.day_start(new Date(start)), 1, "day");
+
+		if (end.valueOf() <= firstDayEnd.valueOf()) {
+			return Math.round(this._getMinutesBetweenSingleDay(from, to) / 60);
+		} else {
+
+			var lastDayStart = this.$gantt.date.day_start(new Date(end));
+			var lastDayEnd = end;
+
+			var startPart = this._getMinutesBetweenSingleDay(firstDayStart, firstDayEnd, unit, step) / 60;
+			var endPart = this._getMinutesBetweenSingleDay(lastDayStart, lastDayEnd, unit, step) / 60;
+
+			var rangePart = this._getWorkUnitsForRange(firstDayEnd, lastDayStart, unit, step);
+			var total = startPart + rangePart + endPart;
+
+			return Math.round(total);
 		}
 	},
 
@@ -29748,6 +29820,7 @@ CalendarWorkTimeStrategy.prototype = {
 		this._worktime = settings;
 		this._parseSettings();
 		this._workingUnitsCache.clear();
+		this._largeUnitsCache.clear();
 	},
 	_parseSettings: function() {
 		var settings = this.getConfig();
@@ -29769,6 +29842,7 @@ CalendarWorkTimeStrategy.prototype = {
 		//	this.$gantt.assert(false, "Invalid calendar settings, no worktime available");
 			this._setConfig(JSON.parse(backup));
 			this._workingUnitsCache.clear();
+			this._largeUnitsCache.clear();
 			return false;
 		}
 		return true;
@@ -29854,6 +29928,21 @@ CalendarWorkTimeStrategy.prototype = {
 		return [];
 	},
 
+	_getIntervalTimestamp: function(from, to){
+		var res = {
+			start: 0,
+			end: 0
+		};
+
+		res.start = from.getHours() * 60 * 60 + from.getMinutes() * 60 + from.getSeconds();
+		var endHours = to.getHours();
+		if(!endHours && !to.getMinutes() && !to.getSeconds() && from.valueOf() < to.valueOf()){
+			endHours = 24;
+		}
+		res.end = endHours * 60 * 60 + to.getMinutes() * 60 + to.getSeconds();
+		return res;
+	},
+
 	_parseHours: function(hours) {
 		if(Array.isArray(hours)){
 
@@ -29894,7 +29983,9 @@ CalendarWorkTimeStrategy.prototype = {
 					start: start,
 					end: end,
 					startHour: Math.floor(start / (60*60)),
+					startMinute: Math.floor(start / (60)),
 					endHour: Math.ceil(end / (60*60)),
+					endMinute: Math.ceil(end / (60)),
 					durationSeconds: duration,
 					durationMinutes: duration/60,
 					durationHours: duration/(60 * 60)
@@ -29920,6 +30011,7 @@ CalendarWorkTimeStrategy.prototype = {
 
 			this._parseSettings();
 			this._workingUnitsCache.clear();
+			this._largeUnitsCache.clear();
 		}, this));
 	},
 
@@ -29937,6 +30029,7 @@ CalendarWorkTimeStrategy.prototype = {
 			}
 			// Clear work units cache
 			this._workingUnitsCache.clear();
+			this._largeUnitsCache.clear();
 		}, this));
 	},
 
@@ -29972,8 +30065,11 @@ CalendarWorkTimeStrategy.prototype = {
 
 	_calculateDuration: function (from, to, unit, step) {
 		var res = 0;
-		if (unit == "hour" || unit == "minute") {
-			res = this._getWorkUnitsBetweenQuick(from, to, unit, step);
+		if (unit == "hour" && step == 1) {
+			res = this._getHoursBetween(from, to, unit, step);
+		} else if(unit == "minute" && step == 1){
+			// quick calculation for minutes with 1 minute step
+			res = this._getMinutesBetween(from, to, unit, step);
 		} else {
 			res = this._getWorkUnitsBetweenGeneric(from, to, unit, step);
 		}
@@ -30051,26 +30147,54 @@ CalendarWorkTimeStrategy.prototype = {
 		};
 	},
 
+	_addHoursUntilDayEnd: function(from, duration) {
+		var dayEnd = this.$gantt.date.add(this.$gantt.date.day_start(new Date(from)), 1, "day");
+		var added = 0;
+		var left = duration;
+
+		var range = this._getIntervalTimestamp(from, dayEnd);
+		var worktimes = this._getWorkHours(from);
+		for(var i = 0; i < worktimes.length && added < duration; i++){
+			var interval = worktimes[i];
+			if(range.end >= interval.start && range.start <= interval.end){
+				var minuteFrom = Math.max(interval.start, range.start);
+				var minuteTo = Math.min(interval.end, range.end);
+				var rangeHours = (minuteTo - minuteFrom) / (60 * 60);
+				if(rangeHours > left){
+					rangeHours = left;
+					minuteTo = minuteFrom + (left * 60 * 60);
+				}
+
+				var addHours = Math.round((minuteTo - minuteFrom) / (60 * 60));
+				added += addHours;
+				left -= addHours;
+				range.start = minuteTo;
+			}
+		}
+
+		var intervalEnd = dayEnd;
+		if(added === duration){
+			intervalEnd = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 0, 0, range.start);
+		}
+		return {
+			added: added,
+			end: intervalEnd
+		};
+	},
+
 	_calculateHourEndDate: function (from, duration,  step) {
 		var start = new Date(from),
 		added = 0;
 		step = step || 1;
 		duration = Math.abs(duration * 1);
 
-		var interval = this._addInterval(start, duration, "hour", step, function (date) {
-			// iterate until hour end
-			if (!(date.getHours() || date.getMinutes() || date.getSeconds() || date.getMilliseconds())) {
-				return true;
-			}
-			return false;
-		});
-
+		var interval = this._addHoursUntilDayEnd(start, duration);
 		added = interval.added;
 		start = interval.end;
 
 		var durationLeft = duration - added;
 
-		if (durationLeft && durationLeft > 24) {
+		if (durationLeft) {
 			var current = start;
 			while (added < duration) {
 				var next = this._nextDate(current, "day", step);
@@ -30078,14 +30202,20 @@ CalendarWorkTimeStrategy.prototype = {
 				next.setHours(0);
 				next.setMinutes(0);
 				next.setSeconds(0);
-				if (this._isWorkTime(step > 0 ? new Date(next.valueOf() - 1) : new Date(next.valueOf() + 1), "day")) {
-					var hours = this.getHoursPerDay(current);
-					if (added + hours >= duration) {
-						break;
-					} else {
-						added += hours;
-					}
+
+				var hoursPerDay = 0;
+				if(step > 0){
+					hoursPerDay = this.getHoursPerDay(new Date(next.valueOf() - 1));
+				}else{
+					hoursPerDay = this.getHoursPerDay(new Date(next.valueOf() + 1));
 				}
+
+				if (added + hoursPerDay >= duration) {
+					break;
+				} else {
+					added += hoursPerDay;
+				}
+
 				current = next;
 			}
 			start = current;
@@ -30093,41 +30223,116 @@ CalendarWorkTimeStrategy.prototype = {
 
 		if (added < duration) {
 			var durationLeft = duration - added;
-			interval = this._addInterval(start, durationLeft, "hour", step, null);
+			interval = this._addHoursUntilDayEnd(start, durationLeft);
 			start = interval.end;
 		}
 
 		return start;
 	},
 
-	_calculateMinuteEndDate: function (from, duration, step) {
+	_addMinutesUntilHourEnd: function(from, duration){
+		var hourEnd = this.$gantt.date.add(this.$gantt.date.hour_start(new Date(from)), 1, "hour");
+		var added = 0;
+		var left = duration;
 
+		var range = this._getIntervalTimestamp(from, hourEnd);
+		var worktimes = this._getWorkHours(from);
+		for(var i = 0; i < worktimes.length && added < duration; i++){
+			var interval = worktimes[i];
+			if(range.end >= interval.start && range.start <= interval.end){
+				var minuteFrom = Math.max(interval.start, range.start);
+				var minuteTo = Math.min(interval.end, range.end);
+				var rangeMinutes = (minuteTo - minuteFrom) / 60;
+				if(rangeMinutes > left){
+					rangeMinutes = left;
+					minuteTo = minuteFrom + (left * 60);
+				}
+				var addMinutes = Math.round((minuteTo - minuteFrom) / 60);
+				left -= addMinutes;
+				added += addMinutes;
+				range.start = minuteTo;
+			}
+		}
+
+		var intervalEnd = hourEnd;
+		if(added === duration){
+			intervalEnd = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 0, 0, range.start);
+		}
+		return {
+			added: added,
+			end: intervalEnd
+		};
+	},
+	_calculateMinuteEndDate: function (from, duration, step) {
 		var start = new Date(from),
 			added = 0;
 		step = step || 1;
 		duration = Math.abs(duration * 1);
+		duration = Math.round(duration);
 
-		var interval = this._addInterval(start, duration, "minute", step, function (date) {
-			// iterate until hour end
-			if (!(date.getMinutes() || date.getSeconds() || date.getMilliseconds())) {
-				return true;
-			}
-			return false;
-		});
+		var addedInterval = this._addMinutesUntilHourEnd(start, duration);
+		added += addedInterval.added;
 
-		added = interval.added;
-		start = interval.end;
+		start = addedInterval.end;
+
+		var calculatedDay = 0;
+		var daySchedule = [];
+		var minutesInDay = 0;
 
 		while (added < duration) {
-			var left = duration - added;
+			var dayStart = this.$gantt.date.day_start(new Date(start)).valueOf();
+			if(dayStart !== calculatedDay){
+				daySchedule = this._getWorkHours(start);
+				minutesInDay = 0;
+				daySchedule.forEach(function(interval){
+					minutesInDay += interval.durationMinutes;
+				});
+				calculatedDay = dayStart;
+			}
 
-			if(this._isWorkTime(start, "hour")){
-				var minutesInHour = this._getMinutesPerHour(start);
-				if(minutesInHour <= left){
-					added += minutesInHour;
-					start = this._nextDate(start, "hour", step);
-				}else{
+			var left = duration - added;
+			var timestamp = this._getTimeOfDayStamp(start);
+
+			if(!daySchedule.length || !minutesInDay){
+				start = this.$gantt.date.add(start, 1, "day");
+				continue;
+			}
+
+			if(daySchedule[0].start >= timestamp){
+				if(left > minutesInDay){
+					added += minutesInDay;
+					start = this.$gantt.date.add(start, 1, "day");
+					continue;
+				}
+			}
+
+			var isWorkHour = false;
+			var workInterval = null;
+			for(var i = 0; i < daySchedule.length; i++){
+				if(daySchedule[i].start <= timestamp && daySchedule[i].end >= timestamp){
+					isWorkHour = true;
+					workInterval = daySchedule[i];
 					break;
+				}
+			}
+			if(isWorkHour){
+
+				if(timestamp === workInterval.start && left >= workInterval.durationMinutes){
+					added += workInterval.durationMinutes;
+					start = this.$gantt.date.add(start, workInterval.durationMinutes, "minute");
+				}else if(left <= (workInterval.endMinute - timestamp/60)){
+					added += left;
+					start = this.$gantt.date.add(start, left, "minute");
+				}else{
+					var minutesInHour = this._getMinutesPerHour(start);
+					if(minutesInHour <= left){
+						added += minutesInHour;
+						start = this._nextDate(start, "hour", step);
+					}else{
+						addedInterval = this._addMinutesUntilHourEnd(start, left);
+						added += addedInterval.added;
+						start = addedInterval.end;
+					}
 				}
 			}else{
 				start = this._getClosestWorkTimeFuture(start, "hour");
@@ -30136,8 +30341,9 @@ CalendarWorkTimeStrategy.prototype = {
 
 		if (added < duration) {
 			var durationLeft = duration - added;
-			interval = this._addInterval(start, durationLeft, "minute", step, null);
-			start = interval.end;
+			addedInterval = this._addMinutesUntilHourEnd(start, durationLeft);
+			added += addedInterval.added;
+			start = addedInterval.end;
 		}
 
 		return start;
@@ -30183,7 +30389,68 @@ CalendarWorkTimeStrategy.prototype = {
 		return this.$gantt.date.add(result, 1, unit);
 	},
 
+	_findClosestTimeInDay: function(date, direction) {
+		var start = new Date(date);
+		var resultDate = null;
+		var fromDayEnd = false;
+		var worktimes = this._getWorkHours(start);
+		if(!this._getWorkHours(start).length){
+			start = this._getClosestWorkTime(start, "day", direction < 0 ? "past" : "future");
+			if(direction < 0){
+				start = new Date(start.valueOf() - 1);
+				fromDayEnd = true;
+			}
+			worktimes = this._getWorkHours(start);
+		}
+
+		var value = this._getTimeOfDayStamp(start);
+		if(fromDayEnd){
+			value = this._getTimeOfDayStamp(new Date(start.valueOf() + 1), fromDayEnd);
+		}
+		if(direction > 0){
+			for(var i = 0; i < worktimes.length; i++){
+				if(worktimes[i].start >= value){
+					resultDate = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, worktimes[i].start);
+					break;
+				}
+			}
+		}else{
+			for(var i = worktimes.length - 1; i >= 0; i--){
+				if(worktimes[i].end <= value){
+					resultDate = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, worktimes[i].end);
+					break;
+				}
+			}
+		}
+
+		return resultDate;
+	},
+	_getClosestWorkMinute: function(date, unit, direction) {
+		var start = new Date(date);
+		var resultDate = this._findClosestTimeInDay(start, direction);
+		if(!resultDate){
+			start = this.calculateEndDate(start, direction, "day");
+			if(direction > 0){
+				start = this.$gantt.date.day_start(start);
+			}else{
+				start = this.$gantt.date.day_start(start);
+				start = this.$gantt.date.add(start, 1, "day");
+				start = new Date(start.valueOf() - 1);
+			}
+			resultDate = this._findClosestTimeInDay(start, direction);
+		}
+		if(direction < 0){
+			// getClosestWorkTimePast adds one time unit to the result date after this
+			resultDate = this.$gantt.date.add(resultDate, -1, unit);
+		}
+		return resultDate;
+	},
+
 	_getClosestWorkTimeGeneric: function (date, unit, increment) {
+		if(unit === "hour" || unit === "minute"){
+			return this._getClosestWorkMinute(date, unit, increment);
+		}
+
 		var unitOrder = this._getUnitOrder(unit),
 			biggerTimeUnit = this.units[unitOrder - 1];
 
@@ -30580,6 +30847,8 @@ module.exports = WorkTimeCalendarMerger;
 Object.defineProperty(exports, "__esModule", { value: true });
 var workunit_map_cache_1 = __webpack_require__(/*! ./workunit_map_cache */ "./sources/core/worktime/strategy/work_unit_cache/workunit_map_cache.ts");
 var workunit_object_cache_1 = __webpack_require__(/*! ./workunit_object_cache */ "./sources/core/worktime/strategy/work_unit_cache/workunit_object_cache.ts");
+var larger_units_helper_1 = __webpack_require__(/*! ./larger_units_helper */ "./sources/core/worktime/strategy/work_unit_cache/larger_units_helper.ts");
+exports.LargerUnitsCache = larger_units_helper_1.LargerUnitsCache;
 function createCacheObject() {
     // worktime hash is on the hot path,
     // Map seems to work faster than plain array, use it whenever possible
@@ -30591,6 +30860,66 @@ function createCacheObject() {
     }
 }
 exports.createCacheObject = createCacheObject;
+
+
+/***/ }),
+
+/***/ "./sources/core/worktime/strategy/work_unit_cache/larger_units_helper.ts":
+/*!*******************************************************************************!*\
+  !*** ./sources/core/worktime/strategy/work_unit_cache/larger_units_helper.ts ***!
+  \*******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var LargerUnitsCache = /** @class */ (function () {
+    function LargerUnitsCache(calendar) {
+        var _this = this;
+        this.getMinutesPerWeek = function (weekStart) {
+            var key = weekStart.valueOf();
+            if (_this._weekCache.has(key)) {
+                return _this._weekCache.get(key);
+            }
+            var calendar = _this._calendar;
+            var gantt = _this._calendar.$gantt;
+            var minutesPerWeek = 0;
+            var start = gantt.date.week_start(new Date(weekStart));
+            for (var i = 0; i < 7; i++) {
+                minutesPerWeek += calendar.getHoursPerDay(start) * 60;
+                start = gantt.date.add(start, 1, "day");
+            }
+            _this._weekCache.set(key, minutesPerWeek);
+            return minutesPerWeek;
+        };
+        this.getMinutesPerMonth = function (monthStart) {
+            var key = monthStart.valueOf();
+            if (_this._monthCache.has(key)) {
+                return _this._monthCache.get(key);
+            }
+            var calendar = _this._calendar;
+            var gantt = _this._calendar.$gantt;
+            var minutesPerMonth = 0;
+            var start = gantt.date.week_start(new Date(monthStart));
+            var nextMonth = gantt.date.add(start, 1, "month").valueOf();
+            while (start.valueOf() < nextMonth) {
+                minutesPerMonth += calendar.getHoursPerDay(start) * 60;
+                start = gantt.date.add(start, 1, "day");
+            }
+            _this._monthCache.set(key, minutesPerMonth);
+            return minutesPerMonth;
+        };
+        this.clear = function () {
+            _this._weekCache = new Map();
+            _this._monthCache = new Map();
+        };
+        this.clear();
+        this._calendar = calendar;
+    }
+    return LargerUnitsCache;
+}());
+exports.LargerUnitsCache = LargerUnitsCache;
 
 
 /***/ }),
@@ -31240,56 +31569,64 @@ exports.default = default_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
 var helpers_1 = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
-function _countSize(start, end) {
-    var result = start - end;
-    if (result >= 0) {
-        return result;
-    }
-    return -result;
-}
 var SelectedRegion = /** @class */ (function () {
     function SelectedRegion(config, gantt) {
         var _this = this;
         this._el = document.createElement("div");
+        this.defaultRender = function (start, end) {
+            if (!_this._el) {
+                _this._el = document.createElement("div");
+            }
+            var node = _this._el;
+            var gantt = _this._gantt;
+            var top = Math.min(start.relative.top, end.relative.top);
+            var bottom = Math.max(start.relative.top, end.relative.top);
+            var left = Math.min(start.relative.left, end.relative.left);
+            var right = Math.max(start.relative.left, end.relative.left);
+            if (_this._singleRow) {
+                var height = gantt.config.row_height;
+                node.style.height = height + "px";
+                node.style.top = (Math.ceil(top / height) - 1) * height + "px";
+            }
+            else {
+                node.style.height = Math.abs(bottom - top) + "px";
+                node.style.top = top + "px";
+            }
+            node.style.width = Math.abs(right - left) + "px";
+            node.style.left = left + "px";
+            return node;
+        };
         this._gantt = gantt;
         this._viewPort = config.viewPort;
         this._el.classList.add(config.className);
         if (typeof config.callback === "function") {
             this._callback = config.callback;
         }
-        if (typeof config.render === "function") {
-            this.render = function () {
-                _this._el = config.render(_this._startPoint, _this._endPoint);
-                if (config.className !== "") {
-                    _this._el.classList.add(config.className);
+        this.render = function () {
+            var node;
+            if (config.render) {
+                node = config.render(_this._startPoint, _this._endPoint);
+            }
+            else {
+                node = _this.defaultRender(_this._startPoint, _this._endPoint);
+            }
+            if (node !== _this._el) {
+                if (_this._el && _this._el.parentNode) {
+                    _this._el.parentNode.removeChild(_this._el);
                 }
-                _this.draw();
-            };
-        }
+                _this._el = node;
+            }
+            if (config.className !== "") {
+                _this._el.classList.add(config.className);
+            }
+            _this.draw();
+        };
         if (!helpers_1.isEventable(this._viewPort)) {
             eventable(this._viewPort);
         }
         this._singleRow = config.singleRow;
         this._useRequestAnimationFrame = config.useRequestAnimationFrame;
     }
-    SelectedRegion.prototype.setStyles = function () {
-        var gantt = this._gantt;
-        if (this._singleRow) {
-            var height = gantt.config.row_height;
-            this._el.style.height = height + "px";
-            this._el.style.top = (Math.ceil(this._positionPoint.relative.top / height) - 1) * height + "px";
-        }
-        else {
-            this._el.style.height = _countSize(this._endPoint.relative.top, this._startPoint.relative.top) + "px";
-            this._el.style.top = this._positionPoint.relative.top + "px";
-        }
-        this._el.style.width = _countSize(this._endPoint.relative.left, this._startPoint.relative.left) + "px";
-        this._el.style.left = this._positionPoint.relative.left + "px";
-    };
-    SelectedRegion.prototype.render = function () {
-        this.setStyles();
-        this.draw();
-    };
     SelectedRegion.prototype.draw = function () {
         var _this = this;
         if (this._useRequestAnimationFrame) {
@@ -33783,8 +34120,14 @@ gantt._multiselect = {
 		return !!(gantt.calculateTaskLevel(gantt.getTask(last)) == gantt.calculateTaskLevel(gantt.getTask(id)));
 	},
 	afterSelect: function(id) {
-		if (gantt.isTaskExists(id))
+		if (gantt.isTaskExists(id)){
+			// FIXME: quick workaround to prevent re-filtering inside refresh on multiselect
+			gantt.getDatastore("task")._quick_refresh = true;
+			gantt.getDatastore("link")._quick_refresh = true;
 			gantt.refreshTask(id);
+			gantt.getDatastore("task")._quick_refresh = false;
+			gantt.getDatastore("link")._quick_refresh = false;
+		}
 	},
 	doSelection: function(e) {
 		if (!this.isActive())
@@ -33936,7 +34279,7 @@ gantt._multiselect = {
 		gantt.$data.tasksStore.isSelected = function(id){
 			if (gantt._multiselect.isActive()) {
 				return gantt._multiselect.isSelected(id);
-			} 
+			}
 			return old_isSelected.call(this, id);
 		};
 	});
@@ -34991,12 +35334,12 @@ var Monitor = /** @class */ (function () {
     Monitor.prototype.startBatchAction = function () {
         var _this = this;
         // try catching updates made from event handlers using timeout
-        if (this._timeout) {
-            clearTimeout(this._timeout);
+        if (!this._timeout) {
+            this._timeout = setTimeout(function () {
+                _this.stopBatchAction();
+                _this._timeout = null;
+            }, 10);
         }
-        this._timeout = setTimeout(function () {
-            _this.stopBatchAction();
-        }, 10);
         if (this._ignore || this._batchMode) {
             return;
         }
@@ -35526,7 +35869,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.4";
+	this.version = "7.0.5";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -38480,22 +38823,23 @@ function delay (callback, timeout){
 
 	var result = function() {
 		result.$cancelTimeout();
-		callback.$pending = true;
+		result.$pending = true;
 		var args = Array.prototype.slice.call(arguments);
 		timer = setTimeout(function(){
 			callback.apply(this, args);
 			result.$pending = false;
 		}, timeout);
 	};
-	
+
 	result.$pending = false;
 	result.$cancelTimeout = function(){
 		clearTimeout(timer);
-		callback.$pending = false;
+		result.$pending = false;
 	};
 	result.$execute = function(){
-		callback();
-		callback.$cancelTimeout();
+		var args = Array.prototype.slice.call(arguments);
+		callback.apply(this, args);
+		result.$cancelTimeout();
 	};
 
 	return result;

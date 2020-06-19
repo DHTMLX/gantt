@@ -1,3 +1,9 @@
+### 7.0.5
+
+- Performance improvements for work time calculation when the duration_unit config is set to "hour"
+- Performance improvements for work time calculation when the duration_unit config is set to "minute"
+- The ability to specify working calendars in the configuration object of Gantt.getGanttInstance is added
+
 ### 7.0.4
 
 - Removed the 10000px limit on the gantt size in the autosize mode, which should allow printing larger charts
