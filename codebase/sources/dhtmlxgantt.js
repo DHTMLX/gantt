@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.5 Standard
+dhtmlxGantt v.7.0.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7128,6 +7128,7 @@ module.exports = function(gantt){
 			this.clearDragTimer();
 		}, this));
 
+		var lastDown = 0;
 		for(var i = 0; i < inputMethods.length; i++){
 			(utils.bind(function(input){
 
@@ -7136,12 +7137,17 @@ module.exports = function(gantt){
 						return;
 					}
 
+					if (gantt.config.touch && e.timeStamp && e.timeStamp - lastDown < 300) {
+						return;
+					}
 					this._settings.original_target = copyDomEvent(e);
 
 					if (gantt.config.touch) {
 						this.clearDragTimer();
-
 						this._drag_start_timer = setTimeout(utils.bind(function () {
+							if(gantt.getState().lightbox){
+								return;
+							}
 							this.dragStart(obj, e, input);
 						}, this), gantt.config.touch_drag);
 					}
@@ -10116,6 +10122,25 @@ function initDataStores(gantt){
 	gantt.attachEvent("onDestroy", function(){
 		tasksStore.destructor();
 		linksStore.destructor();
+	});
+
+	gantt.attachEvent("onLinkValidation", function(link){
+		var source = gantt.getTask(link.source);
+		var taskLinks = source.$source;
+		for (var i = 0; i < taskLinks.length; i++) {
+			var existingLink = gantt.getLink(taskLinks[i]);
+	
+			var sourceMatch = link.source == existingLink.source;
+			var targetMatch = link.source == existingLink.source;
+			var typeMatch = link.type == existingLink.type;
+			
+			// prevent creating duplicated links from the UI
+			if (sourceMatch && targetMatch && typeMatch) {
+				return false;
+			}
+		}
+		
+		return true;
 	});
 
 	tasksStore.attachEvent("onBeforeRefreshAll", function(){
@@ -16844,25 +16869,44 @@ function removeLineHighlight(root){
 
 function highlightRow(target, markerLine, grid){
 	var linePos = getLineMarkerPosition(target, grid);
+	var maxBottom = grid.$grid_data.getBoundingClientRect().bottom;
+	var maxTop = grid.$grid_data.getBoundingClientRect().top;
 
 	markerLine.innerHTML = "<div class='gantt_grid_dnd_marker_line'></div>";
 	markerLine.style.left = linePos.x + "px";
 	markerLine.style.height = "4px";
 
-	markerLine.style.top = (linePos.y - 2) + "px";
+	var markerLineTop = linePos.y - 2;
+	markerLine.style.top = markerLineTop + "px";
 	markerLine.style.width = linePos.width + "px";
+
+	if (markerLineTop > maxBottom) {
+		markerLine.style.top = maxBottom + 'px';
+	}
+	if (markerLineTop < maxTop) {
+		markerLine.style.top = maxTop + 'px';
+	}
 
 	return markerLine;
 }
 function highlightFolder(target, markerFolder, grid){
 	var id = target.targetParent;
 	var pos = gridToPageCoordinates({x: 0, y: grid.getItemTop(id)}, grid);
+	var maxBottom = grid.$grid_data.getBoundingClientRect().bottom;
+	var maxTop = grid.$grid_data.getBoundingClientRect().top;
 
 	markerFolder.innerHTML = "<div class='gantt_grid_dnd_marker_folder'></div>";
 	markerFolder.style.width = grid.$grid_data.offsetWidth + "px";
 	markerFolder.style.top = pos.y + "px";
 	markerFolder.style.left = pos.x  + "px";
 	markerFolder.style.height = grid.getItemHeight(id) + "px";
+	if (pos.y > maxBottom) {
+		markerFolder.style.top = maxBottom + 'px';
+	}
+	if (pos.y < maxTop) {
+		markerFolder.style.top = maxTop + 'px';
+	}
+
 	return markerFolder;
 }
 
@@ -18512,7 +18556,7 @@ var ScrollbarCell = (function (_super) {
 		//in safari we can catch previous onscroll after setting new value from mouse-wheel event
 		//set delay to prevent value drifiting
 		if ((new Date()) - ( this._wheel_time || 0 ) < 100) return true;
-		if (this.$gantt._touch_scroll_active) return;
+		//if (this.$gantt._touch_scroll_active) return;
 		var left = this.$scroll_hor.scrollLeft;
 
 		this.scrollHorizontally(left);
@@ -18649,7 +18693,7 @@ var ScrollbarCell = (function (_super) {
 			this.show();
 		}
 	};
-	
+
 	ScrollbarCell.prototype._getScaleOffset = function(view){
 		var offset = 0;
 		if(view && (view.$config.view == "timeline" || view.$config.view == "grid")){
@@ -18722,7 +18766,7 @@ var ScrollbarCell = (function (_super) {
 			return;
 		}
 
-		if (this.$gantt._touch_scroll_active) return;
+		//if (this.$gantt._touch_scroll_active) return;
 		var top = this.$scroll_ver.scrollTop;
 		var prev = this._oldTop;
 		if(top == prev) return;
@@ -22011,17 +22055,19 @@ var ColumnsGridDnd = /** @class */ (function () {
             if (targetIndex !== undefined && draggedIndex !== undefined) {
                 break;
             }
-            currentColumn.startX = currentColumn.endX;
-            currentColumn.endX += columns[i].width;
-            // if drop on a column or drop after the last column
-            if (relativeX >= currentColumn.startX && (relativeX <= currentColumn.endX || !compare(next(i), end))) {
-                targetIndex = i;
-                xBefore = currentColumn.startX;
-                xAfter = currentColumn.endX;
-                columnRelativePos = (relativeX - currentColumn.startX) / (currentColumn.endX - currentColumn.startX);
-            }
-            if (draggedId === columns[i].name) {
-                draggedIndex = i;
+            if (!columns[i].hide) {
+                currentColumn.startX = currentColumn.endX;
+                currentColumn.endX += columns[i].width;
+                // if drop on a column or drop after the last column
+                if (relativeX >= currentColumn.startX && (relativeX <= currentColumn.endX || !compare(next(i), end))) {
+                    targetIndex = i;
+                    xBefore = currentColumn.startX;
+                    xAfter = currentColumn.endX;
+                    columnRelativePos = (relativeX - currentColumn.startX) / (currentColumn.endX - currentColumn.startX);
+                }
+                if (draggedId === columns[i].name) {
+                    draggedIndex = i;
+                }
             }
         }
         return {
@@ -27661,12 +27707,56 @@ module.exports = function(gantt) {
 	}, gantt));
 
 
-	function getTaskDND(){
-		var _tasks_dnd;
-		if(gantt.$ui.getView("timeline")){
-			_tasks_dnd = gantt.$ui.getView("timeline")._tasks_dnd;
+	function findTargetView(event){
+		var allViews = gantt.$layout.getCellsByType("viewCell");
+
+		for(var i = 0; i < allViews.length; i++){
+			var box = allViews[i].$view.getBoundingClientRect();
+			if(event.clientX >= box.left && event.clientX <= box.right &&
+				event.clientY <= box.bottom && event.clientY >= box.top){
+					return allViews[i];
+				}
 		}
-		return _tasks_dnd;
+	}
+
+	function getScrollState(view){
+		var scrollX = view.$config.scrollX ? gantt.$ui.getView(view.$config.scrollX) : null;
+		var scrollY = view.$config.scrollY ? gantt.$ui.getView(view.$config.scrollY) : null;
+
+		var scrollState = {x: null, y: null};
+		if(scrollX){
+			var state = scrollX.getScrollState();
+			if(state.visible){
+				scrollState.x = scrollX.$view.scrollLeft;
+			}
+		}
+		if(scrollY){
+			var state = scrollY.getScrollState();
+			if(state.visible){
+				scrollState.y = scrollY.$view.scrollTop;
+			}
+		}
+		return scrollState;
+	}
+
+	function scrollView(view, left, top){
+		var scrollX = view.$config.scrollX ? gantt.$ui.getView(view.$config.scrollX) : null;
+		var scrollY = view.$config.scrollY ? gantt.$ui.getView(view.$config.scrollY) : null;
+
+		if(scrollX){
+			scrollX.scrollTo(left, null);
+		}
+		if(scrollY){
+			scrollY.scrollTo(null, top);
+		}
+	}
+
+	function getTaskDND(){
+		var tasksDnD;
+		if(gantt.$ui.getView("timeline")){
+			tasksDnD = gantt.$ui.getView("timeline")._tasks_dnd;
+		}
+		return tasksDnD;
 	}
 
 	var touchHandlers = [];
@@ -27677,14 +27767,14 @@ module.exports = function(gantt) {
 	gantt._touch_events = function (names, accessor, ignore) {
 		//webkit on android need to be handled separately
 		var dblclicktime = 0;
-		var action_mode = false;
-		var scroll_mode = false;
-		var action_start = null;
-		var scroll_state;
-		var long_tap_timer = null;
-		var current_target = null;
-
-
+		var actionMode = false;
+		var scrollMode = false;
+		var actionStart = null;
+		var scrollState;
+		var longTapTimer = null;
+		var currentDndId = null;
+		var dndNodes = [];
+		var targetView = null;
 
 		for(var i = 0; i < touchHandlers.length; i++){
 			gantt.eventRemove(touchHandlers[i][0], touchHandlers[i][1], touchHandlers[i][2]);
@@ -27693,39 +27783,54 @@ module.exports = function(gantt) {
 
 		//touch move
 		touchHandlers.push([gantt.$container, names[0], function (e) {
-			var _tasks_dnd = getTaskDND();
+			var tasksDnD = getTaskDND();
 
 				if (ignore(e)) return;
 
 				//ignore common and scrolling moves
-				if (!action_mode) return;
+				if (!actionMode) return;
 
-				if (long_tap_timer) clearTimeout(long_tap_timer);
+				if (longTapTimer) clearTimeout(longTapTimer);
 
 				var source = accessor(e);
-				if (_tasks_dnd && (_tasks_dnd.drag.id || _tasks_dnd.drag.start_drag)) {
-					_tasks_dnd.on_mouse_move(source);
+				if (tasksDnD && (tasksDnD.drag.id || tasksDnD.drag.start_drag)) {
+					tasksDnD.on_mouse_move(source);
 					if (e.preventDefault)
 						e.preventDefault();
 					e.cancelBubble = true;
 					return false;
 				}
 				if (!gantt._prevent_touch_scroll) {
-					if (source && action_start) {
-						var dx = action_start.pageX - source.pageX;
-						var dy = action_start.pageY - source.pageY;
-						if (!scroll_mode && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-							gantt._touch_scroll_active = scroll_mode = true;
+					if (source && actionStart) {
+						var dx = actionStart.pageX - source.pageX;
+						var dy = actionStart.pageY - source.pageY;
+						if (!scrollMode && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+							scrollMode = true;
+							//gantt._touch_scroll_active = scroll_mode = true;
 							dblclicktime = 0;
-							scroll_state = gantt.getScrollState();
+
+							if(targetView){
+								scrollState = getScrollState(targetView);
+							}else{
+								scrollState = gantt.getScrollState();
+							}
 						}
 
-						if (scroll_mode) {
-							gantt.scrollTo(scroll_state.x + dx, scroll_state.y + dy);
-							var new_scroll_state = gantt.getScrollState();
+						if (scrollMode) {
 
-							if ((scroll_state.x != new_scroll_state.x && dy > 2 * dx) ||
-								(scroll_state.y != new_scroll_state.y && dx > 2 * dy )) {
+							var newScrollState;
+							var scrollX = scrollState.x + dx;
+							var scrollY = scrollState.y + dy;
+							if(targetView){
+								scrollView(targetView, scrollX, scrollY);
+								newScrollState = getScrollState(targetView);
+							}else{
+								gantt.scrollTo(scrollX, scrollY);
+								newScrollState = gantt.getScrollState();
+							}
+
+							if ((scrollState.x != newScrollState.x && dy > 2 * dx) ||
+								(scrollState.y != newScrollState.y && dx > 2 * dy )) {
 								return block_action(e);
 							}
 						}
@@ -27738,7 +27843,7 @@ module.exports = function(gantt) {
 
 		//block touch context menu in IE10
 		touchHandlers.push([this.$container, "contextmenu", function (e) {
-			if (action_mode)
+			if (actionMode)
 				return block_action(e);
 		}]);
 
@@ -27746,25 +27851,27 @@ module.exports = function(gantt) {
 		touchHandlers.push([this.$container, names[1], function (e) {
 			if (ignore(e)) return;
 			if (e.touches && e.touches.length > 1) {
-				action_mode = false;
+				actionMode = false;
 				return;
 			}
 
-			action_start = accessor(e);
-			if (!gantt._locate_css(action_start, "gantt_hor_scroll") && !gantt._locate_css(action_start, "gantt_ver_scroll")) {
-				action_mode = true;
+
+			actionStart = accessor(e);
+			targetView = findTargetView(actionStart);
+			if (!gantt._locate_css(actionStart, "gantt_hor_scroll") && !gantt._locate_css(actionStart, "gantt_ver_scroll")) {
+				actionMode = true;
 			}
-			var _tasks_dnd = getTaskDND();
+			var tasksDnD = getTaskDND();
 
 			//long tap
-			long_tap_timer = setTimeout(function () {
-				var taskId = gantt.locate(action_start);
-				if (_tasks_dnd && (taskId && !gantt._locate_css(action_start, "gantt_link_control") && !gantt._locate_css(action_start, "gantt_grid_data"))) {
-					_tasks_dnd.on_mouse_down(action_start);
+			longTapTimer = setTimeout(function () {
+				var taskId = gantt.locate(actionStart);
+				if (tasksDnD && (taskId && !gantt._locate_css(actionStart, "gantt_link_control") && !gantt._locate_css(actionStart, "gantt_grid_data"))) {
+					tasksDnD.on_mouse_down(actionStart);
 
-					if (_tasks_dnd.drag && _tasks_dnd.drag.start_drag) {
+					if (tasksDnD.drag && tasksDnD.drag.start_drag) {
 						cloneTaskRendered(taskId);
-						_tasks_dnd._start_dnd(action_start);
+						tasksDnD._start_dnd(actionStart);
 						gantt._touch_drag = true;
 
 						gantt.refreshTask(taskId);
@@ -27774,41 +27881,47 @@ module.exports = function(gantt) {
 
 				}
 
-				long_tap_timer = null;
+				longTapTimer = null;
 			}, gantt.config.touch_drag);
 		}]);
 
 		//touch end
 		touchHandlers.push([this.$container, names[2], function (e) {
 			if (ignore(e)) return;
-			if (long_tap_timer) clearTimeout(long_tap_timer);
+			if (longTapTimer) clearTimeout(longTapTimer);
 			gantt._touch_drag = false;
-			action_mode = false;
+			actionMode = false;
 			var source = accessor(e);
 
-			var _tasks_dnd = getTaskDND();
+			var tasksDnD = getTaskDND();
 
-			if(_tasks_dnd)
-				_tasks_dnd.on_mouse_up(source);
+			if(tasksDnD)
+				tasksDnD.on_mouse_up(source);
 
-			if (current_target) {
-				gantt.refreshTask(gantt.locate(current_target));
-				if (current_target.parentNode) {
-					current_target.parentNode.removeChild(current_target);
+			if (currentDndId && gantt.isTaskExists(currentDndId)) {
+				gantt.refreshTask(currentDndId);
+				if(dndNodes.length){
+					dndNodes.forEach(function(node){
+						if(node.parentNode){
+							node.parentNode.removeChild(node);
+						}
+					});
 					gantt._touch_feedback();
 				}
 			}
 
-			gantt._touch_scroll_active = action_mode = scroll_mode = false;
-			current_target = null;
+			//gantt._touch_scroll_active = action_mode = scroll_mode = false;
+			actionMode = scrollMode = false;
+			dndNodes = [];
+			currentDndId = null;
 
 			//dbl-tap handling
-			if (action_start && dblclicktime) {
+			if (actionStart && dblclicktime) {
 				var now = new Date();
 				if ((now - dblclicktime) < 500) {
 
 					var mouseEvents = gantt.$services.getService("mouseEvents");
-					mouseEvents.onDoubleClick(action_start);
+					mouseEvents.onDoubleClick(actionStart);
 					block_action(e);
 				} else
 					dblclicktime = now;
@@ -27834,11 +27947,12 @@ module.exports = function(gantt) {
 			var renders = gantt._getTaskLayers();
 			var task = gantt.getTask(taskId);
 			if (task && gantt.isTaskVisible(taskId)) {
+				currentDndId = taskId;
 				for (var i = 0; i < renders.length; i++) {
 					task = renders[i].rendered[taskId];
 					if (task && task.getAttribute(gantt.config.task_attribute) && task.getAttribute(gantt.config.task_attribute) == taskId) {
 						var copy = task.cloneNode(true);
-						current_target = task;
+						dndNodes.push(task);
 						renders[i].rendered[taskId] = copy;
 						task.style.display = "none";
 						copy.className += " gantt_drag_move ";
@@ -35869,7 +35983,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.5";
+	this.version = "7.0.6";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

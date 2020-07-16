@@ -1,3 +1,13 @@
+### 7.0.6
+
+- Fix script errors that were fired on touch devices during drag and drop
+- Fix the incorrect work of the Auto Scheduling extension when types of links were defined using numeric values
+- Reduced the number of redundant repaints of the resource histogram
+- Performance improvements for the task grouping extension
+- Fix the ability to scroll a resource timeline on touch devices
+- Fix the incorrect work of the resource control when the 'hide empty' button is used
+- The return type of gantt.Promise in type definitions is fixed
+
 ### 7.0.5
 
 - Performance improvements for work time calculation when the duration_unit config is set to "hour"
