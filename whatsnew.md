@@ -1,3 +1,7 @@
+### 7.0.7
+
+- Fix the syntax error in type definition of gantt.Promise
+
 ### 7.0.6
 
 - Fix script errors that were fired on touch devices during drag and drop

@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 7.0.6
+// Type definitions for dhtmlxGantt 7.0.7
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -1320,7 +1320,7 @@ export interface GanttStatic {
 	 * Promise object constructor
 	 * @param executor a callback used to initialize the promise
 	*/
-	Promise: new (executor: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void): Promise<unknown>;
+	Promise: new (executor: (resolve: (value?: any) => void, reject: (reason?: any) => void) => void) => Promise<unknown>;
 
 	/**
 	 * adds a calendar into Gantt

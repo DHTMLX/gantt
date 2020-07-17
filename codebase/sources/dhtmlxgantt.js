@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.6 Standard
+dhtmlxGantt v.7.0.7 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -35983,7 +35983,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.6";
+	this.version = "7.0.7";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
