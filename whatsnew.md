@@ -1,3 +1,10 @@
+### 7.0.8
+
+- Fix some issues with touch support on Android/iOS devices
+- Fix regression (appeared in v7.0.6) with link creation and gantt.isLinkAllowed method
+- Fix the script error which was thrown when the 'locale' parameter was used in gantt.getGanttInstance
+- Fix the script error that was thrown from gantt.destructor when the Keyboard Navigation and the Quick Info extensions were used
+
 ### 7.0.7
 
 - Fix the syntax error in type definition of gantt.Promise

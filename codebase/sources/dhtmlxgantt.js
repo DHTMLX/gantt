@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.7 Standard
+dhtmlxGantt v.7.0.8 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7099,6 +7099,7 @@ var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/util
 var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 var timeout = __webpack_require__(/*! ../../utils/timeout */ "./sources/utils/timeout.js");
 var global = __webpack_require__(/*! ../../utils/global */ "./sources/utils/global.js");
+var dom_helpers = __webpack_require__(/*! ../ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 
 module.exports = function(gantt){
 
@@ -7129,6 +7130,7 @@ module.exports = function(gantt){
 		}, this));
 
 		var lastDown = 0;
+		var eventParams = {passive: false};
 		for(var i = 0; i < inputMethods.length; i++){
 			(utils.bind(function(input){
 
@@ -7137,9 +7139,14 @@ module.exports = function(gantt){
 						return;
 					}
 
+					if(config.preventDefault && config.selector && dom_helpers.closest(e.target, config.selector)){
+						e.preventDefault();
+					}
+
 					if (gantt.config.touch && e.timeStamp && e.timeStamp - lastDown < 300) {
 						return;
 					}
+
 					this._settings.original_target = copyDomEvent(e);
 
 					if (gantt.config.touch) {
@@ -7154,14 +7161,14 @@ module.exports = function(gantt){
 					else {
 						this.dragStart(obj, e, input);
 					}
-				}, this));
+				}, this), eventParams);
 
 				gantt.event(document.body, input.up, utils.bind(function (e) {
 					if(!input.accessor(e)){
 						return;
 					}
 					this.clearDragTimer();
-				}, this));
+				}, this), eventParams);
 
 			}, this))(inputMethods[i]);
 		}
@@ -7185,9 +7192,15 @@ module.exports = function(gantt){
 				var dndActive = mousemove(e);
 
 				if (dndActive) {
-					if (e && e.preventDefault) //Cancel default action on DND
-					e.preventDefault();
-					e .cancelBubble = true;
+					try{
+						if (e && e.preventDefault){
+							e.preventDefault();//Cancel default action on DND
+						} //Cancel default action on DND
+					}catch (e){
+						// just suppress the exception, nothing needed to be done here
+					}
+
+					//e.cancelBubble = true;
 				}
 
 				return dndActive;
@@ -7195,14 +7208,15 @@ module.exports = function(gantt){
 
 			var mousemoveContainer = this.config.mousemoveContainer || document.body;
 
+			var eventParams = {passive: false};
 			var mouseup = utils.bind(function (e) {
-				gantt.eventRemove(mousemoveContainer, inputMethod.move, limited_mousemove);
-				gantt.eventRemove(document.body, inputMethod.up, mouseup);
+				gantt.eventRemove(mousemoveContainer, inputMethod.move, limited_mousemove, eventParams);
+				gantt.eventRemove(document.body, inputMethod.up, mouseup, eventParams);
 				return this.dragEnd(domElement);
 			}, this);
 
-			gantt.event(mousemoveContainer, inputMethod.move, limited_mousemove);
-			gantt.event(document.body, inputMethod.up, mouseup);
+			gantt.event(mousemoveContainer, inputMethod.move, limited_mousemove, eventParams);
+			gantt.event(document.body, inputMethod.up, mouseup, eventParams);
 		},
 		checkPositionChange: function (pos) {
 			var diff_x = pos.x - this.config.pos.x;
@@ -7239,7 +7253,8 @@ module.exports = function(gantt){
 			el.parentNode.appendChild(copy);
 
 			el.style.display = "none";
-			document.body.appendChild(el);
+			var mousemoveContainer = this.config.mousemoveContainer || document.body;
+			mousemoveContainer.appendChild(el);
 		},
 		getInputMethods: function () {
 			// bind actions to browser events
@@ -10125,21 +10140,25 @@ function initDataStores(gantt){
 	});
 
 	gantt.attachEvent("onLinkValidation", function(link){
+		if(gantt.isLinkExists(link.id)){
+			// link was already added into gantt
+			return true;
+		}
 		var source = gantt.getTask(link.source);
 		var taskLinks = source.$source;
 		for (var i = 0; i < taskLinks.length; i++) {
 			var existingLink = gantt.getLink(taskLinks[i]);
-	
+
 			var sourceMatch = link.source == existingLink.source;
-			var targetMatch = link.source == existingLink.source;
+			var targetMatch = link.target == existingLink.target;
 			var typeMatch = link.type == existingLink.type;
-			
+
 			// prevent creating duplicated links from the UI
 			if (sourceMatch && targetMatch && typeMatch) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	});
 
@@ -16444,10 +16463,17 @@ function _init_dnd(gantt, grid) {
 	}, gantt);
 	dnd._getTargetY = gantt.bind(function (e) {
 		var pos = domHelpers.getNodePosition(grid.$grid_data);
+		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + (grid.$state.scrollTop || 0);
+		var minTop = maxBottom - gantt.$grid_data.getBoundingClientRect().height;
 
 		var y = e.pageY - pos.y + (grid.$state.scrollTop || 0);
-		if (y < 0)
+		if (y <= 0) {
 			y = 0;
+		} else if (y > maxBottom) {
+			y = maxBottom;
+		} else if (y < minTop) {
+			y = minTop;
+		}
 		return y;
 	}, gantt);
 	dnd._getTaskByY = gantt.bind(function (y, dropIndex) {
@@ -16466,6 +16492,7 @@ function _init_dnd(gantt, grid) {
 		return store.getIdByIndex(index);
 	}, gantt);
 	dnd.attachEvent("onDragMove", gantt.bind(function (obj, e) {
+		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + (grid.$state.scrollTop || 0);
 		var dd = dnd.config;
 		var pos = dnd._getGridPos(e);
 
@@ -16473,8 +16500,12 @@ function _init_dnd(gantt, grid) {
 			store = getStore();
 
 		// setting position of row
+		if (pos.y < maxBottom) {
+			dd.marker.style.top = pos.y + "px";
+		} else {
+			dd.marker.style.top = maxBottom + "px";
+		}
 		dd.marker.style.left = pos.x + 10 + "px";
-		dd.marker.style.top = pos.y + "px";
 
 		// highlight row when mouseover
 		var item = store.getItem(dnd.config.id);
@@ -16676,14 +16707,31 @@ function _init_dnd(gantt, grid) {
 
 		y = y || 0;
 
-		if(y < 0){
+		if (y <= 0) {
 			return store.$getRootId();
+		}
+
+		// limits for the marker according to the layout layer
+		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + (grid.$state.scrollTop || 0);
+		var minTop = maxBottom - gantt.$grid_data.getBoundingClientRect().height;
+		var firstVisibleTaskPos = grid.$state.scrollTop / grid.getItemHeight();
+		var hiddenTaskPart = firstVisibleTaskPos - Math.floor(firstVisibleTaskPos);
+		if (hiddenTaskPart > 0.1 && hiddenTaskPart < 0.9) {
+			maxBottom = maxBottom - grid.getItemHeight() * hiddenTaskPart;
+			minTop = minTop + grid.getItemHeight() * (1 - hiddenTaskPart);
+		}
+
+		if (y >= maxBottom) {
+			y = maxBottom;
+		} else if (y <= minTop) {
+			y = minTop;
 		}
 
 		var index = Math.floor(y / grid.getItemHeight());
 
-		if (index > store.countVisible() - 1)
+		if (index > store.countVisible() - 1) {
 			return store.$getRootId();
+		}
 
 		return store.getIdByIndex(index);
 	}
@@ -16870,7 +16918,6 @@ function removeLineHighlight(root){
 function highlightRow(target, markerLine, grid){
 	var linePos = getLineMarkerPosition(target, grid);
 	var maxBottom = grid.$grid_data.getBoundingClientRect().bottom;
-	var maxTop = grid.$grid_data.getBoundingClientRect().top;
 
 	markerLine.innerHTML = "<div class='gantt_grid_dnd_marker_line'></div>";
 	markerLine.style.left = linePos.x + "px";
@@ -16883,9 +16930,6 @@ function highlightRow(target, markerLine, grid){
 	if (markerLineTop > maxBottom) {
 		markerLine.style.top = maxBottom + 'px';
 	}
-	if (markerLineTop < maxTop) {
-		markerLine.style.top = maxTop + 'px';
-	}
 
 	return markerLine;
 }
@@ -16893,7 +16937,6 @@ function highlightFolder(target, markerFolder, grid){
 	var id = target.targetParent;
 	var pos = gridToPageCoordinates({x: 0, y: grid.getItemTop(id)}, grid);
 	var maxBottom = grid.$grid_data.getBoundingClientRect().bottom;
-	var maxTop = grid.$grid_data.getBoundingClientRect().top;
 
 	markerFolder.innerHTML = "<div class='gantt_grid_dnd_marker_folder'></div>";
 	markerFolder.style.width = grid.$grid_data.offsetWidth + "px";
@@ -16902,9 +16945,6 @@ function highlightFolder(target, markerFolder, grid){
 	markerFolder.style.height = grid.getItemHeight(id) + "px";
 	if (pos.y > maxBottom) {
 		markerFolder.style.top = maxBottom + 'px';
-	}
-	if (pos.y < maxTop) {
-		markerFolder.style.top = maxTop + 'px';
 	}
 
 	return markerFolder;
@@ -21813,7 +21853,6 @@ module.exports = function(gantt){
 	}
 
 	function autoscrollInterval(event) {
-
 		var isScroll = isScrollState();
 
 		if ((interval || delayTimeout) && !isScroll) {
@@ -21926,6 +21965,12 @@ module.exports = function(gantt){
 		if(!isHeadless(gantt)){
 			gantt.eventRemove(document.body, "mousemove", autoscrollInterval);
 			gantt.event(document.body, "mousemove", autoscrollInterval);
+
+			gantt.eventRemove(document.body, "touchmove", autoscrollInterval);
+			gantt.event(document.body, "touchmove", autoscrollInterval);
+
+			gantt.eventRemove(document.body, "pointermove", autoscrollInterval);
+			gantt.event(document.body, "pointermove", autoscrollInterval);
 		}
 	});
 
@@ -21984,13 +22029,29 @@ var ColumnsGridDnd = /** @class */ (function () {
     ColumnsGridDnd.prototype.attachEvents = function () {
         var _this = this;
         this._dnd.attachEvent("onBeforeDragStart", function (obj, e) {
+            _this._draggedCell = _this.$gantt.utils.dom.closest(e.target, ".gantt_grid_head_cell");
+            if (!_this._draggedCell) {
+                return;
+            }
+            var columns = _this.$grid.$getConfig().columns;
+            var columnName = _this._draggedCell.getAttribute(COLUMN_ID_ATTR_NAME);
+            var draggedColumn;
+            var draggedIndex;
+            columns.map(function (column, index) {
+                if (column.name === columnName) {
+                    draggedColumn = column;
+                    draggedIndex = index;
+                }
+            });
+            if (_this.$grid.callEvent("onBeforeColumnDragStart", [{ draggedColumn: draggedColumn, draggedIndex: draggedIndex }]) === false) {
+                return false;
+            }
+            if (!_this._draggedCell || !draggedColumn) {
+                return false;
+            }
             _this._gridConfig = _this.$grid.$getConfig();
             _this._originAutoscroll = _this.$gantt.config.autoscroll;
             _this.$gantt.config.autoscroll = false;
-            _this._draggedCell = _this.$gantt.utils.dom.closest(e.target, ".gantt_grid_head_cell");
-            if (!_this._draggedCell) {
-                return false;
-            }
             return true;
         });
         this._dnd.attachEvent("onAfterDragStart", function (obj, e) {
@@ -22002,13 +22063,29 @@ var ColumnsGridDnd = /** @class */ (function () {
             _this._draggedCell.classList.add("gantt_grid_head_cell_dragged");
         });
         this._dnd.attachEvent("onDragMove", function (obj, e) {
+            if (!_this._draggedCell) {
+                return;
+            }
             _this._dragX = e.clientX;
             var x = _this.calculateCurrentPosition(e.clientX);
+            var columnIndexes = _this.findColumnsIndexes();
+            var targetIndex = columnIndexes.targetIndex;
+            var draggedIndex = columnIndexes.draggedIndex;
+            var columns = _this.$grid.$getConfig().columns;
+            var draggedColumn = columns[draggedIndex];
+            var targetColumn = columns[targetIndex];
+            if (_this.$grid.callEvent("onColumnDragMove", [{ draggedColumn: draggedColumn, targetColumn: targetColumn, draggedIndex: draggedIndex, targetIndex: targetIndex }]) === false) {
+                _this.cleanTargetMarker();
+                return false;
+            }
             _this.setMarkerPosition(x);
-            _this.drawTargetMarker(_this.findColumnsIndexes());
+            _this.drawTargetMarker(columnIndexes);
             return true;
         });
         this._dnd.attachEvent("onDragEnd", function () {
+            if (!_this._draggedCell) {
+                return;
+            }
             _this.$gantt.config.autoscroll = _this._originAutoscroll;
             _this._draggedCell.classList.remove("gantt_grid_head_cell_dragged");
             _this.cleanTargetMarker();
@@ -22017,13 +22094,13 @@ var ColumnsGridDnd = /** @class */ (function () {
     };
     ColumnsGridDnd.prototype.reorderColumns = function () {
         var _a = this.findColumnsIndexes(), targetIndex = _a.targetIndex, draggedIndex = _a.draggedIndex;
-        if (targetIndex === draggedIndex) {
-            return;
-        }
         var columns = this.$grid.$getConfig().columns;
         var draggedColumn = columns[draggedIndex];
         var targetColumn = columns[targetIndex];
         if (this.$grid.callEvent("onBeforeColumnReorder", [{ draggedColumn: draggedColumn, targetColumn: targetColumn, draggedIndex: draggedIndex, targetIndex: targetIndex }]) === false) {
+            return;
+        }
+        if (targetIndex === draggedIndex) {
             return;
         }
         columns.splice(draggedIndex, 1);
@@ -25294,16 +25371,18 @@ var initLinksDND = function(timeline, gantt) {
 
 	state.registerProvider("linksDnD", getDndState);
 
-	var dnd = new DnD(timeline.$task_bars, {
-		sensitivity : 0,
-		updates_per_second : 60,
-		mousemoveContainer: gantt.$root
-	});
-
 	var start_marker = "task_start_date",
 		end_marker = "task_end_date",
 		link_edge_marker = "gantt_link_point",
 		link_landing_hover_area = "gantt_link_control";
+
+	var dnd = new DnD(timeline.$task_bars, {
+		sensitivity : 0,
+		updates_per_second : 60,
+		mousemoveContainer: gantt.$root,
+		selector: "." + link_edge_marker,
+		preventDefault: true
+	});
 
 	dnd.attachEvent("onBeforeDragStart", gantt.bind(function(obj,e) {
 		var target = (e.target||e.srcElement);
@@ -33899,8 +33978,11 @@ module.exports = function(gantt) {
 
 		function afterPopup(box) {
 			setTimeout(function () {
-				if (!isModal())
-					gantt.focus();
+				if (!isModal()){
+					if(!gantt.$destroyed){
+						gantt.focus();
+					}
+				}
 			}, 1);
 		}
 
@@ -35983,7 +36065,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.7";
+	this.version = "7.0.8";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
