@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.8 Standard
+dhtmlxGantt v.7.0.9 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!***********************************!*\
-  !*** (webpack)/buildin/global.js ***!
-  \***********************************/
+/*!************************************************!*\
+  !*** ./node_modules/webpack/buildin/global.js ***!
+  \************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -6403,7 +6403,13 @@ module.exports = function(gantt){
 	return function assert(check, message){
 		if (!check){
 			if(gantt.config.show_errors && gantt.callEvent("onError",[message]) !== false) {
-				gantt.message({type: "error", text: message, expire: -1});
+				if (gantt.message) {
+					gantt.message({type: "error", text: message, expire: -1});
+				}
+				else {
+					// eslint-disable-next-line
+					console.log(message);
+				}
 
 				// eslint-disable-next-line no-debugger
 				debugger;
@@ -7193,7 +7199,7 @@ module.exports = function(gantt){
 
 				if (dndActive) {
 					try{
-						if (e && e.preventDefault){
+						if (e && e.preventDefault && e.cancelable){//e.cancelable condition - because navigator.vibrate is blocked by Chrome
 							e.preventDefault();//Cancel default action on DND
 						} //Cancel default action on DND
 					}catch (e){
@@ -12213,8 +12219,37 @@ module.exports = function(gantt){
 
 	gantt.assert = __webpack_require__(/*! ./common/assert */ "./sources/core/common/assert.js")(gantt);
 
+	function isHTMLElement(node){
+		try {
+			node.cloneNode(false);
+		}
+		catch (e){
+			return false;
+		}
+
+		return true;
+
+	}
+
+	var invalidContainerMessage = "Invalid value of the first argument of `gantt.init`. Supported values: HTMLElement, String (element id)." +
+	"This error means that either invalid object is passed into `gantt.init` or that the element with the specified ID doesn't exist on the page when `gantt.init` is called.";
+
+	function validateNode(node){
+		if (!node || (typeof node == 'string' && document.getElementById(node))) return true;
+		if (isHTMLElement(node)) return true;
+
+		gantt.assert(false, invalidContainerMessage);
+		throw new Error(invalidContainerMessage);
+	}
+
 //initial initialization
 	gantt.init = function(node, from, to){
+		if (gantt.env.isNode) { 
+			node = null; // for the nodejs version
+		} else {
+			validateNode(node); // for the web version
+		}
+
 		if(from && to){
 			this.config.start_date = this._min_date = new Date(from);
 			this.config.end_date = this._max_date = new Date(to);
@@ -12223,6 +12258,12 @@ module.exports = function(gantt){
 
 		//can be called only once
 		this.init = function(node){
+			if (gantt.env.isNode) { 
+				node = null; // for the nodejs version
+			} else {
+				validateNode(node); // for the web version
+			}
+
 			if (this.$container && this.$container.parentNode){
 				this.$container.parentNode.removeChild(this.$container);
 				this.$container = null;
@@ -12300,6 +12341,7 @@ module.exports = function(gantt){
 
 		dropLayout();
 
+		this.$root = null;
 		if(node){
 			this.$root = domHelpers.toNode(node);
 			rebuildLayout();
@@ -19530,6 +19572,10 @@ module.exports = function(gantt) {
 	};
 
 	ParentControl.prototype.set_value = function(node, value, ev, config) {
+		// GS-1051. If the value is `0`, the set_value function in the select control won't select 
+		// the first child because (0 || '') = '';
+		if (value === 0) value = "0";
+
 		var tmpDom = document.createElement("div");
 		tmpDom.innerHTML = _display(config, ev.id);
 		var newOptions = tmpDom.removeChild(tmpDom.firstChild);
@@ -20108,12 +20154,21 @@ module.exports = function (gantt) {
 			html = this._render_sections(sns);
 
 			ds = lightboxDiv.querySelector("div.gantt_cal_larea");
+			
+			//GS-1131. If gantt_cal_larea is displayed, Firefox renders buttons incorrectly;
+			var backup_overflow = ds.style.overflow;
+			ds.style.overflow = 'hidden';
+
 			ds.innerHTML = html;
+
+			
 
 			bindLabelsToInputs(sns);
 
 			//sizes
 			this.resizeLightbox();
+
+			ds.style.overflow = backup_overflow;
 
 			this._init_lightbox_events(this);
 			lightboxDiv.style.display = "none";
@@ -20180,12 +20235,15 @@ module.exports = function (gantt) {
 
 		this._cover = document.createElement("DIV");
 		this._cover.className = "gantt_cal_cover";
-		var _document_height = ((document.height !== undefined) ? document.height : document.body.offsetHeight);
-		var _scroll_height = ((document.documentElement) ? document.documentElement.scrollHeight : 0);
-		this._cover.style.height = Math.max(_document_height, _scroll_height) + "px";
+
 		document.body.appendChild(this._cover);
 	};
 
+	gantt.event(window, "deviceorientation", function(){
+		if(gantt.getState().lightbox){
+			gantt._center_lightbox(gantt.getLightbox());
+		}
+	});
 
 	gantt._init_lightbox_events = function () {
 		gantt.lightbox_events = {};
@@ -21867,6 +21925,12 @@ module.exports = function(gantt){
 			x: event.clientX,
 			y: event.clientY
 		};
+
+		// if it is a mobile device, we need to detect the touch event coords
+		if (event.type == "touchmove"){
+			eventPos.x = event.targetTouches[0].clientX;
+			eventPos.y = event.targetTouches[0].clientY;
+		}
 
 		if (!interval && isScroll) {
 			defineScrollInterval(true);
@@ -25161,12 +25225,37 @@ function addResizeListener(gantt){
 
 function listenWindowResize(gantt, window){
 	var resizeDelay;
-	gantt.event(window, "resize", function(){
+
+	try{
+		gantt.event(window, "resize", function(){
+			repaintGantt();
+		});
+	}
+	catch(e){
+		lowlevelResizeWatcher();
+	}
+
+	function repaintGantt(){
 		clearTimeout(resizeDelay);
 		resizeDelay = setTimeout(function(){
 			gantt.render();
 		}, 300);
-	});
+	}
+
+	var previousHeight = gantt.$root.offsetHeight;
+	var previousWidth = gantt.$root.offsetWidth;	
+
+	function lowlevelResizeWatcher(){
+		if (gantt.$root.offsetHeight != previousHeight ||
+				gantt.$root.offsetWidth != previousWidth){
+				repaintGantt();
+		}
+
+		previousHeight = gantt.$root.offsetHeight;
+		previousWidth = gantt.$root.offsetWidth;
+
+		setTimeout(lowlevelResizeWatcher, 300);
+	}
 }
 
 module.exports = addResizeListener;
@@ -27739,7 +27828,8 @@ module.exports = function(gantt) {
 				((navigator.userAgent.indexOf("Mobile") != -1) ||
 					(navigator.userAgent.indexOf("iPad") != -1) ||
 					(navigator.userAgent.indexOf("Android") != -1) ||
-					(navigator.userAgent.indexOf("Touch") != -1));
+					(navigator.userAgent.indexOf("Touch") != -1)) ||
+					((navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
 		if (this.config.touch) {
 
@@ -30487,7 +30577,7 @@ CalendarWorkTimeStrategy.prototype = {
 			var timestamp = this._getTimeOfDayStamp(start);
 
 			if(!daySchedule.length || !minutesInDay){
-				start = this.$gantt.date.add(start, 1, "day");
+				start = this.$gantt.date.add(this.$gantt.date.day_start(start), 1, "day");
 				continue;
 			}
 
@@ -35905,7 +35995,7 @@ var Undo = /** @class */ (function () {
         this.command.entity = gantt.config.undo_types;
         this.command.type = gantt.config.undo_actions;
         this.undoEnabled = !!gantt.config.undo;
-        this.redoEnabled = (!!gantt.config.undo) && (!!gantt.config.redo);
+        this.redoEnabled = !!gantt.config.redo; // GS-873, Redo should work even when the `gantt.config.undo` is disabled.
     };
     Undo.prototype.undo = function () {
         var gantt = this._gantt;
@@ -36065,7 +36155,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.8";
+	this.version = "7.0.9";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -36243,6 +36333,7 @@ var locale_he_1 = __webpack_require__(/*! ./locale_he */ "./sources/locale/local
 var locale_hr_1 = __webpack_require__(/*! ./locale_hr */ "./sources/locale/locale_hr.ts");
 var locale_hu_1 = __webpack_require__(/*! ./locale_hu */ "./sources/locale/locale_hu.ts");
 var locale_id_1 = __webpack_require__(/*! ./locale_id */ "./sources/locale/locale_id.ts");
+var locale_it_1 = __webpack_require__(/*! ./locale_it */ "./sources/locale/locale_it.ts");
 var locale_jp_1 = __webpack_require__(/*! ./locale_jp */ "./sources/locale/locale_jp.ts");
 var locale_kr_1 = __webpack_require__(/*! ./locale_kr */ "./sources/locale/locale_kr.ts");
 var locale_manager_1 = __webpack_require__(/*! ./locale_manager */ "./sources/locale/locale_manager.ts");
@@ -36250,6 +36341,7 @@ var locale_nb_1 = __webpack_require__(/*! ./locale_nb */ "./sources/locale/local
 var locale_nl_1 = __webpack_require__(/*! ./locale_nl */ "./sources/locale/locale_nl.ts");
 var locale_no_1 = __webpack_require__(/*! ./locale_no */ "./sources/locale/locale_no.ts");
 var locale_pl_1 = __webpack_require__(/*! ./locale_pl */ "./sources/locale/locale_pl.ts");
+var locale_pt_1 = __webpack_require__(/*! ./locale_pt */ "./sources/locale/locale_pt.ts");
 var locale_ro_1 = __webpack_require__(/*! ./locale_ro */ "./sources/locale/locale_ro.ts");
 var locale_ru_1 = __webpack_require__(/*! ./locale_ru */ "./sources/locale/locale_ru.ts");
 var locale_si_1 = __webpack_require__(/*! ./locale_si */ "./sources/locale/locale_si.ts");
@@ -36276,12 +36368,14 @@ function default_1() {
         hr: locale_hr_1.default,
         hu: locale_hu_1.default,
         id: locale_id_1.default,
+        it: locale_it_1.default,
         jp: locale_jp_1.default,
         kr: locale_kr_1.default,
         nb: locale_nb_1.default,
         nl: locale_nl_1.default,
         no: locale_no_1.default,
         pl: locale_pl_1.default,
+        pt: locale_pt_1.default,
         ro: locale_ro_1.default,
         ru: locale_ru_1.default,
         si: locale_si_1.default,
@@ -37608,6 +37702,85 @@ exports.default = locale;
 
 /***/ }),
 
+/***/ "./sources/locale/locale_it.ts":
+/*!*************************************!*\
+  !*** ./sources/locale/locale_it.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/*
+ Update 29/12/2015:
+ New labels translation by ARCANGELI CLAUDIO
+
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var locale = {
+    date: {
+        month_full: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+        month_short: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"],
+        day_full: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+        day_short: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"]
+    },
+    labels: {
+        new_task: "Nuovo compito",
+        icon_save: "Salva",
+        icon_cancel: "Chiudi",
+        icon_details: "Dettagli",
+        icon_edit: "Modifica",
+        icon_delete: "Elimina",
+        confirm_closing: "",
+        confirm_deleting: "Sei sicuro di confermare l'eliminazione?",
+        section_description: "Descrizione",
+        section_time: "Periodo di tempo",
+        section_type: "Tipo",
+        /* grid columns */
+        column_wbs: "WBS",
+        column_text: "Nome Attività",
+        column_start_date: "Inizio",
+        column_duration: "Durata",
+        column_add: "",
+        /* link confirmation */
+        link: "Link",
+        confirm_link_deleting: "sarà eliminato",
+        link_start: " (inizio)",
+        link_end: " (fine)",
+        type_task: "Task",
+        type_project: "Project",
+        type_milestone: "Milestone",
+        minutes: "Minuti",
+        hours: "Ore",
+        days: "Giorni",
+        weeks: "Settimane",
+        months: "Mesi",
+        years: "Anni",
+        /* message popup */
+        message_ok: "OK",
+        message_cancel: "Chiudi",
+        /* constraints */
+        section_constraint: "Constraint",
+        constraint_type: "Constraint type",
+        constraint_date: "Constraint date",
+        asap: "As Soon As Possible",
+        alap: "As Late As Possible",
+        snet: "Start No Earlier Than",
+        snlt: "Start No Later Than",
+        fnet: "Finish No Earlier Than",
+        fnlt: "Finish No Later Than",
+        mso: "Must Start On",
+        mfo: "Must Finish On",
+        /* resource control */
+        resources_filter_placeholder: "type to filter",
+        resources_filter_label: "hide empty"
+    }
+};
+exports.default = locale;
+
+
+/***/ }),
+
 /***/ "./sources/locale/locale_jp.ts":
 /*!*************************************!*\
   !*** ./sources/locale/locale_jp.ts ***!
@@ -38080,6 +38253,98 @@ var locale = {
         /* resource control */
         resources_filter_placeholder: "type to filter",
         resources_filter_label: "hide empty"
+    }
+};
+exports.default = locale;
+
+
+/***/ }),
+
+/***/ "./sources/locale/locale_pt.ts":
+/*!*************************************!*\
+  !*** ./sources/locale/locale_pt.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/*
+
+ TRANSLATION BY MATTHEUS PIROVANI RORIZ GONЗALVES
+
+ mattheusroriz@hotmail.com / mattheus.pirovani@gmail.com /
+
+ www.atrixian.com.br
+
+
+ Updated by Jorge Albernaz Martins
+
+ jorgefox@hotmail.com
+
+ www.redfox.inf.br
+
+ JorgeFox
+
+*/
+Object.defineProperty(exports, "__esModule", { value: true });
+var locale = {
+    date: {
+        month_full: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+        month_short: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+        day_full: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+        day_short: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"]
+    },
+    labels: {
+        new_task: "Nova tarefa",
+        icon_save: "Salvar",
+        icon_cancel: "Cancelar",
+        icon_details: "Detalhes",
+        icon_edit: "Editar",
+        icon_delete: "Excluir",
+        confirm_closing: "",
+        confirm_deleting: "As tarefas serão excluidas permanentemente, confirme?",
+        section_description: "Descrição",
+        section_time: "Período",
+        section_type: "Tipo",
+        /* grid columns */
+        column_wbs: "EAP",
+        column_text: "Nome tarefa",
+        column_start_date: "Data início",
+        column_duration: "Duração",
+        column_add: "",
+        /* link confirmation */
+        link: "Link",
+        confirm_link_deleting: "Será excluído!",
+        link_start: " (início)",
+        link_end: " (fim)",
+        type_task: "Task",
+        type_project: "Projeto",
+        type_milestone: "Marco",
+        minutes: "Minutos",
+        hours: "Horas",
+        days: "Dias",
+        weeks: "Semanas",
+        months: "Meses",
+        years: "Anos",
+        /* message popup */
+        message_ok: "OK",
+        message_cancel: "Cancelar",
+        /* constraints */
+        section_constraint: "Restrição",
+        constraint_type: "Tipo Restrição",
+        constraint_date: "Data restrição",
+        asap: "Mais breve possível",
+        alap: "Mais tarde possível",
+        snet: "Não começar antes de",
+        snlt: "Não começar depois de",
+        fnet: "Não terminar antes de",
+        fnlt: "Não terminar depois de",
+        mso: "Precisa começar em",
+        mfo: "Precisa terminar em",
+        /* resource control */
+        resources_filter_placeholder: "Tipo de filtros",
+        resources_filter_label: "Ocultar vazios"
     }
 };
 exports.default = locale;

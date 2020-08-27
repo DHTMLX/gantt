@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.8 Standard
+dhtmlxGantt v.7.0.9 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1171,7 +1171,7 @@ div.dhx_modal_cover {
 .gantt_cal_cover {
   width: 100%;
   height: 100%;
-  position: absolute;
+  position: fixed;
   z-index: 10000;
   top: 0px;
   left: 0px;

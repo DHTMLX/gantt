@@ -1,3 +1,16 @@
+### 7.0.9
+
+Fix the script error on the second initialization of Gantt when custom datastores are added
+Fix the incorrect work of auto-scheduling when using with FF and SS links and when the source and target tasks use different working calendars
+Fix the incorrect calculation of working time when duration_unit is set to "minute" and the start time is set to the middle of a non-working day
+Fix touch support for Safari iPad on iPadOS v13.6
+Fix the sizes of the Lightbox modal overlay on mobile devices
+Fix the incorrect display of lightbox buttons in some browsers
+Fix support of Italian and Portuguese locales in the gantt.i18n module
+Fix the bug in the Parent control of the Lightbox which caused the incorrect work when tasks were assigned to the root level
+Fix the script error which happened when initializing a gantt inside an iframe
+Fix the incorrect work of the redo config when the undo config is disabled
+
 ### 7.0.8
 
 - Fix some issues with touch support on Android/iOS devices
