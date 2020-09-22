@@ -1,3 +1,15 @@
+### 7.0.10
+
+Fix the incorrect work of vertical resizers (the regression appeared in v7.0.9)
+Prevent unexpected page refresh which happened during vertical reordering of tasks on Android Chrome (pull-to-refresh)
+Fix the script error which fired during creating a link on mobile Firefox
+Fix the incorrect work of task selection when the multiselect config is enabled but the multiselect plugin is not activated
+Improve the work of HTML select controls inside Inline Editors
+Fix the incorrect work of Auto Scheduling when linked tasks use different work calendars
+The gantt.plugins method will not activate plugins which are specified with false value
+Fix the conflict between Inline Editors and Keyboard Navigation
+Fix the issue that caused Inline Editors to close on double click
+
 ### 7.0.9
 
 Fix the script error on the second initialization of Gantt when custom datastores are added

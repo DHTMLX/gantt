@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.9 Standard
+dhtmlxGantt v.7.0.10 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -271,6 +271,9 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
   white-space: nowrap;
   overflow-x: hidden;
   overflow-y: hidden;
+}
+.gantt_touch_active {
+  overscroll-behavior: none;
 }
 .gantt_task_scroll {
   overflow-x: scroll;

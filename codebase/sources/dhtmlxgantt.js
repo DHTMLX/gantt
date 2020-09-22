@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.9 Standard
+dhtmlxGantt v.7.0.10 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5919,9 +5919,9 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!************************************************!*\
-  !*** ./node_modules/webpack/buildin/global.js ***!
-  \************************************************/
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -7386,6 +7386,9 @@ module.exports = function(gantt){
 			}
 
 			if (!this.config.ignore) {
+				// GS-1279 Gantt crashes on Mobile Firefox after starting to create a link and moving finger outisde the page.
+				if (e.targetTouches && !source.target) return;
+				
 				source.pos = this.getPosition(source);
 				this.config.marker.style.left = source.pos.x + "px";
 				this.config.marker.style.top = source.pos.y + "px";
@@ -15189,7 +15192,9 @@ module.exports = {
 			var state = controller.getState();
 			var cell = controller.locateCell(e.target);
 			if (cell && controller.isVisible() && cell.columnName == state.columnName) {
-				controller.hide();
+				//GS-933 probably, we don't need to hide the inline editor because the lightbox cannot be opened if you double-click on an inline editor
+				//remove this code later if people don't complain
+				//controller.hide();
 				return false;
 			}
 			return true;
@@ -16505,16 +16510,14 @@ function _init_dnd(gantt, grid) {
 	}, gantt);
 	dnd._getTargetY = gantt.bind(function (e) {
 		var pos = domHelpers.getNodePosition(grid.$grid_data);
-		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + (grid.$state.scrollTop || 0);
-		var minTop = maxBottom - gantt.$grid_data.getBoundingClientRect().height;
+		var scrollPos = grid.$state.scrollTop || 0;
+		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + scrollPos;
 
-		var y = e.pageY - pos.y + (grid.$state.scrollTop || 0);
-		if (y <= 0) {
-			y = 0;
-		} else if (y > maxBottom) {
+		var y = e.pageY - pos.y + scrollPos;
+		if (y > maxBottom) {
 			y = maxBottom;
-		} else if (y < minTop) {
-			y = minTop;
+		} else if (y < scrollPos) {
+			y = scrollPos;
 		}
 		return y;
 	}, gantt);
@@ -16653,7 +16656,7 @@ function _init_dnd(gantt, grid) {
 		} else {
 			this.callEvent("onRowDragEnd", [dnd.config.id, task.$drop_target]);
 		}
-
+		gantt.render();
 		this.refreshData();
 	}, gantt));
 }
@@ -16749,13 +16752,10 @@ function _init_dnd(gantt, grid) {
 
 		y = y || 0;
 
-		if (y <= 0) {
-			return store.$getRootId();
-		}
-
 		// limits for the marker according to the layout layer
-		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + (grid.$state.scrollTop || 0);
-		var minTop = maxBottom - gantt.$grid_data.getBoundingClientRect().height;
+		var scrollPos = grid.$state.scrollTop || 0;
+		var maxBottom = gantt.$grid_data.getBoundingClientRect().height + scrollPos;
+		var minTop = scrollPos;
 		var firstVisibleTaskPos = grid.$state.scrollTop / grid.getItemHeight();
 		var hiddenTaskPart = firstVisibleTaskPos - Math.floor(firstVisibleTaskPos);
 		if (hiddenTaskPart > 0.1 && hiddenTaskPart < 0.9) {
@@ -16832,6 +16832,7 @@ function _init_dnd(gantt, grid) {
 			task.$drop_target = null;
 		} else {
 			store.move(dnd.config.id, target.targetIndex, target.targetParent);
+			gantt.render();
 			this.callEvent("onRowDragEnd", [dnd.config.id, target.targetParent, target.targetIndex]);
 		}
 		store.refresh(task.id);
@@ -16940,13 +16941,17 @@ function highlightPosition(target, root, grid){
 		markerLine.className = "gantt_drag_marker gantt_grid_dnd_marker";
 		markerLine.innerHTML = "<div class='gantt_grid_dnd_marker_line'></div>";
 		markerLine.style.pointerEvents = "none";
-		document.body.appendChild(markerLine);
-		root.markerLine = markerLine;
 	}
+
 	if(target.child){
 		highlightFolder(target, markerLine, grid);
 	}else{
 		highlightRow(target, markerLine, grid);
+	}
+
+	if(!root.markerLine){
+		document.body.appendChild(markerLine);
+		root.markerLine = markerLine;
 	}
 }
 
@@ -17118,29 +17123,30 @@ function findTargetBelow(dndTaskId, taskId, allowedLevel, store){
 
 module.exports = function getSameLevelDropPosition(dndTaskId, targetTaskId, relTargetPos, eventTop, store, level){
 	var result;
-	if(targetTaskId !== store.$getRootId()) {
-		if (relTargetPos < 0.5) {
-			if (store.calculateItemLevel(store.getItem(targetTaskId)) === level) {
-				if(store.getPrevSibling(targetTaskId)){
-					result = dropTarget.nextSiblingTarget(dndTaskId, store.getPrevSibling(targetTaskId), store);
-				}else{
-					result = dropTarget.prevSiblingTarget(dndTaskId, targetTaskId, store);
+	if(targetTaskId !== store.$getRootId()){
+		var targetTask = store.getItem(targetTaskId);
+		var targetLevel = store.calculateItemLevel(targetTask);
+		if(targetLevel === level){
+			var prevSibling = store.getPrevSibling(targetTaskId);
+			if(relTargetPos < 0.5 && !prevSibling){
+				result = dropTarget.prevSiblingTarget(dndTaskId, targetTaskId, store);
+			}else{
+				if(relTargetPos < 0.5){
+					targetTaskId = prevSibling;
 				}
-			} else {
-				result = findTargetAbove(dndTaskId, targetTaskId, level, store);
-				if (result) {
-					result = findTargetBelow(dndTaskId, targetTaskId, level, store);
-				}
-			}
-		} else {
-			if (store.calculateItemLevel(store.getItem(targetTaskId)) === level) {
 				result = dropTarget.nextSiblingTarget(dndTaskId, targetTaskId, store);
-			} else {
-				result = findTargetBelow(dndTaskId, targetTaskId, level, store);
-				if (result) {
-					result = findTargetAbove(dndTaskId, targetTaskId, level, store);
-				}
 			}
+		}else if(targetLevel > level){
+			store.eachParent(function(parent){
+				if(store.calculateItemLevel(parent) === level){
+					targetTaskId = parent.id;
+				}
+			}, targetTask); 
+			result = findTargetAbove(dndTaskId, targetTaskId, level, store);
+		}else{
+			var targetAbove = findTargetAbove(dndTaskId, targetTaskId, level, store);
+			var targetBelow = findTargetBelow(dndTaskId, targetTaskId, level, store);
+			result = (relTargetPos < 0.5) ? targetAbove : targetBelow;
 		}
 	}else{
 		var rootId = store.$getRootId();
@@ -21635,7 +21641,16 @@ var createMouseHandler = (function(domHelpers) {
 				if (!default_action)
 					return;
 
-				if (id && gantt.getTask(id) && gantt.config.select_task && !gantt.config.multiselect) {
+				// GS-1025: if we don't do that, the dropdown or date select will be closed for unselected tasks
+				// GS-1078: or for the built-in select inline editor
+				switch(e.target.nodeName) {
+					case "SELECT":
+					case 'INPUT':
+						return;
+				}
+
+				//allow task selection when the multiselect plugin is not enabled
+				if (id && gantt.getTask(id) && !gantt._multiselect && gantt.config.select_task) {
 					gantt.selectTask(id);
 				}
 			}
@@ -28018,12 +28033,16 @@ module.exports = function(gantt) {
 
 		//touch start
 		touchHandlers.push([this.$container, names[1], function (e) {
+			// block pull-to-refresh
+			if(document && document.body){
+				document.body.classList.add("gantt_touch_active");
+			}
+
 			if (ignore(e)) return;
 			if (e.touches && e.touches.length > 1) {
 				actionMode = false;
 				return;
 			}
-
 
 			actionStart = accessor(e);
 			targetView = findTargetView(actionStart);
@@ -28056,6 +28075,9 @@ module.exports = function(gantt) {
 
 		//touch end
 		touchHandlers.push([this.$container, names[2], function (e) {
+			if(document && document.body){
+				document.body.classList.remove("gantt_touch_active");
+			}
 			if (ignore(e)) return;
 			if (longTapTimer) clearTimeout(longTapTimer);
 			gantt._touch_drag = false;
@@ -32644,6 +32666,8 @@ module.exports = function(gantt){
 
 			var keyDownHandler = function(e){
 				if(!gantt.config.keyboard_navigation) return;
+				// GS-734 & GS-1078: we don't need keyboard navigation inside inline editors
+				if(!gantt.config.keyboard_navigation_cells && isInlineEditorCell(e)) return;
 
 				return dispatcher.keyDownHandler(e);
 			};
@@ -32716,8 +32740,14 @@ module.exports = function(gantt){
 				}
 			}
 
+			function isInlineEditorCell(e){
+				return !!domHelpers.closest(e.target, ".gantt_grid_editor_placeholder");
+			}
+
 			function mousedownHandler(e){
 				if(!gantt.config.keyboard_navigation) return true;
+				// GS-734 & GS-1078: we don't need keyboard navigation inside inline editors
+				if(!gantt.config.keyboard_navigation_cells && isInlineEditorCell(e)) return true;
 
 				var focusNode;
 				var locateTask = dispatcher.fromDomElement(e);
@@ -34321,7 +34351,7 @@ gantt._multiselect = {
 	updateState: function() {
 		this._one_level = gantt.config.multiselect_one_level;
 		var active = this._active;
-		this._active = gantt.config.multiselect;
+		this._active = gantt.config.select_task;
 		if (this._active != active) {
 			this.reset();
 		}
@@ -34434,22 +34464,24 @@ gantt._multiselect = {
 		var defaultLast = this.getFirstSelected();
 		var isLast = false;
 		var last = this.getLastSelected();
+		var multiSelect = gantt.config.multiselect;
 
-		if (e.shiftKey) {
-			if (!gantt.isTaskExists(this.getFirstSelected()) || this.getFirstSelected() === null) {
-				this.setFirstSelected(target_ev);
-			}
-		} else if (e.ctrlKey || e.metaKey) {
-			if (!this.isSelected(target_ev))
-				this.setFirstSelected(target_ev);
-		} else {
+
+		var singleSelection = (function (){
 			this.setFirstSelected(target_ev);
-		}
-		if (e.ctrlKey || e.metaKey) {
-			if (target_ev) {
-				this.toggle(target_ev, e);
+
+			if (!this.isSelected(target_ev)) {
+				this.select(target_ev, e);
 			}
-		} else if (e.shiftKey && selected.length) {
+			selected = this.getSelected();
+			for (var i = 0; i < selected.length; i++) {
+				if (selected[i] !== target_ev) {
+					this.unselect(selected[i], e);
+				}
+			}
+		}).bind(this);
+
+		var blockSelection = (function(){
 			if (!last)
 				last = target_ev;
 			else if (target_ev) {
@@ -34472,17 +34504,35 @@ gantt._multiselect = {
 					tmp = (first_indx > target_indx) ? gantt.getNext(tmp) : gantt.getPrev(tmp);
 				}
 			}
-		} else { // no key press when mouse click
-			if (!this.isSelected(target_ev)) {
-				this.select(target_ev, e);
-			}
-			selected = this.getSelected();
-			for (var i=0; i<selected.length; i++) {
-				if (selected[i] !== target_ev) {
-					this.unselect(selected[i], e);
-				}
+		}).bind(this);
+
+
+		if (multiSelect && (e.ctrlKey || e.metaKey)) {
+			if (!this.isSelected(target_ev))
+				this.setFirstSelected(target_ev);
+
+			if (target_ev) {
+				this.toggle(target_ev, e);
 			}
 		}
+
+		else if (multiSelect && e.shiftKey) {
+			if (!gantt.isTaskExists(this.getFirstSelected()) || this.getFirstSelected() === null) {
+				this.setFirstSelected(target_ev);
+			}
+
+			if (selected.length) { // select a group of tasks
+				blockSelection();
+			}
+			else { // select a task when no task is selected and Shift is pressed
+				singleSelection();
+			}
+		}
+		
+		else { // no key press or no multiple selection on the mouse click
+			singleSelection();
+		}
+
 
 		if (this.isSelected(target_ev)) {
 			this.setLastSelected(target_ev);
@@ -36155,7 +36205,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.9";
+	this.version = "7.0.10";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};
@@ -36173,9 +36223,11 @@ module.exports = function(supportedExtensions) {
 	var extensionManager = new ExtensionManager(supportedExtensions);
 	gantt.plugins = function(config){
 		for(var i in config){
-			var plugin = extensionManager.getExtension(i);
-			if(plugin){
-				plugin(gantt);
+			if(config[i]){
+				var plugin = extensionManager.getExtension(i);
+				if(plugin){
+					plugin(gantt);
+				}
 			}
 		}
 	};
