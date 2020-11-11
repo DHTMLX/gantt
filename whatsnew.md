@@ -1,3 +1,13 @@
+### 7.0.11
+
+Add the container_resize_timeout config for changing the timeout before redrawing Gantt when resizing the container
+Add the wheel_scroll_sensitivity config for changing the speed of scrolling the gantt by the mouse wheel
+Fix the bug with Auto Scheduling when using different working calendars
+Fix the conflict between placeholder tasks and Auto Scheduling
+Fix redundant repaints when api/gantt_sort_config.md is enabled
+Fix the issue with Inline Editors and a scrollable grid, when inline editors lose focus right after click
+Fix the issue that caused Gantt to close the Quick Info popup when the user clicks on it
+
 ### 7.0.10
 
 Fix the incorrect work of vertical resizers (the regression appeared in v7.0.9)
