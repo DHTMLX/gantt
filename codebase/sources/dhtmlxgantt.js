@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.11 Standard
+dhtmlxGantt v.7.0.12 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -9956,6 +9956,10 @@ DataStore.prototype = {
 		}
 	},
 	clearAll: function(){
+		// GS-956 We need to unselect the resource as its ID is cached
+		this.silent(function(){
+			this.unselect();
+		});
 		this.pull = {};
 		this.visibleOrder = powerArray.$create();
 		this.fullOrder = powerArray.$create();
@@ -10179,6 +10183,7 @@ function initDataStores(gantt){
 		for(var i=0; i < order.length; i++){
 			var item = order[i];
 			item.$index = i;
+			item.$local_index = gantt.getTaskIndex(item.id);
 			gantt.resetProjectDates(item);
 		}
 
@@ -10913,6 +10918,7 @@ TreeDataStore.prototype = utils.mixin({
 				item = data[i];
 				this._add_branch(item);
 				item.$level = this.calculateItemLevel(item);
+				item.$local_index = this.getBranchIndex(item.id);
 
 				if (!utils.defined(item.$open)) {
 					item.$open = utils.defined(item.open) ? item.open : this.$openInitially();
@@ -11266,8 +11272,8 @@ TreeDataStore.prototype = utils.mixin({
 
 			if (!field) field = "order";
 			var criteria = (typeof(field) == "string") ? (function(a, b) {
-				if (a[field] == b[field] || 
-					(helpers.isDate(a[field]) && helpers.isDate(b[field]) && a[field].valueOf() == b[field].valueOf())) 
+				if (a[field] == b[field] ||
+					(helpers.isDate(a[field]) && helpers.isDate(b[field]) && a[field].valueOf() == b[field].valueOf()))
 				{
 					return 0;
 				}
@@ -12088,7 +12094,11 @@ function createLayoutFacade(){
 		showTask: function(id) {
 			var pos = this.getTaskPosition(this.getTask(id));
 
-			var left = Math.max(pos.left - this.config.task_scroll_offset, 0);
+			// GS-1261: we need to show the start_date even in the RTL mode
+			var leftPos = pos.left;
+			if (this.config.rtl) leftPos = pos.left + pos.width;
+
+			var left = Math.max(leftPos - this.config.task_scroll_offset, 0);
 
 			var dataHeight = this._scroll_state().y;
 			var top;
@@ -17387,11 +17397,15 @@ var Cell = (function () {
 
 	Cell.prototype.scrollTo = function(left, top){
 
+		//GS-333 Add a way to scroll the HTML views:
+		var cell = this.$view;
+		if (this.$config.html) cell = this.$view.firstChild;
+
 		if (left*1 == left){
-			this.$view.scrollLeft = left;
+			cell.scrollLeft = left;
 		}
 		if(top*1 == top){
-			this.$view.scrollTop = top;
+			cell.scrollTop = top;
 		}
 	};
 
@@ -18065,11 +18079,14 @@ var Layout = (function (_super) {
 		contentWidth += borders.horizontal;
 		contentHeight += borders.vertical;
 
+		// GS-149 & GS-150: By default this code only increases the container sizes, because of that, the cell sizes
+		// are also increased. Keep this code here in the case if something goes wrong
+		/*
 		if(this.$root){
 			contentWidth += 1;
 			contentHeight += 1;
 		}
-
+		*/
 		return {
 			width: contentWidth,
 			height: contentHeight
@@ -19943,9 +19960,11 @@ module.exports = function (gantt) {
 		var map = config._time_format_order;
 		function _getEndDate(selects, map, startDate) {
 			var endDate = gantt.form_blocks.getTimePickerValue(selects, config, map.size);
-
-			if (endDate <= startDate) {
-				return gantt.date.add(startDate, gantt._get_timepicker_step(), "minute");
+			// GS-1010: We need to add a way to obtain exact end_date for validation
+			if (endDate <= startDate) {  // when end date seems wrong
+				if (config.autofix_end !== false || config.single_date) { // auto correct it in two cases - when the auto correction is not disabled, or when we have 'single date' control and the user don't have the UI to specify the end date
+					return gantt.date.add(startDate, gantt._get_timepicker_step(), "minute");
+				}
 			}
 			return endDate;
 		}
@@ -20012,6 +20031,9 @@ module.exports = function(gantt) {
 		var oldOnChange = sns.onchange;
 		sns.onchange = function () {
 			gantt.changeLightboxType(this.value);
+			if (this.value === gantt.config.types.task){
+				gantt._lightbox_new_type = "task";
+			}
 			if (typeof oldOnChange == 'function') {
 				oldOnChange.apply(this, arguments);
 			}
@@ -20280,6 +20302,8 @@ module.exports = function (gantt) {
 
 
 		gantt.lightbox_events.gantt_delete_btn = function () {
+			gantt._lightbox_new_type = null;
+
 			if (!gantt.callEvent("onLightboxDelete", [gantt._lightbox_id]))
 				return;
 
@@ -20452,6 +20476,12 @@ module.exports = function (gantt) {
 				}
 			}
 		}
+		// GS-1282 We need to preserve the task type even if the lightbox doesn't have the typeselect section
+		if (gantt._lightbox_new_type == "task") {
+			task.type = gantt.config.types.task;
+			gantt._lightbox_new_type = null;
+		}
+
 		return task;
 	};
 
@@ -21341,7 +21371,8 @@ module.exports = function(gantt) {
 
 		if (text.expire > 0)
 			messageBox.timers[text.id] = window.setTimeout(function () {
-				messageBox.hide(text.id);
+				// GS-1213: We need that when Gantt is destroyed
+				if (messageBox) messageBox.hide(text.id);
 			}, text.expire);
 
 		messageBox.pull[text.id] = message;
@@ -26902,14 +26933,32 @@ function createTaskDND(timeline, gantt) {
 				var task = gantt.getTask(drag.id);
 				var dragMultiple = this.dragMultiple;
 
+				var finalizingBulkMove = false;
+				var moveCount = 0;
 				if (drag.mode === config.drag_mode.move) {
 					if ((gantt.isSummaryTask(task) && config.drag_project) || (this._isMultiselect())) {
+						finalizingBulkMove = true;
+						moveCount = Object.keys(dragMultiple).length;
+					}
+				}
+
+				var doFinalize = function doFinalize(){
+					if(finalizingBulkMove){
 						for (var i in dragMultiple) {
 							this._finalize_mouse_up(dragMultiple[i].id, config, dragMultiple[i], e);
 						}
 					}
+					this._finalize_mouse_up(drag.id, config, drag, e);
+				};
+
+				if(finalizingBulkMove && moveCount > 25){// 25 - arbitrary threshold for bulk dnd at which we start doing complete repaint to refresh
+					gantt.batchUpdate(function(){
+						doFinalize.call(this);
+					}.bind(this));
+				}else{
+					doFinalize.call(this);
 				}
-				this._finalize_mouse_up(drag.id, config, drag, e);
+
 			}
 			this.clear_drag_state();
 		},
@@ -29123,6 +29172,20 @@ module.exports = function(gantt) {
 		}
 
 	});
+
+	// GS-1261: scroll the views to the right side when RTL is enabled
+	gantt.attachEvent("onGanttReady", function(){
+		if(!isHeadless(gantt) && gantt.config.rtl){
+			gantt.$layout.getCellsByType("viewCell").forEach(function(cell){ 
+				var attachedScrollbar = cell.$config.scrollX;
+				if (!attachedScrollbar) return;
+
+				var scrollbar = gantt.$ui.getView(attachedScrollbar);
+				if (scrollbar) scrollbar.scrollTo(scrollbar.$config.scrollSize,0);
+
+			});
+		}
+	});
 };
 
 /***/ }),
@@ -30671,17 +30734,22 @@ CalendarWorkTimeStrategy.prototype = {
 		while (added < duration) {
 			var dayStart = this.$gantt.date.day_start(new Date(start));
 
+			var iterateFromDayEnd = false;
+			if(start.valueOf() === dayStart.valueOf()){
+				dayStart = this.$gantt.date.add(dayStart, -1, "day");
+				iterateFromDayEnd = true;
+			}
 			//var dayStartTimestamp = this.$gantt.date.day_start(new Date(start)).valueOf();
 			var dayEnd = new Date(dayStart.getFullYear(), dayStart.getMonth(), dayStart.getDate(), 23, 59,59,999).valueOf();
 
 			if(dayEnd !== calculatedDay){
-				daySchedule = this._getWorkHours(start);
-				minutesInDay = this._getMinutesPerDay(start);
+				daySchedule = this._getWorkHours(dayStart);
+				minutesInDay = this._getMinutesPerDay(dayStart);
 				calculatedDay = dayEnd;
 			}
 
 			var left = duration - added;
-			var timestamp = this._getTimeOfDayStamp(start);
+			var timestamp = this._getTimeOfDayStamp(start, iterateFromDayEnd);
 
 			if(!daySchedule.length || !minutesInDay){
 				start = this.$gantt.date.add(start, -1, "day");
@@ -30726,7 +30794,22 @@ CalendarWorkTimeStrategy.prototype = {
 					}
 				}
 			}else{
-				start = this._getClosestWorkTimePast(new Date(start - 1), "hour");
+				if(start.getHours() === 0 && start.getMinutes() === 0 && start.getSeconds() === 0){
+					var prev = this._getClosestWorkTimePast(start, "hour");
+					if(prev.valueOf() === start.valueOf()){
+						var prev = this.$gantt.date.add(start, -1, "day");
+						var times = this._getWorkHours(prev);
+						if(times.length){
+							var lastInterval = times[times.length - 1];
+							prev.setSeconds(lastInterval.durationSeconds);
+						}
+					}
+					start = prev;
+
+				} else{
+					start = this._getClosestWorkTimePast(new Date(start - 1), "hour");
+				}
+
 			}
 		}
 
@@ -34143,6 +34226,34 @@ module.exports = function(gantt) {
 				}
 
 				gantt.$keyboardNavigation.KeyNavNode.prototype.focus.apply(this, [keptFocus]);
+
+				// GS-152 if there are scrollbars with custom names, change their scroll position
+				scrollGrid();
+
+				function scrollGrid() {
+					var grid = gantt.$ui.getView("grid");
+					var scrollPositionX = parseInt(grid.$grid.scrollLeft);
+					var scrollPositionY = parseInt(grid.$grid_data.scrollTop);
+
+					var attachedScrollbarHorizontal = grid.$config.scrollX;
+
+					if (attachedScrollbarHorizontal && grid.$config.scrollable) {
+						var scrollbarHorizontal = gantt.$ui.getView(attachedScrollbarHorizontal);
+						if (scrollbarHorizontal) {
+							scrollbarHorizontal.scrollTo(scrollPositionX, scrollPositionY);
+						}
+					}
+
+					var attachedScrollbarVertical = grid.$config.scrollY;
+
+					if (attachedScrollbarVertical) {
+						var scrollbarVertical = gantt.$ui.getView(attachedScrollbarVertical);
+						if (scrollbarVertical) {
+							scrollbarVertical.scrollTo(scrollPositionX, scrollPositionY);
+						}
+					}
+				}
+
 			},
 
 			keys: {
@@ -34451,15 +34562,19 @@ gantt.attachEvent("onDataRender", function(){
 	}
 });
 
-gantt.attachEvent("onGanttReady", function(){
-	initMarkerArea();
+gantt.attachEvent("onGanttLayoutReady", function(){
+	// GS-1304 - markers should attach when layout is initialized, both on gantt.init and gantt.resetLayout
+	// wait for "onBeforeGanttRender", so all layout elements will be in DOM
+	gantt.attachEvent("onBeforeGanttRender", function(){
+		initMarkerArea();
 
-	var layers = gantt.$services.getService("layers");
-	var markerRenderer = layers.createDataRender({
-		name: "marker",
-		defaultContainer: function(){ return gantt.$marker_area;}
-	});
-	markerRenderer.addLayer(render_marker);
+		var layers = gantt.$services.getService("layers");
+		var markerRenderer = layers.createDataRender({
+			name: "marker",
+			defaultContainer: function(){ return gantt.$marker_area;}
+		});
+		markerRenderer.addLayer(render_marker);
+	}, {once: true});
 });
 
 gantt.getMarker = function(id){
@@ -35177,7 +35292,7 @@ var QuickInfo = /** @class */ (function () {
         var gantt = this._gantt;
         var ev = gantt.getTask(id);
         this._quickInfoBoxId = id;
-        var allowedButtons = null;
+        var allowedButtons = [];
         if (this._quickInfoReadonly) {
             var buttons = gantt.config.quickinfo_buttons;
             var isEditor = { icon_delete: true, icon_edit: true };
@@ -35897,9 +36012,9 @@ var Monitor = /** @class */ (function () {
     };
     Monitor.prototype.onTaskMoved = function (task) {
         if (!this._ignore) {
-            task.$branch_index = this._gantt.getTaskIndex(task.id);
+            task.$local_index = this._gantt.getTaskIndex(task.id);
             var oldValue = this.getInitialTask(task.id);
-            if (task.$branch_index === oldValue.$branch_index &&
+            if (task.$local_index === oldValue.$local_index &&
                 this._gantt.getParent(task) === this._gantt.getParent(oldValue)) {
                 return;
             }
@@ -35964,7 +36079,7 @@ var Monitor = /** @class */ (function () {
         if (overwrite || (!this._initialTasks[id] || !this._batchMode)) {
             var task = gantt.copy(gantt.getTask(id));
             task.$index = gantt.getGlobalTaskIndex(id);
-            task.$branch_index = gantt.getTaskIndex(id);
+            task.$local_index = gantt.getTaskIndex(id);
             this.setInitialTaskObject(id, task);
         }
         return this._initialTasks[id];
@@ -36119,7 +36234,9 @@ var Monitor = /** @class */ (function () {
         this._storeCommand(command);
     };
     Monitor.prototype._storeTaskCommand = function (obj, type) {
-        obj.$branch_index = this._gantt.getTaskIndex(obj.id);
+        if (this._gantt.isTaskExists(obj.id)) {
+            obj.$local_index = this._gantt.getTaskIndex(obj.id);
+        }
         this._storeEntityCommand(obj, this.getInitialTask(obj.id), type, this._undo.command.entity.task);
     };
     Monitor.prototype._storeLinkCommand = function (obj, type) {
@@ -36384,7 +36501,7 @@ var Undo = /** @class */ (function () {
                     gantt[method](command.value.id);
                 }
                 else if (command.type === actions.move) {
-                    gantt[method](command.value.id, command.value.$branch_index, command.value.parent);
+                    gantt[method](command.value.id, command.value.$local_index, command.value.parent);
                 }
             }
         });
@@ -36405,7 +36522,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.11";
+	this.version = "7.0.12";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

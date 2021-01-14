@@ -1,3 +1,20 @@
+### 7.0.12
+
+Fix some minor issues with vertical drag and drop in large projects
+Fix the issue with the incorrect size of the container when the "autosize" config is used
+Keyboard navigation should now work correctly with the horizontal scroll of the grid
+HTML views of Layout now support external scrollbars
+Fix the issue that caused the incorrect state of the grid after reordering tasks, if the additional grid was added to the layout
+Fix the script error that happened after clearing and reloading the resource panel if a resource was selected
+Add the ability to disable automatic correction of the end date in the time section of the lightbox, which was applied when the selected start date was greater than the end date
+Fix a typo in the default config of Duration Formatter
+Fix the script error thrown when the gantt is destroyed while a popup message is shown
+Fix the initial position of the horizontal scroll in Grid and Timeline in the RTL mode
+Fix the incorrect work of the lightbox which caused the selected type of a task not to be saved if the typeselect control was not added to the lightbox configuration
+Fix the issue that caused markers to disappear after calling the "gantt.resetLayout()" method
+Fix the performance issue with the "drag_project" config used in large projects
+Fix the issue that prevented the QuickInfo popup from being displayed in the read-only mode when custom buttons were added to the config
+
 ### 7.0.11
 
 Add the container_resize_timeout config for changing the timeout before redrawing Gantt when resizing the container
