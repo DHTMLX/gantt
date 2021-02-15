@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.12 Standard
+dhtmlxGantt v.7.0.13 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -6643,14 +6643,18 @@ var fastVersion = __webpack_require__(/*! ./date_parsers/fast_version */ "./sour
 var cspCompliantVersion = __webpack_require__(/*! ./date_parsers/csp_compliant_version */ "./sources/core/common/date_parsers/csp_compliant_version.ts").default;
 
 module.exports = function(gantt) {
+	var canUseCsp = false;
+	(function() {
+		try {
+			new Function("canUseCsp = false;");
+		} catch(e) {
+			canUseCsp = true;
+		}
+	})();
 	function useCsp() {
 		var result = false;
 		if (gantt.config.csp === "auto") {
-			try {
-				new Function("result = false;");
-			} catch(e) {
-				result = true;
-			}
+			result = canUseCsp;
 		} else {
 			result = gantt.config.csp;
 		}
@@ -6734,14 +6738,13 @@ module.exports = function(gantt) {
 				date.setMilliseconds(0);
 			return date;
 		},
-		_add_days: function (date, inc) {
-			var ndate = new Date(date.valueOf());
+		_add_days: function (modifiedDate, inc, originalDate) {
 
-			ndate.setDate(ndate.getDate() + inc);
-			if (inc >= 0 && (!date.getHours() && ndate.getHours()) &&//shift to yesterday on dst
-				(ndate.getDate() <= date.getDate() || ndate.getMonth() < date.getMonth() || ndate.getFullYear() < date.getFullYear()))
-				ndate.setTime(ndate.getTime() + 60 * 60 * 1000 * (24 - ndate.getHours()));
-			return ndate;
+			modifiedDate.setDate(modifiedDate.getDate() + inc);
+			if (inc >= 0 && (!originalDate.getHours() && modifiedDate.getHours()) &&//shift to yesterday on dst
+				(modifiedDate.getDate() <= originalDate.getDate() || modifiedDate.getMonth() < originalDate.getMonth() || modifiedDate.getFullYear() < originalDate.getFullYear()))
+				modifiedDate.setTime(modifiedDate.getTime() + 60 * 60 * 1000 * (24 - modifiedDate.getHours()));
+			return modifiedDate;
 		},
 
 		add: function (date, inc, mode) {
@@ -6749,10 +6752,10 @@ module.exports = function(gantt) {
 			var ndate = new Date(date.valueOf());
 			switch (mode) {
 				case "day":
-					ndate = this._add_days(ndate, inc);
+					ndate = this._add_days(ndate, inc, date);
 					break;
 				case "week":
-					ndate = this._add_days(ndate, inc * 7);
+					ndate = this._add_days(ndate, inc * 7, date);
 					break;
 				case "month":
 					ndate.setMonth(ndate.getMonth() + inc);
@@ -7970,10 +7973,19 @@ module.exports = function(gantt) {
 			return null;
 		}
 		if (this.config.details_on_create) {
-			item.$new = true;
-			this.silent(function(){
-				gantt.$data.tasksStore.addItem(item, index);
-			});
+			//GS-761: assert unique ID
+			if (gantt.isTaskExists(item.id)){
+				var task = gantt.getTask(item.id);
+				if (task.$index != item.$index) {
+					this.$data.tasksStore.updateItem(item.id, item);
+				}
+			}
+			else {
+				item.$new = true;
+				this.silent(function(){
+					gantt.$data.tasksStore.addItem(item, index);
+				});	
+			}
 			this.selectTask(item.id);
 			this.refreshData();
 			this.showLightbox(item.id);
@@ -8194,8 +8206,9 @@ module.exports = function(gantt) {
 		var taskTiming = getTaskTimingMode(task);
 
 		var has_changed = true;
+		// GS-761 the dates check is necessary for adding empty tasks: gantt.addTask({id:"2"})
+		if (task.start_date && task.end_date && (taskTiming.$no_start || taskTiming.$no_end)) {
 
-		if (taskTiming.$no_start || taskTiming.$no_end) {
 			var oldStart = task.start_date.valueOf(),
 				oldEnd = task.end_date.valueOf();
 
@@ -9777,6 +9790,7 @@ DataStore.prototype = {
 			if(this.$initItem){
 				item = this.$initItem(utils.copy(item));
 			}
+			
 			if(this.callEvent("onItemLoading", [item])){
 				if (!this.pull.hasOwnProperty(item.id)) {
 					this.fullOrder.push(item.id);
@@ -9788,10 +9802,14 @@ DataStore.prototype = {
 		return loaded;
 	},
 	parse: function(data){
-		this.callEvent("onBeforeParse", [data]);
+		if (!this._skip_refresh) {
+			this.callEvent("onBeforeParse", [data]);
+		}
 		var loaded = this._parseInner(data);
-		this.refresh();
-		this.callEvent("onParse", [loaded]);
+		if (!this._skip_refresh) {
+			this.refresh();
+			this.callEvent("onParse", [loaded]);
+		}
 	},
 	getItem: function(id){
 		return this.pull[id];
@@ -9807,7 +9825,9 @@ DataStore.prototype = {
 		if (!this._skip_refresh) {
 			if (this.callEvent("onBeforeUpdate", [item.id, item]) === false) return false;
 		}
-		this.pull[id]=item;
+		// This is how it worked before updating the properties:
+		// this.pull[id]=item;
+		utils.mixin(this.pull[id],item, true);
 		if (!this._skip_refresh) {
 			this.callEvent("onAfterUpdate", [item.id, item]);
 			this.callEvent("onStoreUpdated", [item.id, item, "update"]);
@@ -10041,7 +10061,9 @@ DataStore.prototype = {
 	},
 
 	filter: function(rule){
-		this.callEvent("onBeforeFilter", []);
+		if (!this._skip_refresh) {
+			this.callEvent("onBeforeFilter", []);
+		}
 		var filteredOrder = powerArray.$create();
 		this.eachItem(function(item){
 			if(this.callEvent("onFilterItem", [item.id, item])){
@@ -10054,7 +10076,9 @@ DataStore.prototype = {
 		for(var i = 0; i < this.visibleOrder.length; i++){
 			this._searchVisibleOrder[this.visibleOrder[i]] = i;
 		}
-		this.callEvent("onFilter", []);
+		if (!this._skip_refresh) {
+			this.callEvent("onFilter", []);
+		}
 	},
 
 	getIndexRange: function(from, to){
@@ -10154,7 +10178,7 @@ function initDataStores(gantt){
 	});
 
 	gantt.attachEvent("onLinkValidation", function(link){
-		if(gantt.isLinkExists(link.id)){
+		if(gantt.isLinkExists(link.id) || link.id === "predecessor_generated"){
 			// link was already added into gantt
 			return true;
 		}
@@ -10216,9 +10240,11 @@ function initDataStores(gantt){
 		}
 
 		var task = tasksStore.getItem(id);
+		if (!task.$source) task.$source = [];
 		for (var i = 0; i < task.$source.length; i++) {
 			linksStore.refresh(task.$source[i]);
 		}
+		if (!task.$target) task.$target = [];
 		for (var i = 0; i < task.$target.length; i++) {
 			linksStore.refresh(task.$target[i]);
 		}
@@ -10862,7 +10888,18 @@ var TreeDataStore = function(config){
 	this._branches = {};
 
 	this.pull = {};
-	this.$initItem = config.initItem;
+	//GS-761 Update existing item instead of adding it to the new position
+	this.$initItem = function (item){
+		var loadedItem = item;
+		if(config.initItem){
+			loadedItem = config.initItem(loadedItem);
+		}
+		var existingItem = this.getItem(item.id);
+		if(existingItem && existingItem.parent != loadedItem.parent){
+			return this.move(loadedItem.id, loadedItem.$index || -1, loadedItem.parent || this._ganttConfig.root_id);
+		}
+		return loadedItem;
+	};
 	this.$parentProperty = config.parentProperty || "parent";
 
 	if(typeof config.rootId !== "function"){
@@ -10931,11 +10968,15 @@ TreeDataStore.prototype = utils.mixin({
 			return (item.render == "split" && this.hasChild(item.id));
 		},
 		parse: function(data){
-			this.callEvent("onBeforeParse", [data]);
+			if (!this._skip_refresh) {
+				this.callEvent("onBeforeParse", [data]);
+			}
 			var loaded = this._parseInner(data);
 			this._buildTree(loaded);
 			this.filter();
-			this.callEvent("onParse", [loaded]);
+			if (!this._skip_refresh) {
+				this.callEvent("onParse", [loaded]);
+			}
 		},
 
 		_addItemInner: function(item, index){
@@ -11570,7 +11611,7 @@ var createDatastoreFacade = function(){
 		if (task && this.isTaskVisible(taskId)) {
 			this.$data.tasksStore.refresh(taskId, !!this.getState("tasksDnd").drag_id || refresh_links === false);// do quick refresh during drag and drop
 			refreshLinks();
-		}else if(this.isTaskExists(taskId) && this.isTaskExists(this.getParent(taskId))){
+		}else if(this.isTaskExists(taskId) && this.isTaskExists(this.getParent(taskId)) && !this._bulk_dnd){
 			this.refreshTask(this.getParent(taskId));
 
 			var hasSplitParent = false;
@@ -11756,10 +11797,18 @@ var createTasksDatastoreFacade = function(){
 		if (!utils.defined(item.id))
 			item.id = utils.uid();
 
+		//GS-761: assert unique ID
+		if (this.isTaskExists(item.id)){
+			var task = this.getTask(item.id);
+			if (task.$index != item.$index) {
+				return this.$data.tasksStore.updateItem(item.id, item);
+			}
+		}
+
+
 		if (!utils.defined(parent)) parent = this.getParent(item) || 0;
 		if (!this.isTaskExists(parent)) parent = this.config.root_id;
 		this.setParent(item, parent);
-
 		return this.$data.tasksStore.addItem(item, index, parent);
 	},
 	deleteTask: function (id) {
@@ -13593,6 +13642,9 @@ function createResourceMethods(gantt){
 	gantt.$data.tasksStore.attachEvent("onStoreUpdated", function(){
 		resourceTaskCache = {};
 	});
+	gantt.attachEvent("onBeforeGanttRender", function(){
+		resourceTaskCache = {};
+	});
 
 	function getTaskBy(propertyName, propertyValue) {
 		if (typeof propertyName == "function") {
@@ -14968,7 +15020,11 @@ module.exports = function (gantt) {
 			var link = getFormatter(config).parse(code);
 			if(link){
 				link.target = taskId;
+				// GS-1290 A way to preserve the link. Otherwise validation will return false
+				// because the existing link ID is not passed there
+				link.id = "predecessor_generated";
 				if (gantt.isLinkAllowed(link)) {
+					link.id = undefined;
 					links.push(link);
 				}
 			}
@@ -22952,7 +23008,9 @@ var layerFactory = function(gantt){
 							container.appendChild(node);
 						} else {
 							var rel = relativeRoot ? relativeRoot() : container.firstChild;
-							if (rel)
+							// GS-1274: if we don't add the second check, Gantt stops working if
+							// we add the task layer without the timeline and switch to a layout with the timeline
+							if (rel && rel.parentNode == container)
 								container.insertBefore(node, rel);
 							else
 								container.appendChild(node);
@@ -26741,9 +26799,12 @@ function createTaskDND(timeline, gantt) {
 								dragHash = this.dragMultiple;
 							}
 						}
+
+						var dragProject = false;
 						if (gantt.isSummaryTask(task) && gantt.config.drag_project) {
 							var initialDrag = {};
 							initialDrag[drag.id] = utils.copy(drag);
+							dragProject = true;
 							dragHash = utils.mixin(initialDrag, this.dragMultiple);
 						}
 
@@ -26752,10 +26813,15 @@ function createTaskDND(timeline, gantt) {
 							shift = maxShift;
 						}
 						this._update_item_on_move(shift, drag.id, drag.mode, drag, e);
+
 						for (var i in dragHash) {
 							var childDrag =  dragHash[i];
+							if(dragProject && childDrag.id != drag.id){
+								gantt._bulk_dnd = true;
+							}
 							this._update_item_on_move(shift, childDrag.id, childDrag.mode, childDrag, e);
 						}
+						gantt._bulk_dnd = false;
 					} else {
 						// for resize and progress
 						this._update_item_on_move(shift, drag.id, drag.mode, drag, e);
@@ -29914,25 +29980,7 @@ CalendarWorkTimeStrategy.prototype = {
 		}
 		return timestamp;
 	},
-	_checkIfWorkingUnit: function (date, unit, order, skipLookup) {
-		if(!skipLookup){
-			if (order === undefined) {
-				order = this._getUnitOrder(unit);
-			}
-
-			// disable worktime check for custom time units
-			if (order === undefined) {
-				return true;
-			}
-			if (order) {
-				//check if bigger time unit is a work time (hour < day < month...)
-				//i.e. don't check particular hour if the whole day is marked as not working
-				if (!this._isWorkTime(date, this.units[order - 1], order - 1)) {
-					return false;
-				}
-			}
-		}
-
+	_checkIfWorkingUnit: function (date, unit) {
 		if (!this["_is_work_" + unit])
 			return true;
 		return this["_is_work_" + unit](date);
@@ -29977,23 +30025,8 @@ CalendarWorkTimeStrategy.prototype = {
 		return false;
 	},
 
-	_internDatesPull: {},
 	_nextDate: function (start, unit, step) {
-		var dateHelper = this.$gantt.date;
-		return dateHelper.add(start, step, unit);
-
-		/*var start_value = +start,
-			key = unit + "_" + step;
-		var interned = this._internDatesPull[key];
-		if(!interned){
-			interned = this._internDatesPull[key] = {};
-		}
-		var calculated;
-		if(!interned[start_value]){
-			interned[start_value] = calculated = dateHelper.add(start, step, unit);
-			//interned[start_value] = dateHelper.add(start, step, unit);
-		}
-		return calculated || interned[start_value];*/
+		return this.$gantt.date.add(start, step, unit);
 	},
 	_getWorkUnitsBetweenGeneric: function (from, to, unit, step) {
 		var dateHelper = this.$gantt.date;
@@ -30427,20 +30460,28 @@ CalendarWorkTimeStrategy.prototype = {
 		}, this));
 	},
 
-	_isWorkTime: function (date, unit, order) {
+	_isWorkTime: function (date, unit) {
 		// Check if this item has in the cache
 
-		// use string keys
-		var dateKey = String(date.valueOf());
-		var is_work_unit = -1;this._workingUnitsCache.getItem(unit, dateKey);
+		var useCache = unit === "day"; // use cache only for days. In case of hours/minutes cache size grows too large and the overhead exceeds the gains
+		var isWorkUnit = -1;
+		var dateKey = null;
 
-		if (is_work_unit == -1) {
-			// calculate if not cached
-			is_work_unit = this._checkIfWorkingUnit(date, unit, order);
-		//	this._workingUnitsCache.setItem(unit, dateKey, is_work_unit);
+		if(useCache){
+			// use string keys
+			dateKey = String(date.valueOf());
+			isWorkUnit = this._workingUnitsCache.getItem(unit, dateKey);
 		}
 
-		return is_work_unit;
+		if (isWorkUnit == -1) {
+			// calculate if not cached
+			isWorkUnit = this._checkIfWorkingUnit(date, unit);
+			if(useCache){
+				this._workingUnitsCache.setItem(unit, dateKey, isWorkUnit);
+			}
+		}
+
+		return isWorkUnit;
 	},
 
 	isWorkTime: function () {
@@ -36522,7 +36563,7 @@ exports.Undo = Undo;
 
 function DHXGantt(){
 	this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-	this.version = "7.0.12";
+	this.version = "7.0.13";
 	this.license = "gpl";
 	this.templates = {};
 	this.ext = {};

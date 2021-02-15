@@ -1,3 +1,12 @@
+### 7.0.13
+
+Fix the script error happened when the layout configuration is changed dynamically and gantt.addTaskLayer is used
+Fix the issue with the initial inner height of the resource histogram when the fetchTasks option is used
+Fix the incorrect work of the predecessor editor which caused it to delete existing links when the value is edited
+Fix the incorrect work of the gantt when a task with a non-unique ID is added to the gantt via the gantt.addTask and gantt.parse methods
+Performance improvement for drag and drop when the auto_types and drag_project configuration options are enabled
+Performance improvement for calculation of working time when duration_unit is set to "day"
+
 ### 7.0.12
 
 Fix some minor issues with vertical drag and drop in large projects
