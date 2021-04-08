@@ -1,3 +1,26 @@
+### 7.1.0
+
+The ability to assign resources to the specific dates of the task
+The new gantt.getTaskAssignments() method
+The ability to manage the resource assignments via the new gantt.config.process_resource_assignments and gantt.updateTaskAssignments() Gantt API
+Rollup tasks and milestones
+The ability to hide task bars and milestones in the timeline area
+The ability to set different working hours for different time spans
+The ability to set the height for a separate row in the grid
+The ability to resize a row in the grid by drag-and-drop
+The ability to get the height of the DOM element of the task via the gantt.getTaskBarHeight() method
+New events: onBeforeRowResize, onRowResize, onBeforeRowResizeEnd, onAfterRowResize
+The onrender callback for rendering a grid cell into DOM is added
+The onrender callback for rendering a custom element of the task layer into DOM is added
+Fix the issue with reordering tasks vertically in the resource view when resources have values assigned
+Fix the issue that caused “resource_cell_value” not being called and the resource markers not being rendered if a task doesn’t start at the beginning of the timeline cell
+Fix the issue that caused Gantt to stop working when deleting the task with the id that already exists in the data store
+Fix the script error thrown when specifying the 0 number value as a task id even if the “root_id” parameter is set
+Fix the issue that caused the resizer listener not to work in Salesforce environment
+Fix the script error appeared when applying Fullscreen Extension several times together with its methods
+Fix the issue with Keyboard Navigation Extension that caused navigation in Grid to stop working when adding the plugin several times
+Fix the issue with Inline Editors when the editor couldn't be opened in a cell that is located after a column that is hidden via hide:true property
+
 ### 7.0.13
 
 Fix the script error happened when the layout configuration is changed dynamically and gantt.addTaskLayer is used

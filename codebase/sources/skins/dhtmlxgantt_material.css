@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.13 Standard
+dhtmlxGantt v.7.1.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -240,6 +240,12 @@ div.gantt_scale_line:last-child::after {
 }
 .gantt_task_line .gantt_link_control.task_right {
   right: -15px;
+}
+.gantt_task_line.gantt_thin_task .gantt_task_drag.task_end_date {
+  left: 3px;
+}
+.gantt_task_line.gantt_thin_task .gantt_task_drag.task_start_date {
+  left: -13px;
 }
 .chartHeaderBg {
   background-color: #fff;
@@ -730,15 +736,39 @@ label.gantt_resource_row select {
   width: 1px;
   margin: 0 auto;
 }
-.gantt_drag_marker.gantt_grid_resize_area {
+.gantt_task_grid_row_resize_wrap {
+  cursor: row-resize;
+  position: absolute;
+  height: 13px;
+  margin-top: -7px;
+  left: 0px;
+  width: 100%;
+}
+.gantt_task_grid_row_resize_wrap .gantt_task_grid_row_resize {
+  background-color: #D7D7D7;
+  top: 6px;
+  height: 1px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+.gantt_drag_marker.gantt_grid_resize_area,
+.gantt_drag_marker.gantt_row_grid_resize_area {
   background-color: rgba(231, 231, 231, 0.5);
-  border-left: 1px solid #D7D7D7;
-  border-right: 1px solid #D7D7D7;
   height: 100%;
   width: 100%;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
+}
+.gantt_drag_marker.gantt_grid_resize_area {
+  border-left: 1px solid #D7D7D7;
+  border-right: 1px solid #D7D7D7;
+}
+.gantt_drag_marker.gantt_row_grid_resize_area {
+  border-top: 1px solid #D7D7D7;
+  border-bottom: 1px solid #D7D7D7;
+  pointer-events: none;
 }
 .gantt_row {
   display: flex;
@@ -1301,7 +1331,7 @@ div.dhx_modal_cover {
   border-right-color: transparent !important;
   border-bottom-color: transparent !important;
   border-left-color: #87A4BC;
-  margin-top: -1px;
+  /*margin-top: -1px;*/
 }
 .gantt_link_arrow_left {
   border-width: 6px 6px 6px 0;
@@ -1468,6 +1498,10 @@ div.dhx_modal_cover {
 .gantt_split_subproject {
   opacity: 0.1;
   pointer-events: none;
+}
+.gantt_rollup_child .gantt_link_control,
+.gantt_rollup_child:hover .gantt_link_control {
+  display: none;
 }
 .gantt_unselectable,
 .gantt_unselectable div {
@@ -2308,6 +2342,10 @@ div.dhx_modal_cover {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+.gantt_noselect .gantt_grid_data .gantt_row:hover,
+.gantt_noselect .gantt_grid_data .gantt_row.odd:hover {
+  background-color: unset;
 }
 .gantt_drag_marker {
   position: absolute;

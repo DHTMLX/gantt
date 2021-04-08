@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.0.13 Standard
+dhtmlxGantt v.7.1.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -263,15 +263,39 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
   width: 1px;
   margin: 0 auto;
 }
-.gantt_drag_marker.gantt_grid_resize_area {
+.gantt_task_grid_row_resize_wrap {
+  cursor: row-resize;
+  position: absolute;
+  height: 13px;
+  margin-top: -7px;
+  left: 0px;
+  width: 100%;
+}
+.gantt_task_grid_row_resize_wrap .gantt_task_grid_row_resize {
+  background-color: #ebebeb;
+  top: 6px;
+  height: 1px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+.gantt_drag_marker.gantt_grid_resize_area,
+.gantt_drag_marker.gantt_row_grid_resize_area {
   background-color: rgba(231, 231, 231, 0.5);
-  border-left: 1px solid #a4bed4;
-  border-right: 1px solid #a4bed4;
   height: 100%;
   width: 100%;
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
+}
+.gantt_drag_marker.gantt_grid_resize_area {
+  border-left: 1px solid #a4bed4;
+  border-right: 1px solid #a4bed4;
+}
+.gantt_drag_marker.gantt_row_grid_resize_area {
+  border-top: 1px solid #a4bed4;
+  border-bottom: 1px solid #a4bed4;
+  pointer-events: none;
 }
 .gantt_row {
   display: flex;
@@ -841,7 +865,7 @@ div.dhx_modal_cover {
   border-right-color: transparent !important;
   border-bottom-color: transparent !important;
   border-left-color: #4a8f43;
-  margin-top: -1px;
+  /*margin-top: -1px;*/
 }
 .gantt_link_arrow_left {
   border-width: 4px 8px 4px 0;
@@ -1019,6 +1043,10 @@ div.dhx_modal_cover {
 .gantt_split_subproject {
   opacity: 0.1;
   pointer-events: none;
+}
+.gantt_rollup_child .gantt_link_control,
+.gantt_rollup_child:hover .gantt_link_control {
+  display: none;
 }
 .gantt_unselectable,
 .gantt_unselectable div {
@@ -1883,6 +1911,10 @@ div.dhx_modal_cover {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+.gantt_noselect .gantt_grid_data .gantt_row:hover,
+.gantt_noselect .gantt_grid_data .gantt_row.odd:hover {
+  background-color: unset;
 }
 .gantt_drag_marker {
   position: absolute;
