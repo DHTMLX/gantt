@@ -1,10 +1,10 @@
-// Type definitions for dhtmlxGantt 7.1.0
+// Type definitions for dhtmlxGantt 7.1.1
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
 
 
-export type GanttEventName = "onAfterAutoSchedule"|"onAfterBatchUpdate"|"onAfterBranchLoading"|"onAfterLightbox"|"onAfterLinkAdd"|"onAfterLinkDelete"|"onAfterLinkUpdate"|"onAfterQuickInfo"|"onAfterRedo"|"onAfterSort"|"onAfterTaskAdd"|"onAfterTaskAutoSchedule"|"onAfterTaskDelete"|"onAfterTaskDrag"|"onAfterTaskMove"|"onAfterTaskUpdate"|"onAfterUndo"|"onAjaxError"|"onAutoScheduleCircularLink"|"onBeforeAutoSchedule"|"onBeforeBatchUpdate"|"onBeforeBranchLoading"|"onBeforeCollapse"|"onBeforeDataRender"|"onBeforeExpand"|"onBeforeGanttReady"|"onBeforeGanttRender"|"onBeforeLightbox"|"onBeforeLinkAdd"|"onBeforeLinkDelete"|"onBeforeLinkDisplay"|"onBeforeLinkUpdate"|"onBeforeMultiSelect"|"onBeforeParse"|"onBeforeRedo"|"onBeforeRedoStack"|"onBeforeRowDragEnd"|"onBeforeRowDragMove"|"onBeforeTaskAdd"|"onBeforeTaskAutoSchedule"|"onBeforeTaskChanged"|"onBeforeTaskDelete"|"onBeforeTaskDisplay"|"onBeforeTaskDrag"|"onBeforeTaskMove"|"onBeforeTaskMultiSelect"|"onBeforeTaskSelected"|"onBeforeTaskUpdate"|"onBeforeUndo"|"onBeforeUndoStack"|"onCircularLinkError"|"onClear"|"onCollapse"|"onColumnResize"|"onColumnResizeEnd"|"onColumnResizeStart"|"onContextMenu"|"onDataProcessorReady"|"onDataRender"|"onDestroy"|"onEmptyClick"|"onError"|"onExpand"|"onGanttLayoutReady"|"onGanttReady"|"onGanttRender"|"onGanttScroll"|"onGridHeaderClick"|"onGridResize"|"onGridResizeEnd"|"onGridResizeStart"|"onLightbox"|"onLightboxButton"|"onLightboxCancel"|"onLightboxChange"|"onLightboxDelete"|"onLightboxSave"|"onLinkClick"|"onLinkCreated"|"onLinkDblClick"|"onLinkIdChange"|"onLinkValidation"|"onLoadEnd"|"onLoadStart"|"onMouseMove"|"onMultiSelect"|"onOptionsLoad"|"onParse"|"onQuickInfo"|"onRowDragEnd"|"onRowDragStart"|"onScaleAdjusted"|"onScaleClick"|"onTaskClick"|"onTaskClosed"|"onTaskCreated"|"onTaskDblClick"|"onTaskDrag"|"onTaskIdChange"|"onTaskLoading"|"onTaskMultiSelect"|"onTaskOpened"|"onTaskRowClick"|"onTaskSelected"|"onTaskUnselected"|"onTemplatesReady";
+export type GanttEventName = "onAfterAutoSchedule"|"onAfterBatchUpdate"|"onAfterBranchLoading"|"onAfterLightbox"|"onAfterLinkAdd"|"onAfterLinkDelete"|"onAfterLinkUpdate"|"onAfterQuickInfo"|"onAfterRedo"|"onAfterRowResize"|"onAfterSort"|"onAfterTaskAdd"|"onAfterTaskAutoSchedule"|"onAfterTaskDelete"|"onAfterTaskDrag"|"onAfterTaskMove"|"onAfterTaskUpdate"|"onAfterUndo"|"onAjaxError"|"onAutoScheduleCircularLink"|"onBeforeAutoSchedule"|"onBeforeBatchUpdate"|"onBeforeBranchLoading"|"onBeforeCollapse"|"onBeforeDataRender"|"onBeforeExpand"|"onBeforeGanttReady"|"onBeforeGanttRender"|"onBeforeLightbox"|"onBeforeLinkAdd"|"onBeforeLinkDelete"|"onBeforeLinkDisplay"|"onBeforeLinkUpdate"|"onBeforeMultiSelect"|"onBeforeParse"|"onBeforeRedo"|"onBeforeRedoStack"|"onBeforeRowDragEnd"|"onBeforeRowDragMove"|"onBeforeRowResize"|"onBeforeRowResizeEnd"|"onBeforeTaskAdd"|"onBeforeTaskAutoSchedule"|"onBeforeTaskChanged"|"onBeforeTaskDelete"|"onBeforeTaskDisplay"|"onBeforeTaskDrag"|"onBeforeTaskMove"|"onBeforeTaskMultiSelect"|"onBeforeTaskSelected"|"onBeforeTaskUpdate"|"onBeforeUndo"|"onBeforeUndoStack"|"onCircularLinkError"|"onClear"|"onCollapse"|"onColumnResize"|"onColumnResizeEnd"|"onColumnResizeStart"|"onContextMenu"|"onDataProcessorReady"|"onDataRender"|"onDestroy"|"onEmptyClick"|"onError"|"onExpand"|"onGanttLayoutReady"|"onGanttReady"|"onGanttRender"|"onGanttScroll"|"onGridHeaderClick"|"onGridResize"|"onGridResizeEnd"|"onGridResizeStart"|"onLightbox"|"onLightboxButton"|"onLightboxCancel"|"onLightboxChange"|"onLightboxDelete"|"onLightboxSave"|"onLinkClick"|"onLinkCreated"|"onLinkDblClick"|"onLinkIdChange"|"onLinkValidation"|"onLoadEnd"|"onLoadStart"|"onMouseMove"|"onMultiSelect"|"onOptionsLoad"|"onParse"|"onQuickInfo"|"onRowDragEnd"|"onRowDragStart"|"onRowResize"|"onScaleAdjusted"|"onScaleClick"|"onTaskClick"|"onTaskClosed"|"onTaskCreated"|"onTaskDblClick"|"onTaskDrag"|"onTaskIdChange"|"onTaskLoading"|"onTaskMultiSelect"|"onTaskOpened"|"onTaskRowClick"|"onTaskSelected"|"onTaskUnselected"|"onTemplatesReady";
 
 
 export interface GanttTemplates {
@@ -99,8 +99,9 @@ export interface GanttTemplates {
 	 * @param end_date end date of the scale cell
 	 * @param resource the resource object
 	 * @param tasks tasks that are assigned to the specified resource and overlap start/end dates of the cell
+	 * @param assignments resource assignments that are assigned to the specified start/end dates of the task
 	*/
-	histogram_cell_allocated(start_date: Date, end_date: Date, resource: any, tasks: any[]): void;
+	histogram_cell_allocated(start_date: Date, end_date: Date, resource: any, tasks: any[], assignments: any[]): void;
 
 	/**
 	 * specifies the height of the line that defines the available capacity of the resource
@@ -108,8 +109,9 @@ export interface GanttTemplates {
 	 * @param end_date end date of the scale cell
 	 * @param resource the resource object
 	 * @param tasks tasks that are assigned to the specified resource and overlap start/end dates of the cell
+	 * @param assignments resource assignments that are assigned to the specified start/end dates of the task
 	*/
-	histogram_cell_capacity(start_date: Date, end_date: Date, resource: any, tasks: any[]): void;
+	histogram_cell_capacity(start_date: Date, end_date: Date, resource: any, tasks: any[], assignments: any[]): void;
 
 	/**
 	 * defines the CSS class which is applied to a cell of the resource panel
@@ -117,8 +119,9 @@ export interface GanttTemplates {
 	 * @param end_date end date of the scale cell
 	 * @param resource the resource object
 	 * @param tasks tasks that are assigned to the specified resource and overlap start/end dates of the cell
+	 * @param assignments resource assignments that are assigned to the specified start/end dates of the task
 	*/
-	histogram_cell_class(start_date: Date, end_date: Date, resource: any, tasks: any[]): void;
+	histogram_cell_class(start_date: Date, end_date: Date, resource: any, tasks: any[], assignments: any[]): void;
 
 	/**
 	 * defines the label inside a cell
@@ -126,8 +129,9 @@ export interface GanttTemplates {
 	 * @param end_date end date of the scale cell
 	 * @param resource the resource object
 	 * @param tasks tasks that are assigned to the specified resource and overlap start/end dates of the cell
+	 * @param assignments resource assignments that are assigned to the specified start/end dates of the task
 	*/
-	histogram_cell_label(start_date: Date, end_date: Date, resource: any, tasks: any[]): void;
+	histogram_cell_label(start_date: Date, end_date: Date, resource: any, tasks: any[], assignments: any[]): void;
 
 	/**
 	 * specifies the CSS class that will be applied to a link
@@ -193,8 +197,9 @@ export interface GanttTemplates {
 	 * @param end_date end date of the scale cell
 	 * @param resource the resource object
 	 * @param tasks tasks that are assigned to specified resource and overlap start/end dates of the cell
+	 * @param assignments resource assignments that are assigned to the specified start/end dates of the task
 	*/
-	resource_cell_class(start_date: Date, end_date: Date, resource: any, tasks: any[]): string;
+	resource_cell_class(start_date: Date, end_date: Date, resource: any, tasks: any[], assignments: any[]): string;
 
 	/**
 	 * defines the HTML content of resource timeline cells
@@ -202,8 +207,9 @@ export interface GanttTemplates {
 	 * @param end_date end date of the scale cell
 	 * @param resource the resource object
 	 * @param tasks tasks that are assigned to specified resource and overlap start/end dates of the cell
+	 * @param assignments resource assignments that are assigned to the specified start/end dates of the task
 	*/
-	resource_cell_value(start_date: Date, end_date: Date, resource: any, tasks: any[]): string;
+	resource_cell_value(start_date: Date, end_date: Date, resource: any, tasks: any[], assignments: any[]): string;
 
 	/**
 	 * specifies the CSS class that will be applied to cells of the time scale of the timeline area
@@ -329,6 +335,8 @@ export interface GanttTemplates {
 	 * @param task the task's object
 	*/
 	lightbox_header(start_date: Date, end_date: Date, task: any): string;
+
+	[customTemplate: string]: any;
 }
 
 export interface GanttConfigOptions {
@@ -394,6 +402,11 @@ export interface GanttConfigOptions {
 	autosize_min_width: number;
 
 	/**
+	 * sets the height of task bars in the timeline area
+	*/
+	bar_height: number|string;
+
+	/**
 	 * enables dynamic loading in the Gantt chart
 	*/
 	branch_loading: boolean;
@@ -439,6 +452,11 @@ export interface GanttConfigOptions {
 	constraint_types: any;
 
 	/**
+	 * specifies the delay (in milliseconds) before redrawing the gantt when resizing the container
+	*/
+	container_resize_timeout: number;
+
+	/**
 	 * enables adjusting the task's start and end dates to the work time (while dragging)
 	*/
 	correct_work_time: boolean;
@@ -462,6 +480,11 @@ export interface GanttConfigOptions {
 	 * sets the format of the time scale (X-Axis)
 	*/
 	date_scale: string;
+
+	/**
+	 * defines whether gantt will perform a deep copy of data objects passed into the gantt.parse() method
+	*/
+	deepcopy_on_parse: boolean;
 
 	/**
 	 * 'says' to open the lightbox while creating new events by clicking the '+' button
@@ -547,6 +570,11 @@ export interface GanttConfigOptions {
 	 * sets the end value of the time scale
 	*/
 	end_date: Date;
+
+	/**
+	 * renders an external component into the DOM
+	*/
+	external_render: any;
 
 	/**
 	 * 'says' the Gantt chart to automatically extend the time scale in order to fit all displayed tasks
@@ -684,6 +712,11 @@ export interface GanttConfigOptions {
 	min_grid_column_width: number;
 
 	/**
+	 * sets the minimal row height that can be set for a task during resizing
+	*/
+	min_task_grid_row_height: number;
+
+	/**
 	 * enables/disables multi-task selection in the Gantt chart
 	*/
 	multiselect: boolean;
@@ -729,6 +762,11 @@ export interface GanttConfigOptions {
 	prevent_default_scroll: boolean;
 
 	/**
+	 * enables/disables parsing of the resource assignments
+	*/
+	process_resource_assignments: boolean;
+
+	/**
 	 * specifies the end date of a project
 	*/
 	project_end: Date;
@@ -767,6 +805,16 @@ export interface GanttConfigOptions {
 	 * enables the possibility to reorder grid columns by drag and drop
 	*/
 	reorder_grid_columns: boolean;
+
+	/**
+	 * enables the ability to adjust the row height by drag-and-drop
+	*/
+	resize_rows: boolean;
+
+	/**
+	 * specifies the name of the dataStore which stores resource assignments
+	*/
+	resource_assignment_store: string;
 
 	/**
 	 * changes the name of the attribute that Gantt uses to find which resource the task row in the resource grid/timeline is referring to
@@ -969,6 +1017,11 @@ export interface GanttConfigOptions {
 	task_date: string;
 
 	/**
+	 * 
+	*/
+	task_grid_row_resizer_attribute: any;
+
+	/**
 	 * sets the height of task bars in the timeline area
 	*/
 	task_height: number|string;
@@ -1064,6 +1117,11 @@ export interface GanttConfigOptions {
 	wai_aria_attributes: boolean;
 
 	/**
+	 * specifies the speed of scrolling the gantt by the mouse wheel
+	*/
+	wheel_scroll_sensitivity: any;
+
+	/**
 	 * sets both the section and its label on the same line
 	*/
 	wide_form: boolean;
@@ -1077,6 +1135,8 @@ export interface GanttConfigOptions {
 	 * defines date formats that are used to parse data from a data set and to send data to a server
 	*/
 	xml_date: string;
+
+	[customConfig: string]: any;
 }
 
 export interface GanttDateHelpers {
@@ -1094,6 +1154,7 @@ export interface GanttDateHelpers {
 	str_to_date(format: string): any;
 	convert_to_utc(origin: Date): Date;
 	to_fixed(value: number): string;
+	[customMethod: string]: any;
 }
 
 export interface GanttHotkeys {
@@ -1168,6 +1229,8 @@ export interface GanttLocaleLabels {
 	/* resource control */
 	resources_filter_placeholder: string;
 	resources_filter_label: string;
+
+	[customLabel: string]: any;
 }
 
 export interface GanttLocale {
@@ -1242,6 +1305,11 @@ export interface GanttStatic {
 	constants: any;
 
 	/**
+	 * a set of datastore methods
+	*/
+	datastore: any;
+
+	/**
 	 * a set of date formatting methods
 	*/
 	date: GanttDateHelpers;
@@ -1300,6 +1368,11 @@ export interface GanttStatic {
 	 * defines formatting templates for dates, titles, tooltips in the Gantt chart
 	*/
 	templates: GanttTemplates;
+
+	/**
+	 * a set of treeDatastore methods
+	*/
+	treeDatastore: any;
 
 	/**
 	 * various helper modules
@@ -1716,8 +1789,9 @@ export interface GanttStatic {
 	/**
 	 * returns the index of the column by its name
 	 * @param name the name of the column
+	 * @param excludeHidden optional, skips indexes of the hidden columns
 	*/
-	getColumnIndex(name: string): number;
+	getColumnIndex(name: string, excludeHidden?: boolean): number;
 
 	/**
 	 * returns all tasks and links that a task is connected with
@@ -1936,6 +2010,18 @@ export interface GanttStatic {
 	 * @param id the task id
 	*/
 	getTask(id: string|number): any;
+
+	/**
+	 * returns the parsed resource assignments of a specific task from the datastore
+	 * @param taskId the task id
+	*/
+	getTaskAssignments(taskId: string|number): any[];
+
+	/**
+	 * returns the height (in pixels) of the DOM element of the task
+	 * @param taskId the task's id
+	*/
+	getTaskBarHeight(taskId: number|string): number;
 
 	/**
 	 * finds a task by the specified criteria
@@ -2240,10 +2326,10 @@ export interface GanttStatic {
 
 	/**
 	 * loads data from a client-side resource
-	 * @param url a string or object which represents data
+	 * @param data a string or object which represents data
 	 * @param type optional, optional, (<i>'json', 'xml'</i>) the data type. The default value - <i>'json'</i>
 	*/
-	parse(url: any, type?: string): void;
+	parse(data: any, type?: string): void;
 
 	/**
 	 * activates specified extensions
@@ -2489,6 +2575,12 @@ export interface GanttStatic {
 	 * @param newState the new values of the task
 	*/
 	updateTask(id: string, newState: any): void;
+
+	/**
+	 * updates the resource property of the task object with the values of the resource assignments from the datastore
+	 * @param taskId the task id
+	*/
+	updateTaskAssignments(taskId: number|string): void;
 }
 
 declare var gantt: GanttStatic;

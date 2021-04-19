@@ -1,3 +1,14 @@
+7.1.1
+
+Fix the regression in the click_drag plugin
+Fix the Security Violation error thrown from the gantt when setting the gantt.config.csp config to the "auto" mode
+Fix code build settings that caused the package code v7.1.0 to contain ES6 syntax, the library is again ES5 compatible
+Fix the script error fired when trying to resize a grid column when gantt.config.reorder_grid_columns config is enabled
+Update TypeScript type definitions
+Add the onDestroy event to DataStore
+Performance improvement for gantts with a large number of task calendars
+Performance improvement for calculations of resource assignment during batchUpdate and autoScheduling
+
 ### 7.1.0
 
 The ability to assign resources to the specific dates of the task
