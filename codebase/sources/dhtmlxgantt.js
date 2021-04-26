@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.1 Standard
+dhtmlxGantt v.7.1.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -11117,6 +11117,14 @@ function initDataStores(gantt) {
   });
   tasksStore.attachEvent("onIdChange", function (oldId, newId) {
     gantt._update_flags(oldId, newId);
+
+    var changedTask = gantt.getTask(newId);
+
+    if (changedTask.$split_subtask || changedTask.rollup) {
+      gantt.eachParent(function (parent) {
+        gantt.refreshTask(parent.id);
+      }, newId);
+    }
   });
   tasksStore.attachEvent("onAfterUpdate", function (id) {
     gantt._update_parents(id);
@@ -13996,6 +14004,10 @@ module.exports = function (gantt) {
     if (resp.xmlDoc && resp.xmlDoc.status === 404) {
       // work if we don't have a file at current url
       this.assert(false, "Failed to load the data from <a href='" + resp.xmlDoc.responseURL + "' target='_blank'>" + resp.xmlDoc.responseURL + "</a>, server returns 404");
+      return;
+    }
+
+    if (gantt.$destroyed) {
       return;
     }
 
@@ -20693,7 +20705,11 @@ var ScrollbarCell = function (_super) {
 
   ScrollbarCell.prototype._initMouseWheel = function () {
     var ff = env.isFF;
-    if (ff) this.$domEvents.attach(this._getRootParent().$view, "wheel", this._mouseWheelHandler);else this.$domEvents.attach(this._getRootParent().$view, "mousewheel", this._mouseWheelHandler);
+    if (ff) this.$domEvents.attach(this._getRootParent().$view, "wheel", this._mouseWheelHandler, {
+      passive: false
+    });else this.$domEvents.attach(this._getRootParent().$view, "mousewheel", this._mouseWheelHandler, {
+      passive: false
+    });
   };
 
   ScrollbarCell.prototype.scrollHorizontally = function (left) {
@@ -24928,7 +24944,7 @@ var TimelineZoom = /** @class */ (function () {
                     this._handler.apply(this, [e]);
                     return true;
                 }
-            }, _this));
+            }, _this), { passive: false });
         };
         this._defaultHandler = function (e) {
             var timelineOffset = _this.$gantt.$task.getBoundingClientRect().x;
@@ -39351,7 +39367,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.1";
+  this.version = "7.1.2";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -42782,9 +42798,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 var helpers = __webpack_require__(/*! ./helpers */ "./sources/utils/helpers.js");
 
+var plainObjectConstructor = {}.constructor.toString();
+
 function isCustomType(object) {
   var constructorString = object.constructor.toString();
-  var plainObjectConstructor = {}.constructor.toString();
   return constructorString !== plainObjectConstructor;
 }
 
@@ -42806,17 +42823,15 @@ function copy(object) {
 
         break;
 
-      case helpers.isStringObject(object):
-        result = new String(object);
-        break;
-
-      case helpers.isNumberObject(object):
-        result = new Number(object);
-        break;
-
-      case helpers.isBooleanObject(object):
-        result = new Boolean(object);
-        break;
+      /*		case (helpers.isStringObject(object)):
+      			result = new String(object);
+      			break;
+      		case (helpers.isNumberObject(object)):
+      			result = new Number(object);
+      			break;
+      		case (helpers.isBooleanObject(object)):
+      			result = new Boolean(object);
+      			break;*/
 
       default:
         if (isCustomType(object)) {

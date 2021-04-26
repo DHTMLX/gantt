@@ -1,4 +1,11 @@
-7.1.1
+### 7.1.2
+
+Major performance improvement of the resource panel
+Fix the script error thrown when gantt.destructor is called while gantt.load is in progress
+Fix the incorrect behavior of split tasks on change of the task id
+Fix the incorrect work of scroll on mouse wheel in Angular
+
+### 7.1.1
 
 Fix the regression in the click_drag plugin
 Fix the Security Violation error thrown from the gantt when setting the gantt.config.csp config to the "auto" mode
