@@ -6930,7 +6930,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
                                   r.isDate(h) && (h = s.date_grid(h, e, g.name)),
                                   (null !== h && void 0 !== h) || (h = ""),
                                   (f = h),
-                                  (h = "<div class='gantt_tree_content'>" + escape(h) + "</div>"));
+                                  (h = "<div class='gantt_tree_content'>" + String(h).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") + "</div>"));
                             var p = "gantt_cell" + (_ ? " gantt_last_cell" : ""),
                                 v = [];
                             if (g.tree) {
@@ -19621,7 +19621,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
                                     return "";
                                 },
                                 task_text: function (t, e, n) {
-                                    return escape(n.text);
+                                    return String(n.text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"))
                                 },
                                 task_class: function (t, e, n) {
                                     return "";
