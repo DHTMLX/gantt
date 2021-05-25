@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.2 Standard
+dhtmlxGantt v.7.1.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -6675,9 +6675,9 @@ exports.clearImmediate = typeof self !== "undefined" && self.clearImmediate || t
 /***/ }),
 
 /***/ "./node_modules/webpack/buildin/global.js":
-/*!************************************************!*\
-  !*** ./node_modules/webpack/buildin/global.js ***!
-  \************************************************/
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -21032,8 +21032,20 @@ var ScrollbarCell = function (_super) {
     }
 
     var ff = env.isFF;
-    var wx = ff ? e.deltaX * -20 * wheelSpeed.x : e.wheelDeltaX * 2 * wheelSpeed.x;
-    var wy = ff ? e.deltaY * -40 * wheelSpeed.y : e.wheelDelta * wheelSpeed.y;
+    var deltaX = ff ? e.deltaX : e.wheelDeltaX;
+    var deltaY = ff ? e.deltaY : e.wheelDelta;
+    var multiplier = -20;
+
+    if (ff) {
+      if (e.deltaMode !== 0) {
+        multiplier = -40;
+      } else {
+        multiplier = -10;
+      }
+    }
+
+    var wx = ff ? deltaX * multiplier * wheelSpeed.x : deltaX * 2 * wheelSpeed.x;
+    var wy = ff ? deltaY * multiplier * wheelSpeed.y : deltaY * wheelSpeed.y;
     var horizontalScrollModifier = this.$gantt.config.horizontal_scroll_key;
 
     if (horizontalScrollModifier !== false) {
@@ -27797,7 +27809,11 @@ function createHelper(view) {
       var globalRowHeight = this._getRowHeight();
 
       for (var i = 0; i < store.fullOrder.length; i++) {
-        var item = store.getItem(store.fullOrder[i]);
+        var item = store.getItem(store.fullOrder[i]); // GS-1491: ignore the task when it is filtered:
+
+        if (!item) {
+          continue;
+        }
 
         if (item.row_height && item.row_height !== globalRowHeight) {
           canUseSimpleCalc = false;
@@ -32613,11 +32629,14 @@ var LargerUnitsCache = __webpack_require__(/*! ./work_unit_cache */ "./sources/c
 
 var utils = __webpack_require__(/*! ../../../utils/utils */ "./sources/utils/utils.js");
 
+var DateDurationCache = __webpack_require__(/*! ./work_unit_cache/date_duration_cache */ "./sources/core/worktime/strategy/work_unit_cache/date_duration_cache.ts").DateDurationCache;
+
 function CalendarWorkTimeStrategy(gantt, argumentsHelper) {
   this.argumentsHelper = argumentsHelper;
   this.$gantt = gantt;
   this._workingUnitsCache = createCacheObject();
   this._largeUnitsCache = new LargerUnitsCache(this);
+  this._dateDurationCache = new DateDurationCache();
   this._worktime = null;
   this._cached_timestamps = {};
   this._cached_timestamps_count = 0;
@@ -32625,6 +32644,13 @@ function CalendarWorkTimeStrategy(gantt, argumentsHelper) {
 
 CalendarWorkTimeStrategy.prototype = {
   units: ["year", "month", "week", "day", "hour", "minute"],
+  _clearCaches: function _clearCaches() {
+    this._workingUnitsCache.clear();
+
+    this._largeUnitsCache.clear();
+
+    this._dateDurationCache.clear();
+  },
   // cache previously calculated worktime
   _getUnitOrder: function _getUnitOrder(unit) {
     for (var i = 0, len = this.units.length; i < len; i++) {
@@ -32942,9 +32968,7 @@ CalendarWorkTimeStrategy.prototype = {
 
     this._parseSettings();
 
-    this._workingUnitsCache.clear();
-
-    this._largeUnitsCache.clear();
+    this._clearCaches();
   },
   _parseSettings: function _parseSettings() {
     var settings = this.getConfig();
@@ -33015,9 +33039,7 @@ CalendarWorkTimeStrategy.prototype = {
       //	this.$gantt.assert(false, "Invalid calendar settings, no worktime available");
       this._setConfig(JSON.parse(backup));
 
-      this._workingUnitsCache.clear();
-
-      this._largeUnitsCache.clear();
+      this._clearCaches();
 
       return false;
     }
@@ -33237,9 +33259,7 @@ CalendarWorkTimeStrategy.prototype = {
 
       this._parseSettings();
 
-      this._workingUnitsCache.clear();
-
-      this._largeUnitsCache.clear();
+      this._clearCaches();
     }, this));
   },
   unsetWorkTime: function unsetWorkTime(settings) {
@@ -33255,9 +33275,7 @@ CalendarWorkTimeStrategy.prototype = {
       } // Clear work units cache
 
 
-      this._workingUnitsCache.clear();
-
-      this._largeUnitsCache.clear();
+      this._clearCaches();
     }, this));
   },
   _isWorkTime: function _isWorkTime(date, unit) {
@@ -33293,9 +33311,13 @@ CalendarWorkTimeStrategy.prototype = {
 
     if (!config.unit) {
       return false;
-    }
+    } //return this._calculateDuration(config.start_date, config.end_date, config.unit, config.step);
 
-    return this._calculateDuration(config.start_date, config.end_date, config.unit, config.step);
+
+    var self = this;
+    return this._dateDurationCache.getDuration(config.start_date, config.end_date, config.unit, config.step, function () {
+      return self._calculateDuration(config.start_date, config.end_date, config.unit, config.step);
+    });
   },
   _calculateDuration: function _calculateDuration(from, to, unit, step) {
     var res = 0;
@@ -33350,11 +33372,13 @@ CalendarWorkTimeStrategy.prototype = {
         step = config.step;
     if (!unit) return false;
     var mult = config.duration >= 0 ? 1 : -1;
-    duration = Math.abs(duration * 1);
+    duration = Math.abs(duration * 1); //	var endDate = this._calculateEndDate(from, duration, unit, step * mult);
+    //	return endDate;
 
-    var endDate = this._calculateEndDate(from, duration, unit, step * mult);
-
-    return endDate;
+    var self = this;
+    return this._dateDurationCache.getEndDate(from, duration, unit, step * mult, function () {
+      return self._calculateEndDate(from, duration, unit, step * mult);
+    });
   },
   _calculateEndDate: function _calculateEndDate(from, duration, unit, step) {
     if (!unit) return false;
@@ -34297,6 +34321,91 @@ WorkTimeCalendarMerger.prototype = {
   }
 };
 module.exports = WorkTimeCalendarMerger;
+
+/***/ }),
+
+/***/ "./sources/core/worktime/strategy/work_unit_cache/date_duration_cache.ts":
+/*!*******************************************************************************!*\
+  !*** ./sources/core/worktime/strategy/work_unit_cache/date_duration_cache.ts ***!
+  \*******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var DateDurationCache = /** @class */ (function () {
+    function DateDurationCache() {
+        this.clear();
+    }
+    DateDurationCache.prototype._getCacheObject = function (startDate, unit, step) {
+        var cache = this._cache;
+        if (!cache[unit]) {
+            cache[unit] = [];
+        }
+        var unitCache = cache[unit];
+        if (!unitCache) {
+            unitCache = cache[unit] = {};
+        }
+        var stepCache = unitCache[step];
+        if (!stepCache) {
+            stepCache = unitCache[step] = {};
+        }
+        var year = startDate.getFullYear();
+        var yearCache = stepCache[year];
+        if (!yearCache) {
+            yearCache = stepCache[year] = { durations: {}, endDates: {} };
+        }
+        return yearCache;
+    };
+    DateDurationCache.prototype._endDateCacheKey = function (startDate, duration) {
+        return String(startDate) + "-" + String(duration);
+    };
+    DateDurationCache.prototype._durationCacheKey = function (startDate, endDate) {
+        return String(startDate) + "-" + String(endDate);
+    };
+    DateDurationCache.prototype.getEndDate = function (startDate, duration, unit, step, compute) {
+        var cache = this._getCacheObject(startDate, unit, step);
+        var startDateTimestamp = startDate.valueOf();
+        var key = this._endDateCacheKey(startDateTimestamp, duration);
+        var endDate;
+        if (cache.endDates[key] === undefined) {
+            var result = compute();
+            var resultTimestamp = result.valueOf();
+            cache.endDates[key] = resultTimestamp;
+            cache.durations[this._durationCacheKey(startDateTimestamp, resultTimestamp)] = duration;
+            endDate = result;
+        }
+        else {
+            endDate = new Date(cache.endDates[key]);
+        }
+        return endDate;
+    };
+    DateDurationCache.prototype.getDuration = function (startDate, endDate, unit, step, compute) {
+        var cache = this._getCacheObject(startDate, unit, step);
+        var startDateTimestamp = startDate.valueOf();
+        var endDateTimestamp = endDate.valueOf();
+        var key = this._durationCacheKey(startDateTimestamp, endDateTimestamp);
+        var duration;
+        if (cache.durations[key] === undefined) {
+            var result = compute();
+            cache.durations[key] = result.valueOf();
+            // can't populate end date due to logic of end date calculation, current unit tests capture it
+            // cache.endDates[this._endDateCacheKey(startDateTimestamp, result)] = endDateTimestamp;
+            duration = result;
+        }
+        else {
+            duration = cache.durations[key];
+        }
+        return duration;
+    };
+    DateDurationCache.prototype.clear = function () {
+        this._cache = {};
+    };
+    return DateDurationCache;
+}());
+exports.DateDurationCache = DateDurationCache;
+
 
 /***/ }),
 
@@ -39367,7 +39476,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.2";
+  this.version = "7.1.3";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
