@@ -1,3 +1,9 @@
+### 7.1.3
+
+Fix the script error thrown on gantt.moveTask call when some tasks are hidden via the onBeforeTaskDisplay event
+Fix the issue with the speed of the scroll in the latest Firefox browser
+Performance improvement for calculations of working time
+
 ### 7.1.2
 
 Major performance improvement of the resource panel
