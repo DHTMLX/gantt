@@ -1,3 +1,15 @@
+### 7.1.4
+
+Fix the incorrect work of unsetWorkTime that caused affected dates to have incorrect work hours
+Fix the script error thrown in the Resource histogram after scrolling the histogram when resource_render_empty_cell is set to false and smart_rendering is enabled
+Fix the incorrect work of the editNextRow and editPrevRow methods of the Inline Editors module
+Fix the incorrect work of the Quick Info popup that caused the popup to be displayed after clicking on the "add" button in the grid
+Fix the incorrect work of the ASAP constraints that caused tasks not to be moved to the earliest date of the project
+Fix the incorrect work of Inline Editors that prevented constraints from being edited via the inline editor
+Fix the incorrect behavior of the "scroll into view" logic of Keyboard Navigation which called an unnecessary scroll when selected task bars are visible
+Fix the script error thrown when the mouse is moved outside the container when the click_drag extension is enabled
+Performance improvements for the auto_types configuration option of Gantt
+
 ### 7.1.3
 
 Fix the script error thrown on gantt.moveTask call when some tasks are hidden via the onBeforeTaskDisplay event

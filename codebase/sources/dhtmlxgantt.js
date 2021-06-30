@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.3 Standard
+dhtmlxGantt v.7.1.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -13605,8 +13605,10 @@ module.exports = function (gantt) {
       if (this.$root) {
         if (this.config.rtl) {
           this.$root.classList.add("gantt_rtl");
+          this.$root.firstChild.classList.add("gantt_rtl"); // GS-1499
         } else {
           this.$root.classList.remove("gantt_rtl");
+          this.$root.firstChild.classList.remove("gantt_rtl"); // GS-1499
         }
       }
 
@@ -14347,32 +14349,53 @@ module.exports = function (gantt) {
     };
   }
 
-  function updateParents(childId) {
-    gantt.batchUpdate(function () {
-      checkParent(childId);
-    });
-  }
-
-  var delTaskParent;
-
-  function checkParent(id) {
-    setTaskType(id);
-    var parent = gantt.getParent(id);
-
-    if (parent != gantt.config.root_id) {
-      checkParent(parent);
-    }
-  }
-
-  function setTaskType(id) {
-    id = id.id || id;
+  function checkTaskType(id, changedTypes) {
     var task = gantt.getTask(id);
     var targetType = getTaskTypeToUpdate(task);
 
-    if (targetType !== false) {
-      updateTaskType(task, targetType);
+    if (targetType !== false && gantt.getTaskType(task) !== targetType) {
+      changedTypes.$needsUpdate = true;
+      changedTypes[task.id] = {
+        task: task,
+        type: targetType
+      };
     }
   }
+
+  function getUpdatedTypes(id, changedTypes) {
+    changedTypes = changedTypes || {};
+    checkTaskType(id, changedTypes);
+    gantt.eachParent(function (parent) {
+      checkTaskType(parent.id, changedTypes);
+    }, id);
+    return changedTypes;
+  }
+
+  function applyChanges(changedTypes) {
+    for (var i in changedTypes) {
+      if (changedTypes[i] && changedTypes[i].task) {
+        var task = changedTypes[i].task;
+        task.type = changedTypes[i].type;
+        gantt.updateTask(task.id);
+      }
+    }
+  }
+
+  function updateParentTypes(startId) {
+    if (gantt.getState().group_mode) {
+      return;
+    }
+
+    var changedTypes = getUpdatedTypes(startId);
+
+    if (changedTypes.$needsUpdate) {
+      gantt.batchUpdate(function () {
+        applyChanges(changedTypes);
+      });
+    }
+  }
+
+  var delTaskParent;
 
   function updateTaskType(task, targetType) {
     if (!gantt.getState().group_mode) {
@@ -14400,6 +14423,11 @@ module.exports = function (gantt) {
   var isParsingDone = true;
   gantt.attachEvent("onParse", callIfEnabled(function () {
     isParsingDone = false;
+
+    if (gantt.getState().group_mode) {
+      return;
+    }
+
     gantt.batchUpdate(function () {
       gantt.eachTask(function (task) {
         var targetType = getTaskTypeToUpdate(task);
@@ -14413,18 +14441,18 @@ module.exports = function (gantt) {
   }));
   gantt.attachEvent("onAfterTaskAdd", callIfEnabled(function (id) {
     if (isParsingDone) {
-      updateParents(id);
+      updateParentTypes(id);
     }
   }));
   gantt.attachEvent("onAfterTaskUpdate", callIfEnabled(function (id) {
     if (isParsingDone) {
-      updateParents(id);
+      updateParentTypes(id);
     }
   }));
 
   function updateAfterRemoveChild(id) {
     if (id != gantt.config.root_id && gantt.isTaskExists(id)) {
-      updateParents(id);
+      updateParentTypes(id);
     }
   }
 
@@ -14442,7 +14470,7 @@ module.exports = function (gantt) {
   }));
   gantt.attachEvent("onRowDragEnd", callIfEnabled(function (id, target) {
     updateAfterRemoveChild(originalRowDndParent);
-    updateParents(id);
+    updateParentTypes(id);
   }));
   var originalMoveTaskParent;
   gantt.attachEvent("onBeforeTaskMove", callIfEnabled(function (sid, parent, tindex) {
@@ -14456,7 +14484,7 @@ module.exports = function (gantt) {
     }
 
     updateAfterRemoveChild(originalMoveTaskParent);
-    updateParents(id);
+    updateParentTypes(id);
   }));
 };
 
@@ -16542,18 +16570,34 @@ function create(gantt) {
 
         return nextItem;
       },
-      editNextRow: function nextRow() {
-        var row = this.getNextCell(1);
+      editNextRow: function nextRow(skipReadonly) {
+        var id = this.getState().id;
+        if (!gantt.isTaskExists(id)) return;
+        var next = null;
 
-        if (row) {
-          this.startEdit(row, this._columnName);
+        if (skipReadonly) {
+          next = this.moveRow(1);
+        } else {
+          next = gantt.getNext(id);
+        }
+
+        if (gantt.isTaskExists(next)) {
+          this.startEdit(next, this._columnName);
         }
       },
-      editPrevRow: function prevRow() {
-        var row = this.getNextCell(-1);
+      editPrevRow: function prevRow(skipReadonly) {
+        var id = this.getState().id;
+        if (!gantt.isTaskExists(id)) return;
+        var prev = null;
 
-        if (row) {
-          this.startEdit(row, this._columnName);
+        if (skipReadonly) {
+          prev = this.moveRow(-1);
+        } else {
+          prev = gantt.getPrev(id);
+        }
+
+        if (gantt.isTaskExists(prev)) {
+          this.startEdit(prev, this._columnName);
         }
       },
       destructor: function destructor() {
@@ -26180,7 +26224,7 @@ function generateRenderResourceHistogram(gantt) {
 
     var capacityElement = renderHistogramLine(capacityMatrix, timeline, maxCapacity, viewport);
 
-    if (capacityElement) {
+    if (capacityElement && sizes) {
       capacityElement.setAttribute("data-resource-id", resource.id);
       capacityElement.setAttribute(timeline.$config.item_attribute, resource.id);
       capacityElement.style.position = "absolute";
@@ -29680,8 +29724,8 @@ function createTaskDND(timeline, gantt) {
           this._finalize_mouse_up(drag.id, config, drag, e);
         };
 
-        if (finalizingBulkMove && moveCount > 25) {
-          // 25 - arbitrary threshold for bulk dnd at which we start doing complete repaint to refresh
+        if (finalizingBulkMove && moveCount > 10) {
+          // 10 - arbitrary threshold for bulk dnd at which we start doing complete repaint to refresh
           gantt.batchUpdate(function () {
             doFinalize.call(this);
           }.bind(this));
@@ -35281,6 +35325,8 @@ var SelectedRegion = /** @class */ (function () {
         }
         this._viewPort.callEvent("onBeforeDragEnd", [this._startPoint, endPoint]);
         this.setEnd(endPoint);
+        // GS-1422. The endDate can be null if we drag the mouse outside the Gantt container
+        this._endDate = this._endDate || gantt.getState().max_date;
         if (this._startDate.valueOf() > this._endDate.valueOf()) {
             _a = [this._endDate, this._startDate], this._startDate = _a[0], this._endDate = _a[1];
         }
@@ -37211,8 +37257,15 @@ module.exports = function (gantt) {
 
         if (pos.top < scroll.y || pos.top + height > scroll.y + viewHeight) {
           gantt.scrollTo(null, pos.top - height * 5);
-        } else if (gantt.config.scroll_on_click && gantt.config.show_chart && (pos.left < scroll.x || pos.left > scroll.x + viewWidth)) {
-          gantt.scrollTo(pos.left - gantt.config.task_scroll_offset);
+        } else if (gantt.config.scroll_on_click && gantt.config.show_chart) {
+          // horizontal scroll activated
+          if (pos.left > scroll.x + viewWidth) {
+            // scroll forward to the start of the task
+            gantt.scrollTo(pos.left - gantt.config.task_scroll_offset);
+          } else if (pos.left + pos.width < scroll.x) {
+            // scroll back to the end of the task
+            gantt.scrollTo(pos.left + pos.width - gantt.config.task_scroll_offset);
+          }
         }
       }
 
@@ -37938,10 +37991,13 @@ function default_1(gantt) {
         return gantt.templates.task_time(start, end, ev);
     };
     gantt.templates.quick_info_class = function (start, end, task) { return ""; };
-    gantt.attachEvent("onTaskClick", function (id) {
-        setTimeout(function () {
-            gantt.ext.quickInfo.show(id);
-        }, 0);
+    gantt.attachEvent("onTaskClick", function (id, e) {
+        // GS-1460 Don't show Quick Info when clicking on the "+" button
+        if (!gantt.utils.dom.closest(e.target, ".gantt_add")) {
+            setTimeout(function () {
+                gantt.ext.quickInfo.show(id);
+            }, 0);
+        }
         return true;
     });
     var events = ["onViewChange", "onLightbox", "onBeforeTaskDelete", "onBeforeDrag"];
@@ -39476,7 +39532,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.3";
+  this.version = "7.1.4";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
