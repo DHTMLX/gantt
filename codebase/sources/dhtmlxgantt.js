@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.4 Standard
+dhtmlxGantt v.7.1.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -15936,21 +15936,16 @@ module.exports = function (gantt) {
 
 var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
 
-function ViewSettings(config) {
-  utils.mixin(this, config, true);
-}
-
 function extendSettings(store, parentSettings) {
   var own = this.$config[store];
 
   if (own) {
-    if (own instanceof ViewSettings) {
-      return own;
-    } else {
-      ViewSettings.prototype = parentSettings;
-      this.$config[store] = new ViewSettings(own);
-      return this.$config[store];
+    if (!own.$extendedConfig) {
+      own.$extendedConfig = true;
+      Object.setPrototypeOf(own, parentSettings);
     }
+
+    return own;
   } else {
     return parentSettings;
   }
@@ -16180,7 +16175,7 @@ function create(gantt) {
       var row = domHelpers.locateAttribute(node, grid.$config.item_attribute);
       var cell = domHelpers.locateAttribute(node, "data-column-name");
 
-      if (cell) {
+      if (row && cell) {
         var columnName = cell.getAttribute("data-column-name");
         var id = row.getAttribute(grid.$config.item_attribute);
         return {
@@ -18156,7 +18151,7 @@ Grid.prototype = {
 
       var ariaAttrs = gantt._waiAria.gridScaleCellAttrString(col, label);
 
-      var cell = "<div class='" + cssClass + "' style='" + style + "' " + ariaAttrs + " data-column-id='" + col.name + "' column_id='" + col.name + "'>" + label + sort + "</div>";
+      var cell = "<div class='" + cssClass + "' style='" + style + "' " + ariaAttrs + " data-column-id='" + col.name + "' column_id='" + col.name + "'" + " data-column-name='" + col.name + "' data-column-index='" + i + "'" + ">" + label + sort + "</div>";
       cells.push(cell);
     }
 
@@ -18811,12 +18806,23 @@ function _init_dnd(gantt, grid) {
     var scrollPos = grid.$state.scrollTop || 0;
     var maxBottom = gantt.$grid_data.getBoundingClientRect().height + scrollPos;
     var minTop = scrollPos;
-    var firstVisibleTaskPos = grid.$state.scrollTop / grid.getItemHeight();
+    var firstVisibleTaskIndex = grid.getItemIndexByTopPosition(grid.$state.scrollTop);
+
+    if (!store.exists(firstVisibleTaskIndex)) {
+      firstVisibleTaskIndex = store.countVisible() - 1;
+    }
+
+    if (firstVisibleTaskIndex < 0) {
+      return store.$getRootId();
+    }
+
+    var firstVisibleTaskId = store.getIdByIndex(firstVisibleTaskIndex);
+    var firstVisibleTaskPos = grid.$state.scrollTop / grid.getItemHeight(firstVisibleTaskId);
     var hiddenTaskPart = firstVisibleTaskPos - Math.floor(firstVisibleTaskPos);
 
     if (hiddenTaskPart > 0.1 && hiddenTaskPart < 0.9) {
-      maxBottom = maxBottom - grid.getItemHeight() * hiddenTaskPart;
-      minTop = minTop + grid.getItemHeight() * (1 - hiddenTaskPart);
+      maxBottom = maxBottom - grid.getItemHeight(firstVisibleTaskId) * hiddenTaskPart;
+      minTop = minTop + grid.getItemHeight(firstVisibleTaskId) * (1 - hiddenTaskPart);
     }
 
     if (y >= maxBottom) {
@@ -18825,9 +18831,9 @@ function _init_dnd(gantt, grid) {
       y = minTop;
     }
 
-    var index = Math.floor(y / grid.getItemHeight());
+    var index = grid.getItemIndexByTopPosition(y);
 
-    if (index > store.countVisible() - 1) {
+    if (index > store.countVisible() - 1 || index < 0) {
       return store.$getRootId();
     }
 
@@ -19825,7 +19831,7 @@ var Layout = function (_super) {
   Layout.prototype._resizeScrollbars = function (autosize, scrollbars) {
     var scrollChanged = false;
     var visibleScrollbars = [],
-        hiddenSrollbars = [];
+        hiddenScrollbars = [];
 
     function showScrollbar(scrollbar) {
       scrollbar.$parent.show();
@@ -19836,7 +19842,7 @@ var Layout = function (_super) {
     function hideScrollbar(scrollbar) {
       scrollbar.$parent.hide();
       scrollChanged = true;
-      hiddenSrollbars.push(scrollbar);
+      hiddenScrollbars.push(scrollbar);
     }
 
     var scrollbar;
@@ -19854,7 +19860,7 @@ var Layout = function (_super) {
         if (scrollbar.isVisible()) {
           visibleScrollbars.push(scrollbar);
         } else {
-          hiddenSrollbars.push(scrollbar);
+          hiddenScrollbars.push(scrollbar);
         }
       }
     }
@@ -19867,8 +19873,8 @@ var Layout = function (_super) {
       }
     }
 
-    for (var i = 0; i < hiddenSrollbars.length; i++) {
-      scrollbar = hiddenSrollbars[i];
+    for (var i = 0; i < hiddenScrollbars.length; i++) {
+      scrollbar = hiddenScrollbars[i];
 
       if (scrollbar.$config.group && visibleGroups[scrollbar.$config.group]) {
         showScrollbar(scrollbar); // GS-707 If the scrollbar was hidden then showed, the container resize shouldn't happen because of that
@@ -20475,9 +20481,14 @@ var Layout = function (_super) {
     var firstCall = !this._visibleCells;
     var visibleCells = {};
     var cell;
+    var parentVisibility = [];
 
     for (var i = 0; i < this._sizes.length; i++) {
       cell = this.$cells[i];
+
+      if (cell.$config.hide_empty) {
+        parentVisibility.push(cell);
+      }
 
       if (!firstCall && cell.$config.hidden && oldVisibleCells[cell.$id]) {
         cell._hide(true);
@@ -20490,7 +20501,19 @@ var Layout = function (_super) {
       }
     }
 
-    this._visibleCells = visibleCells;
+    this._visibleCells = visibleCells; // GS-27. A way to hide the whole cell if all its children are hidden
+
+    for (var i = 0; i < parentVisibility.length; i++) {
+      var cell = parentVisibility[i];
+      var children = cell.$cells;
+      var hideCell = true;
+      children.forEach(function (child) {
+        if (!child.$config.hidden && !child.$config.resizer) {
+          hideCell = false;
+        }
+      });
+      cell.$config.hidden = hideCell;
+    }
   };
 
   Layout.prototype.setSize = function (x, y) {
@@ -23366,20 +23389,16 @@ var initializer = function () {
           if (mainTimeline) mainTimeline.$config.hidden = mainTimeline.$parent.$config.hidden = !gantt.config.show_chart;
           var mainGrid = gantt.$ui.getView("grid");
           if (!mainGrid) return;
-          var showGrid = gantt.config.show_grid;
 
-          if (first) {
-            var colsWidth = mainGrid._getColsTotalWidth();
+          var colsWidth = mainGrid._getColsTotalWidth();
 
-            if (colsWidth !== false) {
-              gantt.config.grid_width = colsWidth;
-            }
+          var hideGrid = !gantt.config.show_grid || !gantt.config.grid_width || colsWidth === 0;
 
-            showGrid = showGrid && !!gantt.config.grid_width;
-            gantt.config.show_grid = showGrid;
+          if (first && !hideGrid && colsWidth !== false) {
+            gantt.config.grid_width = colsWidth;
           }
 
-          mainGrid.$config.hidden = mainGrid.$parent.$config.hidden = !showGrid;
+          mainGrid.$config.hidden = mainGrid.$parent.$config.hidden = hideGrid;
 
           if (!mainGrid.$config.hidden) {
             /* restrict grid width due to min_width, max_width, min_grid_column_width */
@@ -39532,7 +39551,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.4";
+  this.version = "7.1.5";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

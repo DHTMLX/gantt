@@ -1,3 +1,12 @@
+7.1.5
+
+Fix the incorrect work of vertical reordering of tasks in the "marker" mode when gantt rows have different heights
+Fix the issue with the sizes of the timeline and the grid in some layouts when the "show_grid" and "show_chart" configs are disabled
+The "data-column-name" and "data-column-index" attributes are added for cells of the grid header
+Fix the incorrect display of the grid after re-initialization of the gantt after removing all columns from the config
+Fix the issue that caused the resource panel configuration to overwrite the main configuration of the gantt in Vue.js applications
+Added the ability to modify the configuration of the resource panel on the fly by modifying the configuration object provided to the resource layout
+
 ### 7.1.4
 
 Fix the incorrect work of unsetWorkTime that caused affected dates to have incorrect work hours
