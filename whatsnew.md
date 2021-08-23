@@ -1,4 +1,12 @@
-7.1.5
+### 7.1.6
+
+Fix the incorrect work of the auto_scheduling_move_projects config when schedule_from_end is enabled
+Fix the incorrect work of the onrender callback of the column which caused custom elements to disappear when the grid is scrolled quickly
+Fix the regression (appeared in v7.1.5) which caused rows of the grid to disappear after the grid cell is resized in complex layouts
+Fix the incorrect work of the size/visibility groups which prevented the sizes of columns from being synchronized in the complex layout
+Improved the display of the grid when the gantt is rendered in a small container
+
+### 7.1.5
 
 Fix the incorrect work of vertical reordering of tasks in the "marker" mode when gantt rows have different heights
 Fix the issue with the sizes of the timeline and the grid in some layouts when the "show_grid" and "show_chart" configs are disabled

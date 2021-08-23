@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.5 Standard
+dhtmlxGantt v.7.1.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -10846,9 +10846,18 @@ DataStore.prototype = {
     this.refresh();
   },
   silent: function silent(code, master) {
+    var alreadySilent = false;
+
+    if (this._skip_refresh) {
+      alreadySilent = true;
+    }
+
     this._skip_refresh = true;
     code.call(master || this);
-    this._skip_refresh = false;
+
+    if (!alreadySilent) {
+      this._skip_refresh = false;
+    }
   },
   arraysEqual: function arraysEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) return false;
@@ -12704,7 +12713,15 @@ var createDatastoreFacade = function createDatastoreFacade() {
       });
     },
     clearAll: function clearAll() {
-      var stores = getDatastores.call(this);
+      var stores = getDatastores.call(this); // clear all stores without invoking clearAll event
+      // in order to prevent calling handlers when only some stores are cleared
+
+      for (var i = 0; i < stores.length; i++) {
+        stores[i].silent(function () {
+          stores[i].clearAll();
+        });
+      } // run clearAll again to invoke events
+
 
       for (var i = 0; i < stores.length; i++) {
         stores[i].clearAll();
@@ -19916,6 +19933,8 @@ var Layout = function (_super) {
     if (!cells.length) return;
     var property = cells[0].$parent._xLayout ? "width" : "height";
     var direction = cells[0].$parent.getNextSibling(cells[0].$id) ? 1 : -1;
+    var newSizeValue = newSize.value;
+    var isGravity = newSize.isGravity;
 
     for (var i = 0; i < cells.length; i++) {
       var ownSize = cells[i].getSize();
@@ -19927,21 +19946,25 @@ var Layout = function (_super) {
 
       var siblingSize = resizeSibling.getSize();
 
-      if (resizeSibling[property]) {
-        var totalGravity = ownSize.gravity + siblingSize.gravity;
-        var totalSize = ownSize[property] + siblingSize[property];
-        var k = totalGravity / totalSize;
-        cells[i].$config.gravity = k * newSize;
-        resizeSibling.$config[property] = totalSize - newSize;
-        resizeSibling.$config.gravity = totalGravity - k * newSize;
+      if (!isGravity) {
+        if (resizeSibling[property]) {
+          var totalGravity = ownSize.gravity + siblingSize.gravity;
+          var totalSize = ownSize[property] + siblingSize[property];
+          var k = totalGravity / totalSize;
+          cells[i].$config.gravity = k * newSizeValue;
+          resizeSibling.$config[property] = totalSize - newSizeValue;
+          resizeSibling.$config.gravity = totalGravity - k * newSizeValue;
+        } else {
+          cells[i].$config[property] = newSizeValue;
+        }
       } else {
-        cells[i].$config[property] = newSize;
+        cells[i].$config.gravity = newSizeValue;
       }
 
       var mainGrid = this.$gantt.$ui.getView("grid");
 
-      if (mainGrid && cells[i].$content === mainGrid && !mainGrid.$config.scrollable) {
-        this.$gantt.config.grid_width = newSize;
+      if (mainGrid && cells[i].$content === mainGrid && !mainGrid.$config.scrollable && !isGravity) {
+        this.$gantt.config.grid_width = newSizeValue;
       }
     }
   };
@@ -23408,7 +23431,19 @@ var initializer = function () {
             if (grid_limits[1] && gantt.config.grid_width > grid_limits[1]) gantt.config.grid_width = grid_limits[1];
 
             if (mainTimeline && gantt.config.show_chart) {
-              mainGrid.$config.width = gantt.config.grid_width - 1;
+              mainGrid.$config.width = gantt.config.grid_width - 1; // GS-1314: Don't let the non-scrollable grid to be larger than the container
+
+              if (!mainGrid.$config.scrollable && mainGrid.$config.scrollY) {
+                var ganttContainerWidth = mainGrid.$gantt.$layout.$container.offsetWidth;
+                var verticalScrollbar = gantt.$ui.getView(mainGrid.$config.scrollY);
+                var verticalScrollbarWidth = verticalScrollbar.$config.width;
+                var gridOverflow = ganttContainerWidth - (mainGrid.$config.width + verticalScrollbarWidth);
+
+                if (gridOverflow < 0) {
+                  mainGrid.$config.width += gridOverflow;
+                  gantt.config.grid_width += gridOverflow;
+                }
+              }
 
               if (!first) {
                 if (mainTimeline && !domHelpers.isChildOf(mainTimeline.$task, layout.$view)) {
@@ -23428,13 +23463,19 @@ var initializer = function () {
                 } else {
                   mainGrid.$parent._setContentSize(mainGrid.$config.width, null);
 
-                  gantt.$layout._syncCellSizes(mainGrid.$parent.$config.group, gantt.config.grid_width);
+                  gantt.$layout._syncCellSizes(mainGrid.$parent.$config.group, {
+                    value: gantt.config.grid_width,
+                    isGravity: false
+                  });
                 }
               } else {
                 mainGrid.$parent.$config.width = gantt.config.grid_width;
 
                 if (mainGrid.$parent.$config.group) {
-                  gantt.$layout._syncCellSizes(mainGrid.$parent.$config.group, mainGrid.$parent.$config.width);
+                  gantt.$layout._syncCellSizes(mainGrid.$parent.$config.group, {
+                    value: mainGrid.$parent.$config.width,
+                    isGravity: false
+                  });
                 }
               }
             } else {
@@ -23470,7 +23511,14 @@ var initializer = function () {
         if (horizontal) {
           horizontal.attachEvent("onScroll", function (oldPos, newPos, dir) {
             var scrollState = gantt.getScrollState();
-            gantt.callEvent("onGanttScroll", [oldPos, scrollState.y, newPos, scrollState.y]);
+            gantt.callEvent("onGanttScroll", [oldPos, scrollState.y, newPos, scrollState.y]); // if the grid doesn't fit the width, scroll the row container
+
+            var grid = gantt.$ui.getView("grid");
+
+            if (grid && grid.$grid_data && !grid.$config.scrollable) {
+              grid.$grid_data.style.left = grid.$grid.scrollLeft + "px";
+              grid.$grid_data.scrollLeft = grid.$grid.scrollLeft;
+            }
           });
         }
 
@@ -23522,6 +23570,11 @@ var initializer = function () {
         if (resizeInfo.resizer) {
           var gridFirst = resizeInfo.gridFirst,
               next = resizeInfo.resizer;
+
+          if (next.$config.mode !== "x") {
+            return; // track only horizontal resize
+          }
+
           var initialWidth;
           next.attachEvent("onResizeStart", function (prevCellWidth, nextCellWidth) {
             var grid = gantt.$ui.getView("grid");
@@ -23554,7 +23607,8 @@ var initializer = function () {
 
             var res = gantt.callEvent("onGridResizeEnd", [oldSize, newSize]);
 
-            if (res) {
+            if (res && newSize !== 0) {
+              // new size may be numeric zero when cell size is defined by 'gravity', actual size will be calculated by layout later
               gantt.config.grid_width = newSize;
             }
 
@@ -26012,6 +26066,8 @@ var rendererFactory = function rendererFactory(gantt) {
           renderedItems[i] = true;
         }
 
+        var renderCalledFor = {};
+
         for (var i = 0, vis = items.length; i < vis; i++) {
           var item = items[i];
           var itemNode = this.rendered[item.id];
@@ -26036,6 +26092,7 @@ var rendererFactory = function rendererFactory(gantt) {
               this.restore(item, buffer);
             }
           } else {
+            renderCalledFor[items[i].id] = true;
             this.render_item(items[i], buffer, viewPort, view, viewConfig);
           }
         }
@@ -26054,7 +26111,7 @@ var rendererFactory = function rendererFactory(gantt) {
           var newElements = {};
 
           for (var i in this.rendered) {
-            if (!renderedItems[i]) {
+            if (!renderedItems[i] || renderCalledFor[i]) {
               newElements[i] = this.rendered[i];
               renderCallbackMethod.call(gantt, itemsSearch[i], this.rendered[i], view);
             }
@@ -33475,7 +33532,7 @@ CalendarWorkTimeStrategy.prototype = {
 
       var timezoneDifference = next.getTimezoneOffset() - current.getTimezoneOffset();
 
-      if (timezoneDifference < 0 && step > 0) {
+      if (timezoneDifference < 0 && step > 0 && unit != "day") {
         // the step parameter is for backward scheduling and startDate calcuation
         next.setTime(next.getTime() + 60 * 1000 * timezoneDifference);
       }
@@ -39551,7 +39608,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.5";
+  this.version = "7.1.6";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
