@@ -1,3 +1,15 @@
+### 7.1.7
+
+Fix issues with incorrect calculation of the total slack values
+Performance improvement for total slack calculation
+Style fixes for the lightbox in the Material skin
+Fix the issue with the Zoom plugin that prevented the zoom.init method from working when calling the method after gantt.init
+Fix the script error that happened when using the inherit_calendar config together with the gantt.groupBy method
+Fix the script error thrown when adding tasks via gantt.bathUpdate if the placeholder task is active
+Fix the issue that allowed the placeholder task to be sorted, reordered, or accept subtasks
+Fix issues with incorrect size of grid columns
+Fix the incorrect work of the column's resizers which conflicted with reordering of the columns
+
 ### 7.1.6
 
 Fix the incorrect work of the auto_scheduling_move_projects config when schedule_from_end is enabled
