@@ -1,7 +1,7 @@
 # dhtmlxGantt #
 
 [![dhtmlx.com](https://img.shields.io/badge/made%20by-DHTMLX-blue)](https://dhtmlx.com/)
-[![npm: v.7.1.7](https://img.shields.io/badge/npm-v.7.1.7-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
+[![npm: v.7.1.8](https://img.shields.io/badge/npm-v.7.1.8-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
 [Getting started](#getting-started) | [Features](#features) | [Follow us](#followus) | [License](#license) | [Useful links](#links)
@@ -128,7 +128,7 @@ Like our page on [Facebook](https://www.facebook.com/dhtmlx/) :thumbsup:
 <a name="license"></a>
 ## License ##
 
-dhtmlxGantt v.7.1.7 Standard
+dhtmlxGantt v.7.1.8 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 

@@ -1,3 +1,13 @@
+### 7.1.8
+
+Fix the script error that was thrown from the gantt.groupBy method when the Resource Histogram and fit_tasks config were enabled
+Fix the incorrect work of the Undo extension that didn't send updates to the server when vertical reordering was reverted
+Fix the issue with the Export to MS Project module which in some cases caused an Unknown error result when custom properties were sent to the export
+Fix the incorrect work of the gantt.silent method, which did not prevent gantt.changeTaskId from triggering API events and repaints
+Fix the incorrect work of the gantt.undo method that did not restore the original vertical position of the reverted item
+Fix the incorrect work of the resource assignment form which caused gantt to replace the user-provided id of the resource assignment with an auto-generated value
+Fix the incorrect work of gantt.changeTaskId in cases when the affected tasks had nested items, which caused the level of nested items to be calculated incorrectly
+
 ### 7.1.7
 
 Fix issues with incorrect calculation of the total slack values

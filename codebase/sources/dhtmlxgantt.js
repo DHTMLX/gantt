@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.7 Standard
+dhtmlxGantt v.7.1.8 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7908,7 +7908,7 @@ var timeout = __webpack_require__(/*! ../../utils/timeout */ "./sources/utils/ti
 
 var global = __webpack_require__(/*! ../../utils/global */ "./sources/utils/global.js");
 
-var dom_helpers = __webpack_require__(/*! ../ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
+var domHelpers = __webpack_require__(/*! ../ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 
 module.exports = function (gantt) {
   function copyDomEvent(e) {
@@ -7946,7 +7946,7 @@ module.exports = function (gantt) {
             return;
           }
 
-          if (config.preventDefault && config.selector && dom_helpers.closest(e.target, config.selector)) {
+          if (config.preventDefault && config.selector && domHelpers.closest(e.target, config.selector)) {
             e.preventDefault();
           }
 
@@ -7969,7 +7969,8 @@ module.exports = function (gantt) {
             this.dragStart(obj, e, input);
           }
         }, this), eventParams);
-        gantt.event(document.body, input.up, utils.bind(function (e) {
+        var eventElement = document.body;
+        gantt.event(eventElement, input.up, utils.bind(function (e) {
           if (!input.accessor(e)) {
             return;
           }
@@ -8009,17 +8010,18 @@ module.exports = function (gantt) {
 
         return dndActive;
       }, this);
-      var mousemoveContainer = this.config.mousemoveContainer || document.body;
+      var eventElement = domHelpers.getRootNode(gantt.$root);
+      var mousemoveContainer = this.config.mousemoveContainer || domHelpers.getRootNode(gantt.$root);
       var eventParams = {
         passive: false
       };
       var mouseup = utils.bind(function (e) {
-        gantt.eventRemove(mousemoveContainer, inputMethod.move, limited_mousemove, eventParams);
-        gantt.eventRemove(document.body, inputMethod.up, mouseup, eventParams);
+        gantt.eventRemove(mousemoveContainer, inputMethod.move, limited_mousemove);
+        gantt.eventRemove(eventElement, inputMethod.up, mouseup, eventParams);
         return this.dragEnd(domElement);
       }, this);
       gantt.event(mousemoveContainer, inputMethod.move, limited_mousemove, eventParams);
-      gantt.event(document.body, inputMethod.up, mouseup, eventParams);
+      gantt.event(eventElement, inputMethod.up, mouseup, eventParams);
     },
     checkPositionChange: function checkPositionChange(pos) {
       var diff_x = pos.x - this.config.pos.x;
@@ -10667,13 +10669,13 @@ DataStore.prototype = {
     return loaded;
   },
   parse: function parse(data) {
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.callEvent("onBeforeParse", [data]);
     }
 
     var loaded = this._parseInner(data);
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.refresh();
       this.callEvent("onParse", [loaded]);
     }
@@ -10688,7 +10690,7 @@ DataStore.prototype = {
   updateItem: function updateItem(id, item) {
     if (!utils.defined(item)) item = this.getItem(id);
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       if (this.callEvent("onBeforeUpdate", [item.id, item]) === false) return false;
     } // This is how it worked before updating the properties:
     // this.pull[id]=item;
@@ -10696,7 +10698,7 @@ DataStore.prototype = {
 
     utils.mixin(this.pull[id], item, true);
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.callEvent("onAfterUpdate", [item.id, item]);
       this.callEvent("onStoreUpdated", [item.id, item, "update"]);
     }
@@ -10714,7 +10716,7 @@ DataStore.prototype = {
     //utils.assert(this.exists(id), "Not existing ID in remove command"+id);
     var obj = this.getItem(id); //save for later event
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       if (this.callEvent("onBeforeDelete", [obj.id, obj]) === false) return false;
     }
 
@@ -10722,7 +10724,7 @@ DataStore.prototype = {
 
     this._removeItemInner(id);
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.filter();
       this.callEvent("onAfterDelete", [obj.id, obj]); //repaint signal
 
@@ -10751,7 +10753,7 @@ DataStore.prototype = {
 
     this.pull[item.id] = item;
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this._updateOrder(function () {
         if (this.$find(item.id) === -1) this.$insertAt(item.id, index);
       });
@@ -10772,13 +10774,13 @@ DataStore.prototype = {
       item = this.$initItem(item);
     }
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       if (this.callEvent("onBeforeAdd", [item.id, item]) === false) return false;
     }
 
     this._addItemInner(item, index);
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.callEvent("onAfterAdd", [item.id, item]); //repaint signal
 
       this.callEvent("onStoreUpdated", [item.id, item, "add"]);
@@ -10826,7 +10828,7 @@ DataStore.prototype = {
 
     this._moveInner(sindex, tindex);
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       //repaint signal
       this.callEvent("onStoreUpdated", [obj.id, obj, "move"]);
     }
@@ -10843,14 +10845,14 @@ DataStore.prototype = {
     this.pull = {};
     this.visibleOrder = powerArray.$create();
     this.fullOrder = powerArray.$create();
-    if (this._skip_refresh) return;
+    if (this.isSilent()) return;
     this.callEvent("onClearAll", []);
     this.refresh();
   },
   silent: function silent(code, master) {
     var alreadySilent = false;
 
-    if (this._skip_refresh) {
+    if (this.isSilent()) {
       alreadySilent = true;
     }
 
@@ -10860,6 +10862,9 @@ DataStore.prototype = {
     if (!alreadySilent) {
       this._skip_refresh = false;
     }
+  },
+  isSilent: function isSilent() {
+    return !!this._skip_refresh;
   },
   arraysEqual: function arraysEqual(arr1, arr2) {
     if (arr1.length !== arr2.length) return false;
@@ -10871,7 +10876,7 @@ DataStore.prototype = {
     return true;
   },
   refresh: function refresh(id, quick) {
-    if (this._skip_refresh) return;
+    if (this.isSilent()) return;
     var item;
 
     if (id) {
@@ -10939,7 +10944,7 @@ DataStore.prototype = {
     return result;
   },
   filter: function filter(rule) {
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.callEvent("onBeforeFilter", []);
     }
 
@@ -10967,7 +10972,7 @@ DataStore.prototype = {
       this._searchVisibleOrder[this.visibleOrder[i]] = i;
     }
 
-    if (!this._skip_refresh) {
+    if (!this.isSilent()) {
       this.callEvent("onFilter", []);
     }
   },
@@ -11143,10 +11148,12 @@ function initDataStores(gantt) {
 
     var changedTask = gantt.getTask(newId);
 
-    if (changedTask.$split_subtask || changedTask.rollup) {
-      gantt.eachParent(function (parent) {
-        gantt.refreshTask(parent.id);
-      }, newId);
+    if (!tasksStore.isSilent()) {
+      if (changedTask.$split_subtask || changedTask.rollup) {
+        gantt.eachParent(function (parent) {
+          gantt.refreshTask(parent.id);
+        }, newId);
+      }
     }
   });
   tasksStore.attachEvent("onAfterUpdate", function (id) {
@@ -11630,9 +11637,11 @@ var storeRenderCreator = function storeRenderCreator(name, gantt) {
       return;
     }
 
-    var renderer = gantt.$services.getService("layers").getDataRender(name);
-    refreshId(renderer.getLayers(), oldId, newId, store.getItem(newId));
-    itemRepainter.renderItem(newId, renderer);
+    if (!store.isSilent()) {
+      var renderer = gantt.$services.getService("layers").getDataRender(name);
+      refreshId(renderer.getLayers(), oldId, newId, store.getItem(newId));
+      itemRepainter.renderItem(newId, renderer);
+    }
   });
 };
 
@@ -11953,7 +11962,7 @@ TreeDataStore.prototype = utils.mixin({
 
     for (var i = 0, len = data.length; i < len; i++) {
       item = data[i];
-      this.setParent(item, this.getParent(item) || rootId);
+      this.setParent(item, replaceValidZeroId(this.getParent(item), rootId) || rootId);
     } // calculating $level for each item
 
 
@@ -12025,8 +12034,14 @@ TreeDataStore.prototype = utils.mixin({
 
     this._replace_branch_child(parent, oldId, newId);
 
+    if (this._branches[oldId]) {
+      this._branches[newId] = this._branches[oldId];
+    }
+
     for (var i = 0; i < children.length; i++) {
-      this.setParent(this.getItem(children[i]), newId);
+      var child = this.getItem(children[i]);
+      child[this.$parentProperty] = newId;
+      child.$rendered_parent = newId;
     }
 
     this._searchVisibleOrder[newId] = visibleOrder;
@@ -12297,7 +12312,7 @@ TreeDataStore.prototype = utils.mixin({
       parent = rootId;
     }
 
-    var startId = parent || rootId;
+    var startId = replaceValidZeroId(parent, rootId) || rootId;
     var useCache = false;
     var buildCache = false;
     var cache = null;
@@ -15045,7 +15060,7 @@ module.exports = function (gantt) {
         }
 
         if (detectFormat) {
-          if (res.id && res.task_id && res.resource_id) {
+          if (res.id && res.resource_id) {
             resourceAssignmentFormat = resourceAssignmentFormats.assignmentsArray;
             detectFormat = false;
           } else {
@@ -15062,15 +15077,17 @@ module.exports = function (gantt) {
           }
         }
 
-        var id = res.id;
+        var id;
 
-        if (!id && res.$id && !usedIds[res.$id]) {
+        if (!res.id && res.$id && !usedIds[res.$id]) {
           id = res.$id;
-          usedIds[id] = true;
+        } else if (res.id && !usedIds[res.id]) {
+          id = res.id;
         } else {
           id = gantt.uid();
         }
 
+        usedIds[id] = true;
         var assignment = {
           id: id,
           start_date: res.start_date,
@@ -15404,6 +15421,13 @@ module.exports = function (gantt) {
         }, id);
 
         _syncOnTaskDelete(deleteIds);
+      });
+      gantt.$data.tasksStore.attachEvent("onClearAll", function () {
+        resourceAssignmentsCache = null;
+        resourceTaskAssignmentsCache = null;
+        taskAssignmentsCache = null;
+        resourceAssignmentsStore.clearAll();
+        return true;
       });
       gantt.attachEvent("onTaskIdChange", function (id, new_id) {
         var taskResources = resourceAssignmentsStore.find(function (a) {
@@ -22711,7 +22735,7 @@ module.exports = function (gantt) {
 
     this.event(gantt.getLightbox(), "click", function (e) {
       e = e || window.event;
-      var src = e.target ? e.target : e.srcElement;
+      var src = domHelpers.getTargetNode(e);
       var className = domHelpers.getClassName(src);
 
       if (!className) {
@@ -23000,8 +23024,9 @@ module.exports = function (gantt) {
   };
 
   gantt._init_dnd_events = function () {
-    this.event(document.body, "mousemove", gantt._move_while_dnd);
-    this.event(document.body, "mouseup", gantt._finish_dnd);
+    var eventElement = document.body;
+    this.event(eventElement, "mousemove", gantt._move_while_dnd);
+    this.event(eventElement, "mouseup", gantt._finish_dnd);
 
     gantt._init_dnd_events = function () {};
   };
@@ -23769,7 +23794,8 @@ module.exports = function (gantt) {
     }
   }
 
-  gantt.event(document, "keydown", modal_key, true);
+  var eventElement = domHelpers.getRootNode(gantt.$root) || document;
+  gantt.event(eventElement, "keydown", modal_key, true);
 
   function modality(mode) {
     if (!modality.cover) {
@@ -24516,12 +24542,13 @@ module.exports = function (gantt) {
 
   gantt.attachEvent("onGanttReady", function () {
     if (!isHeadless(gantt)) {
-      gantt.eventRemove(document.body, "mousemove", autoscrollInterval);
-      gantt.event(document.body, "mousemove", autoscrollInterval);
-      gantt.eventRemove(document.body, "touchmove", autoscrollInterval);
-      gantt.event(document.body, "touchmove", autoscrollInterval);
-      gantt.eventRemove(document.body, "pointermove", autoscrollInterval);
-      gantt.event(document.body, "pointermove", autoscrollInterval);
+      var eventElement = domHelpers.getRootNode(gantt.$root) || document.body;
+      gantt.eventRemove(eventElement, "mousemove", autoscrollInterval);
+      gantt.event(eventElement, "mousemove", autoscrollInterval);
+      gantt.eventRemove(eventElement, "touchmove", autoscrollInterval);
+      gantt.event(eventElement, "touchmove", autoscrollInterval);
+      gantt.eventRemove(eventElement, "pointermove", autoscrollInterval);
+      gantt.event(eventElement, "pointermove", autoscrollInterval);
     }
   });
   gantt.attachEvent("onDestroy", function () {
@@ -28637,7 +28664,8 @@ var initLinksDND = function initLinksDND(timeline, gantt) {
     var targ = gantt.locate(e),
         to_start = true; // can drag and drop link to another gantt on the page, such links are not supported
 
-    var sameGantt = domHelpers.isChildOf(e.target || e.srcElement, gantt.$root);
+    var eventTarget = domHelpers.getTargetNode(e);
+    var sameGantt = domHelpers.isChildOf(eventTarget, gantt.$root);
 
     if (!sameGantt) {
       landing = false;
@@ -31569,6 +31597,10 @@ function getTargetNode(e) {
   if (e.tagName) trg = e;else {
     e = e || window.event;
     trg = e.target || e.srcElement;
+
+    if (trg.shadowRoot && e.composedPath) {
+      trg = e.composedPath()[0];
+    }
   }
   return trg;
 }
@@ -31670,6 +31702,58 @@ function closest(element, selector) {
   }
 }
 
+function isShadowDomSupported() {
+  return document.head.createShadowRoot || document.head.attachShadow;
+}
+/**
+ * Returns element that has the browser focus, or null if no element has focus.
+ * Works with shadow DOM, so it's prefereed to use this function instead of document.activeElement directly.
+ * @returns HTMLElement
+ */
+
+
+function getActiveElement() {
+  var activeElement = document.activeElement;
+
+  if (activeElement.shadowRoot) {
+    activeElement = activeElement.shadowRoot.activeElement;
+  }
+
+  if (activeElement === document.body && document.getSelection) {
+    activeElement = document.getSelection().focusNode || document.body;
+  }
+
+  return activeElement;
+}
+/**
+ * Returns document.body or the host node of the ShadowRoot, if the element is attached to ShadowDom
+ * @param {HTMLElement} element 
+ * @returns HTMLElement
+ */
+
+
+function getRootNode(element) {
+  if (!element) {
+    return document.body;
+  }
+
+  if (!isShadowDomSupported()) {
+    return document.body;
+  }
+
+  while (element.parentNode && (element = element.parentNode)) {
+    if (element instanceof ShadowRoot) {
+      return element.host;
+    }
+  }
+
+  return document.body;
+}
+
+function hasShadowParent(element) {
+  return !!getRootNode(element);
+}
+
 module.exports = {
   getNodePosition: elementPosition,
   getFocusableNodes: getFocusableNodes,
@@ -31687,7 +31771,11 @@ module.exports = {
   getRelativeEventPosition: getRelativeEventPosition,
   isChildOf: isChildOf,
   hasClass: hasClass,
-  closest: closest
+  closest: closest,
+  getRootNode: getRootNode,
+  hasShadowParent: hasShadowParent,
+  isShadowDomSupported: isShadowDomSupported,
+  getActiveElement: getActiveElement
 };
 
 /***/ }),
@@ -32048,13 +32136,7 @@ module.exports = function (gantt) {
 
     gantt.utils = {
       arrayFind: codeHelpers.arrayFind,
-      dom: {
-        getNodePosition: domHelpers.getNodePosition,
-        getRelativeEventPosition: domHelpers.getRelativeEventPosition,
-        isChildOf: domHelpers.isChildOf,
-        hasClass: domHelpers.hasClass,
-        closest: domHelpers.closest
-      }
+      dom: domHelpers
     };
 
     var domEvents = __webpack_require__(/*! ./ui/utils/dom_event_scope */ "./sources/core/ui/utils/dom_event_scope.js")();
@@ -32314,7 +32396,7 @@ var calendarArgumentsHelper = function calendarArgumentsHelper(gantt) {
       } else {
         config = new argumentType(param.start_date, param.end_date, param.task);
 
-        if (param.id) {
+        if (param.id !== null && param.id !== undefined) {
           config.task = param;
         }
       }
@@ -32353,7 +32435,7 @@ var calendarArgumentsHelper = function calendarArgumentsHelper(gantt) {
         config.calendar);
       }
 
-      if (config.id) {
+      if (config.id !== null && config.id !== undefined) {
         processedConfig.task = config; // received a task object as an argument
         // ignore 'unit' and 'step' properties in this case, since it's likely a part of data model of a task
 
@@ -35210,6 +35292,7 @@ exports.default = gantt;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var domHelpers = __webpack_require__(/*! ../../core/ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 var EventsManager = /** @class */ (function () {
     function EventsManager(gantt) {
         this._mouseDown = false;
@@ -35257,7 +35340,8 @@ var EventsManager = /** @class */ (function () {
             }
             scheduledDndCoordinates = _this._getCoordinates(event, selectedRegion);
         });
-        this._domEvents.attach(document.body, "mouseup", function (event) {
+        var eventElement = domHelpers.getRootNode(gantt.$root) || document.body;
+        this._domEvents.attach(eventElement, "mouseup", function (event) {
             scheduledDndCoordinates = null;
             if (useKey && event[useKey] !== true) {
                 return;
@@ -36774,7 +36858,7 @@ module.exports = function (gantt) {
     gantt.$keyboardNavigation.trapFocus = function trapFocus(root, e) {
       if (e.keyCode != 9) return false;
       var focusable = gantt.$keyboardNavigation.getFocusableNodes(root);
-      var currentFocus = document.activeElement;
+      var currentFocus = domHelpers.getActiveElement();
       var currentIndex = -1;
 
       for (var i = 0; i < focusable.length; i++) {
@@ -37114,7 +37198,7 @@ module.exports = function (gantt) {
       },
       // press header button
       "enter, space": function enterSpace() {
-        var node = document.activeElement;
+        var node = domHelpers.getActiveElement();
         node.click();
       },
       // add new task
@@ -37688,7 +37772,7 @@ module.exports = function (gantt) {
     var focusElement = null;
 
     function saveFocus() {
-      focusElement = document.activeElement;
+      focusElement = gantt.utils.dom.getActiveElement();
     }
 
     function restoreFocus() {
@@ -39694,7 +39778,7 @@ var Undo = /** @class */ (function () {
                 var getMethod = methods[command.entity].get;
                 var check = methods[command.entity].isExists;
                 if (command.type === actions.add) {
-                    gantt[method](command.oldValue, command.oldValue.parent, command.oldValue.$index);
+                    gantt[method](command.oldValue, command.oldValue.parent, command.oldValue.$local_index);
                 }
                 else if (command.type === actions.remove) {
                     if (gantt[check](command.value.id)) {
@@ -39712,6 +39796,8 @@ var Undo = /** @class */ (function () {
                 }
                 else if (command.type === actions.move) {
                     gantt[method](command.value.id, command.value.$local_index, command.value.parent);
+                    // GS-680: We should send the changes to the server after we undo vertical reorder
+                    gantt.callEvent("onRowDragEnd", [command.value.id]);
                 }
             }
         });
@@ -39734,7 +39820,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.7";
+  this.version = "7.1.8";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
