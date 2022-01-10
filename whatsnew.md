@@ -1,3 +1,21 @@
+### 7.1.9
+
+Fix the issue with alignment of subtasks after dragging a project in the "year" scale and switching between scales dynamically
+Fix the issue which caused the duration of the project to change after dragging the project with subtasks in the "month" scale
+Fix the issue with Auto Scheduling that caused the constraint type to be changed from "ASAP" to "SNET" after changing the duration of the task
+Fix the incorrect work of backward scheduling after changing the start and end dates via inline editors when schedule_from_end is enabled
+Now it is possible to open the lightbox for read-only tasks in the read-only mode
+Now it is impossible to edit read-only tasks via the lightbox
+Fix the issue with the lightbox which caused it not to open for editable tasks in the read-only mode (appeared in v6.3.1)
+Fix the issue with resizing columns in grid after hiding the timeline via show_chart
+Fix the issue with Auto Scheduling which couldn't be canceled after changing values of project_start and project_end
+Fix the issue which caused the gantt to assign constraints to the tasks with disabled auto-scheduling
+Fix the issue with defining a year range by the lightbox when the range of dates of tasks is more than 10 years and a range for the year selector isn't specified
+Fix the script error that was thrown after loading Gantt if a horizontal scrollbar was attached to 3 or more vertical views
+Fix the incorrect work of the onBeforeTaskAutoSchedule event after setting the ASAP constraint for the task without links when the strict mode is enabled
+Fix the error occurred when running minified versions of Gantt in Next.js projects
+Fix the issue which caused the width of Gantt to be changed after initializing the gantt instance inside an empty container
+
 ### 7.1.8
 
 Fix the script error that was thrown from the gantt.groupBy method when the Resource Histogram and fit_tasks config were enabled

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.8 Standard
+dhtmlxGantt v.7.1.9 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -13284,7 +13284,7 @@ function createLayoutFacade() {
 
         for (var i = 0; i < verticalViews.length; i++) {
           for (var j = 0; j < horizontalViews.length; j++) {
-            if (verticalViews[i].$config.id && verticalViews[j].$config.id && verticalViews[i].$config.id === verticalViews[j].$config.id) {
+            if (verticalViews[i].$config.id && horizontalViews[j].$config.id && verticalViews[i].$config.id === horizontalViews[j].$config.id) {
               commonViews.push(verticalViews[i].$config.id);
             }
           }
@@ -17558,11 +17558,7 @@ module.exports = function (gantt) {
 
   function keepDurationOnEdit(item, mapTo) {
     if (mapTo == "end_date") {
-      item.start_date = gantt.calculateEndDate({
-        start_date: item.end_date,
-        duration: -item.duration,
-        task: item
-      });
+      item.start_date = decreaseStartDate(item);
     } else if (mapTo == "start_date" || mapTo == "duration") {
       item.end_date = gantt.calculateEndDate(item);
     }
@@ -17572,11 +17568,27 @@ module.exports = function (gantt) {
 
 
   function defaultActionOnEdit(item, mapTo) {
-    if (mapTo == "start_date" || mapTo == "duration") {
-      item.end_date = gantt.calculateEndDate(item);
-    } else if (mapTo == "end_date") {
-      item.duration = gantt.calculateDuration(item);
+    if (gantt.config.schedule_from_end) {
+      if (mapTo == "end_date" || mapTo == "duration") {
+        item.start_date = decreaseStartDate(item);
+      } else if (mapTo == "start_date") {
+        item.duration = gantt.calculateDuration(item);
+      }
+    } else {
+      if (mapTo == "start_date" || mapTo == "duration") {
+        item.end_date = gantt.calculateEndDate(item);
+      } else if (mapTo == "end_date") {
+        item.duration = gantt.calculateDuration(item);
+      }
     }
+  }
+
+  function decreaseStartDate(item) {
+    return gantt.calculateEndDate({
+      start_date: item.end_date,
+      duration: -item.duration,
+      task: item
+    });
   }
 };
 
@@ -20610,7 +20622,7 @@ var Layout = function (_super) {
     var oldVisibleCells = this._visibleCells || {};
     var firstCall = !this._visibleCells;
     var visibleCells = {};
-    var cell;
+    var cell = null;
     var parentVisibility = [];
 
     for (var i = 0; i < this._sizes.length; i++) {
@@ -23324,7 +23336,7 @@ module.exports = function (gantt) {
         range = range || 10;
         offset = offset || Math.floor(range / 2);
         start_year = start_year || settings.date.getFullYear() - offset;
-        end_year = end_year || start_year + range;
+        end_year = end_year || gantt.getState().max_date.getFullYear() + offset;
 
         for (i = start_year; i < end_year; i++) {
           html += "<option value='" + i + "'>" + i + "</option>";
@@ -23539,9 +23551,9 @@ var initializer = function () {
             if (grid_limits[1] && gantt.config.grid_width > grid_limits[1]) gantt.config.grid_width = grid_limits[1];
 
             if (mainTimeline && gantt.config.show_chart) {
-              mainGrid.$config.width = gantt.config.grid_width - 1; // GS-1314: Don't let the non-scrollable grid to be larger than the container
+              mainGrid.$config.width = gantt.config.grid_width - 1; // GS-1314: Don't let the non-scrollable grid to be larger than the container with the correct width
 
-              if (!mainGrid.$config.scrollable && mainGrid.$config.scrollY) {
+              if (!mainGrid.$config.scrollable && mainGrid.$config.scrollY && gantt.$root.offsetWidth) {
                 var ganttContainerWidth = mainGrid.$gantt.$layout.$container.offsetWidth;
                 var verticalScrollbar = gantt.$ui.getView(mainGrid.$config.scrollY);
                 var verticalScrollbarWidth = verticalScrollbar.$config.width;
@@ -24244,7 +24256,7 @@ var createMouseHandler = function (domHelpers) {
         if (!default_action) return;
 
         if (id !== null && gantt.getTask(id)) {
-          if (res && gantt.config.details_on_dblclick && !gantt.isReadonly()) {
+          if (res && gantt.config.details_on_dblclick && !gantt.isReadonly(id)) {
             gantt.showLightbox(id);
           }
         }
@@ -29590,11 +29602,17 @@ function createTaskDND(timeline, gantt) {
 
       return correctShift;
     },
-    _move: function _move(task, shift, drag) {
+    _move: function _move(task, shift, drag, multipleDragShift) {
       var coords_x = this._drag_task_coords(task, drag);
 
-      var new_start = gantt.dateFromPos(coords_x.start + shift),
-          new_end = gantt.dateFromPos(coords_x.end + shift);
+      var new_start = null,
+          new_end = null; // GS-454: If we drag multiple tasks, rely on the dates instead of timeline coordinates
+
+      if (multipleDragShift) {
+        new_start = new Date(+drag.obj.start_date + multipleDragShift), new_end = new Date(+drag.obj.end_date + multipleDragShift);
+      } else {
+        new_start = gantt.dateFromPos(coords_x.start + shift), new_end = gantt.dateFromPos(coords_x.end + shift);
+      }
 
       if (!new_start) {
         task.start_date = new Date(gantt.getState().min_date);
@@ -29646,12 +29664,12 @@ function createTaskDND(timeline, gantt) {
         this._update_on_move(e);
       }
     },
-    _update_item_on_move: function _update_item_on_move(shift, id, mode, drag, e) {
+    _update_item_on_move: function _update_item_on_move(shift, id, mode, drag, e, multipleDragShift) {
       var task = gantt.getTask(id);
       var original = gantt.mixin({}, task);
       var copy = gantt.mixin({}, task);
 
-      this._handlers[mode].apply(this, [copy, shift, drag]);
+      this._handlers[mode].apply(this, [copy, shift, drag, multipleDragShift]);
 
       gantt.mixin(task, copy, true); //gantt._update_parents(drag.id, true);
 
@@ -29706,9 +29724,15 @@ function createTaskDND(timeline, gantt) {
 
               if (dragProject && childDrag.id != drag.id) {
                 gantt._bulk_dnd = true;
+              } // GS-454: Calculate the date shift in milliseconds instead of pixels
+
+
+              if (maxShift === undefined && (dragProject || Object.keys(dragHash).length > 1)) {
+                var shiftDate = gantt.dateFromPos(drag.start_x);
+                var multipleDragShift = curr_date - shiftDate;
               }
 
-              this._update_item_on_move(shift, childDrag.id, childDrag.mode, childDrag, e);
+              this._update_item_on_move(shift, childDrag.id, childDrag.mode, childDrag, e, multipleDragShift);
             }
 
             gantt._bulk_dnd = false;
@@ -39820,7 +39844,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.8";
+  this.version = "7.1.9";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
