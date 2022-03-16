@@ -1,3 +1,17 @@
+### 7.1.10
+
+Fix the issue which caused Gantt not to render a project task if it didn’t have children and the start_date parameter was specified for the task
+Fix the issue with resizing a task row by drag and drop if the task ID was either a non-number value or a numeric string with more than 16 symbols
+Fix the incorrect work of visibility groups which prevented the sizes of the grid and time scale from being synchronized in the complex layout
+Fix the issues with task dates after dragging several tasks horizontally at once
+Fix the issue which caused dataProcessor not to send all updates from different datastores when the auto-update mode is disabled
+Fix the issue which caused the milestone with the FF link to be moved to the next day
+Fix the incorrect calculation of the end_date of milestones when using backward scheduling and setting project_end to the non-working time
+Fix the incorrect work of task reordering if HTML elements were displayed above the gantt
+Fix the issue with the unsetWorkTime() method when the date/day configuration was removed from the calendar but the changes were not applied immediately
+Fix the issue with the clearAll() method which didn’t clear selected tasks if the multiselect extension was enabled
+Fix the error appeared when applying the exportToExcel() method with the visual: true parameter and setting the duration_unit config to ‘hour’
+
 ### 7.1.9
 
 Fix the issue with alignment of subtasks after dragging a project in the "year" scale and switching between scales dynamically
