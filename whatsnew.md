@@ -1,3 +1,15 @@
+### 7.1.11
+
+Fix sourcemaps for compressed Gantt files
+Fix the incorrect position of markers when autosize = 'y' was applied
+Fix the incorrect position of the tooltip and some other elements of Gantt in cases when the Gantt container had extra margin or vertical offsets
+Fix the issue that caused rows of the editable resource diagram to change the order after the first cell of the resource assignment was edited
+Fix the issue that caused the incorrect work of the smart rendering after expanding or collapsing of tasks in some cases
+Fix the issue with the onBeforeDrag event which didn't block the default actions when the click_drag and drag_timeline extensions were activated
+Fix the script error that fired when the changeId() method was called for the resource assignments store
+Scrollbars of the default Gantt layout no longer require fixed scrollVer/scrollHor names to work correctly
+Split tasks now receive the 'gantt_selected' class on selection, in the same way as regular tasks do
+
 ### 7.1.10
 
 Fix the issue which caused Gantt not to render a project task if it didn’t have children and the start_date parameter was specified for the task
