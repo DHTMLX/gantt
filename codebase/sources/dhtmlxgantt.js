@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.11 Standard
+dhtmlxGantt v.7.1.12 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7530,6 +7530,13 @@ module.exports = function (gantt) {
         modifiedDate.setTime(modifiedDate.getTime() + 60 * 60 * 1000 * (24 - modifiedDate.getHours()));
       }
 
+      var worktimeCalculation = inc > 1;
+
+      if (worktimeCalculation && getHoursCondition) {
+        // try to shift the modified Date to 00:00
+        modifiedDate.setHours(0);
+      }
+
       return modifiedDate;
     },
     add: function add(date, inc, mode) {
@@ -8699,7 +8706,8 @@ module.exports = function (gantt) {
   };
 
   var getDefaultTaskDate = function getDefaultTaskDate(item, parent_id) {
-    var parent = parent_id && parent_id != gantt.config.root_id ? gantt.getTask(parent_id) : false,
+    var parentExists = parent_id && parent_id != gantt.config.root_id && gantt.isTaskExists(parent_id);
+    var parent = parentExists ? gantt.getTask(parent_id) : false,
         startDate = null;
 
     if (parent) {
@@ -12830,11 +12838,12 @@ var createDatastoreFacade = function createDatastoreFacade() {
         store.select(id); // GS-730. Split task is not included in the tree, 
         // so the datastore renderer will think that the task is not visible
 
-        if (oldSelectId && store.pull[oldSelectId].$split_subtask) {
+        if (oldSelectId && store.pull[oldSelectId].$split_subtask && oldSelectId != id) {
           this.refreshTask(oldSelectId);
         }
 
-        if (store.pull[id].$split_subtask) {
+        if (store.pull[id].$split_subtask && oldSelectId != id) {
+          // GS-1850. Do not repaint split task after double click
           this.refreshTask(id);
         }
       }
@@ -12896,7 +12905,13 @@ var createLinksStoreFacade = function createLinksStoreFacade() {
       return this.$data.linksStore.exists(id);
     },
     addLink: function addLink(link) {
-      return this.$data.linksStore.addItem(link);
+      var newLink = this.$data.linksStore.addItem(link); // GS-1222. Update fullOrder otherwise the link won't appear after render
+
+      if (this.$data.linksStore.isSilent()) {
+        this.$data.linksStore.fullOrder.push(newLink);
+      }
+
+      return newLink;
     },
     updateLink: function updateLink(id, data) {
       if (!utils.defined(data)) data = this.getLink(id);
@@ -13135,7 +13150,7 @@ function createLayoutFacade() {
     } else {
       var grid = getGrid(gantt);
 
-      if (grid || !grid.$config.hidden) {
+      if (grid && !grid.$config.hidden) {
         return grid;
       } else {
         return null;
@@ -13156,6 +13171,11 @@ function createLayoutFacade() {
       baseCell = getGrid(gantt);
     } else {
       baseCell = getBaseCell(gantt);
+    } // GS-1827. If there is no grid and timeline, there is no scrollbar for them
+
+
+    if (!baseCell) {
+      return null;
     }
 
     var verticalScrollbar = getAttachedScrollbar(gantt, baseCell, "scrollY");
@@ -13165,7 +13185,7 @@ function createLayoutFacade() {
   function getHorizontalScrollbar(gantt) {
     var baseCell = getBaseCell(gantt);
 
-    if (baseCell.id == "grid") {
+    if (!baseCell || baseCell.id == "grid") {
       return null; // if the timeline is not displayed, do not return the scrollbar
     }
 
@@ -20252,11 +20272,53 @@ var Layout = function (_super) {
       }
 
       var autosize = this._getAutosizeMode(this.$config.autosize);
+      /* // possible to rollback set content size when autisize is disabled, not sure if need to
+      		contentViews.forEach(function(view){
+      			const parent = view.$parent;
+      			if(!autosize.x){
+      				if(parent.$config.$originalWidthStored){
+      					parent.$config.$originalWidthStored = false;
+      					parent.$config.width = parent.$config.$originalWidth;
+      					parent.$config.$originalWidth = undefined;
+      				}
+      			}
+      
+      			if(!autosize.y){
+      				if(parent.$config.$originalHeightStored){
+      					parent.$config.$originalHeightStored = false;
+      					parent.$config.height = parent.$config.$originalHeight;
+      					parent.$config.$originalHeight = undefined;
+      				}
+      			}
+      		});*/
+
 
       var scrollChanged = this._resizeScrollbars(autosize, scrollbars);
 
       if (this.$config.autosize) {
         this.autosize(this.$config.autosize);
+        contentViews.forEach(function (view) {
+          var parent = view.$parent;
+          var sizes = parent.getContentSize(autosize);
+
+          if (autosize.x) {
+            if (!parent.$config.$originalWidthStored) {
+              parent.$config.$originalWidthStored = true;
+              parent.$config.$originalWidth = parent.$config.width;
+            }
+
+            parent.$config.width = sizes.width;
+          }
+
+          if (autosize.y) {
+            if (!parent.$config.$originalHeightStored) {
+              parent.$config.$originalHeightStored = true;
+              parent.$config.$originalHeight = parent.$config.height;
+            }
+
+            parent.$config.height = sizes.height;
+          }
+        });
         scrollChanged = true;
       }
 
@@ -22738,6 +22800,11 @@ module.exports = function (gantt) {
         lightboxDiv.firstChild.style.cursor = "pointer";
 
         gantt._init_dnd_events();
+      } // GS-1428: If there is lightbox node, we need to remove it from the DOM
+
+
+      if (this._lightbox) {
+        this.resetLightbox();
       }
 
       document.body.insertBefore(lightboxDiv, document.body.firstChild);
@@ -33201,7 +33268,13 @@ CalendarWorkTimeStrategy.prototype = {
     return timestamp;
   },
   _checkIfWorkingUnit: function _checkIfWorkingUnit(date, unit) {
-    if (!this["_is_work_" + unit]) return true;
+    // GS-596: If unit is larger than day or has a custom logic
+    if (!this["_is_work_" + unit]) {
+      var from = this.$gantt.date["".concat(unit, "_start")](new Date(date));
+      var to = this.$gantt.date.add(from, 1, unit);
+      return this.hasDuration(from, to);
+    }
+
     return this["_is_work_" + unit](date);
   },
   //checkings for particular time units
@@ -33913,23 +33986,23 @@ CalendarWorkTimeStrategy.prototype = {
   _addInterval: function _addInterval(start, duration, unit, step, stopAction) {
     var added = 0;
     var current = start;
-    var previous = new Date(current.valueOf() - 1);
-    var timezoneDifferenceWithPrevious = current.getTimezoneOffset() - previous.getTimezoneOffset();
+    var dstShift = false;
 
     while (added < duration && !(stopAction && stopAction(current))) {
-      var next = this._nextDate(current, unit, step);
+      var next = this._nextDate(current, unit, step); // GS-1501. Correct hours after DST change
 
-      if (timezoneDifferenceWithPrevious < 0 && step > 0) {
-        // the step parameter is for backward scheduling and startDate calcuation
-        next.setTime(next.getTime() + 60 * 1000 * timezoneDifferenceWithPrevious);
-        timezoneDifferenceWithPrevious = false;
-      }
 
-      var timezoneDifference = next.getTimezoneOffset() - current.getTimezoneOffset();
+      if (unit == "day") {
+        dstShift = dstShift || !current.getHours() && next.getHours();
 
-      if (timezoneDifference < 0 && step > 0 && unit != "day") {
-        // the step parameter is for backward scheduling and startDate calcuation
-        next.setTime(next.getTime() + 60 * 1000 * timezoneDifference);
+        if (dstShift) {
+          next.setHours(0);
+
+          if (next.getHours()) {// the day when the timezone is changed, try to correct hours next time
+          } else {
+            dstShift = false;
+          }
+        }
       }
 
       var dateValue = new Date(next.valueOf() + 1);
@@ -33940,7 +34013,7 @@ CalendarWorkTimeStrategy.prototype = {
 
       var workTimeCheck = this._isWorkTime(dateValue, unit);
 
-      if (workTimeCheck) {
+      if (workTimeCheck && !dstShift) {
         added++;
       }
 
@@ -38276,6 +38349,19 @@ module.exports = function (gantt) {
       var multiSelect = gantt.config.multiselect;
 
       var singleSelection = function () {
+        // GS-719: If the multiselect extension is added we still need a way
+        // to open the inline editors after clicking on the cells in the grid
+        var controller = gantt.ext.inlineEditors;
+        var state = controller.getState();
+        var cell = controller.locateCell(e.target);
+
+        if (gantt.config.inline_editors_multiselect_open && cell && controller.getEditorConfig(cell.columnName)) {
+          if (controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName) {// do nothing if editor is already active in this cell
+          } else {
+            controller.startEdit(cell.id, cell.columnName);
+          }
+        }
+
         this.setFirstSelected(target_ev);
 
         if (!this.isSelected(target_ev)) {
@@ -40050,7 +40136,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.11";
+  this.version = "7.1.12";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

@@ -1,3 +1,15 @@
+### 7.1.12
+
+Fix the incorrect work of the gantt.isWorkTime() method with the "week" time unit
+Fix the issue that prevented tasks and links from being rendered when they were added via the gantt.silent() method
+Fix the issue that caused the "Task not found" error message to be shown after data loading in some cases
+Fix the incorrect work of the gantt.changeLightboxType() method that left old lightbox elements in DOM
+Fix the incorrect calculation of the end dates of tasks when the tasks overlap after the Summer/Winter clock change
+Fix the issue that caused the Resource Grid to disappear when the user edited a resource value using the cell editor
+Fix the script error that happened when the Gantt layout contained the "resourceGrid"/"resourceTimeline" views but not included the "grid"/"timeline" views
+Fix the incorrect work of the autosize config when the Gantt layout contained Resource Panel
+Fix the lightbox for split tasks, the lightbox now should be displayed when you double-click on a split task
+
 ### 7.1.11
 
 Fix sourcemaps for compressed Gantt files
