@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 7.1.12
+// Type definitions for dhtmlxGantt 7.1.13
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -450,6 +450,11 @@ export interface GanttConfigOptions {
 	 * contains all available constraint types
 	*/
 	constraint_types: any;
+
+	/**
+	 * defines whether the gantt should track resizing of the container at time intervals
+	*/
+	container_resize_method: string;
 
 	/**
 	 * specifies the delay (in milliseconds) before redrawing the gantt when resizing the container
@@ -1017,9 +1022,9 @@ export interface GanttConfigOptions {
 	task_date: string;
 
 	/**
-	 * 
+	 * sets the name of the attribute of the resizer's DOM element of the grid row. The attribute presents the row's index
 	*/
-	task_grid_row_resizer_attribute: any;
+	task_grid_row_resizer_attribute: string;
 
 	/**
 	 * sets the height of task bars in the timeline area
@@ -1471,8 +1476,9 @@ export interface GanttStatic {
 	/**
 	 * updates multiple tasks/links at once
 	 * @param callback the callback function
+	 * @param noRedraw optional, specifies if Gantt should repaint the chart after the callback function; <i>true</i> - not to repaint and <i>false</i> (by default) - to repaint
 	*/
-	batchUpdate(callback: GanttCallback): void;
+	batchUpdate(callback: GanttCallback, noRedraw: boolean): void;
 
 	/**
 	 * creates a new function that, when called, has its <i>this</i> keyword set to the provided value
@@ -1803,7 +1809,7 @@ export interface GanttStatic {
 	 * returns the earliest and latest dates allowed by the constraint applied to a task
 	 * @param task a task object
 	*/
-	getConstraintLimitations(task: any): void;
+	getConstraintLimitations(task: any): any;
 
 	/**
 	 * returns the constraint type applied to the task
@@ -2138,10 +2144,10 @@ export interface GanttStatic {
 	groupBy(config: any): void;
 
 	/**
-	 * checks whether the specified item has child tasks
+	 * returns the number of child task(s)
 	 * @param id the task id
 	*/
-	hasChild(id: string|number): boolean;
+	hasChild(id: string|number): number|undefined;
 
 	/**
 	 * hides the lightbox modal overlay that blocks interactions with the remaining screen
@@ -2423,9 +2429,9 @@ export interface GanttStatic {
 
 	/**
 	 * rounds the specified date to the nearest date in the time scale
-	 * @param date the Date object to round
+	 * @param date the Date object to round or an object with settings
 	*/
-	roundDate(date: Date): Date;
+	roundDate(date: any): Date;
 
 	/**
 	 * rounds the start and end task's dates to the nearest dates in the time scale
@@ -2461,10 +2467,10 @@ export interface GanttStatic {
 
 	/**
 	 * set the parent for a task
-	 * @param task the task id
+	 * @param task the task object
 	 * @param pid the parent task id
 	*/
-	setParent(task: number|string, pid: number|string): void;
+	setParent(task: any, pid: number|string): void;
 
 	/**
 	 * resizes the Gantt chart
@@ -2572,7 +2578,7 @@ export interface GanttStatic {
 	/**
 	 * updates the specified task
 	 * @param id the task id
-	 * @param newState the new values of the task
+	 * @param newState optional, the new values of the task
 	*/
 	updateTask(id: string, newState: any): void;
 

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.12 Standard
+dhtmlxGantt v.7.1.13 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -898,7 +898,7 @@ return /******/ (function(modules) { // webpackBootstrap
         var formatStack = null;
         var indentStackFrames = false;
         var printWarning;
-        var debugging = !!(util.env("BLUEBIRD_DEBUG") != 0 && ( true || false));
+        var debugging = !!(util.env("BLUEBIRD_DEBUG") != 0 && (true || util.env("BLUEBIRD_DEBUG") || util.env("NODE_ENV") === "development"));
         var warnings = !!(util.env("BLUEBIRD_WARNINGS") != 0 && (debugging || util.env("BLUEBIRD_WARNINGS")));
         var longStackTraces = !!(util.env("BLUEBIRD_LONG_STACK_TRACES") != 0 && (debugging || util.env("BLUEBIRD_LONG_STACK_TRACES")));
         var wForgottenReturn = util.env("BLUEBIRD_W_FORGOTTEN_RETURN") != 0 && (warnings || !!util.env("BLUEBIRD_W_FORGOTTEN_RETURN"));
@@ -6691,7 +6691,7 @@ g = function () {
 
 try {
   // This works if eval is allowed (see CSP)
-  g = g || new Function("return this")();
+  g = g || Function("return this")() || (1, eval)("this");
 } catch (e) {
   // This works if the window reference is available
   if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
@@ -7119,7 +7119,9 @@ module.exports = function (gantt) {
           };
         }
 
-        if (method == "GET" && !this.cache) {
+        var noCache = !this || !this.cache;
+
+        if (method == "GET" && noCache) {
           url += (url.indexOf("?") >= 0 ? "&" : "?") + "dhxr" + new Date().getTime() + "=1";
         }
 
@@ -9206,7 +9208,6 @@ module.exports = function (gantt) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DataProcessor = exports.createDataProcessor = void 0;
 var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
 var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 var utils = __webpack_require__(/*! ../../utils/utils */ "./sources/utils/utils.js");
@@ -14260,7 +14261,9 @@ module.exports = function (gantt) {
     for (var key in collections) {
       if (collections.hasOwnProperty(key)) {
         collections_loaded = true;
-        var collection = collections[key];
+        var collection = collections[key]; // GS-1728. Create an empty serverList if it doesn't exist
+
+        this.serverList[key] = this.serverList[key] || [];
         var arr = this.serverList[key];
         if (!arr) continue;
         arr.splice(0, arr.length); //clear old options
@@ -16230,6 +16233,8 @@ module.exports = function (obj, parent) {
 
 var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "./sources/core/ui/render/layer_engine.js");
 
+var isLinkInViewport = __webpack_require__(/*! ./render/viewport/is_link_in_viewport */ "./sources/core/ui/render/viewport/is_link_in_viewport.js");
+
 function initLayer(layer, gantt) {
   if (!layer.view) {
     return;
@@ -16342,6 +16347,13 @@ var createLayerEngine = function createLayerEngine(gantt) {
           }
 
           config.view = "timeline";
+
+          if (config && config.renderer) {
+            if (!config.renderer.getRectangle && !config.renderer.isInViewPort) {
+              config.renderer.isInViewPort = isLinkInViewport;
+            }
+          }
+
           return linkLayers.addLayer(config);
         },
         _getLinkLayers: function _getLinkLayers() {
@@ -17866,11 +17878,21 @@ Grid.prototype = {
     }
 
     if (this.$config.scrollable && elasticColumns && !isNaN(innerWidth)) {
-      var minWidth = 0;
+      // GS-1352: Allow resizing the grid columns, then the grid width is increased
+      // or keep the grid width, but don't allow column resize to affect the grid width
+      var columnProperty = "width";
+
+      if (elasticColumns == "min_width") {
+        columnProperty = "min_width";
+      }
+
+      var newColumnWidth = 0;
       columns.forEach(function (col) {
-        minWidth += col.min_width || config.min_grid_column_width;
+        newColumnWidth += col[columnProperty] || config.min_grid_column_width;
       });
-      var columnsWidth = Math.max(minWidth, width);
+      newColumnWidth--; // the total column width shouldn't match the outerWidth
+
+      var columnsWidth = Math.max(newColumnWidth, width);
       innerWidth = this._setColumnsWidth(columnsWidth);
       outerWidth = width;
     }
@@ -22675,7 +22697,22 @@ module.exports = function (gantt) {
   var TypeselectControl = __webpack_require__(/*! ./controls/typeselect_control */ "./sources/core/ui/lightbox/controls/typeselect_control.js")(gantt);
 
   gantt._lightbox_methods = {};
-  gantt._lightbox_template = "<div class='gantt_cal_ltitle'><span class='gantt_mark'>&nbsp;</span><span class='gantt_time'></span><span class='gantt_title'></span></div><div class='gantt_cal_larea'></div>"; //TODO: gantt._lightbox_id is changed from data.js and accessed from autoscheduling, check if it can be removed from gantt object
+  gantt._lightbox_template = "<div class='gantt_cal_ltitle'><span class='gantt_mark'>&nbsp;</span><span class='gantt_time'></span><span class='gantt_title'></span></div><div class='gantt_cal_larea'></div>"; // GS-1952. Attaching the lightbox to the BODY element is not considered secure.
+  // Attach it to Gantt container for Salesforce and other secure environments
+
+  gantt._lightbox_root = gantt.$root;
+
+  function setParentNode() {
+    var cspEnvironment = gantt.config.csp === true;
+    var salesforceEnvironment = !!window["Sfdc"] || !!window["$A"] || window["Aura"] || '$shadowResolver$' in document.body;
+
+    if (cspEnvironment || salesforceEnvironment) {
+      gantt._lightbox_root = gantt.$root;
+    } else {
+      gantt._lightbox_root = document.body;
+    }
+  } //TODO: gantt._lightbox_id is changed from data.js and accessed from autoscheduling, check if it can be removed from gantt object
+
 
   var state = gantt.$services.getService("state");
   state.registerProvider("lightbox", function () {
@@ -22767,6 +22804,7 @@ module.exports = function (gantt) {
     var sns;
     var ds;
     var classNames = "";
+    setParentNode();
     if (type === undefined) type = this.getLightboxType();
 
     if (!this._lightbox || this.getLightboxType() != this.getTaskType(type)) {
@@ -22807,7 +22845,8 @@ module.exports = function (gantt) {
         this.resetLightbox();
       }
 
-      document.body.insertBefore(lightboxDiv, document.body.firstChild);
+      gantt._lightbox_root.insertBefore(lightboxDiv, gantt._lightbox_root.firstChild);
+
       this._lightbox = lightboxDiv;
       sns = this._get_typed_lightbox_config(type);
       html = this._render_sections(sns);
@@ -22870,17 +22909,17 @@ module.exports = function (gantt) {
   gantt._center_lightbox = function (box) {
     if (box) {
       box.style.display = "block";
-      var scroll_top = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
-      var scroll_left = window.pageXOffset || document.body.scrollLeft || document.documentElement.scrollLeft;
+      var scroll_top = window.pageYOffset || gantt._lightbox_root.scrollTop || document.documentElement.scrollTop;
+      var scroll_left = window.pageXOffset || gantt._lightbox_root.scrollLeft || document.documentElement.scrollLeft;
       var view_height = window.innerHeight || document.documentElement.clientHeight;
       if (scroll_top) // if vertical scroll on window
         box.style.top = Math.round(scroll_top + Math.max((view_height - box.offsetHeight) / 2, 0)) + "px";else // vertical scroll on body
         box.style.top = Math.round(Math.max((view_height - box.offsetHeight) / 2, 0) + 9) + "px"; // +9 for compatibility with auto tests
       // not quite accurate but used for compatibility reasons
 
-      if (document.documentElement.scrollWidth > document.body.offsetWidth) // if horizontal scroll on the window
-        box.style.left = Math.round(scroll_left + (document.body.offsetWidth - box.offsetWidth) / 2) + "px";else // horizontal scroll on the body
-        box.style.left = Math.round((document.body.offsetWidth - box.offsetWidth) / 2) + "px";
+      if (document.documentElement.scrollWidth > gantt._lightbox_root.offsetWidth) // if horizontal scroll on the window
+        box.style.left = Math.round(scroll_left + (gantt._lightbox_root.offsetWidth - box.offsetWidth) / 2) + "px";else // horizontal scroll on the body
+        box.style.left = Math.round((gantt._lightbox_root.offsetWidth - box.offsetWidth) / 2) + "px";
     }
   };
 
@@ -22888,7 +22927,8 @@ module.exports = function (gantt) {
     if (this._cover) return;
     this._cover = document.createElement("DIV");
     this._cover.className = "gantt_cal_cover";
-    document.body.appendChild(this._cover);
+
+    gantt._lightbox_root.appendChild(this._cover);
   };
 
   gantt.event(window, "deviceorientation", function () {
@@ -23090,7 +23130,8 @@ module.exports = function (gantt) {
     var sns = this._get_typed_lightbox_config();
 
     for (var i = 0; i < sns.length; i++) {
-      var node = document.getElementById(sns[i].id);
+      var node = gantt._lightbox_root.querySelector("#" + sns[i].id);
+
       node = node ? node.nextSibling : node;
       var block = this.form_blocks[sns[i].type];
       if (!block) continue;
@@ -23170,7 +23211,8 @@ module.exports = function (gantt) {
         continue; //skip incorrect sections, same check is done during rendering
       }
 
-      var node = document.getElementById(section.id).nextSibling;
+      var node = gantt._lightbox_root.querySelector("#" + section.id).nextSibling;
+
       var block = this.form_blocks[section.type];
 
       var map_to = gantt._resolve_default_mapping(sns[i]);
@@ -23203,7 +23245,9 @@ module.exports = function (gantt) {
     var section = config[i];
     if (!section) return null;
     if (!this._lightbox) this.getLightbox();
-    var header = document.getElementById(section.id);
+
+    var header = gantt._lightbox_root.querySelector("#" + section.id);
+
     var node = header.nextSibling;
     var result = {
       section: section,
@@ -23242,17 +23286,18 @@ module.exports = function (gantt) {
   };
 
   gantt._init_dnd_events = function () {
-    var eventElement = document.body;
+    var eventElement = gantt._lightbox_root;
     this.event(eventElement, "mousemove", gantt._move_while_dnd);
-    this.event(eventElement, "mouseup", gantt._finish_dnd);
-
-    gantt._init_dnd_events = function () {};
+    this.event(eventElement, "mouseup", gantt._finish_dnd); // GS-1952: In Salesforce environment, the lightbox is attached to the Gantt container. 
+    // So when Gantt is reinitialized, the events are no longer attached to the Gantt container.
+    // gantt._init_dnd_events = function () {
+    // };
   };
 
   gantt._move_while_dnd = function (event) {
     if (gantt._dnd_start_lb) {
       if (!document.gantt_unselectable) {
-        document.body.className += " gantt_unselectable";
+        gantt._lightbox_root.className += " gantt_unselectable";
         document.gantt_unselectable = true;
       }
 
@@ -23272,7 +23317,7 @@ module.exports = function (gantt) {
   gantt._finish_dnd = function () {
     if (gantt._lb_start) {
       gantt._lb_start = gantt._dnd_start_lb = false;
-      document.body.className = document.body.className.replace(" gantt_unselectable", "");
+      gantt._lightbox_root.className = gantt._lightbox_root.className.replace(" gantt_unselectable", "");
       document.gantt_unselectable = false;
     }
   };
@@ -23465,7 +23510,7 @@ module.exports = function (gantt) {
 
     for (i = 0; i < sns.length; i++) {
       section = sns[i];
-      labelBlock = document.getElementById(section.id);
+      labelBlock = gantt._lightbox_root.querySelector("#" + section.id);
       if (!section.id || !labelBlock) continue;
       label = labelBlock.querySelector("label");
       inputBlock = labelBlock.nextSibling;
@@ -24798,7 +24843,6 @@ module.exports = function (gantt) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ColumnsGridDnd = void 0;
 var domHelpers = __webpack_require__(/*! ../../utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 var scrollable_grid_1 = __webpack_require__(/*! ./scrollable_grid */ "./sources/core/ui/plugins/column_grid_dnd/scrollable_grid.ts");
 var COLUMN_ID_ATTR_NAME = "data-column-id";
@@ -34922,7 +34966,6 @@ module.exports = WorkTimeCalendarMerger;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DateDurationCache = void 0;
 var DateDurationCache = /** @class */ (function () {
     function DateDurationCache() {
         this.clear();
@@ -35008,11 +35051,10 @@ exports.DateDurationCache = DateDurationCache;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCacheObject = void 0;
 var workunit_map_cache_1 = __webpack_require__(/*! ./workunit_map_cache */ "./sources/core/worktime/strategy/work_unit_cache/workunit_map_cache.ts");
 var workunit_object_cache_1 = __webpack_require__(/*! ./workunit_object_cache */ "./sources/core/worktime/strategy/work_unit_cache/workunit_object_cache.ts");
 var larger_units_helper_1 = __webpack_require__(/*! ./larger_units_helper */ "./sources/core/worktime/strategy/work_unit_cache/larger_units_helper.ts");
-Object.defineProperty(exports, "LargerUnitsCache", { enumerable: true, get: function () { return larger_units_helper_1.LargerUnitsCache; } });
+exports.LargerUnitsCache = larger_units_helper_1.LargerUnitsCache;
 function createCacheObject() {
     // worktime hash is on the hot path,
     // Map seems to work faster than plain array, use it whenever possible
@@ -35038,7 +35080,6 @@ exports.createCacheObject = createCacheObject;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LargerUnitsCache = void 0;
 var LargerUnitsCache = /** @class */ (function () {
     function LargerUnitsCache(calendar) {
         var _this = this;
@@ -35099,7 +35140,6 @@ exports.LargerUnitsCache = LargerUnitsCache;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WorkUnitsMapCache = void 0;
 var WorkUnitsMapCache = /** @class */ (function () {
     function WorkUnitsMapCache() {
         this.clear();
@@ -35154,7 +35194,6 @@ exports.WorkUnitsMapCache = WorkUnitsMapCache;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.WorkUnitsObjectCache = void 0;
 var WorkUnitsObjectCache = /** @class */ (function () {
     function WorkUnitsObjectCache() {
         this.clear();
@@ -35537,7 +35576,6 @@ module.exports = function (gantt) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.gantt = void 0;
 var extensions_gpl_1 = __webpack_require__(/*! ./ext/extensions_gpl */ "./sources/ext/extensions_gpl.ts");
 var base = __webpack_require__(/*! ./factory/make_instance_web */ "./sources/factory/make_instance_web.js");
 var scope = __webpack_require__(/*! ./utils/global */ "./sources/utils/global.js");
@@ -35558,7 +35596,6 @@ exports.default = gantt;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventsManager = void 0;
 var domHelpers = __webpack_require__(/*! ../../core/ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 var EventsManager = /** @class */ (function () {
     function EventsManager(gantt) {
@@ -35764,7 +35801,6 @@ exports.default = default_1;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SelectedRegion = void 0;
 var eventable = __webpack_require__(/*! ../../utils/eventable */ "./sources/utils/eventable.js");
 var helpers_1 = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
 var SelectedRegion = /** @class */ (function () {
@@ -35974,7 +36010,6 @@ exports.SelectedRegion = SelectedRegion;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventsManager = void 0;
 var EventsManager = /** @class */ (function () {
     function EventsManager(gantt) {
         var _this = this;
@@ -36290,14 +36325,24 @@ function default_1(gantt) {
         return !!(element && element === document.body);
     }
     function isFullscreenAvailable() {
-        return document.fullscreenEnabled ||
-            document.webkitFullscreenEnabled ||
-            document.mozFullScreenEnabled ||
-            document.msFullscreenEnabled;
+        try {
+            return document.fullscreenEnabled ||
+                document.webkitFullscreenEnabled ||
+                document.mozFullScreenEnabled ||
+                document.msFullscreenEnabled;
+        }
+        catch (e) {
+            console.error("Fullscreen is not available:", e); // tslint:disable-line:no-console
+        }
     }
     var state = gantt.$services.getService("state");
     state.registerProvider("fullscreen", function () {
-        return { fullscreen: isExpanded() };
+        if (isFullscreenAvailable()) {
+            return { fullscreen: isExpanded() };
+        }
+        else {
+            return undefined;
+        }
     });
     var backupBodyPadding = {
         overflow: null,
@@ -36610,6 +36655,11 @@ module.exports = function (gantt) {
         if (!gantt.config.keyboard_navigation) return; // GS-734 & GS-1078: we don't need keyboard navigation inside inline editors
 
         if (!gantt.config.keyboard_navigation_cells && isInlineEditorCell(e)) return;
+
+        if (isNoKeyboardNavigationElement(e) || isLightboxElement(e)) {
+          return;
+        }
+
         return dispatcher.keyDownHandler(e);
       };
 
@@ -36626,8 +36676,9 @@ module.exports = function (gantt) {
 
       var reFocusActiveNode = function reFocusActiveNode() {
         if (!dispatcher.isEnabled()) return;
+        var outsideGantt = !domHelpers.isChildOf(document.activeElement, gantt.$container) && document.activeElement.localName != "body";
         var activeNode = dispatcher.getActiveNode();
-        if (!activeNode) return;
+        if (!activeNode || outsideGantt) return;
         var domElement = activeNode.getNode();
         var top, left;
 
@@ -36673,12 +36724,26 @@ module.exports = function (gantt) {
 
       function isInlineEditorCell(e) {
         return !!domHelpers.closest(e.target, ".gantt_grid_editor_placeholder");
+      } // GS-1445. Cancel keyboard navigation within custom elements
+
+
+      function isNoKeyboardNavigationElement(e) {
+        return !!domHelpers.closest(e.target, ".no_keyboard_navigation");
+      }
+
+      function isLightboxElement(e) {
+        return !!domHelpers.closest(e.target, ".gantt_cal_light");
       }
 
       function mousedownHandler(e) {
         if (!gantt.config.keyboard_navigation) return true; // GS-734 & GS-1078: we don't need keyboard navigation inside inline editors
 
         if (!gantt.config.keyboard_navigation_cells && isInlineEditorCell(e)) return true;
+
+        if (isNoKeyboardNavigationElement(e)) {
+          return;
+        }
+
         var focusNode;
         var locateTask = dispatcher.fromDomElement(e);
 
@@ -37575,6 +37640,10 @@ module.exports = function (gantt) {
         } //node.className += " gantt_focused";
 
 
+        if (gantt.utils.dom.isChildOf(document.activeElement, node)) {
+          node = document.activeElement;
+        }
+
         if (node.focus) node.focus();
         eventFacade.callEvent("onFocus", [this.getNode()]);
       }
@@ -37622,6 +37691,7 @@ module.exports = function (gantt) {
 
     if (gantt.isTaskExists(this.taskId)) {
       this.index = gantt.getTaskIndex(this.taskId);
+      this.globalIndex = gantt.getGlobalTaskIndex(this.taskId);
     }
   };
 
@@ -37759,6 +37829,7 @@ module.exports = function (gantt) {
 
     if (gantt.isTaskExists(this.taskId)) {
       this.index = gantt.getTaskIndex(this.taskId);
+      this.globalIndex = gantt.getGlobalTaskIndex(this.taskId);
     }
   };
 
@@ -37772,22 +37843,22 @@ module.exports = function (gantt) {
         var header = new gantt.$keyboardNavigation.HeaderCell();
         if (!header.isValid()) return null;else return header;
       } else {
-        var nextIndex = -1;
+        var nextIndex = -1; // GS-1393. When Gantt tries to restore the focus, it should rely on the global index
 
-        if (gantt.getTaskByIndex(this.index - 1)) {
-          nextIndex = this.index - 1;
-        } else if (gantt.getTaskByIndex(this.index + 1)) {
-          nextIndex = this.index + 1;
+        if (gantt.getTaskByIndex(this.globalIndex - 1)) {
+          nextIndex = this.globalIndex - 1;
+        } else if (gantt.getTaskByIndex(this.globalIndex + 1)) {
+          nextIndex = this.globalIndex + 1;
         } else {
-          var index = this.index;
+          var globalIndex = this.globalIndex;
 
-          while (index >= 0) {
-            if (gantt.getTaskByIndex(index)) {
-              nextIndex = index;
+          while (globalIndex >= 0) {
+            if (gantt.getTaskByIndex(globalIndex)) {
+              nextIndex = globalIndex;
               break;
             }
 
-            index--;
+            globalIndex--;
           }
         }
 
@@ -38647,7 +38718,6 @@ exports.default = default_1;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.QuickInfo = void 0;
 var QuickInfo = /** @class */ (function () {
     function QuickInfo(gantt) {
         var _this = this;
@@ -39097,7 +39167,6 @@ exports.default = default_1;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Tooltip = void 0;
 var domHelpers = __webpack_require__(/*! ../../core/ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 var Tooltip = /** @class */ (function () {
     function Tooltip(gantt) {
@@ -39254,7 +39323,6 @@ exports.Tooltip = Tooltip;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TooltipManager = void 0;
 var domEventsScope = __webpack_require__(/*! ../../core/ui/utils/dom_event_scope */ "./sources/core/ui/utils/dom_event_scope.js");
 var domHelpers = __webpack_require__(/*! ../../core/ui/utils/dom_helpers */ "./sources/core/ui/utils/dom_helpers.js");
 var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
@@ -39536,7 +39604,6 @@ exports.default = default_1;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Monitor = void 0;
 var noTrack = {
     onBeforeUndo: "onAfterUndo",
     onBeforeRedo: "onAfterRedo"
@@ -39886,7 +39953,6 @@ exports.Monitor = Monitor;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Undo = void 0;
 var MAX_UNDO_STEPS = 10;
 var Undo = /** @class */ (function () {
     function Undo(gantt) {
@@ -40136,7 +40202,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.12";
+  this.version = "7.1.13";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -40901,17 +40967,17 @@ var locale = {
         message_ok: "OK",
         message_cancel: "Abbrechen",
         /* constraints */
-        section_constraint: "Constraint",
-        constraint_type: "Constraint type",
-        constraint_date: "Constraint date",
-        asap: "As Soon As Possible",
-        alap: "As Late As Possible",
-        snet: "Start No Earlier Than",
-        snlt: "Start No Later Than",
-        fnet: "Finish No Earlier Than",
-        fnlt: "Finish No Later Than",
-        mso: "Must Start On",
-        mfo: "Must Finish On",
+        section_constraint: "Regel",
+        constraint_type: "Regel",
+        constraint_date: "Regel - Datum",
+        asap: "So bald wie möglich",
+        alap: "So spät wie möglich",
+        snet: "Beginn nicht vor",
+        snlt: "Beginn nicht später als",
+        fnet: "Fertigstellung nicht vor",
+        fnlt: "Fertigstellung nicht später als",
+        mso: "Muss beginnen am",
+        mfo: "Muss fertig sein am",
         /* resource control */
         resources_filter_placeholder: "type to filter",
         resources_filter_label: "hide empty"
