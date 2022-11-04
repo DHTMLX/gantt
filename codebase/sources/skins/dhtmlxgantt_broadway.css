@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.12 Standard
+dhtmlxGantt v.7.1.13 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -433,6 +433,9 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
   margin: 0 auto;
   position: relative;
 }
+.gantt_drag_marker {
+  pointer-events: none;
+}
 .gantt_drag_marker.gantt_grid_resize_area,
 .gantt_drag_marker.gantt_row_grid_resize_area {
   background-color: rgba(231, 231, 231, 0.5);
@@ -625,6 +628,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
 .gantt_column_drag_marker {
   border: 1px solid #CECECE;
   opacity: 0.8;
+  pointer-events: none;
 }
 .gantt_grid_head_cell_dragged {
   border: 1px solid #CECECE;

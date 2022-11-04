@@ -1,3 +1,19 @@
+### 7.1.13
+
+Fix the incorrect work of the "gantt.addLinkLayer()" method with the "smart_rendering" property
+Fix issues with display of S-Curve Overlay together with different time scales
+Fix the issue with resizing of grid columns when the "grid_elastic_columns" property is enabled
+Fix the issue that caused Gantt to reset the position of the vertical scroll after deleting a task using Keyboard Navigation
+Fix the incorrect work of the "treeDatastore.move()" method
+Fix the issue with the "gantt.parse()" method, extra collections from the dataset should be available via the "gantt.serverList()" method
+Fix the issue with the "gantt.groupBy()" method, which caused the selection state to reset after grouping
+Fix compatibility issues with Vue.js v3.x
+Fix the script error thrown from the "gantt.getConstraintLimitations()" method when the specified task didn't have 'constraint_date'
+Fix compatibility issues with SalesForce Web Security
+Fix the issue which caused focus to be returned to the Gantt after clicking outside the Gantt container when Keyboard Navigation was enabled
+German locale is updated
+Now it is possible to open the inline editor after one click on a task in the multi-selection mode (the "inline_editors_multiselect_open" property is added)
+
 ### 7.1.12
 
 Fix the incorrect work of the gantt.isWorkTime() method with the "week" time unit
