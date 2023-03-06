@@ -81,7 +81,7 @@ gantt.parse({
 [https://www.youtube.com/user/dhtmlx/videos](https://www.youtube.com/user/dhtmlx/videos)
 
 <a name="features"></a>
-## Features ##
+## Features of the Standard Edition ##
 
 - 4 types of tasks linking: finish-to-start, start-to-start, finish-to-finish, start-to-finish
 - dragging and dropping multiple tasks horizontally
@@ -106,13 +106,13 @@ gantt.parse({
 
 ![gantt-material](https://github.com/plazarev/media/blob/master/gantt-chart-material.png)
 
-- export to PDF, PNG, Excel, iCal, and MS Project
+- online export to PDF, PNG, Excel, iCal, and MS Project
 - cross-browser compatibility
 - 32 locales
 - keyboard navigation
 - accessibility
 
-Resource management, critical path calculation, auto scheduling, and other enhanced features are available with the PRO edition. You can see the full list of features and compare the two DHTMLX Gantt versions [in the documentation](https://docs.dhtmlx.com/gantt/desktop__editions_comparison.html).
+Resource management, critical path calculation, auto scheduling, and other enhanced features are available with the PRO edition. You can see the full list of features and compare the two DHTMLX Gantt editions [in the documentation](https://docs.dhtmlx.com/gantt/desktop__editions_comparison.html).
 
 <a name="license"></a>
 ## License ##
@@ -123,7 +123,7 @@ This version of dhtmlxGantt is distributed under GPL 2.0 license and can be lega
 
 To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Individual, Commercial, Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at info@dhtmlx.com
 
-(c) XB Software Ltd.
+(c) XB Software
 
 
 <a name="links"></a>
