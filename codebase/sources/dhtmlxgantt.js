@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.7.1.13 Standard
+dhtmlxGantt v.8.0.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7092,7 +7092,7 @@ module.exports = function (gantt) {
     },
     _call: function _call(method, url, postData, async, onLoad, headers) {
       return new gantt.Promise(function (resolve, reject) {
-        var t = (typeof XMLHttpRequest === "undefined" ? "undefined" : _typeof(XMLHttpRequest)) !== undefined && !env.isIE ? new XMLHttpRequest() : new global.ActiveXObject("Microsoft.XMLHTTP");
+        var t = (typeof XMLHttpRequest === "undefined" ? "undefined" : _typeof(XMLHttpRequest)) !== undefined ? new XMLHttpRequest() : new global.ActiveXObject("Microsoft.XMLHTTP");
         var isQt = navigator.userAgent.match(/AppleWebKit/) !== null && navigator.userAgent.match(/Qt/) !== null && navigator.userAgent.match(/Safari/) !== null;
 
         if (!!async) {
@@ -8548,6 +8548,9 @@ module.exports = function (gantt) {
       timeline_cell_class: function timeline_cell_class(item, date) {
         return "";
       },
+      timeline_cell_content: function timeline_cell_content(item, date) {
+        return "";
+      },
       scale_cell_class: function scale_cell_class(date) {
         return "";
       },
@@ -9223,7 +9226,7 @@ function createDataProcessor(config) {
     else if (config.hasOwnProperty("router")) {
         router = config.router;
     }
-    else if (config.hasOwnProperty("link") && config.hasOwnProperty("task")) {
+    else if (config.hasOwnProperty("assignment") || config.hasOwnProperty("link") || config.hasOwnProperty("task")) {
         router = config;
     }
     if (router) {
@@ -9239,6 +9242,9 @@ function createDataProcessor(config) {
         mode: tMode,
         router: router
     }, config.batchUpdate);
+    if (config.deleteAfterConfirmation) {
+        dp.deleteAfterConfirmation = config.deleteAfterConfirmation;
+    }
     return dp;
 }
 exports.createDataProcessor = createDataProcessor;
@@ -9356,14 +9362,14 @@ var DataProcessor = /** @class */ (function () {
         }
         var ind = this.findRow(rowId);
         mode = mode || "updated";
-        var existing = this.$gantt.getUserData(rowId, this.action_param);
+        var existing = this.$gantt.getUserData(rowId, this.action_param, this._ganttMode);
         if (existing && mode === "updated") {
             mode = existing;
         }
         if (state) {
             this.set_invalid(rowId, false); // clear previous error flag
             this.updatedRows[ind] = rowId;
-            this.$gantt.setUserData(rowId, this.action_param, mode);
+            this.$gantt.setUserData(rowId, this.action_param, mode, this._ganttMode);
             if (this._in_progress[rowId]) {
                 this._in_progress[rowId] = "wait";
             }
@@ -9371,7 +9377,7 @@ var DataProcessor = /** @class */ (function () {
         else {
             if (!this.is_invalid(rowId)) {
                 this.updatedRows.splice(ind, 1);
-                this.$gantt.setUserData(rowId, this.action_param, "");
+                this.$gantt.setUserData(rowId, this.action_param, "", this._ganttMode);
             }
         }
         this.markRow(rowId, state, mode);
@@ -9414,7 +9420,7 @@ var DataProcessor = /** @class */ (function () {
         return "update";
     };
     DataProcessor.prototype.getState = function (id) {
-        return this.$gantt.getUserData(id, this.action_param);
+        return this.$gantt.getUserData(id, this.action_param, this._ganttMode);
     };
     DataProcessor.prototype.is_invalid = function (id) {
         return this._invalid[id];
@@ -9446,16 +9452,25 @@ var DataProcessor = /** @class */ (function () {
      * @type: public
      */
     DataProcessor.prototype.sendData = function (rowId) {
+        var _this = this;
         if (this.$gantt.editStop) {
             this.$gantt.editStop();
         }
         if (typeof rowId === "undefined" || this._tSend) {
-            var updatedTasksAndLinks = this.modes && this.modes["task"] && this.modes["link"] && this.modes["task"].updatedRows.length && this.modes["link"].updatedRows.length; // tslint:disable-line
-            if (updatedTasksAndLinks) {
-                this.setGanttMode("task");
-                this.sendAllData();
-                this.setGanttMode("link");
-                this.sendAllData();
+            var pendingUpdateModes_1 = [];
+            if (this.modes) {
+                var knownModes = ["task", "link", "assignment"];
+                knownModes.forEach(function (mode) {
+                    if (_this.modes[mode] && _this.modes[mode].updatedRows.length) {
+                        pendingUpdateModes_1.push(mode);
+                    }
+                });
+            }
+            if (pendingUpdateModes_1.length) {
+                for (var i = 0; i < pendingUpdateModes_1.length; i++) {
+                    this.setGanttMode(pendingUpdateModes_1[i]);
+                    this.sendAllData();
+                }
                 return;
             }
             else {
@@ -9578,6 +9593,7 @@ var DataProcessor = /** @class */ (function () {
      * @topic: 0
      */
     DataProcessor.prototype.afterUpdateCallback = function (sid, tid, action, btag, ganttMode) {
+        var _this = this;
         if (!this.$gantt) {
             // destructor has been called before the callback
             return;
@@ -9606,20 +9622,35 @@ var DataProcessor = /** @class */ (function () {
                 break;
             case "delete":
             case "deleted":
-                this.$gantt.setUserData(sid, this.action_param, "true_deleted");
-                this.$gantt[this._methods[3]](sid);
-                delete this._in_progress[marker];
-                return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
+                if (!this.deleteAfterConfirmation || this._ganttMode !== "task") {
+                    this.$gantt.setUserData(sid, this.action_param, "true_deleted", this._ganttMode);
+                    this.$gantt[this._methods[3]](sid);
+                    delete this._in_progress[marker];
+                    return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
+                }
+                else {
+                    if (this._ganttMode === "task" && this.$gantt.isTaskExists(sid)) {
+                        this.$gantt.setUserData(sid, this.action_param, "true_deleted", this._ganttMode);
+                        var task = this.$gantt.getTask(sid);
+                        this.$gantt.silent(function () {
+                            _this.$gantt.deleteTask(sid);
+                        });
+                        this.$gantt.callEvent("onAfterTaskDelete", [sid, task]);
+                        this.$gantt.render();
+                        delete this._in_progress[marker];
+                    }
+                    return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
+                }
         }
         if (this._in_progress[marker] !== "wait") {
             if (correct) {
-                this.$gantt.setUserData(sid, this.action_param, "");
+                this.$gantt.setUserData(sid, this.action_param, "", this._ganttMode);
             }
             delete this._in_progress[marker];
         }
         else {
             delete this._in_progress[marker];
-            this.setUpdated(tid, true, this.$gantt.getUserData(sid, this.action_param));
+            this.setUpdated(tid, true, this.$gantt.getUserData(sid, this.action_param, this._ganttMode));
         }
         this.callEvent("onAfterUpdate", [originalSid, action, tid, btag]);
     };
@@ -9629,6 +9660,7 @@ var DataProcessor = /** @class */ (function () {
      * @type: private
      */
     DataProcessor.prototype.afterUpdate = function (that, xml, id) {
+        var _this = this;
         var _xml;
         if (arguments.length === 3) {
             _xml = arguments[1];
@@ -9643,13 +9675,19 @@ var DataProcessor = /** @class */ (function () {
             if (reqUrl.indexOf("gantt_mode=links") !== -1) {
                 mode = "link";
             }
+            else if (reqUrl.indexOf("gantt_mode=assignments") !== -1) {
+                mode = "assignment";
+            }
             else {
                 mode = "task";
             }
         }
         else {
-            if (reqUrl.indexOf("/link") > reqUrl.indexOf("/task")) {
+            if (reqUrl.indexOf("/link") >= 0) {
                 mode = "link";
+            }
+            else if (reqUrl.indexOf("/assignment") >= 0) {
+                mode = "assignment";
             }
             else {
                 mode = "task";
@@ -9668,11 +9706,20 @@ var DataProcessor = /** @class */ (function () {
                 tag = {};
             }
         }
-        if (tag) {
-            var action = tag.action || this.getState(id) || "updated";
-            var sid = tag.sid || id[0];
-            var tid = tag.tid || id[0];
+        var processCallback = function (itemId) {
+            var action = tag.action || _this.getState(itemId) || "updated";
+            var sid = tag.sid || itemId[0];
+            var tid = tag.tid || itemId[0];
             that.afterUpdateCallback(sid, tid, action, tag, mode);
+        };
+        if (tag) {
+            // GS-753. When multiple tasks are updated, unhighlight all of them
+            if (Array.isArray(id) && id.length > 1) {
+                id.forEach(function (taskId) { return processCallback(taskId); });
+            }
+            else {
+                processCallback(id);
+            }
             that.finalizeUpdate();
             this.setGanttMode(mode);
             return;
@@ -9730,6 +9777,7 @@ var DataProcessor = /** @class */ (function () {
             order: "gantt_updated",
             inserted: "gantt_inserted",
             deleted: "gantt_deleted",
+            delete_confirmation: "gantt_deleted",
             invalid: "gantt_invalid",
             error: "gantt_error",
             clear: ""
@@ -9813,12 +9861,12 @@ var DataProcessor = /** @class */ (function () {
     DataProcessor.prototype.loadUpdate = function () {
         var _this = this;
         var ajax = this.$gantt.ajax;
-        var version = this.$gantt.getUserData(0, "version");
+        var version = this.$gantt.getUserData(0, "version", this._ganttMode);
         var url = this.serverProcessor + ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + version].join("&");
         url = url.replace("editing=true&", "");
         this.getUpdates(url, function (xml) {
             var vers = ajax.xpath("//userdata", xml);
-            _this.$gantt.setUserData(0, "version", _this._getXmlNodeValue(vers[0]));
+            _this.$gantt.setUserData(0, "version", _this._getXmlNodeValue(vers[0]), _this._ganttMode);
             var updates = ajax.xpath("//update", xml);
             if (updates.length) {
                 _this._silent_mode = true;
@@ -9998,14 +10046,28 @@ var DataProcessor = /** @class */ (function () {
                 actionPromise = this._router[ganttMode_1](taskAction, dataToSend, rowId);
             }
             else {
+                var errorMsgStart = "Incorrect configuration of gantt.createDataProcessor";
+                var errorMsgEnd = "\nYou need to either add missing properties to the dataProcessor router object or to use a router function.\nSee https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and https://docs.dhtmlx.com/gantt/api__gantt_createdataprocessor.html for details.";
+                if (!this._router[ganttMode_1]) {
+                    throw new Error(errorMsgStart + ": router for the **" + ganttMode_1 + "** entity is not defined. " + errorMsgEnd);
+                }
                 switch (taskState_1) {
                     case "inserted":
+                        if (!this._router[ganttMode_1].create) {
+                            throw new Error(errorMsgStart + ": **create** action for the **" + ganttMode_1 + "** entity is not defined. " + errorMsgEnd);
+                        }
                         actionPromise = this._router[ganttMode_1].create(dataToSend);
                         break;
                     case "deleted":
+                        if (!this._router[ganttMode_1].delete) {
+                            throw new Error(errorMsgStart + ": **delete** action for the **" + ganttMode_1 + "** entity is not defined. " + errorMsgEnd);
+                        }
                         actionPromise = this._router[ganttMode_1].delete(rowId);
                         break;
                     default:
+                        if (!this._router[ganttMode_1].update) {
+                            throw new Error(errorMsgStart + ": **update**\" action for the **" + ganttMode_1 + "** entity is not defined. " + errorMsgEnd);
+                        }
                         actionPromise = this._router[ganttMode_1].update(dataToSend, rowId);
                         break;
                 }
@@ -10052,7 +10114,8 @@ var DataProcessor = /** @class */ (function () {
             },
             headers: this._headers
         };
-        var urlParams = this.serverProcessor + (this._user ? (ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, "dhx_version=" + this.$gantt.getUserData(0, "version")].join("&")) : "");
+        var dhxVersion = "dhx_version=" + this.$gantt.getUserData(0, "version", this._ganttMode);
+        var urlParams = this.serverProcessor + (this._user ? (ajax.urlSeparator(this.serverProcessor) + ["dhx_user=" + this._user, dhxVersion].join("&")) : "");
         var url = this._applyPayload(urlParams);
         var data;
         switch (this._tMode) {
@@ -10113,7 +10176,7 @@ var DataProcessor = /** @class */ (function () {
         var updatedRows = this.updatedRows.slice();
         for (var i = 0; i < updatedRows.length; i++) {
             var rowId = updatedRows[i];
-            if (this.$gantt.getUserData(rowId, this.action_param)) {
+            if (this.$gantt.getUserData(rowId, this.action_param, this._ganttMode)) {
                 code.call(this, rowId);
             }
         }
@@ -10201,7 +10264,7 @@ var DataProcessor = /** @class */ (function () {
     };
     DataProcessor.prototype._prepareDataItem = function (rawItem) {
         var processedItem = this._prepareObject(rawItem, []);
-        processedItem[this.action_param] = this.$gantt.getUserData(rawItem.id, this.action_param);
+        processedItem[this.action_param] = this.$gantt.getUserData(rawItem.id, this.action_param, this._ganttMode);
         return processedItem;
     };
     DataProcessor.prototype.getStoredItem = function (id) {
@@ -10213,6 +10276,11 @@ var DataProcessor = /** @class */ (function () {
         if (this.getGanttMode() === "task") {
             if (gantt.isTaskExists(id)) {
                 dataItem = this.$gantt.getTask(id);
+            }
+        }
+        else if (this.getGanttMode() === "assignment") {
+            if (this.$gantt.$data.assignmentsStore.exists(id)) {
+                dataItem = this.$gantt.$data.assignmentsStore.getItem(id);
             }
         }
         else {
@@ -10253,23 +10321,14 @@ var DataProcessorEvents = /** @class */ (function () {
         this._dataProcessorHandlers = [];
     }
     DataProcessorEvents.prototype.attach = function () {
+        var _this = this;
         var dp = this.$dp;
         var gantt = this.$gantt;
         var treeHelper = __webpack_require__(/*! ../../utils/task_tree_helpers */ "./sources/utils/task_tree_helpers.js");
         var cascadeDelete = {};
-        function clientSideDelete(id) {
-            var updated = dp.updatedRows.slice();
-            var clientOnly = false;
-            for (var i = 0; i < updated.length && !dp._in_progress[id]; i++) {
-                if (updated[i] === id) {
-                    if (gantt.getUserData(id, "!nativeeditor_status") === "inserted") {
-                        clientOnly = true;
-                    }
-                    dp.setUpdated(id, false);
-                }
-            }
-            return clientOnly;
-        }
+        var clientSideDelete = function (id) {
+            return _this.clientSideDelete(id, dp, gantt);
+        };
         function getTaskLinks(task) {
             var _links = [];
             if (task.$source) {
@@ -10297,23 +10356,29 @@ var DataProcessorEvents = /** @class */ (function () {
             }
         }));
         this._dataProcessorHandlers.push(gantt.attachEvent("onBeforeTaskDelete", function (id, item) {
-            if (!gantt.config.cascade_delete) {
-                return true;
+            if (gantt.config.cascade_delete) {
+                cascadeDelete[id] = {
+                    tasks: treeHelper.getSubtreeTasks(gantt, id),
+                    links: treeHelper.getSubtreeLinks(gantt, id)
+                };
             }
-            cascadeDelete[id] = {
-                tasks: treeHelper.getSubtreeTasks(gantt, id),
-                links: treeHelper.getSubtreeLinks(gantt, id)
-            };
+            // GS-631. Keep the deleted item in Gantt until we receive the successful response from the server
+            if (dp.deleteAfterConfirmation) {
+                dp.setGanttMode("tasks");
+                dp.setUpdated(id, true, "deleted");
+                return false;
+            }
             return true;
         }));
         this._dataProcessorHandlers.push(gantt.attachEvent("onAfterTaskDelete", function (id, item) {
             dp.setGanttMode("tasks");
             // not send delete request if item is not inserted into the db - just remove it from the client
             var needDbDelete = !clientSideDelete(id);
-            if (!needDbDelete) {
+            var needCascadeDelete = gantt.config.cascade_delete && cascadeDelete[id];
+            if (!needDbDelete && !needCascadeDelete) {
                 return;
             }
-            if (gantt.config.cascade_delete && cascadeDelete[id]) {
+            if (needCascadeDelete) {
                 var dpMode = dp.updateMode;
                 dp.setUpdateMode("off");
                 var cascade = cascadeDelete[id];
@@ -10337,8 +10402,12 @@ var DataProcessorEvents = /** @class */ (function () {
                 dp.setGanttMode("tasks");
                 dp.setUpdateMode(dpMode);
             }
-            dp.storeItem(item);
-            dp.setUpdated(id, true, "deleted");
+            if (needDbDelete) {
+                dp.storeItem(item);
+                if (!dp.deleteAfterConfirmation) {
+                    dp.setUpdated(id, true, "deleted");
+                }
+            }
             if (dp.updateMode !== "off" && !dp._tSend) {
                 dp.sendAllData();
             }
@@ -10477,9 +10546,125 @@ var DataProcessorEvents = /** @class */ (function () {
                 methods.delete = gantt.deleteLink;
                 methods.isExist = gantt.isLinkExists;
             }
+            else if (mode === "assignment") {
+                methods.delete = function (val) {
+                    gantt.$data.assignmentsStore.remove(val);
+                };
+                methods.isExist = function (val) {
+                    return gantt.$data.assignmentsStore.exists(val);
+                };
+            }
             if (methods.isExist.call(gantt, id)) {
                 methods.delete.call(gantt, id);
             }
+        });
+        this.handleResourceAssignmentCRUD(dp, gantt);
+    };
+    DataProcessorEvents.prototype.clientSideDelete = function (id, dp, gantt) {
+        var updated = dp.updatedRows.slice();
+        var clientOnly = false;
+        if (gantt.getUserData(id, "!nativeeditor_status", dp._ganttMode) === "true_deleted") {
+            clientOnly = true;
+            dp.setUpdated(id, false);
+        }
+        for (var i = 0; i < updated.length && !dp._in_progress[id]; i++) {
+            if (updated[i] === id) {
+                if (gantt.getUserData(id, "!nativeeditor_status", dp._ganttMode) === "inserted") {
+                    clientOnly = true;
+                }
+                dp.setUpdated(id, false);
+            }
+        }
+        return clientOnly;
+    };
+    DataProcessorEvents.prototype.handleResourceAssignmentCRUD = function (dp, gantt) {
+        var _this = this;
+        if (!gantt.config.resources || gantt.config.resources.dataprocessor_assignments !== true) {
+            return;
+        }
+        var assignmentsStore = gantt.getDatastore(gantt.config.resource_assignment_store);
+        var insertedTasks = {};
+        var pendingAssignments = {};
+        gantt.attachEvent("onBeforeTaskAdd", function (id, task) {
+            insertedTasks[id] = true;
+            return true;
+        });
+        function putAssignmentToQueue(item) {
+            pendingAssignments[item.id] = item;
+            insertedTasks[item.task_id] = true;
+        }
+        function insertResourceAssignment(assignment) {
+            var id = assignment.id;
+            if (assignmentsStore.exists(id)) {
+                dp.setGanttMode("assignment");
+                dp.setUpdated(id, true, "inserted");
+            }
+            delete pendingAssignments[id];
+        }
+        gantt.attachEvent("onTaskIdChange", function (id, newId) {
+            delete insertedTasks[id];
+        });
+        assignmentsStore.attachEvent("onAfterAdd", function (id, item) {
+            if (insertedTasks[item.task_id]) {
+                // inserting assignment of new task
+                // task is not saved yet, need to wait till it gets permanent id and save assigmnents after that
+                putAssignmentToQueue(item);
+            }
+            else {
+                insertResourceAssignment(item);
+            }
+        });
+        assignmentsStore.attachEvent("onAfterUpdate", function (id, item) {
+            if (assignmentsStore.exists(id)) {
+                if (pendingAssignments[id]) {
+                    insertResourceAssignment(item);
+                }
+                else {
+                    dp.setGanttMode("assignment");
+                    dp.setUpdated(id, true);
+                }
+            }
+        });
+        assignmentsStore.attachEvent("onAfterDelete", function (id, item) {
+            dp.setGanttMode("assignment");
+            var needDbDelete = !_this.clientSideDelete(id, dp, gantt);
+            if (!needDbDelete) {
+                return;
+            }
+            dp.storeItem(item);
+            dp.setUpdated(id, true, "deleted");
+        });
+    };
+    DataProcessorEvents.prototype.handleResourceCRUD = function (dp, gantt) {
+        var _this = this;
+        if (!gantt.config.resources || gantt.config.resources.dataprocessor_resources !== true) {
+            return;
+        }
+        var resourcesStore = gantt.getDatastore(gantt.config.resource_store);
+        function insertResource(resource) {
+            var id = resource.id;
+            if (resourcesStore.exists(id)) {
+                dp.setGanttMode("resource");
+                dp.setUpdated(id, true, "inserted");
+            }
+        }
+        resourcesStore.attachEvent("onAfterAdd", function (id, item) {
+            insertResource(item);
+        });
+        resourcesStore.attachEvent("onAfterUpdate", function (id, item) {
+            if (resourcesStore.exists(id)) {
+                dp.setGanttMode("resource");
+                dp.setUpdated(id, true);
+            }
+        });
+        resourcesStore.attachEvent("onAfterDelete", function (id, item) {
+            dp.setGanttMode("resource");
+            var needDbDelete = !_this.clientSideDelete(id, dp, gantt);
+            if (!needDbDelete) {
+                return;
+            }
+            dp.storeItem(item);
+            dp.setUpdated(id, true, "deleted");
         });
     };
     DataProcessorEvents.prototype.detach = function () {
@@ -10507,30 +10692,40 @@ exports.default = DataProcessorEvents;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 function extendGantt(gantt, dp) {
-    gantt.getUserData = function (id, name) {
+    gantt.getUserData = function (id, name, store) {
         if (!this.userdata) {
             this.userdata = {};
         }
-        if (this.userdata[id] && this.userdata[id][name]) {
-            return this.userdata[id][name];
+        this.userdata[store] = this.userdata[store] || {};
+        if (this.userdata[store][id] && this.userdata[store][id][name]) {
+            return this.userdata[store][id][name];
         }
         return "";
     };
-    gantt.setUserData = function (id, name, value) {
+    gantt.setUserData = function (id, name, value, store) {
         if (!this.userdata) {
             this.userdata = {};
         }
-        if (!this.userdata[id]) {
-            this.userdata[id] = {};
-        }
-        this.userdata[id][name] = value;
+        this.userdata[store] = this.userdata[store] || {};
+        this.userdata[store][id] = this.userdata[store][id] || {};
+        this.userdata[store][id][name] = value;
     };
     gantt._change_id = function (oldId, newId) {
-        if (this._dp._ganttMode !== "task") {
-            this.changeLinkId(oldId, newId);
-        }
-        else {
-            this.changeTaskId(oldId, newId);
+        switch (this._dp._ganttMode) {
+            case "task":
+                this.changeTaskId(oldId, newId);
+                break;
+            case "link":
+                this.changeLinkId(oldId, newId);
+                break;
+            case "assignment":
+                this.$data.assignmentsStore.changeId(oldId, newId);
+                break;
+            case "resource":
+                this.$data.resourcesStore.changeId(oldId, newId);
+                break;
+            default:
+                throw new Error("Invalid mode of the dataProcessor after database id is received: " + this._dp._ganttMode + ", new id: " + newId);
         }
     };
     gantt._row_style = function (rowId, classname) {
@@ -11310,7 +11505,10 @@ function initDataStores(gantt) {
       if (deletedLinks[id]) {
         gantt.$data.linksStore.silent(function () {
           for (var i in deletedLinks[id]) {
-            gantt.$data.linksStore.removeItem(i);
+            if (gantt.isLinkExists(i)) {
+              gantt.$data.linksStore.removeItem(i);
+            }
+
             sync_link_delete(deletedLinks[id][i]);
           }
 
@@ -11532,13 +11730,22 @@ var storeRenderCreator = function storeRenderCreator(name, gantt) {
 
         if (layer.get_visible_range) {
           var range = layer.get_visible_range(store);
-          var key = range.start + " - " + range.end;
 
-          if (loadedRanges[key]) {
-            layerData = loadedRanges[key];
+          if (range.start !== undefined && range.end !== undefined) {
+            var key = range.start + " - " + range.end;
+
+            if (loadedRanges[key]) {
+              layerData = loadedRanges[key];
+            } else {
+              layerData = store.getIndexRange(range.start, range.end);
+              loadedRanges[key] = layerData;
+            }
+          } else if (range.ids !== undefined) {
+            layerData = range.ids.map(function (id) {
+              return store.getItem(id);
+            });
           } else {
-            layerData = store.getIndexRange(range.start, range.end);
-            loadedRanges[key] = layerData;
+            throw new Error("Invalid range returned from 'getVisibleRange' of the layer");
           }
         } else {
           if (!allData) {
@@ -11546,6 +11753,11 @@ var storeRenderCreator = function storeRenderCreator(name, gantt) {
           }
 
           layerData = allData;
+        }
+
+        if (layer.prepare_data) {
+          // GS-1605. Highlight timeline cells below tasks and in an empty chart
+          layer.prepare_data(layerData);
         }
 
         renderers[_i].render_items(layerData);
@@ -11557,9 +11769,23 @@ var storeRenderCreator = function storeRenderCreator(name, gantt) {
 
         if (layer.get_visible_range) {
           var range = layer.get_visible_range(store);
-          data = store.getIndexRange(range.start, range.end);
+
+          if (range.start !== undefined && range.end !== undefined) {
+            data = store.getIndexRange(range.start, range.end);
+          } else if (range.ids !== undefined) {
+            data = range.ids.map(function (id) {
+              return store.getItem(id);
+            });
+          } else {
+            throw new Error("Invalid range returned from 'getVisibleRange' of the layer");
+          }
         } else {
           data = store.getVisibleItems();
+        }
+
+        if (layer.prepare_data) {
+          // GS-1605. Highlight timeline cells below tasks and in an empty chart
+          layer.prepare_data(data, layer);
         }
 
         layer.update_items(data);
@@ -13513,6 +13739,32 @@ function createLayoutFacade() {
         width: state.x_inner,
         height: state.y_inner
       };
+    },
+    getLayoutView: function getLayoutView(cellName) {
+      return this.$ui.getView(cellName);
+    },
+    scrollLayoutCell: function scrollLayoutCell(cellName, left, top) {
+      var cell = this.$ui.getView(cellName);
+
+      if (!cell) {
+        return false;
+      }
+
+      if (left !== null) {
+        var horizontalScroll = this.$ui.getView(cell.$config.scrollX);
+
+        if (horizontalScroll) {
+          horizontalScroll.scrollTo(left, null);
+        }
+      }
+
+      if (top !== null) {
+        var verticalScroll = this.$ui.getView(cell.$config.scrollY);
+
+        if (verticalScroll) {
+          verticalScroll.scrollTo(null, top);
+        }
+      }
     }
   };
 }
@@ -13756,7 +14008,7 @@ module.exports = function (gantt) {
         var question = gantt.locale.labels.confirm_deleting;
         var title = gantt.locale.labels.confirm_deleting_title;
 
-        gantt._dhtmlx_confirm(question, title, function () {
+        gantt._simple_confirm(question, title, function () {
           if (!gantt.isTaskExists(id)) {
             gantt.hideLightbox();
             return;
@@ -14245,9 +14497,34 @@ module.exports = function (gantt) {
     this._process_loading(data);
   };
 
+  function attachAssignmentsToTasks(tasks, assignments) {
+    var assignmentsByTasks = {};
+    assignments.forEach(function (a) {
+      if (!assignmentsByTasks[a.task_id]) {
+        assignmentsByTasks[a.task_id] = [];
+      }
+
+      assignmentsByTasks[a.task_id].push(a);
+    });
+    tasks.forEach(function (t) {
+      t[gantt.config.resource_property] = assignmentsByTasks[t.id] || [];
+    });
+  }
+
   gantt._process_loading = function (data) {
     if (data.collections) this._load_collections(data.collections);
-    this.$data.tasksStore.parse(data.data || data.tasks);
+
+    if (data.resources && this.$data.resourcesStore) {
+      this.$data.resourcesStore.parse(data.resources);
+    }
+
+    var tasks = data.data || data.tasks;
+
+    if (data.assignments) {
+      attachAssignmentsToTasks(tasks, data.assignments);
+    }
+
+    this.$data.tasksStore.parse(tasks);
     var links = data.links || (data.collections ? data.collections.links : []);
     this.$data.linksStore.parse(links); //this._sync_links();
 
@@ -14834,6 +15111,116 @@ module.exports = function (gantt) {
 
 /***/ }),
 
+/***/ "./sources/core/plugins/empty_state_screen.ts":
+/*!****************************************************!*\
+  !*** ./sources/core/plugins/empty_state_screen.ts ***!
+  \****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function default_1(gantt) {
+    gantt.ext = gantt.ext || {};
+    gantt.config.show_empty_state = false;
+    gantt.ext.emptyStateElement = gantt.ext.emptyStateElement || {
+        isEnabled: function () {
+            return gantt.config.show_empty_state === true;
+        },
+        isGanttEmpty: function () {
+            return !gantt.getTaskByTime().length;
+        },
+        renderContent: function (container) {
+            var placeholderTextElement = "<div class='gantt_empty_state_text'>\n    <div class='gantt_empty_state_text_link' data-empty-state-create-task>" + gantt.locale.labels.empty_state_text_link + "</div>\n    <div class='gantt_empty_state_text_description'>" + gantt.locale.labels.empty_state_text_description + "</div>\n    </div>";
+            var placeholderImageElement = "<div class='gantt_empty_state_image'></div>";
+            var placeholderContainer = "<div class='gantt_empty_state'>" + placeholderImageElement + placeholderTextElement + "</div>";
+            container.innerHTML = placeholderContainer;
+        },
+        clickEvents: [],
+        attachAddTaskEvent: function () {
+            var id = gantt.attachEvent("onEmptyClick", function (e) {
+                var domHelpers = gantt.utils.dom;
+                var gridPlaceholder = domHelpers.closest(e.target, "[data-empty-state-create-task]");
+                if (gridPlaceholder) {
+                    gantt.createTask({
+                        id: gantt.uid(),
+                        text: "New Task"
+                    });
+                }
+            });
+            this.clickEvents.push(id);
+        },
+        detachAddTaskEvents: function () {
+            this.clickEvents.forEach(function (event) {
+                gantt.detachEvent(event);
+            });
+            this.clickEvents = [];
+        },
+        getContainer: function () {
+            if (gantt.$container) {
+                var domHelpers = gantt.utils.dom;
+                if (gantt.$container.contains(gantt.$grid_data)) {
+                    return domHelpers.closest(gantt.$grid_data, ".gantt_layout_content");
+                }
+                if (gantt.$container.contains(gantt.$task_data)) {
+                    return domHelpers.closest(gantt.$task_data, ".gantt_layout_content");
+                }
+            }
+            return null;
+        },
+        getNode: function () {
+            var container = this.getContainer();
+            if (!container) {
+                return null;
+            }
+            var emptyStateElementNode = container.querySelector(".gantt_empty_state_wrapper");
+            return emptyStateElementNode;
+        },
+        show: function () {
+            var container = this.getContainer();
+            if (!container && this.isGanttEmpty()) {
+                return null;
+            }
+            var wrapper = document.createElement("div");
+            wrapper.className = "gantt_empty_state_wrapper";
+            wrapper.style.marginTop = (gantt.config.scale_height - container.offsetHeight) + "px";
+            var oldNodes = gantt.$container.querySelectorAll(".gantt_empty_state_wrapper");
+            // for IE11
+            Array.prototype.forEach.call(oldNodes, function (node) {
+                node.parentNode.removeChild(node);
+            });
+            this.detachAddTaskEvents();
+            this.attachAddTaskEvent();
+            container.appendChild(wrapper);
+            this.renderContent(wrapper);
+        },
+        hide: function () {
+            var emptyStateElementNode = this.getNode();
+            if (emptyStateElementNode) {
+                emptyStateElementNode.parentNode.removeChild(emptyStateElementNode);
+            }
+            else {
+                return false;
+            }
+        },
+        init: function () { }
+    };
+    gantt.attachEvent("onDataRender", function () {
+        var emptyStateElement = gantt.ext.emptyStateElement;
+        if (emptyStateElement.isEnabled() && emptyStateElement.isGanttEmpty()) {
+            emptyStateElement.show();
+        }
+        else {
+            emptyStateElement.hide();
+        }
+    });
+}
+exports.default = default_1;
+
+
+/***/ }),
+
 /***/ "./sources/core/plugins/formatters.js":
 /*!********************************************!*\
   !*** ./sources/core/plugins/formatters.js ***!
@@ -14882,7 +15269,7 @@ module.exports = function (gantt) {
     gantt.ext = {};
   }
 
-  var modules = [__webpack_require__(/*! ./batch_update */ "./sources/core/plugins/batch_update.js"), __webpack_require__(/*! ./wbs */ "./sources/core/plugins/wbs.js"), __webpack_require__(/*! ./resources */ "./sources/core/plugins/resources.js"), __webpack_require__(/*! ./resource_assignments */ "./sources/core/plugins/resource_assignments.js"), __webpack_require__(/*! ./new_task_placeholder */ "./sources/core/plugins/new_task_placeholder.js"), __webpack_require__(/*! ./auto_task_types */ "./sources/core/plugins/auto_task_types.js"), __webpack_require__(/*! ./formatters */ "./sources/core/plugins/formatters.js")];
+  var modules = [__webpack_require__(/*! ./batch_update */ "./sources/core/plugins/batch_update.js"), __webpack_require__(/*! ./wbs */ "./sources/core/plugins/wbs.js"), __webpack_require__(/*! ./resources */ "./sources/core/plugins/resources.js"), __webpack_require__(/*! ./resource_assignments */ "./sources/core/plugins/resource_assignments.js"), __webpack_require__(/*! ./new_task_placeholder */ "./sources/core/plugins/new_task_placeholder.js"), __webpack_require__(/*! ./auto_task_types */ "./sources/core/plugins/auto_task_types.js"), __webpack_require__(/*! ./formatters */ "./sources/core/plugins/formatters.js"), __webpack_require__(/*! ./empty_state_screen */ "./sources/core/plugins/empty_state_screen.ts")["default"]];
 
   for (var i = 0; i < modules.length; i++) {
     if (modules[i]) modules[i](gantt);
@@ -15143,6 +15530,7 @@ module.exports = function (gantt) {
       return item;
     }
   });
+  gantt.$data.assignmentsStore = resourceAssignmentsStore;
 
   function _assignmentTimeFromTask(assignment, task) {
     if (assignment.mode === assignmentModes.fixedDates) {
@@ -15657,6 +16045,28 @@ module.exports = function (gantt) {
         return (taskAssignmentsCache[taskId] || []).slice();
       };
 
+      gantt.getTaskResources = function (taskId) {
+        var store = gantt.getDatastore("resource");
+        var assignments = gantt.getTaskAssignments(taskId);
+        var uniqueResources = {};
+        assignments.forEach(function (a) {
+          if (!uniqueResources[a.resource_id]) {
+            uniqueResources[a.resource_id] = a.resource_id;
+          }
+        });
+        var resources = [];
+
+        for (var i in uniqueResources) {
+          var res = store.getItem(uniqueResources[i]);
+
+          if (res) {
+            resources.push(res);
+          }
+        }
+
+        return resources;
+      };
+
       gantt.updateTaskAssignments = _updateTaskBack;
     }
   }, {
@@ -15686,14 +16096,14 @@ function createResourceMethods(gantt) {
     resourceTaskCache = {};
   });
 
-  function getTaskBy(propertyName, propertyValue) {
+  function getTaskBy(propertyName, propertyValue, typeFilter) {
     if (typeof propertyName == "function") {
       return filterResourceTasks(propertyName);
     } else {
       if (helpers.isArray(propertyValue)) {
-        return getResourceTasks(propertyName, propertyValue);
+        return getResourceTasks(propertyName, propertyValue, typeFilter);
       } else {
-        return getResourceTasks(propertyName, [propertyValue]);
+        return getResourceTasks(propertyName, [propertyValue], typeFilter);
       }
     }
   }
@@ -15718,19 +16128,19 @@ function createResourceMethods(gantt) {
     return String(value);
   }
 
-  function getCacheKey(resourceIds, property) {
+  function getCacheKey(resourceIds, property, typeFilter) {
     if (Array.isArray(resourceIds)) {
       return resourceIds.map(function (value) {
         return resourceHashFunction(value);
-      }).join("_") + "_" + property;
+      }).join("_") + "_".concat(property, "_").concat(typeFilter);
     } else {
-      return resourceHashFunction(resourceIds) + "_" + property;
+      return resourceHashFunction(resourceIds) + "_".concat(property, "_").concat(typeFilter);
     }
   }
 
-  function getResourceTasks(property, resourceIds) {
+  function getResourceTasks(property, resourceIds, typeFilter) {
     var res;
-    var cacheKey = getCacheKey(resourceIds, property);
+    var cacheKey = getCacheKey(resourceIds, property, JSON.stringify(typeFilter));
     var matchingResources = {};
     helpers.forEach(resourceIds, function (resourceId) {
       matchingResources[resourceHashFunction(resourceId)] = true;
@@ -15739,7 +16149,13 @@ function createResourceMethods(gantt) {
     if (!resourceTaskCache[cacheKey]) {
       res = resourceTaskCache[cacheKey] = [];
       gantt.eachTask(function (task) {
-        if (task.type == gantt.config.types.project) return;
+        if (typeFilter) {
+          if (!typeFilter[gantt.getTaskType(task)]) {
+            return;
+          }
+        } else if (task.type == gantt.config.types.project) {
+          return;
+        }
 
         if (property in task) {
           var resourceValue;
@@ -15824,8 +16240,373 @@ function createResourceMethods(gantt) {
   };
 }
 
+function createHelper(gantt) {
+  var resourcePlugin = {
+    renderEditableLabel: function renderEditableLabel(start_date, end_date, resource, tasks, assignments) {
+      var editable = gantt.config.readonly ? "" : "contenteditable";
+
+      if (start_date < resource.end_date && end_date > resource.start_date) {
+        for (var i = 0; i < assignments.length; i++) {
+          var a = assignments[i];
+          return "<div " + editable + " data-assignment-cell data-assignment-id='" + a.id + "'" + " data-row-id='" + resource.id + "'" + " data-task='" + resource.$task_id + "'" + " data-start-date='" + gantt.templates.format_date(start_date) + "'" + " data-end-date='" + gantt.templates.format_date(end_date) + "'>" + a.value + "</div>";
+        }
+
+        return "<div " + editable + " data-assignment-cell data-empty " + " data-row-id='" + resource.id + "'" + " data-resource-id='" + resource.$resource_id + "'" + " data-task='" + resource.$task_id + "'" + " data-start-date='" + gantt.templates.format_date(start_date) + "'" + "'  data-end-date='" + gantt.templates.format_date(end_date) + "'>-</div>";
+      }
+
+      return "";
+    },
+    renderSummaryLabel: function renderSummaryLabel(start_date, end_date, resource, tasks, assignments) {
+      var sum = assignments.reduce(function (total, assignment) {
+        return total + Number(assignment.value);
+      }, 0);
+
+      if (sum % 1) {
+        sum = Math.round(sum * 10) / 10;
+      }
+
+      if (sum) {
+        return "<div>" + sum + "</div>";
+      }
+
+      return "";
+    },
+    editableResourceCellTemplate: function editableResourceCellTemplate(start_date, end_date, resource, tasks, assignments) {
+      if (resource.$role === "task") {
+        return resourcePlugin.renderEditableLabel(start_date, end_date, resource, tasks, assignments);
+      } else {
+        return resourcePlugin.renderSummaryLabel(start_date, end_date, resource, tasks, assignments);
+      }
+    },
+    editableResourceCellClass: function editableResourceCellClass(start_date, end_date, resource, tasks, assignments) {
+      var css = [];
+      css.push("resource_marker");
+
+      if (resource.$role === "task") {
+        css.push("task_cell");
+      } else {
+        css.push("resource_cell");
+      }
+
+      var sum = assignments.reduce(function (total, assignment) {
+        return total + Number(assignment.value);
+      }, 0);
+      var capacity = Number(resource.capacity);
+
+      if (isNaN(capacity)) {
+        capacity = 8;
+      }
+
+      if (sum <= capacity) {
+        css.push("workday_ok");
+      } else {
+        css.push("workday_over");
+      }
+
+      return css.join(" ");
+    },
+    getSummaryResourceAssignments: function getResourceAssignments(resourceId) {
+      var assignments;
+      var store = gantt.getDatastore(gantt.config.resource_store);
+      var resource = store.getItem(resourceId);
+
+      if (resource.$role === "task") {
+        assignments = gantt.getResourceAssignments(resource.$resource_id, resource.$task_id);
+      } else {
+        assignments = gantt.getResourceAssignments(resourceId);
+
+        if (store.eachItem) {
+          store.eachItem(function (childResource) {
+            if (childResource.$role !== "task") {
+              assignments = assignments.concat(gantt.getResourceAssignments(childResource.id));
+            }
+          }, resourceId);
+        }
+      }
+
+      return assignments;
+    },
+    initEditableDiagram: function initEditableDiagram() {
+      gantt.config.resource_render_empty_cells = true;
+
+      (function () {
+        /// salesforce locker workaround
+        // SF removes 'contenteditable' attribute from cells
+        // restore it on render
+        var timeoutId = null;
+
+        function makeEditable() {
+          if (timeoutId) {
+            cancelAnimationFrame(timeoutId);
+          }
+
+          timeoutId = requestAnimationFrame(function () {
+            var cells = Array.prototype.slice.call(gantt.$container.querySelectorAll(".resourceTimeline_cell [data-assignment-cell]"));
+            cells.forEach(function (cell) {
+              cell.contentEditable = true;
+            });
+          });
+          return true;
+        }
+
+        gantt.attachEvent("onGanttReady", function () {
+          gantt.getDatastore(gantt.config.resource_assignment_store).attachEvent("onStoreUpdated", makeEditable);
+          gantt.getDatastore(gantt.config.resource_store).attachEvent("onStoreUpdated", makeEditable);
+        }, {
+          once: true
+        });
+        gantt.attachEvent("onGanttLayoutReady", function () {
+          var ganttViews = gantt.$layout.getCellsByType("viewCell");
+          ganttViews.forEach(function (view) {
+            if (view.$config && view.$config.view === "resourceTimeline" && view.$content) {
+              view.$content.attachEvent("onScroll", makeEditable);
+            }
+          });
+        });
+      })();
+
+      gantt.attachEvent("onGanttReady", function () {
+        var assignmentEditInProcess = false;
+        gantt.event(gantt.$container, "keypress", function (e) {
+          var target = e.target.closest(".resourceTimeline_cell [data-assignment-cell]");
+
+          if (target) {
+            if (e.keyCode === 13 || e.keyCode === 27) {
+              target.blur();
+            }
+          }
+        });
+        gantt.event(gantt.$container, "focusout", function (e) {
+          if (assignmentEditInProcess) {
+            return;
+          }
+
+          assignmentEditInProcess = true;
+          setTimeout(function () {
+            assignmentEditInProcess = false;
+          }, 300);
+          var target = e.target.closest(".resourceTimeline_cell [data-assignment-cell]");
+
+          if (target) {
+            var strValue = (target.innerText || "").trim();
+
+            if (strValue == "-") {
+              strValue = "0";
+            }
+
+            var value = Number(strValue);
+            var rowId = target.getAttribute("data-row-id");
+            var assignmentId = target.getAttribute("data-assignment-id");
+            var taskId = target.getAttribute("data-task");
+            var resourceId = target.getAttribute("data-resource-id");
+            var startDate = gantt.templates.parse_date(target.getAttribute("data-start-date"));
+            var endDate = gantt.templates.parse_date(target.getAttribute("data-end-date"));
+            var assignmentStore = gantt.getDatastore(gantt.config.resource_assignment_store);
+
+            if (isNaN(value)) {
+              gantt.getDatastore(gantt.config.resource_store).refresh(rowId);
+            } else {
+              var task = gantt.getTask(taskId);
+
+              if (assignmentId) {
+                var assignment = assignmentStore.getItem(assignmentId);
+
+                if (value === assignment.value) {
+                  return;
+                }
+
+                if (assignment.start_date.valueOf() === startDate.valueOf() && assignment.end_date.valueOf() === endDate.valueOf()) {
+                  assignment.value = value;
+
+                  if (!value) {
+                    assignmentStore.removeItem(assignment.id);
+                  } else {
+                    assignmentStore.updateItem(assignment.id);
+                  }
+                } else {
+                  if (assignment.end_date.valueOf() > endDate.valueOf()) {
+                    var nextChunk = gantt.copy(assignment);
+                    nextChunk.id = gantt.uid();
+                    nextChunk.start_date = endDate;
+                    nextChunk.duration = gantt.calculateDuration({
+                      start_date: nextChunk.start_date,
+                      end_date: nextChunk.end_date,
+                      task: task
+                    });
+                    nextChunk.delay = gantt.calculateDuration({
+                      start_date: task.start_date,
+                      end_date: nextChunk.start_date,
+                      task: task
+                    });
+                    nextChunk.mode = assignment.mode || "default";
+
+                    if (nextChunk.duration !== 0) {
+                      assignmentStore.addItem(nextChunk);
+                    }
+                  }
+
+                  if (assignment.start_date.valueOf() < startDate.valueOf()) {
+                    assignment.end_date = startDate;
+                    assignment.duration = gantt.calculateDuration({
+                      start_date: assignment.start_date,
+                      end_date: assignment.end_date,
+                      task: task
+                    });
+                    assignment.mode = "fixedDuration";
+
+                    if (assignment.duration === 0) {
+                      assignmentStore.removeItem(assignment.id);
+                    } else {
+                      assignmentStore.updateItem(assignment.id);
+                    }
+                  } else {
+                    assignmentStore.removeItem(assignment.id);
+                  }
+
+                  if (value) {
+                    assignmentStore.addItem({
+                      task_id: assignment.task_id,
+                      resource_id: assignment.resource_id,
+                      value: value,
+                      start_date: startDate,
+                      end_date: endDate,
+                      duration: gantt.calculateDuration({
+                        start_date: startDate,
+                        end_date: endDate,
+                        task: task
+                      }),
+                      delay: gantt.calculateDuration({
+                        start_date: task.start_date,
+                        end_date: startDate,
+                        task: task
+                      }),
+                      mode: "fixedDuration"
+                    });
+                  }
+                }
+
+                gantt.updateTaskAssignments(task.id);
+                gantt.updateTask(task.id);
+              } else if (value) {
+                var assignment = {
+                  task_id: taskId,
+                  resource_id: resourceId,
+                  value: value,
+                  start_date: startDate,
+                  end_date: endDate,
+                  duration: gantt.calculateDuration({
+                    start_date: startDate,
+                    end_date: endDate,
+                    task: task
+                  }),
+                  delay: gantt.calculateDuration({
+                    start_date: task.start_date,
+                    end_date: startDate,
+                    task: task
+                  }),
+                  mode: "fixedDuration"
+                };
+                assignmentStore.addItem(assignment);
+                gantt.updateTaskAssignments(task.id);
+                gantt.updateTask(task.id);
+              }
+            }
+          }
+        });
+      }, {
+        once: true
+      });
+    }
+  };
+  return resourcePlugin;
+}
+
 module.exports = function (gantt) {
   var methods = createResourceMethods(gantt);
+  gantt.ext.resources = createHelper(gantt);
+  gantt.config.resources = {
+    dataprocessor_assignments: false,
+    dataprocessor_resources: false,
+    editable_resource_diagram: false,
+    resource_store: {
+      type: "treeDataStore",
+      fetchTasks: false,
+      initItem: function initItem(item) {
+        item.parent = item.parent || gantt.config.root_id;
+        item[gantt.config.resource_property] = item.parent;
+        item.open = true;
+        return item;
+      }
+    },
+    lightbox_resources: function selectResourceControlOptions(resources) {
+      var lightboxOptions = [];
+      var store = gantt.getDatastore(gantt.config.resource_store);
+      resources.forEach(function (res) {
+        if (!store.hasChild(res.id)) {
+          var copy = gantt.copy(res);
+          copy.key = res.id;
+          copy.label = res.text;
+          lightboxOptions.push(copy);
+        }
+      });
+      return lightboxOptions;
+    }
+  };
+  gantt.attachEvent("onBeforeGanttReady", function () {
+    if (gantt.getDatastore(gantt.config.resource_store)) {
+      return;
+    }
+
+    var resourceStoreConfig = gantt.config.resources ? gantt.config.resources.resource_store : undefined;
+    var fetchTasks = resourceStoreConfig ? resourceStoreConfig.fetchTasks : undefined;
+
+    if (gantt.config.resources && gantt.config.resources.editable_resource_diagram) {
+      fetchTasks = true;
+    }
+
+    var initItems = function initItems(item) {
+      item.parent = item.parent || gantt.config.root_id;
+      item[gantt.config.resource_property] = item.parent;
+      item.open = true;
+      return item;
+    };
+
+    if (resourceStoreConfig && resourceStoreConfig.initItem) {
+      initItems = resourceStoreConfig.initItem;
+    }
+
+    var storeType = resourceStoreConfig && resourceStoreConfig.type ? resourceStoreConfig.type : "treeDatastore";
+    gantt.$resourcesStore = gantt.createDatastore({
+      name: gantt.config.resource_store,
+      type: storeType,
+      fetchTasks: fetchTasks !== undefined ? fetchTasks : false,
+      initItem: initItems
+    });
+    gantt.$data.resourcesStore = gantt.$resourcesStore;
+    gantt.$resourcesStore.attachEvent("onParse", function () {
+      function selectResourceControlOptions(resources) {
+        var lightboxOptions = [];
+        resources.forEach(function (res) {
+          if (!gantt.$resourcesStore.hasChild(res.id)) {
+            var copy = gantt.copy(res);
+            copy.key = res.id;
+            copy.label = res.text;
+            lightboxOptions.push(copy);
+          }
+        });
+        return lightboxOptions;
+      }
+
+      var lightboxOptionsFnc = selectResourceControlOptions;
+
+      if (gantt.config.resources && gantt.config.resources.lightbox_resources) {
+        lightboxOptionsFnc = gantt.config.resources.lightbox_resources;
+      }
+
+      var options = lightboxOptionsFnc(gantt.$resourcesStore.getItems());
+      gantt.updateCollection("resourceOptions", options);
+    });
+  });
   gantt.getTaskBy = methods.getTaskBy;
   gantt.getResourceAssignments = methods.getResourceAssignments;
   gantt.config.resource_property = "owner_id";
@@ -15849,7 +16630,7 @@ module.exports = function (gantt) {
     return 0;
   };
 
-  gantt.templates.resource_cell_class = function (start, end, resource, tasks, assignments) {
+  var defaultResourceCellClass = function defaultResourceCellClass(start, end, resource, tasks, assignments) {
     var css = "";
 
     if (tasks.length <= 1) {
@@ -15861,9 +16642,28 @@ module.exports = function (gantt) {
     return css;
   };
 
-  gantt.templates.resource_cell_value = function (start, end, resource, tasks, assignments) {
+  var defaultResourceCellTemplate = function defaultResourceCellTemplate(start, end, resource, tasks, assignments) {
     return tasks.length * 8;
   };
+
+  gantt.templates.resource_cell_value = defaultResourceCellTemplate;
+  gantt.templates.resource_cell_class = defaultResourceCellClass; //editable_resource_diagram
+
+  gantt.attachEvent("onBeforeGanttReady", function () {
+    if (gantt.config.resources && gantt.config.resources.editable_resource_diagram) {
+      gantt.config.resource_render_empty_cells = true;
+
+      if (gantt.templates.resource_cell_value === defaultResourceCellTemplate) {
+        gantt.templates.resource_cell_value = gantt.ext.resources.editableResourceCellTemplate;
+      }
+
+      if (gantt.templates.resource_cell_class === defaultResourceCellClass) {
+        gantt.templates.resource_cell_class = gantt.ext.resources.editableResourceCellClass;
+      }
+
+      gantt.ext.resources.initEditableDiagram(gantt);
+    }
+  });
 };
 
 /***/ }),
@@ -16233,6 +17033,10 @@ module.exports = function (obj, parent) {
 
 var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "./sources/core/ui/render/layer_engine.js");
 
+var getVisibleTaskRange = __webpack_require__(/*! ./render/viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
+
+var getVisibleLinksRange = __webpack_require__(/*! ./render/viewport/get_visible_link_range */ "./sources/core/ui/render/viewport/get_visible_link_range.js");
+
 var isLinkInViewport = __webpack_require__(/*! ./render/viewport/is_link_in_viewport */ "./sources/core/ui/render/viewport/is_link_in_viewport.js");
 
 function initLayer(layer, gantt) {
@@ -16321,8 +17125,15 @@ var createLayerEngine = function createLayerEngine(gantt) {
         addTaskLayer: function addTaskLayer(config) {
           if (typeof config === "function") {
             config = {
-              renderer: config
+              renderer: {
+                render: config,
+                getVisibleRange: getVisibleTaskRange
+              }
             };
+          } else {
+            if (config.renderer && !config.renderer.getVisibleRange) {
+              config.renderer.getVisibleRange = getVisibleTaskRange;
+            }
           }
 
           config.view = "timeline";
@@ -16341,9 +17152,14 @@ var createLayerEngine = function createLayerEngine(gantt) {
           if (typeof config === "function") {
             config = {
               renderer: {
-                render: config
+                render: config,
+                getVisibleRange: getVisibleLinksRange
               }
             };
+          } else {
+            if (config.renderer && !config.renderer.getVisibleRange) {
+              config.renderer.getVisibleRange = getVisibleLinksRange;
+            }
           }
 
           config.view = "timeline";
@@ -16722,7 +17538,7 @@ function create(gantt) {
         };
 
         if (this.callEvent("onBeforeSave", [editorState]) !== false) {
-          if (!this._editor.is_valid || this._editor.is_valid(editorState.newValue, editorState.id, editorState.columnName, this._placeholder)) {
+          if (!this._editor.is_valid || this._editor.is_valid(editorState.newValue, editorState.id, grid.getColumn(columnName), this._placeholder)) {
             var mapTo = editorConfig.map_to;
             var value = editorState.newValue;
 
@@ -18834,13 +19650,19 @@ function _init_dnd(gantt, grid) {
   dnd._getGridPos = gantt.bind(function (e) {
     var pos = domHelpers.getNodePosition(grid.$grid_data); // row offset
 
-    var x = pos.x;
+    var x = pos.x + grid.$grid.scrollLeft;
     var y = e.pos.y - 10;
     var rowHeight = grid.getItemHeight(dnd.config.id); // prevent moving row out of grid_data container
 
     if (y < pos.y) y = pos.y;
     var gridHeight = grid.getTotalHeight();
     if (y > pos.y + gridHeight - rowHeight) y = pos.y + gridHeight - rowHeight;
+    var maxBottom = pos.y + pos.height;
+
+    if (y > maxBottom - rowHeight) {
+      y = maxBottom - rowHeight;
+    }
+
     pos.x = x;
     pos.y = y;
     return pos;
@@ -18883,7 +19705,14 @@ function _init_dnd(gantt, grid) {
       dd.marker.style.top = maxBottom + "px";
     }
 
-    dd.marker.style.left = pos.x + 10 + "px"; // highlight row when mouseover
+    dd.marker.style.left = pos.x + 10 + "px";
+    var containerSize = domHelpers.getNodePosition(gantt.$root);
+
+    if (pos.width > containerSize.width) {
+      dd.marker.style.width = containerSize.width - 10 - 2 + "px";
+      dd.marker.style.overflow = "hidden";
+    } // highlight row when mouseover
+
 
     var item = store.getItem(dnd.config.id);
 
@@ -19126,12 +19955,22 @@ function _init_dnd(gantt, grid) {
     if (hiddenTaskPart > 0.1 && hiddenTaskPart < 0.9) {
       maxBottom = maxBottom - grid.getItemHeight(firstVisibleTaskId) * hiddenTaskPart;
       minTop = minTop + grid.getItemHeight(firstVisibleTaskId) * (1 - hiddenTaskPart);
+    } // GS-715. The placeholder task row shouldn't be draggable below the Gantt container
+
+
+    var gridPosition = domHelpers.getNodePosition(grid.$grid_data);
+    var gridBottom = gridPosition.y + gridPosition.height;
+    var placeholderRowHeight = dnd.config.marker.offsetHeight;
+
+    if (y + placeholderRowHeight + window.scrollY >= maxBottom) {
+      dnd.config.marker.style.top = gridBottom - placeholderRowHeight + "px";
     }
 
     if (y >= maxBottom) {
       y = maxBottom;
     } else if (y <= minTop) {
       y = minTop;
+      dnd.config.marker.style.top = gridPosition.y + "px";
     }
 
     var index = grid.getItemIndexByTopPosition(y);
@@ -19314,6 +20153,8 @@ function highlightPosition(target, root, grid) {
   var markerPos = getTaskMarkerPosition(target, grid); // setting position of row
 
   root.marker.style.left = markerPos.x + 9 + "px";
+  root.marker.style.width = markerPos.width + "px";
+  root.marker.style.overflow = "hidden";
   var markerLine = root.markerLine;
 
   if (!markerLine) {
@@ -19367,8 +20208,9 @@ function highlightFolder(target, markerFolder, grid) {
     y: grid.getItemTop(id)
   }, grid);
   var maxBottom = grid.$grid_data.getBoundingClientRect().bottom + window.scrollY;
+  var folderHighlightWidth = setWidthWithinContainer(grid.$gantt, grid.$grid_data.offsetWidth);
   markerFolder.innerHTML = "<div class='gantt_grid_dnd_marker_folder'></div>";
-  markerFolder.style.width = grid.$grid_data.offsetWidth + "px";
+  markerFolder.style.width = folderHighlightWidth + "px";
   markerFolder.style.top = pos.y + "px";
   markerFolder.style.left = pos.x + "px";
   markerFolder.style.height = grid.getItemHeight(id) + "px";
@@ -19416,13 +20258,13 @@ function getLineMarkerPosition(target, grid) {
   }
 
   pos.x = iconWidth + level * indent;
-  pos.width = Math.max(grid.$grid_data.offsetWidth - pos.x, 0);
+  pos.width = setWidthWithinContainer(grid.$gantt, Math.max(grid.$grid_data.offsetWidth - pos.x, 0), pos.x);
   return gridToPageCoordinates(pos, grid);
 }
 
 function gridToPageCoordinates(pos, grid) {
   var gridPos = domHelpers.getNodePosition(grid.$grid_data);
-  pos.x += gridPos.x - grid.$grid.scrollLeft;
+  pos.x += gridPos.x + grid.$grid.scrollLeft;
   pos.y += gridPos.y - grid.$grid_data.scrollTop;
   return pos;
 }
@@ -19431,7 +20273,7 @@ function getTaskMarkerPosition(e, grid) {
   var pos = domHelpers.getNodePosition(grid.$grid_data);
   var ePos = domHelpers.getRelativeEventPosition(e, grid.$grid_data); // row offset
 
-  var x = pos.x;
+  var x = pos.x + grid.$grid.scrollLeft;
   var y = ePos.y - 10;
   var rowHeight = grid.getItemHeight(e.targetId); // prevent moving row out of grid_data container
 
@@ -19440,7 +20282,19 @@ function getTaskMarkerPosition(e, grid) {
   if (y > pos.y + gridHeight - rowHeight) y = pos.y + gridHeight - rowHeight;
   pos.x = x;
   pos.y = y;
+  pos.width = setWidthWithinContainer(grid.$gantt, pos.width, 9);
   return pos;
+}
+
+function setWidthWithinContainer(gantt, width) {
+  var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+  var containerSize = domHelpers.getNodePosition(gantt.$root);
+
+  if (width > containerSize.width) {
+    width = containerSize.width - offset - 2;
+  }
+
+  return width;
 }
 
 module.exports = {
@@ -23432,7 +24286,7 @@ module.exports = function (gantt) {
     return false;
   };
 
-  gantt._dhtmlx_confirm = function (message, title, callback, ok) {
+  gantt._simple_confirm = function (message, title, callback, ok) {
     if (!message) return callback();
     var opts = {
       text: message
@@ -24076,15 +24930,14 @@ module.exports = function (gantt) {
     var buttonAriaAttrs = gantt._waiAria.messageButtonAttrString(text);
 
     var name = className.toLowerCase().replace(/ /g, "_");
-    var button_css = "gantt_" + name + "_button" + " dhtmlx_" + name + "_button"; // dhtmlx_ok_button, dhtmlx_click_me_button
-
-    return "<div " + buttonAriaAttrs + " class='gantt_popup_button dhtmlx_popup_button " + button_css + "' data-result='" + result + "' result='" + result + "' ><div>" + text + "</div></div>";
+    var button_css = "gantt_" + name + "_button";
+    return "<div " + buttonAriaAttrs + " class='gantt_popup_button " + button_css + "' data-result='" + result + "' result='" + result + "' ><div>" + text + "</div></div>";
   }
 
   function info(text) {
     if (!messageBox.area) {
       messageBox.area = document.createElement("div");
-      messageBox.area.className = "gantt_message_area dhtmlx_message_area";
+      messageBox.area.className = "gantt_message_area";
       messageBox.area.style[messageBox.position] = "5px";
       document.body.appendChild(messageBox.area);
     }
@@ -24092,7 +24945,7 @@ module.exports = function (gantt) {
     messageBox.hide(text.id);
     var message = document.createElement("div");
     message.innerHTML = "<div>" + text.text + "</div>";
-    message.className = "gantt-info dhtmlx-info gantt-" + text.type + " dhtmlx-" + text.type;
+    message.className = "gantt-info gantt-" + text.type;
 
     message.onclick = function () {
       messageBox.hide(text.id);
@@ -24127,13 +24980,13 @@ module.exports = function (gantt) {
 
     gantt._waiAria.messageModalAttr(box, contentId);
 
-    box.className = " gantt_modal_box dhtmlx_modal_box gantt-" + config.type + " dhtmlx-" + config.type;
+    box.className = " gantt_modal_box gantt-" + config.type;
     box.setAttribute(boxAttribute, 1);
     var inner = '';
     if (config.width) box.style.width = config.width;
     if (config.height) box.style.height = config.height;
-    if (config.title) inner += '<div class="gantt_popup_title dhtmlx_popup_title">' + config.title + '</div>';
-    inner += '<div class="gantt_popup_text dhtmlx_popup_text" id="' + contentId + '"><span>' + (config.content ? '' : config.text) + '</span></div><div  class="gantt_popup_controls dhtmlx_popup_controls">';
+    if (config.title) inner += '<div class="gantt_popup_title">' + config.title + '</div>';
+    inner += '<div class="gantt_popup_text" id="' + contentId + '"><span>' + (config.content ? '' : config.text) + '</span></div><div  class="gantt_popup_controls">';
     if (ok) inner += button(getFirstDefined(config.ok, gantt.locale.labels.message_ok, "OK"), "ok", true);
     if (cancel) inner += button(getFirstDefined(config.cancel, gantt.locale.labels.message_cancel, "Cancel"), "cancel", false);
 
@@ -24144,7 +24997,7 @@ module.exports = function (gantt) {
         if (_typeof(btn) == "object") {
           // Support { label:"Save", css:"main_button", value:"save" }
           var label = btn.label;
-          var css = btn.css || "gantt_" + btn.label.toLowerCase() + "_button dhtmlx_" + btn.label.toLowerCase() + "_button";
+          var css = btn.css || "gantt_" + btn.label.toLowerCase() + "_button";
           var value = btn.value || i;
           inner += button(label, css, value);
         } else {
@@ -25770,6 +26623,8 @@ module.exports = layerFactory;
 
 var isInViewPort = __webpack_require__(/*! ./viewport/is_link_in_viewport */ "./sources/core/ui/render/viewport/is_link_in_viewport.js");
 
+var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_link_range */ "./sources/core/ui/render/viewport/get_visible_link_range.js");
+
 function createLinkRender(gantt) {
   function _render_link_element(link, view, config) {
     var source = gantt.getTask(link.source);
@@ -26236,11 +27091,52 @@ function createLinkRender(gantt) {
     render: _render_link_element,
     update: null,
     //getRectangle: getLinkRectangle
-    isInViewPort: isInViewPort
+    isInViewPort: isInViewPort,
+    getVisibleRange: getVisibleRange()
   };
 }
 
 module.exports = createLinkRender;
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/prerender/task_bg_placeholder.js":
+/*!*****************************************************************!*\
+  !*** ./sources/core/ui/render/prerender/task_bg_placeholder.js ***!
+  \*****************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (items, gantt) {
+  var placeholderConfig = gantt.config.timeline_placeholder;
+  items = items || [];
+
+  if (placeholderConfig && items.filter(function (e) {
+    return e.id === 'timeline_placeholder_task';
+  }).length === 0) {
+    var state = gantt.getState();
+    var lastTaskId = null;
+    var start_date = state.min_date;
+    var end_date = state.max_date;
+
+    if (items.length) {
+      lastTaskId = items[items.length - 1].id;
+    }
+
+    var placeholderTask = {
+      start_date: start_date,
+      end_date: end_date,
+      row_height: placeholderConfig.height || 0,
+      id: "timeline_placeholder_task",
+      unscheduled: true,
+      lastTaskId: lastTaskId,
+      calendar_id: placeholderConfig.calendar || "global",
+      $source: [],
+      $target: []
+    };
+    items.push(placeholderTask);
+  }
+};
 
 /***/ }),
 
@@ -26356,7 +27252,10 @@ var rendererFactory = function rendererFactory(gantt) {
       },
       clear_container: function clear_container(container) {
         container = container || node;
-        if (container) container.innerHTML = "";
+
+        if (container) {
+          container.innerHTML = "";
+        }
       },
       get_visible_range: function get_visible_range(datastore) {
         var view = getView(layer);
@@ -26385,6 +27284,11 @@ var rendererFactory = function rendererFactory(gantt) {
         }
 
         return range;
+      },
+      prepare_data: function prepare_data(items) {
+        if (layer.renderer && layer.renderer.prepareData) {
+          return layer.renderer.prepareData(items, gantt, layer);
+        }
       },
       render_items: function render_items(items, container) {
         container = container || node;
@@ -27420,6 +28324,8 @@ var getVisibleCellsRange = __webpack_require__(/*! ./viewport/get_visible_cells_
 
 var isColumnVisible = __webpack_require__(/*! ./viewport/is_column_visible */ "./sources/core/ui/render/viewport/is_column_visible.js");
 
+var bgPlaceholder = __webpack_require__(/*! ./prerender/task_bg_placeholder */ "./sources/core/ui/render/prerender/task_bg_placeholder.js");
+
 function createTaskBgRender(gantt) {
   var renderedCells = {};
   var visibleCells = {};
@@ -27438,7 +28344,7 @@ function createTaskBgRender(gantt) {
     }
   }
 
-  function getCellTemplate(view) {
+  function getCellClassTemplate(view) {
     var templates = view.$getTemplates();
     var cssTemplate;
 
@@ -27454,10 +28360,17 @@ function createTaskBgRender(gantt) {
     return cssTemplate;
   }
 
+  function getCellContentTemplate(view) {
+    var templates = view.$getTemplates();
+    var contentTemplate = templates.timeline_cell_content;
+    return contentTemplate;
+  }
+
   function renderCells(item, node, view, config, viewPort) {
     var cfg = view.getScale();
     var count = cfg.count;
-    var cssTemplate = getCellTemplate(view);
+    var cssTemplate = getCellClassTemplate(view);
+    var contentTemplate = getCellContentTemplate(view);
 
     if (config.show_task_cells) {
       if (!renderedCells[item.id]) {
@@ -27481,7 +28394,7 @@ function createTaskBgRender(gantt) {
       visibleCells[item.id] = {}; // TODO: do not iterate all cell, only ones in the viewport and once that are already rendered
 
       for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
-        var cell = renderOneCell(cfg, columnIndex, item, viewPort, count, cssTemplate, config);
+        var cell = renderOneCell(cfg, columnIndex, item, viewPort, count, cssTemplate, contentTemplate, config);
 
         if (!cell && isRendered(item, columnIndex)) {
           detachRenderedCell(item.id, columnIndex);
@@ -27492,17 +28405,25 @@ function createTaskBgRender(gantt) {
     }
   }
 
-  function renderOneCell(scale, columnIndex, item, viewPort, count, cssTemplate, config) {
+  function renderOneCell(scale, columnIndex, item, viewPort, count, cssTemplate, contentTemplate, config) {
     var width = scale.width[columnIndex],
         cssclass = "";
 
     if (isColumnVisible(columnIndex, scale, viewPort, gantt)) {
       //do not render skipped columns
       var cssTemplateContent = cssTemplate(item, scale.trace_x[columnIndex]);
+      var htmlTemplateContent = "";
+
+      if (contentTemplate) {
+        // for backward compatibility, contentTemplate was added in 7.2.0+, will be undefined if someone used copy of old config/template object
+        htmlTemplateContent = contentTemplate(item, scale.trace_x[columnIndex]);
+      }
 
       if (config.static_background) {
         // if cell render in static background is not allowed, or if it's a blank cell
-        if (!(config.static_background_cells && cssTemplateContent)) {
+        var customCell = !!(cssTemplateContent || htmlTemplateContent);
+
+        if (!(config.static_background_cells && customCell)) {
           return null;
         }
       }
@@ -27521,6 +28442,11 @@ function createTaskBgRender(gantt) {
       }
 
       cell.className = cssclass;
+
+      if (htmlTemplateContent) {
+        cell.innerHTML = htmlTemplateContent;
+      }
+
       cell.style.position = "absolute";
       cell.style.left = scale.left[columnIndex] + "px";
       renderedCells[item.id][columnIndex] = cell;
@@ -27541,7 +28467,8 @@ function createTaskBgRender(gantt) {
     }
 
     var row = document.createElement("div");
-    var cellTemplate = getCellTemplate(view);
+    var cellCssTemplate = getCellClassTemplate(view);
+    var cellHtmlTemplate = getCellContentTemplate(view);
     var range;
 
     if (!viewPort || !config.smart_rendering || isLegacyRender(gantt)) {
@@ -27558,18 +28485,19 @@ function createTaskBgRender(gantt) {
       visibleCells[item.id] = {};
 
       for (var columnIndex = range.start; columnIndex <= range.end; columnIndex++) {
-        var cell = renderOneCell(cfg, columnIndex, item, viewPort, count, cellTemplate, config);
+        var cell = renderOneCell(cfg, columnIndex, item, viewPort, count, cellCssTemplate, cellHtmlTemplate, config);
 
         if (cell) {
           row.appendChild(cell);
         }
       }
-    }
+    } // GS-291. The odd class should be assigned correctly
 
-    var odd = gantt.getGlobalTaskIndex(item.id) % 2 !== 0;
+
+    var store = view.$config.rowStore;
+    var odd = store.getIndexById(item.id) % 2 !== 0;
     var cssTemplate = templates.task_row_class(item.start_date, item.end_date, item);
     var css = "gantt_task_row" + (odd ? " odd" : "") + (cssTemplate ? ' ' + cssTemplate : '');
-    var store = view.$config.rowStore;
 
     if (store.isSelected(item.id)) {
       css += " gantt_selected";
@@ -27587,6 +28515,29 @@ function createTaskBgRender(gantt) {
 
     row.style.height = view.getItemHeight(item.id) + "px";
 
+    if (item.id == "timeline_placeholder_task") {
+      var placeholderTop = 0;
+
+      if (item.lastTaskId) {
+        var lastTaskTop = view.getItemTop(item.lastTaskId);
+        var lastTaskHeight = view.getItemHeight(item.lastTaskId);
+        placeholderTop = lastTaskTop + lastTaskHeight;
+      }
+
+      var maxHeight = item.row_height || view.$task_data.offsetHeight;
+      var placeholderHeight = maxHeight - placeholderTop; // So that it won't exceed the placeholder timeline height
+
+      if (placeholderHeight < 0) {
+        placeholderHeight = 0;
+      }
+
+      if (config.smart_rendering) {
+        row.style.top = placeholderTop + "px";
+      }
+
+      row.style.height = placeholderHeight + "px";
+    }
+
     if (view.$config.item_attribute) {
       row.setAttribute(view.$config.item_attribute, item.id);
       row.setAttribute(view.$config.bind + "_id", item.id); // 'task_id'/'resource_id' for backward compatibility
@@ -27599,7 +28550,8 @@ function createTaskBgRender(gantt) {
     render: _render_bg_line,
     update: renderCells,
     getRectangle: getRowRectangle,
-    getVisibleRange: getVisibleRange
+    getVisibleRange: getVisibleRange,
+    prepareData: bgPlaceholder
   };
 }
 
@@ -27695,9 +28647,22 @@ function createGridLineRender(gantt) {
       tree.push(value);
       cell = "<div class='" + css + "' data-column-index='" + i + "' data-column-name='" + col.name + "' style='" + style + "' " + aria + ">" + tree.join("") + "</div>";
       cells.push(cell);
+    } // GS-291. The odd class should be assigned correctly
+
+
+    css = "";
+    var storeName = store.$config.name;
+
+    switch (storeName) {
+      case "task":
+        css = gantt.getGlobalTaskIndex(item.id) % 2 === 0 ? "" : " odd";
+        break;
+
+      case "resource":
+        css = store.visibleOrder.indexOf(item.id) % 2 === 0 ? "" : " odd";
+        break;
     }
 
-    var css = gantt.getGlobalTaskIndex(item.id) % 2 === 0 ? "" : " odd";
     css += item.$transparent ? " gantt_transparent" : "";
     css += item.$dataprocessor_class ? " " + item.$dataprocessor_class : "";
 
@@ -27830,17 +28795,25 @@ function createTaskRenderer(gantt) {
   var defaultRender = createBaseBarRender(gantt);
 
   function renderSplitTask(task, timeline) {
-    if (task.$rollup && task.$rollup.length) {
+    if (task.rollup !== false && task.$rollup && task.$rollup.length) {
       var el = document.createElement('div'),
           sizes = gantt.getTaskPosition(task);
       task.$rollup.forEach(function (itemId) {
-        var child = gantt.getTask(itemId);
+        var child = gantt.copy(gantt.getTask(itemId));
+        child.$rendered_at = task.id;
+        var displayRollup = gantt.callEvent("onBeforeRollupTaskDisplay", [child.id, child, task.id]);
+
+        if (displayRollup === false) {
+          return;
+        }
+
         var element = defaultRender(child, timeline);
         if (!element) return;
         var height = timeline.getBarHeight(task.id, child.type == gantt.config.types.milestone);
         var padding = Math.floor((timeline.getItemHeight(task.id) - height) / 2);
         element.style.top = sizes.top + padding + "px";
         element.classList.add("gantt_rollup_child");
+        element.setAttribute("data-rollup-parent-id", task.id);
         el.appendChild(element);
       });
       return el;
@@ -27869,43 +28842,78 @@ module.exports = createTaskRenderer;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js");
+var createBaseBarRender = __webpack_require__(/*! ./task_bar_render */ "./sources/core/ui/render/task_bar_render.js"); //const isInViewPort = require("./viewport/is_split_task_in_viewport");
 
-var isInViewPort = __webpack_require__(/*! ./viewport/is_split_task_in_viewport */ "./sources/core/ui/render/viewport/is_split_task_in_viewport.js");
 
 var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 
+var isInViewPortParent = __webpack_require__(/*! ./viewport/is_split_task_in_viewport */ "./sources/core/ui/render/viewport/is_split_task_in_viewport.js");
+
+var isInViewPortChild = __webpack_require__(/*! ./viewport/is_bar_in_viewport */ "./sources/core/ui/render/viewport/is_bar_in_viewport.js");
+
 function createTaskRenderer(gantt) {
   var defaultRender = createBaseBarRender(gantt);
+  var renderedNodes = {};
 
-  function renderSplitTask(task, timeline) {
+  function checkVisibility(child, viewPort, timeline, config, gantt) {
+    var isVisible = !child.hide_bar; // GS-1195. Don't render split tasks that are outside the viewport
+
+    if (config.smart_rendering && isVisible) {
+      isVisible = isInViewPortChild(child, viewPort, timeline, config, gantt);
+    }
+
+    return isVisible;
+  }
+
+  function generateChildElement(task, child, timeline, sizes) {
+    var isProject = gantt.isSummaryTask(child);
+
+    if (isProject) {
+      gantt.resetProjectDates(child);
+    }
+
+    var element = defaultRender(child, timeline);
+    if (!element) return;
+    var height = timeline.getBarHeight(task.id, child.type == gantt.config.types.milestone);
+    var padding = Math.floor((timeline.getItemHeight(task.id) - height) / 2);
+    element.style.top = sizes.top + padding + "px";
+    element.classList.add("gantt_split_child");
+
+    if (isProject) {
+      element.classList.add("gantt_split_subproject");
+    }
+
+    return element;
+  }
+
+  function renderSplitTask(task, timeline, config, viewPort) {
     if (gantt.isSplitTask(task) && (gantt.config.open_split_tasks && !task.$open || !gantt.config.open_split_tasks)) {
       var el = document.createElement('div'),
           sizes = gantt.getTaskPosition(task);
 
       if (gantt.hasChild(task.id)) {
-        gantt.eachTask(function (child) {
-          var isProject = gantt.isSummaryTask(child);
+        gantt.eachTask(function (realChild) {
+          var isVisible = checkVisibility(realChild, viewPort, timeline, config, gantt);
 
-          if (isProject) {
-            gantt.resetProjectDates(child);
-          }
-
-          if (child.hide_bar) {
+          if (!isVisible) {
             return;
           }
 
-          var element = defaultRender(child, timeline);
-          if (!element) return;
-          var height = timeline.getBarHeight(task.id, child.type == gantt.config.types.milestone);
-          var padding = Math.floor((timeline.getItemHeight(task.id) - height) / 2);
-          element.style.top = sizes.top + padding + "px";
-          element.classList.add("gantt_split_child");
-
-          if (isProject) {
-            element.classList.add("gantt_split_subproject");
+          if (realChild.hide_bar) {
+            return;
           }
 
+          var childCopy = gantt.copy(gantt.getTask(realChild.id));
+          childCopy.$rendered_at = task.id; // a way to filter split tasks:
+
+          var showSplitTask = gantt.callEvent("onBeforeSplitTaskDisplay", [childCopy.id, childCopy, task.id]);
+
+          if (showSplitTask === false) {
+            return;
+          }
+
+          var element = generateChildElement(task, realChild, timeline, sizes);
+          renderedNodes[realChild.id] = element;
           el.appendChild(element);
         }, task.id);
       }
@@ -27916,16 +28924,67 @@ function createTaskRenderer(gantt) {
     return false;
   }
 
+  function repaintSplitTask(task, itemNode, timeline, config, viewPort) {
+    if (gantt.hasChild(task.id)) {
+      var el = document.createElement("div"),
+          sizes = gantt.getTaskPosition(task);
+      gantt.eachTask(function (child) {
+        var isVisible = checkVisibility(child, viewPort, timeline, config, gantt);
+
+        if (isVisible !== !!renderedNodes[child.id]) {
+          if (isVisible) {
+            var element = generateChildElement(task, child, timeline, sizes);
+            renderedNodes[child.id] = element;
+          } else {
+            renderedNodes[child.id] = false;
+          }
+        }
+
+        if (!!renderedNodes[child.id]) {
+          el.appendChild(renderedNodes[child.id]);
+        }
+
+        itemNode.innerHTML = el.innerHTML;
+      }, task.id);
+    }
+  }
+
   return {
     render: renderSplitTask,
-    update: null,
-    //getRectangle: getBarRectangle
-    isInViewPort: isInViewPort,
+    update: repaintSplitTask,
+    isInViewPort: isInViewPortParent,
     getVisibleRange: getVisibleRange
   };
 }
 
 module.exports = createTaskRenderer;
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/get_bar_rectangle.js":
+/*!**************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_bar_rectangle.js ***!
+  \**************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (item, view, config) {
+  if (!item.start_date || !item.end_date) {
+    return null;
+  }
+
+  var padding = 200;
+  var startCoord = view.posFromDate(item.start_date);
+  var endCoord = view.posFromDate(item.end_date);
+  var left = Math.min(startCoord, endCoord) - padding;
+  var right = Math.max(startCoord, endCoord) + padding;
+  return {
+    top: view.getItemTop(item.id),
+    height: view.getItemHeight(item.id),
+    left: left,
+    width: right - left
+  };
+};
 
 /***/ }),
 
@@ -27960,6 +29019,48 @@ module.exports = function (item, view, config) {
     height: view.getItemHeight(item.id),
     left: 0,
     right: Infinity
+  };
+};
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/get_link_rectangle.js":
+/*!***************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_link_rectangle.js ***!
+  \***************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var barRectangle = __webpack_require__(/*! ./get_bar_rectangle */ "./sources/core/ui/render/viewport/get_bar_rectangle.js");
+
+module.exports = function getLinkBox(item, view, config, gantt) {
+  if (!gantt.isTaskExists(item.source)) {
+    return null;
+  }
+
+  if (!gantt.isTaskExists(item.target)) {
+    return null;
+  }
+
+  var sourceBox = barRectangle(gantt.getTask(item.source), view, gantt);
+  var targetBox = barRectangle(gantt.getTask(item.target), view, gantt);
+
+  if (!sourceBox || !targetBox) {
+    return null;
+  }
+
+  var padding = 100;
+  var left = Math.min(sourceBox.left, targetBox.left) - padding;
+  var right = Math.max(sourceBox.left + sourceBox.width, targetBox.left + targetBox.width) + padding;
+  var top = Math.min(sourceBox.top, targetBox.top) - padding;
+  var bottom = Math.max(sourceBox.top + sourceBox.height, targetBox.top + targetBox.height) + padding;
+  return {
+    top: top,
+    height: bottom - top,
+    bottom: bottom,
+    left: left,
+    width: right - left,
+    right: right
   };
 };
 
@@ -28015,6 +29116,94 @@ module.exports = function getVisibleCellsRange(scale, viewport) {
   return {
     start: firstCellIndex,
     end: lastCellIndex
+  };
+};
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/get_visible_link_range.js":
+/*!*******************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/get_visible_link_range.js ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getLinkRectangle = __webpack_require__(/*! ./get_link_rectangle */ "./sources/core/ui/render/viewport/get_link_rectangle.js");
+
+module.exports = function () {
+  var coordinates = [];
+  var calculated = false;
+
+  function clearCache() {
+    coordinates = [];
+    calculated = false;
+  }
+
+  function buildCache(datastore, view, gantt) {
+    var config = view.$getConfig();
+    var visibleItems = datastore.getVisibleItems(); //datastore.eachItem(function(link){
+
+    visibleItems.forEach(function (link) {
+      var rec = getLinkRectangle(link, view, config, gantt);
+
+      if (!rec) {
+        return;
+      }
+
+      coordinates.push({
+        id: link.id,
+        rec: rec
+      });
+    });
+    coordinates.sort(function (a, b) {
+      if (a.rec.right < b.rec.right) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    calculated = true;
+  }
+
+  var initialized = false;
+
+  function init(datastore) {
+    if (initialized) {
+      return;
+    }
+
+    initialized = true;
+    datastore.attachEvent("onPreFilter", clearCache);
+    datastore.attachEvent("onStoreUpdated", clearCache);
+    datastore.attachEvent("onClearAll", clearCache);
+    datastore.attachEvent("onBeforeStoreUpdate", clearCache);
+  }
+
+  return function getVisibleLinksRange(gantt, view, config, datastore, viewport) {
+    init(datastore);
+
+    if (!calculated) {
+      buildCache(datastore, view, gantt);
+    }
+
+    var visibleBoxes = [];
+
+    for (var i = 0; i < coordinates.length; i++) {
+      var item = coordinates[i];
+      var box = item.rec;
+
+      if (box.right < viewport.x) {
+        continue;
+      }
+
+      if (box.left < viewport.x_end && box.right > viewport.x && box.top < viewport.y_end && box.bottom > viewport.y) {
+        visibleBoxes.push(item.id);
+      }
+    }
+
+    return {
+      ids: visibleBoxes
+    };
   };
 };
 
@@ -28637,7 +29826,10 @@ function createMixin(view) {
           if (top >= current && top < next) {
             return i;
           }
-        }
+        } // GS-1723: If we iterated all tasks and didn't find the position, the target is below all other tasks
+
+
+        return store.countVisible() + 2;
       } else {
         return 0;
       }
@@ -29238,7 +30430,7 @@ var initializer = function () {
             var title = "";
             var question = this.locale.labels.link + " " + this.templates.link_description(this.getLink(id)) + " " + this.locale.labels.confirm_link_deleting;
             window.setTimeout(function () {
-              gantt._dhtmlx_confirm(question, title, function () {
+              gantt._simple_confirm(question, title, function () {
                 gantt.deleteLink(id);
               });
             }, this.config.touch ? 300 : 1);
@@ -30703,7 +31895,7 @@ Timeline.prototype = {
       if (!self.isVisible()) return;
       var config = self.$getConfig();
 
-      if (config.static_background) {
+      if (config.static_background || config.timeline_placeholder) {
         var store = self.$gantt.getDatastore(self.$config.bind);
         var staticBgContainer = self.$task_bg_static;
 
@@ -30720,7 +31912,13 @@ Timeline.prototype = {
         }
 
         if (store) {
-          staticRender.render(staticBgContainer, config, self.getScale(), self.getTotalHeight(), self.getItemHeight(item ? item.id : null));
+          var staticBackgroundHeight = self.getTotalHeight();
+
+          if (config.timeline_placeholder) {
+            staticBackgroundHeight = config.timeline_placeholder.height || self.$task_data.offsetHeight || 99999;
+          }
+
+          staticRender.render(staticBgContainer, config, self.getScale(), staticBackgroundHeight, self.getItemHeight(item ? item.id : null));
         }
       } else if (config.static_background) {
         if (self.$task_bg_static && self.$task_bg_static.parentNode) {
@@ -32549,6 +33747,35 @@ module.exports = function (gantt) {
         if (scrollbar) scrollbar.scrollTo(scrollbar.$config.scrollSize, 0);
       });
     }
+  }); // GS-1649: check if extensions are connected via files
+
+  gantt.attachEvent("onGanttReady", function () {
+    if (!isHeadless(gantt)) {
+      var activePlugins = gantt.plugins();
+      var availablePlugins = {
+        auto_scheduling: gantt.autoSchedule,
+        click_drag: gantt.ext.clickDrag,
+        critical_path: gantt.isCriticalTask,
+        drag_timeline: gantt.ext.dragTimeline,
+        export_api: gantt.exportToPDF,
+        fullscreen: gantt.ext.fullscreen,
+        grouping: gantt.groupBy,
+        keyboard_navigation: gantt.ext.keyboardNavigation,
+        marker: gantt.addMarker,
+        multiselect: gantt.eachSelectedTask,
+        overlay: gantt.ext.overlay,
+        quick_info: gantt.templates.quick_info_content,
+        tooltip: gantt.ext.tooltips,
+        undo: gantt.undo
+      };
+
+      for (var plugin in availablePlugins) {
+        if (availablePlugins[plugin] && !activePlugins[plugin]) {
+          // eslint-disable-next-line no-console
+          console.warn("You connected the '".concat(plugin, "' extension via an obsolete file. \nTo fix it, you need to remove the obsolete file and connect the extension via the plugins method: https://docs.dhtmlx.com/gantt/api__gantt_plugins.html"));
+        }
+      }
+    }
   });
 };
 
@@ -33247,6 +34474,8 @@ module.exports = {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 var createCacheObject = __webpack_require__(/*! ./work_unit_cache */ "./sources/core/worktime/strategy/work_unit_cache/index.ts").createCacheObject;
 
 var LargerUnitsCache = __webpack_require__(/*! ./work_unit_cache */ "./sources/core/worktime/strategy/work_unit_cache/index.ts").LargerUnitsCache;
@@ -33880,10 +35109,19 @@ CalendarWorkTimeStrategy.prototype = {
       if (settings.customWeeks) {
         if (!calendarConfig.customWeeks) {
           calendarConfig.customWeeks = {};
-        }
+        } // GS-1867. allow setWorkTime to exclude dates in the customWeeks range
 
-        for (var i in settings.customWeeks) {
-          calendarConfig.customWeeks[i] = settings.customWeeks[i];
+
+        if (typeof settings.customWeeks == "string") {
+          if (timestamp !== null) {
+            calendarConfig.customWeeks[settings.customWeeks].dates[timestamp] = hours;
+          } else if (!settings.customWeeks) {
+            calendarConfig.customWeeks[settings.customWeeks].hours = hours;
+          }
+        } else if (_typeof(settings.customWeeks) === "object" && Function.prototype.toString.call(settings.customWeeks.constructor) === "function Object() { [native code] }") {
+          for (var i in settings.customWeeks) {
+            calendarConfig.customWeeks[i] = settings.customWeeks[i];
+          }
         }
       }
 
@@ -34375,6 +35613,7 @@ CalendarWorkTimeStrategy.prototype = {
     var calculatedDay = 0;
     var daySchedule = [];
     var minutesInDay = 0;
+    var minutePresision = undefined;
 
     while (added < duration) {
       var dayStart = this.$gantt.date.day_start(new Date(start)).valueOf();
@@ -34382,7 +35621,16 @@ CalendarWorkTimeStrategy.prototype = {
       if (dayStart !== calculatedDay) {
         daySchedule = this._getWorkHours(start);
         minutesInDay = this._getMinutesPerDay(start);
-        calculatedDay = dayStart;
+        calculatedDay = dayStart; // when the working time settings are set in minutes
+
+        if (minutePresision === undefined) {
+          minutePresision = false;
+          daySchedule.forEach(function (interval) {
+            if (interval.startMinute % 60 || interval.endMinute % 60) {
+              minutePresision = true;
+            }
+          });
+        }
       }
 
       var left = duration - added;
@@ -34433,7 +35681,12 @@ CalendarWorkTimeStrategy.prototype = {
 
           if (minutesInHour <= left) {
             added += minutesInHour;
-            start = this._nextDate(start, "hour", step);
+
+            if (minutePresision) {
+              start = this.$gantt.date.add(start, minutesInHour, "minute");
+            } else {
+              start = this._nextDate(start, "hour", step);
+            }
           } else {
             addedInterval = this._addMinutesUntilHourEnd(start, left);
             added += addedInterval.added;
@@ -36814,10 +38067,29 @@ module.exports = function (gantt) {
           };
         }
       });
+      var createdTaskId = null;
+      var keepFocusOnNewTask = false;
+      gantt.attachEvent("onTaskCreated", function (task) {
+        createdTaskId = task.id;
+        return true;
+      });
       gantt.attachEvent("onAfterTaskAdd", function (id, item) {
         if (!gantt.config.keyboard_navigation) return true;
 
         if (dispatcher.isEnabled()) {
+          // GS-1394. After adding a new task, the focus shouldn't change to the placeholder task
+          if (id == createdTaskId) {
+            keepFocusOnNewTask = true;
+            setTimeout(function () {
+              keepFocusOnNewTask = false;
+              createdTaskId = null;
+            });
+          }
+
+          if (keepFocusOnNewTask && item.type == gantt.config.types.placeholder) {
+            return;
+          }
+
           var columnIndex = 0;
           var node = dispatcher.activeNode;
 
@@ -36826,7 +38098,11 @@ module.exports = function (gantt) {
           }
 
           var nodeConstructor = getTaskNodeConstructor();
-          dispatcher.setActiveNode(new nodeConstructor(id, columnIndex));
+
+          if (item.type == gantt.config.types.placeholder && gantt.config.placeholder_task.focusOnCreate === false) {// do not focus on the placeholder task
+          } else {
+            dispatcher.setActiveNode(new nodeConstructor(id, columnIndex));
+          }
         }
       });
       gantt.attachEvent("onTaskIdChange", function (oldId, newId) {
@@ -38201,7 +39477,13 @@ module.exports = function (gantt) {
     div.className = css;
     var start = gantt.posFromDate(marker.start_date);
     div.style.left = start + "px";
-    div.style.height = Math.max(gantt.getRowTop(gantt.getVisibleTaskCount()), 0) + "px";
+    var markerHeight = Math.max(gantt.getRowTop(gantt.getVisibleTaskCount()), 0) + "px";
+
+    if (gantt.config.timeline_placeholder) {
+      markerHeight = gantt.$container.scrollHeight + "px";
+    }
+
+    div.style.height = markerHeight;
 
     if (marker.end_date) {
       var end = gantt.posFromDate(marker.end_date);
@@ -40202,7 +41484,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "7.1.13";
+  this.version = "8.0.0";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -40232,6 +41514,8 @@ module.exports = function (supportedExtensions) {
         }
       }
     }
+
+    return activePlugins;
   };
 
   gantt.$services = __webpack_require__(/*! ../core/common/services */ "./sources/core/common/services.js")();
@@ -40525,7 +41809,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -40599,7 +41886,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -40676,7 +41966,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -40758,7 +42051,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -40832,7 +42128,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -40906,7 +42205,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -40980,7 +42282,10 @@ var locale = {
         mfo: "Muss fertig sein am",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41054,7 +42359,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41128,7 +42436,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41209,7 +42520,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41315,7 +42629,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41389,7 +42706,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41463,7 +42783,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41537,7 +42860,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41615,7 +42941,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41689,7 +43018,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41763,7 +43095,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41842,7 +43177,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41919,7 +43257,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -41994,7 +43335,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42099,7 +43443,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42173,7 +43520,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42247,7 +43597,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42321,7 +43674,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42413,7 +43769,10 @@ var locale = {
         mfo: "Precisa terminar em",
         /* resource control */
         resources_filter_placeholder: "Tipo de filtros",
-        resources_filter_label: "Ocultar vazios"
+        resources_filter_label: "Ocultar vazios",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42490,7 +43849,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42564,7 +43926,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "начните вводить слово для фильтрации",
-        resources_filter_label: "спрятать не установленные"
+        resources_filter_label: "спрятать не установленные",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42638,7 +44003,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42712,7 +44080,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42789,7 +44160,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42866,7 +44240,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;
@@ -42940,7 +44317,10 @@ var locale = {
         mfo: "Must Finish On",
         /* resource control */
         resources_filter_placeholder: "type to filter",
-        resources_filter_label: "hide empty"
+        resources_filter_label: "hide empty",
+        /* empty state screen */
+        empty_state_text_link: "Click here",
+        empty_state_text_description: "to create your first task"
     }
 };
 exports.default = locale;

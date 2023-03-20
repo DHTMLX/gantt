@@ -1,3 +1,52 @@
+### 8.0.0
+
+Updated Resource Management:
+Resources and resource assignments can now be loaded together with the data
+Changes of resources and resource Assignments can be captured using the DataProcessor
+Reduced amount of boilerplate code required to use the Resource panel
+
+Grouping tasks functionality now can preserve the original Gantt tree structure inside groups
+Empty state screen
+The ability to extend the background grid of the timeline to the whole container
+
+Improvements for rollup items and split tasks:
+The ability to style separate rollup items and split tasks
+The ability to hide all rollup items from the project task
+The ability to control where rollup items are displayed
+The ability to filter split tasks
+Performance optimization for display of split tasks
+
+The ability to delete items only after receiving confirmation from the backend
+New deleteAfterConfirmation parameter of the dataProcessor configuration object
+
+Updated Auto Scheduling & Constraint calculation
+Tasks now can inherit the constraint type from parent projects
+
+Improvements for Critical Path, Slack and Auto Scheduling
+Critical path, Slack and Auto scheduling algorithms can now use progress of a task
+Total slack can now be calculated for projects
+Major performance improvement of critical path calculation
+The getTaskBy() method now allows selecting 'project' tasks
+The ability to put any HTML content into the cells of the Timeline
+
+The export API is included into gantt.plugins and no longer requires adding additional JS file. Check the Migration article
+
+Fix the duration calculation issue with minute duration_unit and custom working time settings
+Fix various issues with slack calculation
+Fix the script error on data loading when Slack calculations are enabled
+SetWorkTime method now supports setting rules for dates inside customWeeks
+Fix the issue with smart rendering that causes blank spaces instead of data in the Gantt
+Fix the issue with vertical reordering of rows in the Grid when some rows have custom heights
+Fix the incorrect work of Inline editors when the Multiselect extension is enabled
+Fix the incorrect display of Quick Info popup when gantt.config.quick_info_detached config is set to false
+Correct arguments of is_valid function of Inline Editor interface. The function now receives the column object
+Ensure the parent property of task is saved correctly when the task is created with gantt.groupBy active
+Fix the issue with unexpected vertical scroll when placeholder tasks and Keyboard navigation are enabled
+Fix the issue with DataProcessor causing some changes not to be set to the backend after Auto Scheduling
+Fix the incorrect work of vertical reordering, which allowed task rows to being dragged outside the Gantt
+Fix the incorrect order of odd CSS classes of rows in the Resource panel
+
+
 ### 7.1.13
 
 Fix the incorrect work of the "gantt.addLinkLayer()" method with the "smart_rendering" property
