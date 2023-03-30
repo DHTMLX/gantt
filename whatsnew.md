@@ -1,3 +1,11 @@
+### 8.0.1
+
+Fix an error thrown from "gantt.showCover()" called when the lightbox is not opened
+Fix regression in split tasks which caused a script error for the split tasks displayed outside of the time scale
+Fix regression in the "gantt.addLinkLayer()" method
+Fix the incorrect work of auto scheduling with MSO, FNET, and FNLT constraints when the settings of work time contain a minute part
+Fix work of the "onBeforeSplitTaskDisplay" event on scroll
+
 ### 8.0.0
 
 Updated Resource Management:

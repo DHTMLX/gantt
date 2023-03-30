@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.0 Standard
+dhtmlxGantt v.8.0.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -17035,7 +17035,7 @@ var createLayerFactory = __webpack_require__(/*! ./render/layer_engine */ "./sou
 
 var getVisibleTaskRange = __webpack_require__(/*! ./render/viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 
-var getVisibleLinksRange = __webpack_require__(/*! ./render/viewport/get_visible_link_range */ "./sources/core/ui/render/viewport/get_visible_link_range.js");
+var getVisibleLinksRangeFactory = __webpack_require__(/*! ./render/viewport/factory/get_visible_link_range */ "./sources/core/ui/render/viewport/factory/get_visible_link_range.js");
 
 var isLinkInViewport = __webpack_require__(/*! ./render/viewport/is_link_in_viewport */ "./sources/core/ui/render/viewport/is_link_in_viewport.js");
 
@@ -17123,16 +17123,18 @@ var createLayerEngine = function createLayerEngine(gantt) {
       }, gantt);
       return {
         addTaskLayer: function addTaskLayer(config) {
+          var rangeFunction = getVisibleTaskRange;
+
           if (typeof config === "function") {
             config = {
               renderer: {
                 render: config,
-                getVisibleRange: getVisibleTaskRange
+                getVisibleRange: rangeFunction
               }
             };
           } else {
             if (config.renderer && !config.renderer.getVisibleRange) {
-              config.renderer.getVisibleRange = getVisibleTaskRange;
+              config.renderer.getVisibleRange = rangeFunction;
             }
           }
 
@@ -17149,16 +17151,18 @@ var createLayerEngine = function createLayerEngine(gantt) {
           taskLayers.clear();
         },
         addLinkLayer: function addLinkLayer(config) {
+          var rangeFunction = getVisibleLinksRangeFactory();
+
           if (typeof config === "function") {
             config = {
               renderer: {
                 render: config,
-                getVisibleRange: getVisibleLinksRange
+                getVisibleRange: rangeFunction
               }
             };
           } else {
             if (config.renderer && !config.renderer.getVisibleRange) {
-              config.renderer.getVisibleRange = getVisibleLinksRange;
+              config.renderer.getVisibleRange = rangeFunction;
             }
           }
 
@@ -23781,8 +23785,8 @@ module.exports = function (gantt) {
     if (this._cover) return;
     this._cover = document.createElement("DIV");
     this._cover.className = "gantt_cal_cover";
-
-    gantt._lightbox_root.appendChild(this._cover);
+    var rootElement = gantt._lightbox_root || gantt.$root;
+    rootElement.appendChild(this._cover);
   };
 
   gantt.event(window, "deviceorientation", function () {
@@ -26623,7 +26627,7 @@ module.exports = layerFactory;
 
 var isInViewPort = __webpack_require__(/*! ./viewport/is_link_in_viewport */ "./sources/core/ui/render/viewport/is_link_in_viewport.js");
 
-var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_link_range */ "./sources/core/ui/render/viewport/get_visible_link_range.js");
+var getVisibleRange = __webpack_require__(/*! ./viewport/factory/get_visible_link_range */ "./sources/core/ui/render/viewport/factory/get_visible_link_range.js");
 
 function createLinkRender(gantt) {
   function _render_link_element(link, view, config) {
@@ -28866,13 +28870,26 @@ function createTaskRenderer(gantt) {
   }
 
   function generateChildElement(task, child, timeline, sizes) {
+    if (child.hide_bar) {
+      return;
+    }
+
     var isProject = gantt.isSummaryTask(child);
 
     if (isProject) {
       gantt.resetProjectDates(child);
     }
 
-    var element = defaultRender(child, timeline);
+    var childCopy = gantt.copy(gantt.getTask(child.id));
+    childCopy.$rendered_at = task.id; // a way to filter split tasks:
+
+    var showSplitTask = gantt.callEvent("onBeforeSplitTaskDisplay", [childCopy.id, childCopy, task.id]);
+
+    if (showSplitTask === false) {
+      return;
+    }
+
+    var element = defaultRender(childCopy, timeline);
     if (!element) return;
     var height = timeline.getBarHeight(task.id, child.type == gantt.config.types.milestone);
     var padding = Math.floor((timeline.getItemHeight(task.id) - height) / 2);
@@ -28886,35 +28903,35 @@ function createTaskRenderer(gantt) {
     return element;
   }
 
+  function getKey(childId, renderParentId) {
+    return childId + "_" + renderParentId;
+  }
+
+  function shouldUseSplitRendering(task, config) {
+    return gantt.isSplitTask(task) && (config.open_split_tasks && !task.$open || !config.open_split_tasks) && gantt.hasChild(task.id);
+  }
+
   function renderSplitTask(task, timeline, config, viewPort) {
-    if (gantt.isSplitTask(task) && (gantt.config.open_split_tasks && !task.$open || !gantt.config.open_split_tasks)) {
+    if (shouldUseSplitRendering(task, config)) {
       var el = document.createElement('div'),
           sizes = gantt.getTaskPosition(task);
 
       if (gantt.hasChild(task.id)) {
-        gantt.eachTask(function (realChild) {
-          var isVisible = checkVisibility(realChild, viewPort, timeline, config, gantt);
+        gantt.eachTask(function (child) {
+          var isVisible = checkVisibility(child, viewPort, timeline, config, gantt);
 
           if (!isVisible) {
             return;
           }
 
-          if (realChild.hide_bar) {
-            return;
+          var element = generateChildElement(task, child, timeline, sizes);
+
+          if (element) {
+            renderedNodes[getKey(child.id, task.id)] = element;
+            el.appendChild(element);
+          } else {
+            renderedNodes[getKey(child.id, task.id)] = false;
           }
-
-          var childCopy = gantt.copy(gantt.getTask(realChild.id));
-          childCopy.$rendered_at = task.id; // a way to filter split tasks:
-
-          var showSplitTask = gantt.callEvent("onBeforeSplitTaskDisplay", [childCopy.id, childCopy, task.id]);
-
-          if (showSplitTask === false) {
-            return;
-          }
-
-          var element = generateChildElement(task, realChild, timeline, sizes);
-          renderedNodes[realChild.id] = element;
-          el.appendChild(element);
         }, task.id);
       }
 
@@ -28925,23 +28942,24 @@ function createTaskRenderer(gantt) {
   }
 
   function repaintSplitTask(task, itemNode, timeline, config, viewPort) {
-    if (gantt.hasChild(task.id)) {
+    if (shouldUseSplitRendering(task, config)) {
       var el = document.createElement("div"),
           sizes = gantt.getTaskPosition(task);
       gantt.eachTask(function (child) {
+        var splitKey = getKey(child.id, task.id);
         var isVisible = checkVisibility(child, viewPort, timeline, config, gantt);
 
-        if (isVisible !== !!renderedNodes[child.id]) {
+        if (isVisible !== !!renderedNodes[splitKey]) {
           if (isVisible) {
             var element = generateChildElement(task, child, timeline, sizes);
-            renderedNodes[child.id] = element;
+            renderedNodes[splitKey] = element || false;
           } else {
-            renderedNodes[child.id] = false;
+            renderedNodes[splitKey] = false;
           }
         }
 
-        if (!!renderedNodes[child.id]) {
-          el.appendChild(renderedNodes[child.id]);
+        if (!!renderedNodes[splitKey]) {
+          el.appendChild(renderedNodes[splitKey]);
         }
 
         itemNode.innerHTML = el.innerHTML;
@@ -28958,6 +28976,94 @@ function createTaskRenderer(gantt) {
 }
 
 module.exports = createTaskRenderer;
+
+/***/ }),
+
+/***/ "./sources/core/ui/render/viewport/factory/get_visible_link_range.js":
+/*!***************************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/factory/get_visible_link_range.js ***!
+  \***************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var getLinkRectangle = __webpack_require__(/*! ../get_link_rectangle */ "./sources/core/ui/render/viewport/get_link_rectangle.js");
+
+module.exports = function () {
+  var coordinates = [];
+  var calculated = false;
+
+  function clearCache() {
+    coordinates = [];
+    calculated = false;
+  }
+
+  function buildCache(datastore, view, gantt) {
+    var config = view.$getConfig();
+    var visibleItems = datastore.getVisibleItems(); //datastore.eachItem(function(link){
+
+    visibleItems.forEach(function (link) {
+      var rec = getLinkRectangle(link, view, config, gantt);
+
+      if (!rec) {
+        return;
+      }
+
+      coordinates.push({
+        id: link.id,
+        rec: rec
+      });
+    });
+    coordinates.sort(function (a, b) {
+      if (a.rec.right < b.rec.right) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    calculated = true;
+  }
+
+  var initialized = false;
+
+  function init(datastore) {
+    if (initialized) {
+      return;
+    }
+
+    initialized = true;
+    datastore.attachEvent("onPreFilter", clearCache);
+    datastore.attachEvent("onStoreUpdated", clearCache);
+    datastore.attachEvent("onClearAll", clearCache);
+    datastore.attachEvent("onBeforeStoreUpdate", clearCache);
+  }
+
+  return function getVisibleLinksRange(gantt, view, config, datastore, viewport) {
+    init(datastore);
+
+    if (!calculated) {
+      buildCache(datastore, view, gantt);
+    }
+
+    var visibleBoxes = [];
+
+    for (var i = 0; i < coordinates.length; i++) {
+      var item = coordinates[i];
+      var box = item.rec;
+
+      if (box.right < viewport.x) {
+        continue;
+      }
+
+      if (box.left < viewport.x_end && box.right > viewport.x && box.top < viewport.y_end && box.bottom > viewport.y) {
+        visibleBoxes.push(item.id);
+      }
+    }
+
+    return {
+      ids: visibleBoxes
+    };
+  };
+};
 
 /***/ }),
 
@@ -29116,94 +29222,6 @@ module.exports = function getVisibleCellsRange(scale, viewport) {
   return {
     start: firstCellIndex,
     end: lastCellIndex
-  };
-};
-
-/***/ }),
-
-/***/ "./sources/core/ui/render/viewport/get_visible_link_range.js":
-/*!*******************************************************************!*\
-  !*** ./sources/core/ui/render/viewport/get_visible_link_range.js ***!
-  \*******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var getLinkRectangle = __webpack_require__(/*! ./get_link_rectangle */ "./sources/core/ui/render/viewport/get_link_rectangle.js");
-
-module.exports = function () {
-  var coordinates = [];
-  var calculated = false;
-
-  function clearCache() {
-    coordinates = [];
-    calculated = false;
-  }
-
-  function buildCache(datastore, view, gantt) {
-    var config = view.$getConfig();
-    var visibleItems = datastore.getVisibleItems(); //datastore.eachItem(function(link){
-
-    visibleItems.forEach(function (link) {
-      var rec = getLinkRectangle(link, view, config, gantt);
-
-      if (!rec) {
-        return;
-      }
-
-      coordinates.push({
-        id: link.id,
-        rec: rec
-      });
-    });
-    coordinates.sort(function (a, b) {
-      if (a.rec.right < b.rec.right) {
-        return -1;
-      } else {
-        return 1;
-      }
-    });
-    calculated = true;
-  }
-
-  var initialized = false;
-
-  function init(datastore) {
-    if (initialized) {
-      return;
-    }
-
-    initialized = true;
-    datastore.attachEvent("onPreFilter", clearCache);
-    datastore.attachEvent("onStoreUpdated", clearCache);
-    datastore.attachEvent("onClearAll", clearCache);
-    datastore.attachEvent("onBeforeStoreUpdate", clearCache);
-  }
-
-  return function getVisibleLinksRange(gantt, view, config, datastore, viewport) {
-    init(datastore);
-
-    if (!calculated) {
-      buildCache(datastore, view, gantt);
-    }
-
-    var visibleBoxes = [];
-
-    for (var i = 0; i < coordinates.length; i++) {
-      var item = coordinates[i];
-      var box = item.rec;
-
-      if (box.right < viewport.x) {
-        continue;
-      }
-
-      if (box.left < viewport.x_end && box.right > viewport.x && box.top < viewport.y_end && box.bottom > viewport.y) {
-        visibleBoxes.push(item.id);
-      }
-    }
-
-    return {
-      ids: visibleBoxes
-    };
   };
 };
 
@@ -35495,6 +35513,8 @@ CalendarWorkTimeStrategy.prototype = {
     duration = Math.abs(duration * 1);
     duration = Math.round(duration);
 
+    var minutePrecision = this._isMinutePrecision(start);
+
     var addedInterval = this._subtractMinutesUntilHourStart(start, duration);
 
     added += addedInterval.added;
@@ -35553,9 +35573,23 @@ CalendarWorkTimeStrategy.prototype = {
         if (timestamp === workInterval.end && left >= workInterval.durationMinutes) {
           added += workInterval.durationMinutes;
           start = this.$gantt.date.add(start, -workInterval.durationMinutes, "minute");
-        } else if (left <= timestamp / 60 - workInterval.startMinute) {
+        } else if (!minutePrecision && left <= timestamp / 60 - workInterval.startMinute) {
           added += left;
           start = this.$gantt.date.add(start, -left, "minute");
+        } else if (minutePrecision) {
+          // GS-2129. If the working time is set in minutes, we accumulate the working time in minutes from right to left
+          var previousHour = this._getClosestWorkTime(this._nextDate(start, "hour", step), "hour");
+
+          var _minutesInHour = this._getMinutesPerHour(previousHour);
+
+          if (left < _minutesInHour && _minutesInHour <= 60) {
+            _minutesInHour = left;
+            start = this.$gantt.date.add(start, -_minutesInHour, "minute");
+          } else {
+            start = previousHour;
+          }
+
+          added += _minutesInHour;
         } else {
           var minutesInHour = this._getMinutesPerHour(start);
 
@@ -35613,7 +35647,8 @@ CalendarWorkTimeStrategy.prototype = {
     var calculatedDay = 0;
     var daySchedule = [];
     var minutesInDay = 0;
-    var minutePresision = undefined;
+
+    var minutePrecision = this._isMinutePrecision(start);
 
     while (added < duration) {
       var dayStart = this.$gantt.date.day_start(new Date(start)).valueOf();
@@ -35621,16 +35656,7 @@ CalendarWorkTimeStrategy.prototype = {
       if (dayStart !== calculatedDay) {
         daySchedule = this._getWorkHours(start);
         minutesInDay = this._getMinutesPerDay(start);
-        calculatedDay = dayStart; // when the working time settings are set in minutes
-
-        if (minutePresision === undefined) {
-          minutePresision = false;
-          daySchedule.forEach(function (interval) {
-            if (interval.startMinute % 60 || interval.endMinute % 60) {
-              minutePresision = true;
-            }
-          });
-        }
+        calculatedDay = dayStart;
       }
 
       var left = duration - added;
@@ -35680,9 +35706,9 @@ CalendarWorkTimeStrategy.prototype = {
           var minutesInHour = this._getMinutesPerHour(start);
 
           if (minutesInHour <= left) {
-            added += minutesInHour;
+            added += minutesInHour; // when the working time settings are set in minutes move to the next minutes
 
-            if (minutePresision) {
+            if (minutePrecision) {
               start = this.$gantt.date.add(start, minutesInHour, "minute");
             } else {
               start = this._nextDate(start, "hour", step);
@@ -35916,6 +35942,17 @@ CalendarWorkTimeStrategy.prototype = {
     }
 
     return result;
+  },
+  _isMinutePrecision: function _isMinutePrecision(date) {
+    var minutePrecision = false;
+
+    this._getWorkHours(date).forEach(function (interval) {
+      if (interval.startMinute % 60 || interval.endMinute % 60) {
+        minutePrecision = true;
+      }
+    });
+
+    return minutePrecision;
   }
 };
 module.exports = CalendarWorkTimeStrategy;
@@ -41484,7 +41521,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.0";
+  this.version = "8.0.1";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
