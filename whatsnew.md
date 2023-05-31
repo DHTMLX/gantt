@@ -1,3 +1,12 @@
+### 8.0.2
+
+Fix Export errors that happen when LinkFormatters are used.
+Fix the incorrect work of the Undo extension with Resources and Resource Assignments
+Type definitions are updated
+Performance improvements for Rollup tasks rendering
+Performance improvement for Split Tasks rendering
+Other performance improvements
+
 ### 8.0.1
 
 Fix an error thrown from "gantt.showCover()" called when the lightbox is not opened

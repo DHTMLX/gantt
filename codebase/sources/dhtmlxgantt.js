@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.1 Standard
+dhtmlxGantt v.8.0.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -11336,6 +11336,11 @@ function initDataStores(gantt) {
     return true;
   });
   tasksStore.attachEvent("onBeforeRefreshAll", function () {
+    // GS-2170 do not recalculate indexes and dates as the event will be called later in the onStoreUpdate event
+    if (tasksStore._skipTaskRecalculation) {
+      return;
+    }
+
     var order = tasksStore.getVisibleItems();
 
     for (var i = 0; i < order.length; i++) {
@@ -11441,6 +11446,15 @@ function initDataStores(gantt) {
 
     if (action == "add" || action == "move" || action == "delete") {
       if (gantt.$layout) {
+        // GS-2170. Do not recalculate the indexes and dates of other tasks in the
+        // onBeforeResize layout event, but do it later. If lightbox is opened, it will
+        // trigger the refreshData, so the indexes and dates will be recalculated there
+        if (this.$config.name == "task" && (action == "add" || action == "delete")) {
+          if (this._skipTaskRecalculation != "lightbox") {
+            this._skipTaskRecalculation = true;
+          }
+        }
+
         gantt.$layout.resize();
       }
     } else if (!id) {
@@ -12712,13 +12726,17 @@ TreeDataStore.prototype = utils.mixin({
   },
   open: function open(id) {
     if (this.exists(id)) {
-      this.getItem(id).$open = true;
+      this.getItem(id).$open = true; // GS-2170. Do not recalculate the indexes and dates as they will be recalculated later
+
+      this._skipTaskRecalculation = true;
       this.callEvent("onItemOpen", [id]);
     }
   },
   close: function close(id) {
     if (this.exists(id)) {
-      this.getItem(id).$open = false;
+      this.getItem(id).$open = false; // GS-2170. Do not recalculate the indexes and dates as they will be recalculated later
+
+      this._skipTaskRecalculation = true;
       this.callEvent("onItemClose", [id]);
     }
   },
@@ -13948,7 +13966,15 @@ module.exports = function (gantt) {
 
       for (var i = 0; i < storeNames.length; i++) {
         gantt.getDatastore(storeNames[i]).filter();
-        gantt.getDatastore(storeNames[i]).callEvent("onBeforeRefreshAll", []);
+
+        if (gantt.$data.tasksStore._skipTaskRecalculation) {
+          // do not repaint items, they will be repainted later in the onStoreUpdate event
+          if (gantt.$data.tasksStore._skipTaskRecalculation != "lightbox") {
+            gantt.$data.tasksStore._skipTaskRecalculation = false;
+          }
+        } else {
+          gantt.getDatastore(storeNames[i]).callEvent("onBeforeRefreshAll", []);
+        }
       }
     });
     this.$layout.attachEvent("onResize", function () {
@@ -14015,11 +14041,16 @@ module.exports = function (gantt) {
           }
 
           if (task.$new) {
+            // GS-2170. Do not recalculate the indexes and dates of other tasks
+            // as they will be recalculated in the `refreshData`
+            gantt.$data.tasksStore._skipTaskRecalculation = "lightbox";
             gantt.silent(function () {
               gantt.deleteTask(id, true);
             });
+            gantt.$data.tasksStore._skipTaskRecalculation = false;
             gantt.refreshData();
           } else {
+            gantt.$data.tasksStore._skipTaskRecalculation = true;
             gantt.deleteTask(id);
           }
 
@@ -15903,6 +15934,7 @@ module.exports = function (gantt) {
       var batchUpdate = false;
       var needUpdate = false;
       var needUpdateFor = {};
+      var undoBatchCancel = false;
       gantt.attachEvent("onBeforeBatchUpdate", function () {
         batchUpdate = true;
       });
@@ -15981,12 +16013,21 @@ module.exports = function (gantt) {
 
         _updateTaskBack(new_id); //any custom logic here
 
+      }); // GS-2144. When we Undo something, the cache should be reset
+      // during the `onStoreUpdated` event to properly update the assignments
+
+      gantt.attachEvent("onBeforeUndo", function (action) {
+        undoBatchCancel = true;
+        return true;
+      });
+      gantt.attachEvent("onAfterUndo", function (action) {
+        undoBatchCancel = true;
       });
       var resourceAssignmentsCache = null;
       var resourceTaskAssignmentsCache = null;
       var taskAssignmentsCache = null;
       resourceAssignmentsStore.attachEvent("onStoreUpdated", function resetCache() {
-        if (batchUpdate) {
+        if (batchUpdate && !undoBatchCancel) {
           return true;
         }
 
@@ -16406,7 +16447,11 @@ function createHelper(gantt) {
             if (isNaN(value)) {
               gantt.getDatastore(gantt.config.resource_store).refresh(rowId);
             } else {
-              var task = gantt.getTask(taskId);
+              var task = gantt.getTask(taskId); // GS-2141. Track the changes by the Undo extension
+
+              if (gantt.plugins().undo) {
+                gantt.ext.undo.saveState(taskId, "task");
+              }
 
               if (assignmentId) {
                 var assignment = assignmentStore.getItem(assignmentId);
@@ -23921,15 +23966,18 @@ module.exports = function (gantt) {
 
         gantt._update_flags(task.id, null);
       });
+      this.refreshData();
     }
 
-    this.refreshData();
     this.hideLightbox();
   };
 
   gantt._save_lightbox = function () {
     var task = this.getLightboxValues();
-    if (!this.callEvent("onLightboxSave", [this._lightbox_id, task, !!task.$new])) return;
+    if (!this.callEvent("onLightboxSave", [this._lightbox_id, task, !!task.$new])) return; // GS-2170. Do not recalculate the indexes and dates of other tasks
+    // as they will be recalculated in the `refreshData`
+
+    gantt.$data.tasksStore._skipTaskRecalculation = "lightbox";
 
     if (task.$new) {
       delete task.$new;
@@ -23940,6 +23988,7 @@ module.exports = function (gantt) {
       this.updateTask(task.id);
     }
 
+    gantt.$data.tasksStore._skipTaskRecalculation = false;
     this.refreshData(); // TODO: do we need any blockable events here to prevent closing lightbox?
 
     this.hideLightbox();
@@ -28797,28 +28846,73 @@ var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range 
 
 function createTaskRenderer(gantt) {
   var defaultRender = createBaseBarRender(gantt);
+  var renderedNodes = {};
 
-  function renderSplitTask(task, timeline) {
+  function checkVisibility(child, viewPort, timeline, config, gantt) {
+    var isVisible = true; // GS-2123. Don't render rollup tasks that are outside the viewport
+
+    if (config.smart_rendering) {
+      isVisible = isInViewPort(child, viewPort, timeline, config, gantt);
+    }
+
+    return isVisible;
+  }
+
+  function generateChildElement(task, child, timeline, sizes) {
+    var childCopy = gantt.copy(gantt.getTask(child.id));
+    childCopy.$rendered_at = task.id; // a way to filter rollup tasks:
+
+    var displayRollup = gantt.callEvent("onBeforeRollupTaskDisplay", [childCopy.id, childCopy, task.id]);
+
+    if (displayRollup === false) {
+      return;
+    }
+
+    var element = defaultRender(childCopy, timeline);
+
+    if (!element) {
+      return;
+    }
+
+    var height = timeline.getBarHeight(task.id, child.type == gantt.config.types.milestone);
+    var padding = Math.floor((timeline.getItemHeight(task.id) - height) / 2);
+    element.style.top = sizes.top + padding + "px";
+    element.classList.add("gantt_rollup_child");
+    element.setAttribute("data-rollup-parent-id", task.id);
+    return element;
+  }
+
+  function getKey(childId, renderParentId) {
+    return childId + "_" + renderParentId;
+  }
+
+  function renderRollupTask(task, timeline, config, viewPort) {
     if (task.rollup !== false && task.$rollup && task.$rollup.length) {
       var el = document.createElement('div'),
-          sizes = gantt.getTaskPosition(task);
-      task.$rollup.forEach(function (itemId) {
-        var child = gantt.copy(gantt.getTask(itemId));
-        child.$rendered_at = task.id;
-        var displayRollup = gantt.callEvent("onBeforeRollupTaskDisplay", [child.id, child, task.id]);
+          sizes = gantt.getTaskPosition(task); // vertical position is not important for the rollup tasks as long as the parent is rendered
 
-        if (displayRollup === false) {
+      viewPort.y = 0;
+      viewPort.y_end = gantt.$task_bg.scrollHeight;
+      task.$rollup.forEach(function (itemId) {
+        if (!gantt.isTaskExists(itemId)) {
           return;
         }
 
-        var element = defaultRender(child, timeline);
-        if (!element) return;
-        var height = timeline.getBarHeight(task.id, child.type == gantt.config.types.milestone);
-        var padding = Math.floor((timeline.getItemHeight(task.id) - height) / 2);
-        element.style.top = sizes.top + padding + "px";
-        element.classList.add("gantt_rollup_child");
-        element.setAttribute("data-rollup-parent-id", task.id);
-        el.appendChild(element);
+        var child = gantt.getTask(itemId);
+        var isVisible = checkVisibility(child, viewPort, timeline, config, gantt);
+
+        if (!isVisible) {
+          return;
+        }
+
+        var element = generateChildElement(task, child, timeline, sizes);
+
+        if (element) {
+          renderedNodes[getKey(child.id, task.id)] = element;
+          el.appendChild(element);
+        } else {
+          renderedNodes[getKey(child.id, task.id)] = false;
+        }
       });
       return el;
     }
@@ -28826,9 +28920,38 @@ function createTaskRenderer(gantt) {
     return false;
   }
 
+  function repaintRollupTask(task, itemNode, timeline, config, viewPort) {
+    var el = document.createElement("div"),
+        sizes = gantt.getTaskPosition(task); // vertical position is not important for the rollup tasks as long as the parent is rendered
+
+    viewPort.y = 0;
+    viewPort.y_end = gantt.$task_bg.scrollHeight;
+    task.$rollup.forEach(function (itemId) {
+      var child = gantt.getTask(itemId);
+      var rollupKey = getKey(child.id, task.id);
+      var isVisible = checkVisibility(child, viewPort, timeline, config, gantt);
+
+      if (isVisible !== !!renderedNodes[rollupKey]) {
+        if (isVisible) {
+          var element = generateChildElement(task, child, timeline, sizes);
+          renderedNodes[rollupKey] = element || false;
+        } else {
+          renderedNodes[rollupKey] = false;
+        }
+      }
+
+      if (!!renderedNodes[rollupKey]) {
+        el.appendChild(renderedNodes[rollupKey]);
+      }
+
+      itemNode.innerHTML = "";
+      itemNode.appendChild(el);
+    });
+  }
+
   return {
-    render: renderSplitTask,
-    update: null,
+    render: renderRollupTask,
+    update: repaintRollupTask,
     //getRectangle: getBarRectangle
     isInViewPort: isInViewPort,
     getVisibleRange: getVisibleRange
@@ -28962,7 +29085,8 @@ function createTaskRenderer(gantt) {
           el.appendChild(renderedNodes[splitKey]);
         }
 
-        itemNode.innerHTML = el.innerHTML;
+        itemNode.innerHTML = "";
+        itemNode.appendChild(el);
       }, task.id);
     }
   }
@@ -37363,8 +37487,7 @@ var EventsManager = /** @class */ (function () {
         this._setScrollPosition = function (timeline, coords) {
             var gantt = _this._gantt;
             requestAnimationFrame(function () {
-                gantt.$ui.getView(timeline.$config.scrollX).scroll(coords.x);
-                gantt.$ui.getView(timeline.$config.scrollY).scroll(coords.y);
+                gantt.scrollLayoutCell(timeline.$id, coords.x, coords.y);
             });
         };
         this._stopDrag = function (event) {
@@ -41521,7 +41644,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.1";
+  this.version = "8.0.2";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

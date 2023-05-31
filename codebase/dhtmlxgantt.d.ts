@@ -1,10 +1,10 @@
-// Type definitions for dhtmlxGantt 8.0.1
+// Type definitions for dhtmlxGantt 8.0.2
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
 
 
-export type GanttEventName = "onAfterAutoSchedule" | "onAfterBatchUpdate" | "onAfterBranchLoading" | "onAfterLightbox" | "onAfterLinkAdd" | "onAfterLinkDelete" | "onAfterLinkUpdate" | "onAfterQuickInfo" | "onAfterRedo" | "onAfterRowResize" | "onAfterSort" | "onAfterTaskAdd" | "onAfterTaskAutoSchedule" | "onAfterTaskDelete" | "onAfterTaskDrag" | "onAfterTaskMove" | "onAfterTaskUpdate" | "onAfterUndo" | "onAjaxError" | "onAutoScheduleCircularLink" | "onBeforeAutoSchedule" | "onBeforeBatchUpdate" | "onBeforeBranchLoading" | "onBeforeCollapse" | "onBeforeDataRender" | "onBeforeExpand" | "onBeforeGanttReady" | "onBeforeGanttRender" | "onBeforeLightbox" | "onBeforeLinkAdd" | "onBeforeLinkDelete" | "onBeforeLinkDisplay" | "onBeforeLinkUpdate" | "onBeforeMultiSelect" | "onBeforeParse" | "onBeforeRedo" | "onBeforeRedoStack" | "onBeforeRowDragEnd" | "onBeforeRowDragMove" | "onBeforeRowResize" | "onBeforeRowResizeEnd" | "onBeforeTaskAdd" | "onBeforeTaskAutoSchedule" | "onBeforeTaskChanged" | "onBeforeTaskDelete" | "onBeforeTaskDisplay" | "onBeforeTaskDrag" | "onBeforeTaskMove" | "onBeforeTaskMultiSelect" | "onBeforeTaskSelected" | "onBeforeTaskUpdate" | "onBeforeUndo" | "onBeforeUndoStack" | "onCircularLinkError" | "onClear" | "onCollapse" | "onColumnResize" | "onColumnResizeEnd" | "onColumnResizeStart" | "onContextMenu" | "onDataProcessorReady" | "onDataRender" | "onDestroy" | "onEmptyClick" | "onError" | "onExpand" | "onGanttLayoutReady" | "onGanttReady" | "onGanttRender" | "onGanttScroll" | "onGridHeaderClick" | "onGridResize" | "onGridResizeEnd" | "onGridResizeStart" | "onLightbox" | "onLightboxButton" | "onLightboxCancel" | "onLightboxChange" | "onLightboxDelete" | "onLightboxSave" | "onLinkClick" | "onLinkCreated" | "onLinkDblClick" | "onLinkIdChange" | "onLinkValidation" | "onLoadEnd" | "onLoadStart" | "onMouseMove" | "onMultiSelect" | "onOptionsLoad" | "onParse" | "onQuickInfo" | "onRowDragEnd" | "onRowDragStart" | "onRowResize" | "onScaleAdjusted" | "onScaleClick" | "onTaskClick" | "onTaskClosed" | "onTaskCreated" | "onTaskDblClick" | "onTaskDrag" | "onTaskIdChange" | "onTaskLoading" | "onTaskMultiSelect" | "onTaskOpened" | "onTaskRowClick" | "onTaskSelected" | "onTaskUnselected" | "onTemplatesReady";
+export type GanttEventName = "onAfterAutoSchedule" | "onAfterBatchUpdate" | "onAfterBranchLoading" | "onAfterLightbox" | "onAfterLinkAdd" | "onAfterLinkDelete" | "onAfterLinkUpdate" | "onAfterQuickInfo" | "onAfterRedo" | "onAfterRowResize" | "onAfterSort" | "onAfterTaskAdd" | "onAfterTaskAutoSchedule" | "onAfterTaskDelete" | "onAfterTaskDrag" | "onAfterTaskMove" | "onAfterTaskUpdate" | "onAfterUndo" | "onAjaxError" | "onAutoScheduleCircularLink" | "onBeforeAutoSchedule" | "onBeforeBatchUpdate" | "onBeforeBranchLoading" | "onBeforeCollapse" | "onBeforeDataRender" | "onBeforeExpand" | "onBeforeGanttReady" | "onBeforeGanttRender" | "onBeforeLightbox" | "onBeforeLinkAdd" | "onBeforeLinkDelete" | "onBeforeLinkDisplay" | "onBeforeLinkUpdate" | "onBeforeMultiSelect" | "onBeforeParse" | "onBeforeRedo" | "onBeforeRedoStack" | "onBeforeRollupTaskDisplay" | "onBeforeRowDragEnd" | "onBeforeRowDragMove" | "onBeforeRowResize" | "onBeforeRowResizeEnd" | "onBeforeSplitTaskDisplay" | "onBeforeTaskAdd" | "onBeforeTaskAutoSchedule" | "onBeforeTaskChanged" | "onBeforeTaskDelete" | "onBeforeTaskDisplay" | "onBeforeTaskDrag" | "onBeforeTaskMove" | "onBeforeTaskMultiSelect" | "onBeforeTaskSelected" | "onBeforeTaskUpdate" | "onBeforeUndo" | "onBeforeUndoStack" | "onCircularLinkError" | "onClear" | "onCollapse" | "onColumnResize" | "onColumnResizeEnd" | "onColumnResizeStart" | "onContextMenu" | "onDataProcessorReady" | "onDataRender" | "onDestroy" | "onEmptyClick" | "onError" | "onExpand" | "onGanttLayoutReady" | "onGanttReady" | "onGanttRender" | "onGanttScroll" | "onGridHeaderClick" | "onGridResize" | "onGridResizeEnd" | "onGridResizeStart" | "onLightbox" | "onLightboxButton" | "onLightboxCancel" | "onLightboxChange" | "onLightboxDelete" | "onLightboxSave" | "onLinkClick" | "onLinkCreated" | "onLinkDblClick" | "onLinkIdChange" | "onLinkValidation" | "onLoadEnd" | "onLoadStart" | "onMouseMove" | "onMultiSelect" | "onOptionsLoad" | "onParse" | "onQuickInfo" | "onRowDragEnd" | "onRowDragStart" | "onRowResize" | "onScaleAdjusted" | "onScaleClick" | "onTaskClick" | "onTaskClosed" | "onTaskCreated" | "onTaskDblClick" | "onTaskDrag" | "onTaskIdChange" | "onTaskLoading" | "onTaskMultiSelect" | "onTaskOpened" | "onTaskRowClick" | "onTaskSelected" | "onTaskUnselected" | "onTemplatesReady";
 
 
 export interface GanttTemplates {
@@ -287,6 +287,13 @@ export interface GanttTemplates {
 	timeline_cell_class(item: any, date: Date): string;
 
 	/**
+	 * specifies custom HTML content in the timeline cells
+	 * @param task the task's object
+	 * @param date the date of a cell
+	*/
+	timeline_cell_content(task: Task, date: Date): string;
+
+	/**
 	 * specifies the format of start and end dates displayed in the tooltip
 	 * @param date the date which needs formatting
 	*/
@@ -373,9 +380,19 @@ export interface GanttConfigOptions {
 	auto_scheduling_move_projects: boolean;
 
 	/**
+	 * defines whether tasks should inherit the constraint type from their parent project
+	*/
+	auto_scheduling_project_constraint: boolean;
+
+	/**
 	 * enables the auto scheduling mode, in which tasks will always be rescheduled to the earliest possible date
 	*/
 	auto_scheduling_strict: boolean;
+
+	/**
+	 * sets the way the scheduling algorithms process completed tasks
+	*/
+	auto_scheduling_use_progress: boolean;
 
 	/**
 	 * automatically converts tasks with subtasks to projects and projects without subtasks back to tasks
@@ -765,7 +782,7 @@ export interface GanttConfigOptions {
 	/**
 	 * adds an empty row into the end of the list of tasks to simplify tasks editing via keyboard
 	*/
-	placeholder_task: boolean;
+	placeholder_task: any;
 
 	/**
 	 * preserves the current position of the vertical and horizontal scrolls while re-drawing the gantt chart
@@ -858,6 +875,11 @@ export interface GanttConfigOptions {
 	resource_store: string;
 
 	/**
+	 * defines an extra configuration for the resource store
+	*/
+	resources: any;
+
+	/**
 	 * sets the id of the virtual root element
 	*/
 	root_id: string | number;
@@ -926,6 +948,11 @@ export interface GanttConfigOptions {
 	 * shows the chart (timeline) area of the Gantt chart
 	*/
 	show_chart: boolean;
+
+	/**
+	 * defines whether to display the placeholder element inside the grid when it is empty
+	*/
+	show_empty_state: boolean;
 
 	/**
 	 * enables showing error alerts in case of unexpected behavior
@@ -1056,6 +1083,11 @@ export interface GanttConfigOptions {
 	 * sets the minimum step (in minutes) for the task's time values
 	*/
 	time_step: number;
+
+	/**
+	 * shows the background grid in the empty timeline
+	*/
+	timeline_placeholder: boolean;
 
 	/**
 	 * sets the length of time, in milliseconds, before the tooltip hides
@@ -1889,6 +1921,12 @@ export interface GanttStatic {
 	getLastSelectedTask(): string | number;
 
 	/**
+	 * returns the object of the layout view by its name
+	 * @param name the name of the layout view
+	*/
+	getLayoutView(name: string): any;
+
+	/**
 	 * gets the lightbox's HTML object element
 	*/
 	getLightbox(): HTMLElement;
@@ -1975,8 +2013,9 @@ export interface GanttStatic {
 	/**
 	 * returns all tasks assigned to the resource
 	 * @param resourceId the id of the resource
+	 * @param taskId the id of the task
 	*/
-	getResourceAssignments(resourceId: string | number): any[];
+	getResourceAssignments(resourceId: string | number, taskId?: string | number): any[];
 
 	/**
 	 * returns a calendar which the resource is assigned to
@@ -2063,8 +2102,9 @@ export interface GanttStatic {
 	 * finds a task by the specified criteria
 	 * @param propertyName the name of the property to match, or a filter function
 	 * @param propertyValue the property value
+	 * @param types an object with types of the tasks which should be returned
 	*/
-	getTaskBy(propertyName: string | GanttCallback, propertyValue?: string | number | any[]): Array<Task>;
+	getTaskBy(propertyName: string | GanttCallback, propertyValue?: string | number | any[], types?: any): Array<Task>;
 
 	/**
 	 * returns a task by its global task index
@@ -2353,7 +2393,7 @@ export interface GanttStatic {
 	 * @param tindex the index of the position that the task will be moved to <br> (the index within a branch)
 	 * @param parent the parent id. If specified, the <b>tindex</b> will  refer to the  index in the <br> <b>'parent'</b> branch
 	*/
-	moveTask(sid: string | number, tindex: number, parent?: string | number): boolean | undefined;
+	moveTask(sid: string | number, tindex: number, parent?: string | number): boolean | void;
 
 	/**
 	 * opens the branch with the specified id
@@ -2469,6 +2509,14 @@ export interface GanttStatic {
 	 * @param task the task object
 	*/
 	roundTaskDates(task: Task): void;
+
+	/**
+	 * scrolls the layout view to the specified position
+	 * @param name the name of the layout view
+	 * @param x optional, value of horizontal scroll or 'null' (if the scroll position shouldn't be changed)
+	 * @param y optional, value of vertical scroll or 'null' (if the scroll position shouldn't be changed)
+	*/
+	scrollLayoutCell(name: string, x: number | null, y: number | null): void;
 
 	/**
 	 * scrolls the Gantt container to the specified position
@@ -2759,7 +2807,6 @@ export interface Task {
 
 	/**
 	 * the task type. The available values are stored in the api/gantt_types_config.md object:
-					  
 				"task" -  a regular task (default value).
 				"project" -  a task that starts, when its earliest child task starts, and ends, when its latest child ends. 
 								The start_date, end_date, duration properties are ignored for such tasks. 
@@ -2850,6 +2897,11 @@ export interface Task {
 	$raw?: object,
 
 	/**
+	 * The id of a row the rollup item / split task is rendered at. This is the temporary property which appears in the object of the rollup/split task only when it's been rendering on the page.
+	*/
+	$rendered_at?: string | number,
+
+	/**
 	 * The id of the parent under which the task is rendered (not id of the real parent of the task). The property is used in internal calculations and on tasks' grouping.
 	*/
 	$rendered_parent?: number | string,
@@ -2922,7 +2974,6 @@ export interface Link {
 
 	/**
 	 * the dependency type. The available values are stored in the api/gantt_links_config.md object. By default, they are:
-					  
 				"0" -  'finish_to_start'.
 				"1" -  'start_to_start'.
 				"2" -  'finish_to_finish'.
@@ -3056,7 +3107,14 @@ export interface GridColumn {
 	 * @param the Task object
 	 * @param the HTML element of the Grid cell
 	*/
-	onrender?(task: Task, node: HTMLElement): any
+	onrender?(task: Task, node: HTMLElement): any,
+
+	/**
+	 * sort configuration after clicking on the column header. When it is set to *false*, sorting is disabled. Otherwise you can set a different task property in the *string* to sort the column or use a custom sorting function
+	 * @param the first task that will be sorted
+	 * @param the second task that will be sorted
+	*/
+	sort?: boolean | string | ((task1: Task, task2: Task,) => any)
 }
 
 export interface DateHelpers {
@@ -4628,8 +4686,65 @@ export interface Formatters {
 	): LinkFormatter
 }
 
+export interface EmptyState {
+
+	/**
+	 * an array with the IDs of the attached handlers. Modified by the *attachAddTaskEvent* and *detachAddTaskEvents* methods.
+	*/
+	clickEvents?: Array<string>,
+
+	/**
+	 * returns *true* if there is no data loaded into the Gantt chart, otherwise
+	 * @param the container element
+	*/
+	isGanttEmpty(container: HTMLElement): boolean,
+
+	/**
+	 * returns *true* if the api/gantt_show_empty_state_config.md property is enabled, otherwise
+	 * @param the container element
+	*/
+	isEnabled(container: HTMLElement): boolean,
+
+	/**
+	 * puts an HTML content into the empty state element. The method can be redefined.
+	 * @param the container element
+	*/
+	renderContent(container: HTMLElement): void,
+
+	/**
+	 * returns the DOM element where the empty state will be attached to. By default, returns the grid element (the "empty state" will be displayed in the grid). If there is no grid, returns the timeline element (the "empty state" will be displayed in the timeline). The method can be redefined.
+	*/
+	getContainer(): HTMLElement | null,
+
+	/**
+	 * returns the DOM node of the empty state element.
+	*/
+	getNode(): HTMLElement | null,
+
+	/**
+	 * displays the "empty state". Returns *false* if there is no container for the Empty State Element.  The extension calls the method by itself
+	*/
+	show(): null | void,
+
+	/**
+	 * hides the "empty state". Returns *false* if there is no Empty State Element node, so there is nothing to hide.  The extension calls the method by itself
+	*/
+	hide(): boolean | void,
+
+	/**
+	 * adds the handler that will fire after clicking on the Empty State Element. By default, used to add a new task.
+	*/
+	attachAddTaskEvent(): void,
+
+	/**
+	 * removes the handlers that were used to add a task after clicking on the Empty State Element.
+	*/
+	detachAddTaskEvents(): void
+}
+
 export interface Ext {
 	inlineEditors: InlineEditorMethods,
+	emptyStateElement: EmptyState,
 	fullscreen: Fullscreen,
 	formatters: Formatters,
 	keyboardNavigation: KeyNav,
