@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.2 Standard
+dhtmlxGantt v.8.0.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -12426,12 +12426,13 @@ TreeDataStore.prototype = utils.mixin({
   },
   getBranchIndex: function getBranchIndex(id) {
     var branch = this.getChildren(this.getParent(id));
+    var index = branch.indexOf(id + "");
 
-    for (var i = 0; i < branch.length; i++) {
-      if (branch[i] == id) return i;
+    if (index == -1) {
+      index = branch.indexOf(+id);
     }
 
-    return -1;
+    return index;
   },
   hasChild: function hasChild(id) {
     var branch = this._branches[id];
@@ -12626,14 +12627,7 @@ TreeDataStore.prototype = utils.mixin({
     var pid = parent === undefined ? this.getParent(item) : parent;
     if (!this.hasChild(pid)) this._branches[pid] = powerArray.$create();
     var branch = this.getChildren(pid);
-    var added_already = false;
-
-    for (var i = 0, length = branch.length; i < length; i++) {
-      if (branch[i] == item.id) {
-        added_already = true;
-        break;
-      }
-    }
+    var added_already = branch.indexOf(item.id + "") > -1 || branch.indexOf(+item.id) > -1;
 
     if (!added_already) {
       if (index * 1 == index) {
@@ -12667,11 +12661,21 @@ TreeDataStore.prototype = utils.mixin({
 
     if (branch && node !== undefined) {
       var newbranch = powerArray.$create();
+      var index = branch.indexOf(old_id + "");
 
-      for (var i = 0; i < branch.length; i++) {
-        if (branch[i] != old_id) newbranch.push(branch[i]);else if (new_id) newbranch.push(new_id);
+      if (index == -1 && !isNaN(+old_id)) {
+        index = branch.indexOf(+old_id);
       }
 
+      if (index > -1) {
+        if (new_id) {
+          branch.splice(index, 1, new_id);
+        } else {
+          branch.splice(index, 1);
+        }
+      }
+
+      newbranch = branch;
       this._branches[node] = newbranch;
     }
   },
@@ -12717,8 +12721,11 @@ TreeDataStore.prototype = utils.mixin({
   },
   filter: function filter(rule) {
     for (var i in this.pull) {
-      if (this.pull[i].$rendered_parent !== this.getParent(this.pull[i])) {
-        this._move_branch(this.pull[i], this.pull[i].$rendered_parent, this.getParent(this.pull[i]));
+      var renderedParent = this.pull[i].$rendered_parent;
+      var actualParent = this.getParent(this.pull[i]);
+
+      if (renderedParent !== actualParent) {
+        this._move_branch(this.pull[i], renderedParent, actualParent);
       }
     }
 
@@ -13079,8 +13086,11 @@ var createDatastoreFacade = function createDatastoreFacade() {
       id = replaceValidZeroId(id, this.config.root_id);
 
       if (id) {
-        var oldSelectId = this.getSelectedId();
-        store.select(id); // GS-730. Split task is not included in the tree, 
+        var oldSelectId = this.getSelectedId(); // Don't repaint the resource panel as the data didn't change
+
+        store._skipResourceRepaint = true;
+        store.select(id);
+        store._skipResourceRepaint = false; // GS-730. Split task is not included in the tree, 
         // so the datastore renderer will think that the task is not visible
 
         if (oldSelectId && store.pull[oldSelectId].$split_subtask && oldSelectId != id) {
@@ -41644,7 +41654,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.2";
+  this.version = "8.0.3";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

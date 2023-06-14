@@ -1,3 +1,9 @@
+### 8.0.3
+
+Performance improvements for the Resource Panel
+Fix incorrect calculation of Free Slack for tasks with a negative Lag
+Fix incorrect calculation of Critical Path for tasks with 100% progress
+
 ### 8.0.2
 
 Fix Export errors that happen when LinkFormatters are used.
