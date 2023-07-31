@@ -1,3 +1,10 @@
+### 8.0.4
+
+Fix issue with DataProcessor not tracking changes of the Resource Datastore
+Resolve an error that occurred after dragging a task when the process_resource_assignments config is disabled
+Fix the incorrect work of gantt.calculateEndDate when subtracting dates in minute units
+Minor performance improvement for layouts with visibility groups
+
 ### 8.0.3
 
 Performance improvements for the Resource Panel

@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.3 Standard
+dhtmlxGantt v.8.0.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -10558,6 +10558,7 @@ var DataProcessorEvents = /** @class */ (function () {
                 methods.delete.call(gantt, id);
             }
         });
+        this.handleResourceCRUD(dp, gantt);
         this.handleResourceAssignmentCRUD(dp, gantt);
     };
     DataProcessorEvents.prototype.clientSideDelete = function (id, dp, gantt) {
@@ -21062,6 +21063,7 @@ var Layout = function (_super) {
     var scrollChanged = false;
     var visibleScrollbars = [],
         hiddenScrollbars = [];
+    var scrollbarsToHide = [];
 
     function showScrollbar(scrollbar) {
       scrollbar.$parent.show();
@@ -21083,7 +21085,8 @@ var Layout = function (_super) {
       if (autosize[scrollbar.$config.scroll]) {
         hideScrollbar(scrollbar);
       } else if (scrollbar.shouldHide()) {
-        hideScrollbar(scrollbar);
+        //hideScrollbar(scrollbar);
+        scrollbarsToHide.push(scrollbar);
       } else if (scrollbar.shouldShow()) {
         showScrollbar(scrollbar);
       } else {
@@ -21101,7 +21104,14 @@ var Layout = function (_super) {
       if (visibleScrollbars[i].$config.group) {
         visibleGroups[visibleScrollbars[i].$config.group] = true;
       }
-    }
+    } // GS-2220
+
+
+    scrollbarsToHide.forEach(function (scrollbar) {
+      if (!(scrollbar.$config.group && visibleGroups[scrollbar.$config.group])) {
+        hideScrollbar(scrollbar);
+      }
+    });
 
     for (var i = 0; i < hiddenScrollbars.length; i++) {
       scrollbar = hiddenScrollbars[i];
@@ -35694,48 +35704,56 @@ CalendarWorkTimeStrategy.prototype = {
 
       var isWorkHour = false;
       var workInterval = null;
+      var prevInterval = null;
 
       for (var i = daySchedule.length - 1; i >= 0; i--) {
         if (daySchedule[i].start < timestamp - 1 && daySchedule[i].end >= timestamp - 1) {
           isWorkHour = true;
           workInterval = daySchedule[i];
+          prevInterval = daySchedule[i - 1];
           break;
         }
       }
 
       if (isWorkHour) {
+        // we're at the end of worktime interval and subtracting more than the duration of the interval
+        // -> subtract the duration of the interval and move to the start of the interval (we're moving from end)
         if (timestamp === workInterval.end && left >= workInterval.durationMinutes) {
           added += workInterval.durationMinutes;
           start = this.$gantt.date.add(start, -workInterval.durationMinutes, "minute");
-        } else if (!minutePrecision && left <= timestamp / 60 - workInterval.startMinute) {
-          added += left;
-          start = this.$gantt.date.add(start, -left, "minute");
-        } else if (minutePrecision) {
-          // GS-2129. If the working time is set in minutes, we accumulate the working time in minutes from right to left
-          var previousHour = this._getClosestWorkTime(this._nextDate(start, "hour", step), "hour");
+        } // worktime is set in whole hours (no intervals like 9:15-10:00)
+        // the amount we need to subtract lies inside the interval
+        else if (!minutePrecision && left <= timestamp / 60 - workInterval.startMinute) {
+            added += left;
+            start = this.$gantt.date.add(start, -left, "minute");
+          } else if (minutePrecision) {
+            // GS-2129. If the working time is set in minutes, we accumulate the working time in minutes from right to left
+            // duration we need to subtract lies completely inside the work interval
+            if (left <= timestamp / 60 - workInterval.startMinute) {
+              added += left;
+              start = this.$gantt.date.add(start, -left, "minute");
+            } else {
+              // we need to go trough multiple work intervals to subtract needed time
+              added += timestamp / 60 - workInterval.startMinute;
 
-          var _minutesInHour = this._getMinutesPerHour(previousHour);
-
-          if (left < _minutesInHour && _minutesInHour <= 60) {
-            _minutesInHour = left;
-            start = this.$gantt.date.add(start, -_minutesInHour, "minute");
+              if (prevInterval) {
+                start = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, prevInterval.end);
+              } else {
+                start = this.$gantt.date.day_start(start);
+              }
+            }
           } else {
-            start = previousHour;
-          }
+            var minutesInHour = this._getMinutesPerHour(start);
 
-          added += _minutesInHour;
-        } else {
-          var minutesInHour = this._getMinutesPerHour(start);
-
-          if (minutesInHour <= left) {
-            added += minutesInHour;
-            start = this._nextDate(start, "hour", step);
-          } else {
-            addedInterval = this._subtractMinutesUntilHourStart(start, left);
-            added += addedInterval.added;
-            start = addedInterval.end;
+            if (minutesInHour <= left) {
+              added += minutesInHour;
+              start = this._nextDate(start, "hour", step);
+            } else {
+              addedInterval = this._subtractMinutesUntilHourStart(start, left);
+              added += addedInterval.added;
+              start = addedInterval.end;
+            }
           }
-        }
       } else {
         if (start.getHours() === 0 && start.getMinutes() === 0 && start.getSeconds() === 0) {
           var prev = this._getClosestWorkTimePast(start, "hour");
@@ -40955,10 +40973,20 @@ function default_1(gantt) {
         undo: function () { return _undo.undo(); },
         redo: function () { return _undo.redo(); },
         getUndoStack: function () { return _undo.getUndoStack(); },
+        setUndoStack: function (stack) { return _undo.setUndoStack(stack); },
         getRedoStack: function () { return _undo.getRedoStack(); },
+        setRedoStack: function (stack) { return _undo.setRedoStack(stack); },
         clearUndoStack: function () { return _undo.clearUndoStack(); },
         clearRedoStack: function () { return _undo.clearRedoStack(); },
-        saveState: function (id, type) { return monitor.store(id, type, true); }
+        saveState: function (id, type) { return monitor.store(id, type, true); },
+        getInitialState: function (id, type) {
+            if (type === gantt.config.undo_types.link) {
+                return monitor.getInitialLink(id);
+            }
+            else {
+                return monitor.getInitialTask(id);
+            }
+        }
     };
     gantt.undo = gantt.ext.undo.undo;
     gantt.redo = gantt.ext.undo.redo;
@@ -41475,8 +41503,14 @@ var Undo = /** @class */ (function () {
     Undo.prototype.getUndoStack = function () {
         return this._undoStack;
     };
+    Undo.prototype.setUndoStack = function (stack) {
+        this._undoStack = stack;
+    };
     Undo.prototype.getRedoStack = function () {
         return this._redoStack;
+    };
+    Undo.prototype.setRedoStack = function (stack) {
+        this._redoStack = stack;
     };
     Undo.prototype.clearUndoStack = function () {
         this._undoStack = [];
@@ -41654,7 +41688,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.3";
+  this.version = "8.0.4";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
