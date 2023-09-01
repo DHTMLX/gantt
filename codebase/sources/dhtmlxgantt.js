@@ -1,13 +1,13 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.4 Standard
+dhtmlxGantt v.8.0.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
-To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Commercial/Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at sales@dhtmlx.com
+To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), please obtain Individual, Commercial, Enterprise or Ultimate license on our site https://dhtmlx.com/docs/products/dhtmlxGantt/#licensing or contact us at info@dhtmlx.com
 
-(c) XB Software Ltd.
+(c) XB Software
 
 */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -6390,6 +6390,291 @@ process.chdir = function (dir) {
 process.umask = function () {
   return 0;
 };
+
+/***/ }),
+
+/***/ "./node_modules/remote-client/dist/remote.es6.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/remote-client/dist/remote.es6.js ***!
+  \*******************************************************/
+/*! exports provided: Client */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Client", function() { return t; });
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var t = /*#__PURE__*/function () {
+  function t(_t) {
+    _classCallCheck(this, t);
+
+    var e = _t.url,
+        s = _t.token;
+    this._url = e, this._token = s, this._mode = 1, this._seed = 1, this._queue = [], this.data = {}, this.api = {}, this._events = {};
+  }
+
+  _createClass(t, [{
+    key: "headers",
+    value: function headers() {
+      return {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "Remote-Token": this._token
+      };
+    }
+  }, {
+    key: "fetch",
+    value: function (_fetch) {
+      function fetch(_x, _x2) {
+        return _fetch.apply(this, arguments);
+      }
+
+      fetch.toString = function () {
+        return _fetch.toString();
+      };
+
+      return fetch;
+    }(function (_t2, e) {
+      var s = {
+        credentials: "include",
+        headers: this.headers()
+      };
+      return e && (s.method = "POST", s.body = e), fetch(_t2, s).then(function (_t3) {
+        return _t3.json();
+      });
+    })
+  }, {
+    key: "load",
+    value: function load(_t4) {
+      var _this = this;
+
+      return _t4 && (this._url = _t4), this.fetch(this._url).then(function (_t5) {
+        return _this.parse(_t5);
+      });
+    }
+  }, {
+    key: "parse",
+    value: function parse(_t6) {
+      var e = _t6.key,
+          s = _t6.websocket;
+      e && (this._token = _t6.key);
+
+      for (var _e in _t6.data) {
+        this.data[_e] = _t6.data[_e];
+      }
+
+      for (var _e2 in _t6.api) {
+        var _s = this.api[_e2] = {},
+            i = _t6.api[_e2];
+
+        for (var _t29 in i) {
+          _s[_t29] = this._wrapper(_e2 + "." + _t29);
+        }
+      }
+
+      return s && this.connect(), this;
+    }
+  }, {
+    key: "connect",
+    value: function connect() {
+      var _this2 = this;
+
+      var _t8 = this._socket;
+      _t8 && (this._socket = null, _t8.onclose = function () {}, _t8.close()), this._mode = 2, this._socket = function (t, e, s, i) {
+        var n = e;
+        "/" === n[0] && (n = document.location.protocol + "//" + document.location.host + e);
+        n = n.replace(/^http(s|):/, "ws$1:");
+        var o = -1 != n.indexOf("?") ? "&" : "?";
+        n = "".concat(n).concat(o, "token=").concat(s, "&ws=1");
+        var r = new WebSocket(n);
+        return r.onclose = function () {
+          return setTimeout(function () {
+            return t.connect();
+          }, 2e3);
+        }, r.onmessage = function (e) {
+          var s = JSON.parse(e.data);
+
+          switch (s.action) {
+            case "result":
+              t.result(s.body, []);
+              break;
+
+            case "event":
+              t.fire(s.body.name, s.body.value);
+              break;
+
+            case "start":
+              i();
+              break;
+
+            default:
+              t.onError(s.data);
+          }
+        }, r;
+      }(this, this._url, this._token, function () {
+        return _this2._mode = 3, _this2._send(), _this2._resubscribe(), _this2;
+      });
+    }
+  }, {
+    key: "_wrapper",
+    value: function _wrapper(_t9) {
+      return function () {
+        var _this3 = this;
+
+        var e = [].slice.call(arguments);
+        var s = null;
+        var i = new Promise(function (i, n) {
+          s = {
+            data: {
+              id: _this3._uid(),
+              name: _t9,
+              args: e
+            },
+            status: 1,
+            resolve: i,
+            reject: n
+          }, _this3._queue.push(s);
+        });
+        return this.onCall(s, i), 3 === this._mode ? this._send(s) : setTimeout(function () {
+          return _this3._send();
+        }, 1), i;
+      }.bind(this);
+    }
+  }, {
+    key: "_uid",
+    value: function _uid() {
+      return (this._seed++).toString();
+    }
+  }, {
+    key: "_send",
+    value: function _send(_t10) {
+      var _this4 = this;
+
+      if (2 == this._mode) return void setTimeout(function () {
+        return _this4._send();
+      }, 100);
+      var e = _t10 ? [_t10] : this._queue.filter(function (_t11) {
+        return 1 === _t11.status;
+      });
+      if (!e.length) return;
+      var s = e.map(function (_t12) {
+        return _t12.status = 2, _t12.data;
+      });
+      3 !== this._mode ? this.fetch(this._url, JSON.stringify(s))["catch"](function (_t13) {
+        return _this4.onError(_t13);
+      }).then(function (_t14) {
+        return _this4.result(_t14, s);
+      }) : this._socket.send(JSON.stringify({
+        action: "call",
+        body: s
+      }));
+    }
+  }, {
+    key: "result",
+    value: function result(_t15, e) {
+      var s = {};
+      if (_t15) for (var _e3 = 0; _e3 < _t15.length; _e3++) {
+        s[_t15[_e3].id] = _t15[_e3];
+      } else for (var _t30 = 0; _t30 < e.length; _t30++) {
+        s[e[_t30].id] = {
+          id: e[_t30].id,
+          error: "Network Error",
+          data: null
+        };
+      }
+
+      for (var _t31 = this._queue.length - 1; _t31 >= 0; _t31--) {
+        var _e4 = this._queue[_t31],
+            i = s[_e4.data.id];
+        i && (this.onResponse(_e4, i), i.error ? _e4.reject(i.error) : _e4.resolve(i.data), this._queue.splice(_t31, 1));
+      }
+    }
+  }, {
+    key: "on",
+    value: function on(_t18, e) {
+      var s = this._uid();
+
+      var i = this._events[_t18];
+      var n = !!i;
+      return n || (i = this._events[_t18] = []), i.push({
+        id: s,
+        handler: e
+      }), n || 3 != this._mode || this._socket.send(JSON.stringify({
+        action: "subscribe",
+        name: _t18
+      })), {
+        name: _t18,
+        id: s
+      };
+    }
+  }, {
+    key: "_resubscribe",
+    value: function _resubscribe() {
+      if (3 == this._mode) for (var _t32 in this._events) {
+        this._socket.send(JSON.stringify({
+          action: "subscribe",
+          name: _t32
+        }));
+      }
+    }
+  }, {
+    key: "detach",
+    value: function detach(_t20) {
+      if (!_t20) {
+        if (3 == this._mode) for (var _t33 in this._events) {
+          this._socket.send(JSON.stringify({
+            action: "unsubscribe",
+            key: _t33
+          }));
+        }
+        return void (this._events = {});
+      }
+
+      var e = _t20.id,
+          s = _t20.name,
+          i = this._events[s];
+
+      if (i) {
+        var _t34 = i.filter(function (_t23) {
+          return _t23.id != e;
+        });
+
+        _t34.length ? this._events[s] = _t34 : (delete this._events[s], 3 == this._mode && this._socket.send(JSON.stringify({
+          action: "unsubscribe",
+          name: s
+        })));
+      }
+    }
+  }, {
+    key: "fire",
+    value: function fire(_t24, e) {
+      var s = this._events[_t24];
+      if (s) for (var _t35 = 0; _t35 < s.length; _t35++) {
+        s[_t35].handler(e);
+      }
+    }
+  }, {
+    key: "onError",
+    value: function onError(_t26) {
+      return null;
+    }
+  }, {
+    key: "onCall",
+    value: function onCall(_t27, e) {}
+  }, {
+    key: "onResponse",
+    value: function onResponse(_t28, e) {}
+  }]);
+
+  return t;
+}();
+
+
 
 /***/ }),
 
@@ -16843,6 +17128,64 @@ module.exports = function (gantt) {
   gantt.attachEvent("onAfterTaskDelete", resetCache);
   gantt.attachEvent("onAfterTaskAdd", resetCache);
   gantt.attachEvent("onAfterSort", resetCache);
+};
+
+/***/ }),
+
+/***/ "./sources/core/remote/remote_events.js":
+/*!**********************************************!*\
+  !*** ./sources/core/remote/remote_events.js ***!
+  \**********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var remote_client = __webpack_require__(/*! remote-client */ "./node_modules/remote-client/dist/remote.es6.js");
+
+module.exports = {
+  remoteEvents: function remoteEvents(url, token) {
+    var _this = this;
+
+    var remote = new remote_client.Client({
+      url: url,
+      token: token
+    }); // temporary patch, as we do not want credentials
+
+    remote.fetch = function (url, body) {
+      var req = {
+        headers: this.headers()
+      };
+
+      if (body) {
+        req.method = "POST";
+        req.body = body;
+      }
+
+      return fetch(url, req).then(function (res) {
+        return res.json();
+      });
+    };
+
+    this._ready = remote.load().then(function (back) {
+      return _this._remote = back;
+    });
+
+    function ready() {
+      return this._ready;
+    }
+
+    function on(name, handler) {
+      this.ready().then(function (back) {
+        if (typeof name === "string") back.on(name, handler);else {
+          for (var key in name) {
+            back.on(key, name[key]);
+          }
+        }
+      });
+    }
+
+    this.ready = ready;
+    this.on = on;
+  }
 };
 
 /***/ }),
@@ -35588,7 +35931,13 @@ CalendarWorkTimeStrategy.prototype = {
         if (rangeMinutes > left) {
           rangeMinutes = left;
           minuteTo = minuteFrom + left * 60;
-        }
+        } // TODO: verify testcase https://dhtmlxsupport.teamwork.com/desk/tickets/9625700/messages
+
+        /*if (rangeMinutes === 0) {
+        	rangeMinutes = left;
+        	minuteTo = minuteFrom + (left * 60);
+        }*/
+
 
         var addMinutes = Math.round((minuteTo - minuteFrom) / 60);
         left -= addMinutes;
@@ -35630,7 +35979,13 @@ CalendarWorkTimeStrategy.prototype = {
         if (rangeMinutes > left) {
           rangeMinutes = left;
           minuteTo = minuteFrom - left * 60;
-        }
+        } // TODO: verify testcase https://dhtmlxsupport.teamwork.com/desk/tickets/9625700/messages
+
+        /*if (rangeMinutes === 0) {
+        	rangeMinutes = left;
+        	minuteTo = minuteFrom - (left * 60);
+        }*/
+
 
         var addMinutes = Math.abs(Math.round((minuteFrom - minuteTo) / 60));
         left -= addMinutes;
@@ -41370,6 +41725,7 @@ var Monitor = /** @class */ (function () {
             });
         }
     };
+    //!!!https://docs.dhtmlx.com/gantt/samples/?sample=%2708_api/09_export_store.html%27&filter=%27exp%27
     Monitor.prototype._storeCommand = function (command) {
         var undo = this._undo;
         undo.updateConfigs();
@@ -41688,7 +42044,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.4";
+  this.version = "8.0.5";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -41726,6 +42082,7 @@ module.exports = function (supportedExtensions) {
   gantt.config = __webpack_require__(/*! ../core/common/config */ "./sources/core/common/config.ts")();
   gantt.ajax = __webpack_require__(/*! ../core/common/ajax */ "./sources/core/common/ajax.js")(gantt);
   gantt.date = __webpack_require__(/*! ../core/common/date */ "./sources/core/common/date.js")(gantt);
+  gantt.RemoteEvents = __webpack_require__(/*! ../core/remote/remote_events */ "./sources/core/remote/remote_events.js").remoteEvents;
 
   var dnd = __webpack_require__(/*! ../core/common/dnd */ "./sources/core/common/dnd.js")(gantt);
 

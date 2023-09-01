@@ -1,3 +1,9 @@
+### 8.0.5
+
+Fix incorrect warnings triggered by enabling extensions via the Gantt.getGanttInstance configuration.
+Fix the incorrect work of gantt.exportToExcel when the skip_off_time config is enabled
+Improvements for the Sample Explorer
+
 ### 8.0.4
 
 Fix issue with DataProcessor not tracking changes of the Resource Datastore
