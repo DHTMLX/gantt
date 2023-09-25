@@ -1,3 +1,11 @@
+### 8.0.6
+
+Enhancements and corrections in the usage of WAI-ARIA attributes for improved accessibility
+Fix the issue of decreasing grid's width after repainting when the grid_elastic_columns config is enabled
+The default number of undo_steps is increased from 10 to 100
+The Export API client is now integrated into the GPL version of Gantt, previously it has been included only in PRO versions
+Add support for the https export server endpoints in the Node.js version of Gantt
+
 ### 8.0.5
 
 Fix incorrect warnings triggered by enabling extensions via the Gantt.getGanttInstance configuration.
