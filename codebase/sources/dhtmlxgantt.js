@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.6 Standard
+dhtmlxGantt v.8.0.7 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -16443,6 +16443,7 @@ module.exports = function (gantt) {
           // when user moves mouse at first time after onmousedown
           this.config.started = true;
           this.config.ignore = false;
+          gantt._touch_drag = true;
 
           if (this.callEvent("onBeforeDragStart", [obj, this.config.original_target]) === false) {
             this.config.ignore = true;
@@ -16488,6 +16489,7 @@ module.exports = function (gantt) {
       }
 
       this.config.started = false;
+      gantt._touch_drag = false;
       document.body.className = document.body.className.replace(" gantt_noselect", "");
     },
     getPosition: function getPosition(e) {
@@ -17006,11 +17008,23 @@ module.exports = function (gantt) {
       });
     } else {
       var first = gantt.getTaskByIndex(0);
-      startDate = first ? first.start_date ? first.start_date : first.end_date ? gantt.calculateEndDate({
-        start_date: first.end_date,
-        duration: -gantt.config.duration_step,
-        task: item
-      }) : null : gantt.config.start_date || gantt.getState().min_date;
+      var minDate = gantt.config.start_date || gantt.getState().min_date;
+
+      if (first) {
+        if (first.start_date) {
+          startDate = first.start_date;
+        } else if (first.end_date) {
+          startDate = gantt.calculateEndDate({
+            start_date: first.end_date,
+            duration: -gantt.config.duration_step,
+            task: item
+          });
+        } else {
+          startDate = minDate;
+        }
+      } else {
+        startDate = minDate;
+      }
     }
 
     gantt.assert(startDate, "Invalid dates");
@@ -24252,7 +24266,7 @@ module.exports = function (gantt) {
         if (batchUpdate) {
           needUpdate = true;
           needUpdateFor[id] = item;
-        } else {
+        } else if (!item.unscheduled) {
           _syncOnTaskUpdate(item);
         }
       });
@@ -25218,6 +25232,10 @@ module.exports = function createResourceTimelineBuilder(gantt) {
 
       if (assignmentsPassed) {
         task = gantt.getTask(item.task_id);
+      }
+
+      if (task.unscheduled) {
+        continue; // do not process assignments for unscheduled tasks
       }
 
       var minDate = item.start_date || task.start_date;
@@ -27887,7 +27905,7 @@ function createRowResizer(gantt, grid) {
       var dd = dnd.config;
       var id = dd.drag_id,
           itemHeight = grid.getItemHeight(id),
-          itemTop = grid.getItemTop(id);
+          itemTop = grid.getItemTop(id) - obj.scrollTop;
       var pos = domHelpers.getNodePosition(grid.$grid_data),
           pointerPosition = parseInt(dd.marker.style.top, 10),
           markerStartPosition = itemTop + pos.y,
@@ -31078,7 +31096,7 @@ module.exports = function (gantt) {
 
   CheckboxControl.prototype.render = function (sns) {
     var height = (sns.height || "23") + "px";
-    var html = "<div class='gantt_cal_ltext' style='height:" + height + ";'>";
+    var html = "<div class='gantt_cal_ltext gantt_section_" + sns.name + "' style='height:" + height + ";'>";
 
     if (sns.options && sns.options.length) {
       for (var i = 0; i < sns.options.length; i++) {
@@ -31280,7 +31298,13 @@ module.exports = function (gantt) {
     }
 
     var duration = "<div class='gantt_duration' " + singleDate + ">" + "<input type='button' class='gantt_duration_dec' value='−'" + readonly + ">" + "<input type='text' value='5days' class='" + durationInputClass + "'" + readonly + " " + ariaAttr + ">" + "<input type='button' class='gantt_duration_inc' value='+'" + readonly + ">" + label + "<span></span>" + "</div>";
-    var html = "<div style='height:" + (sns.height || 30) + "px;padding-top:0px;font-size:inherit;' class='gantt_section_time'>" + time + " " + duration + "</div>";
+    var sectionClassName = "gantt_section_time";
+
+    if (sns.name !== "time") {
+      sectionClassName += " gantt_section_" + sns.name;
+    }
+
+    var html = "<div style='height:" + (sns.height || 30) + "px;padding-top:0px;font-size:inherit;' class='" + sectionClassName + "'>" + time + " " + duration + "</div>";
     return html;
   };
 
@@ -31556,7 +31580,7 @@ module.exports = function (gantt) {
 
   RadioControl.prototype.render = function (sns) {
     var height = (sns.height || "23") + "px";
-    var html = "<div class='gantt_cal_ltext' style='height:" + height + ";'>";
+    var html = "<div class='gantt_cal_ltext gantt_section_" + sns.name + "' style='height:" + height + ";'>";
 
     if (sns.options && sns.options.length) {
       for (var i = 0; i < sns.options.length; i++) {
@@ -31619,7 +31643,7 @@ module.exports = function (gantt) {
 
   SelectControl.prototype.render = function (sns) {
     var height = (sns.height || "23") + "px";
-    var html = "<div class='gantt_cal_ltext' style='height:" + height + ";'>";
+    var html = "<div class='gantt_cal_ltext gantt_section_" + sns.name + "' style='height:" + height + ";'>";
     html += htmlHelpers.getHtmlSelect(sns.options, [{
       key: "style",
       value: "width:100%;"
@@ -31679,7 +31703,7 @@ module.exports = function (gantt) {
 
   TemplateControl.prototype.render = function (sns) {
     var height = (sns.height || "30") + "px";
-    return "<div class='gantt_cal_ltext gantt_cal_template' style='height:" + height + ";'></div>";
+    return "<div class='gantt_cal_ltext gantt_cal_template gantt_section_" + sns.name + "' style='height:" + height + ";'></div>";
   };
 
   TemplateControl.prototype.set_value = function (node, value) {
@@ -31718,7 +31742,7 @@ module.exports = function (gantt) {
 
   TextareaControl.prototype.render = function (sns) {
     var height = (sns.height || "130") + "px";
-    return "<div class='gantt_cal_ltext' style='height:" + height + ";'><textarea></textarea></div>";
+    return "<div class='gantt_cal_ltext gantt_section_" + sns.name + "' style='height:" + height + ";'><textarea></textarea></div>";
   };
 
   TextareaControl.prototype.set_value = function (node, value) {
@@ -31765,7 +31789,13 @@ module.exports = function (gantt) {
 
   TimeControl.prototype.render = function (sns) {
     var time = gantt.form_blocks.getTimePicker.call(this, sns);
-    var html = "<div style='height:" + (sns.height || 30) + "px;padding-top:0px;font-size:inherit;text-align:center;' class='gantt_section_time'>";
+    var sectionClassName = "gantt_section_time";
+
+    if (sns.name !== "time") {
+      sectionClassName += " gantt_section_" + sns.name;
+    }
+
+    var html = "<div style='height:" + (sns.height || 30) + "px;padding-top:0px;font-size:inherit;text-align:center;' class='" + sectionClassName + "'>";
     html += time;
 
     if (sns.single_date) {
@@ -32093,6 +32123,10 @@ module.exports = function (gantt) {
 
       if (gantt.config.drag_lightbox) {
         lightboxDiv.firstChild.onmousedown = gantt._ready_to_dnd;
+
+        lightboxDiv.firstChild.ontouchstart = function (e) {
+          gantt._ready_to_dnd(e.touches[0]);
+        };
 
         lightboxDiv.firstChild.onselectstart = function () {
           return false;
@@ -32555,7 +32589,13 @@ module.exports = function (gantt) {
   gantt._init_dnd_events = function () {
     var eventElement = gantt._lightbox_root;
     this.event(eventElement, "mousemove", gantt._move_while_dnd);
-    this.event(eventElement, "mouseup", gantt._finish_dnd); // GS-1952: In Salesforce environment, the lightbox is attached to the Gantt container. 
+    this.event(eventElement, "mouseup", gantt._finish_dnd);
+    this.event(eventElement, "touchmove", function (e) {
+      gantt._move_while_dnd(e.touches[0]);
+    });
+    this.event(eventElement, "touchend", function (e) {
+      gantt._finish_dnd(e.touches[0]);
+    }); // GS-1952: In Salesforce environment, the lightbox is attached to the Gantt container. 
     // So when Gantt is reinitialized, the events are no longer attached to the Gantt container.
     // gantt._init_dnd_events = function () {
     // };
@@ -37251,8 +37291,11 @@ function createTaskRenderer(gantt) {
       var el = document.createElement('div'),
           sizes = gantt.getTaskPosition(task); // vertical position is not important for the rollup tasks as long as the parent is rendered
 
-      viewPort.y = 0;
-      viewPort.y_end = gantt.$task_bg.scrollHeight;
+      if (viewPort) {
+        viewPort.y = 0;
+        viewPort.y_end = gantt.$task_bg.scrollHeight;
+      }
+
       task.$rollup.forEach(function (itemId) {
         if (!gantt.isTaskExists(itemId)) {
           return;
@@ -37934,6 +37977,7 @@ function addResizeListener(gantt) {
 function listenWindowResize(gantt, window) {
   var resizeTimeout = gantt.config.container_resize_timeout || 20;
   var resizeDelay;
+  var previousSize = getContainerSize(gantt);
 
   if (gantt.config.container_resize_method == "timeout") {
     lowlevelResizeWatcher();
@@ -37943,6 +37987,14 @@ function listenWindowResize(gantt, window) {
         if (gantt.$scrollbarRepaint) {
           gantt.$scrollbarRepaint = null;
         } else {
+          // GS-2140. Don't repaint Gantt if it has the same sizes
+          var currentSize = getContainerSize(gantt);
+
+          if (previousSize.x == currentSize.x && previousSize.y == currentSize.y) {
+            return;
+          }
+
+          previousSize = currentSize;
           repaintGantt();
         }
       });
@@ -37972,6 +38024,13 @@ function listenWindowResize(gantt, window) {
     previousWidth = gantt.$root.offsetWidth;
     setTimeout(lowlevelResizeWatcher, resizeTimeout);
   }
+}
+
+function getContainerSize(gantt) {
+  return {
+    x: gantt.$root.offsetWidth,
+    y: gantt.$root.offsetHeight
+  };
 }
 
 module.exports = addResizeListener;
@@ -39894,7 +39953,10 @@ function createTaskDND(timeline, gantt) {
         var doFinalize = function doFinalize() {
           if (finalizingBulkMove) {
             for (var i in dragMultiple) {
-              this._finalize_mouse_up(dragMultiple[i].id, config, dragMultiple[i], e);
+              // GS-1057: Don't call drag events for the dragged task as they will be called later
+              if (dragMultiple[i].id != drag.id) {
+                this._finalize_mouse_up(dragMultiple[i].id, config, dragMultiple[i], e);
+              }
             }
           }
 
@@ -40857,10 +40919,19 @@ module.exports = function (gantt) {
     }
   };
 
-  gantt.attachEvent("onGanttReady", gantt.bind(function () {
-    if (this.config.touch != "force") this.config.touch = this.config.touch && (navigator.userAgent.indexOf("Mobile") != -1 || navigator.userAgent.indexOf("iPad") != -1 || navigator.userAgent.indexOf("Android") != -1 || navigator.userAgent.indexOf("Touch") != -1) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+  gantt.attachEvent("onGanttReady", addTouchEvents);
+  gantt.attachEvent("onGanttLayoutReady", function () {
+    if (gantt.$container) {
+      gantt.attachEvent("onGanttRender", addTouchEvents, {
+        once: true
+      });
+    }
+  });
 
-    if (this.config.touch) {
+  function addTouchEvents() {
+    if (gantt.config.touch != "force") gantt.config.touch = gantt.config.touch && (navigator.userAgent.indexOf("Mobile") != -1 || navigator.userAgent.indexOf("iPad") != -1 || navigator.userAgent.indexOf("Android") != -1 || navigator.userAgent.indexOf("Touch") != -1) || navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+
+    if (gantt.config.touch) {
       var touchEventsSupported = true;
 
       try {
@@ -40870,7 +40941,7 @@ module.exports = function (gantt) {
       }
 
       if (touchEventsSupported) {
-        this._touch_events(["touchmove", "touchstart", "touchend"], function (ev) {
+        gantt._touch_events(["touchmove", "touchstart", "touchend"], function (ev) {
           if (ev.touches && ev.touches.length > 1) return null;
           if (ev.touches[0]) return {
             target: ev.target,
@@ -40883,14 +40954,14 @@ module.exports = function (gantt) {
           return false;
         });
       } else if (window.navigator.pointerEnabled) {
-        this._touch_events(["pointermove", "pointerdown", "pointerup"], function (ev) {
+        gantt._touch_events(["pointermove", "pointerdown", "pointerup"], function (ev) {
           if (ev.pointerType == "mouse") return null;
           return ev;
         }, function (ev) {
           return !ev || ev.pointerType == "mouse";
         });
       } else if (window.navigator.msPointerEnabled) {
-        this._touch_events(["MSPointerMove", "MSPointerDown", "MSPointerUp"], function (ev) {
+        gantt._touch_events(["MSPointerMove", "MSPointerDown", "MSPointerUp"], function (ev) {
           if (ev.pointerType == ev.MSPOINTER_TYPE_MOUSE) return null;
           return ev;
         }, function (ev) {
@@ -40898,7 +40969,7 @@ module.exports = function (gantt) {
         });
       }
     }
-  }, gantt));
+  }
 
   function findTargetView(event) {
     var allViews = gantt.$layout.getCellsByType("viewCell");
@@ -40977,6 +41048,7 @@ module.exports = function (gantt) {
     var currentDndId = null;
     var dndNodes = [];
     var targetView = null;
+    var multiTouchEvents = {};
 
     for (var i = 0; i < touchHandlers.length; i++) {
       gantt.eventRemove(touchHandlers[i][0], touchHandlers[i][1], touchHandlers[i][2]);
@@ -41039,14 +41111,29 @@ module.exports = function (gantt) {
       }
 
       return true;
-    }]); //block touch context menu in IE10
+    }]); // prevent page drag on touch move
+
+    try {
+      document.addEventListener('touchmove', function (e) {
+        if (gantt._touch_drag) {
+          block_action(e);
+        }
+      }, {
+        passive: false
+      });
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn("Cannot prevent touch event for the page drag");
+    } //block touch context menu in IE10
+
 
     touchHandlers.push([this.$container, "contextmenu", function (e) {
       if (actionMode) return block_action(e);
     }]); //touch start
 
     touchHandlers.push([this.$container, names[1], function (e) {
-      // block pull-to-refresh
+      multiTouchEvents = e.touches.length; // block pull-to-refresh
+
       if (document && document.body) {
         document.body.classList.add("gantt_touch_active");
       }
@@ -41074,6 +41161,7 @@ module.exports = function (gantt) {
           tasksDnD.on_mouse_down(actionStart);
 
           if (tasksDnD.drag && tasksDnD.drag.start_drag) {
+            // we need that as touch events break if the target node is removed from the DOM
             cloneTaskRendered(taskId);
 
             tasksDnD._start_dnd(actionStart);
@@ -41122,9 +41210,9 @@ module.exports = function (gantt) {
       currentDndId = null; //dbl-tap handling
 
       if (actionStart && dblclicktime) {
-        var now = new Date();
+        var now = new Date(); // doubletap shouldn't happen with multitouch
 
-        if (now - dblclicktime < 500) {
+        if (now - dblclicktime < 500 && multiTouchEvents <= 1) {
           var mouseEvents = gantt.$services.getService("mouseEvents");
           mouseEvents.onDoubleClick(actionStart);
           block_action(e);
@@ -41140,7 +41228,7 @@ module.exports = function (gantt) {
 
 
     function block_action(e) {
-      if (e && e.preventDefault) {
+      if (e && e.preventDefault && e.cancelable) {
         e.preventDefault();
       }
 
@@ -41153,19 +41241,56 @@ module.exports = function (gantt) {
 
       var task = gantt.getTask(taskId);
 
-      if (task && gantt.isTaskVisible(taskId)) {
-        currentDndId = taskId;
+      if (task) {
+        var visible = gantt.isTaskVisible(taskId);
 
-        for (var i = 0; i < renders.length; i++) {
-          task = renders[i].rendered[taskId];
+        if (visible) {
+          currentDndId = taskId;
 
-          if (task && task.getAttribute(gantt.config.task_attribute) && task.getAttribute(gantt.config.task_attribute) == taskId) {
-            var copy = task.cloneNode(true);
-            dndNodes.push(task);
-            renders[i].rendered[taskId] = copy;
-            task.style.display = "none";
-            copy.className += " gantt_drag_move ";
-            task.parentNode.appendChild(copy); //return copy;
+          for (var _i = 0; _i < renders.length; _i++) {
+            task = renders[_i].rendered[taskId];
+
+            if (task && task.getAttribute(gantt.config.task_attribute) && task.getAttribute(gantt.config.task_attribute) == taskId) {
+              var copy = task.cloneNode(true);
+              dndNodes.push(task);
+              renders[_i].rendered[taskId] = copy;
+              task.style.display = "none";
+              copy.className += " gantt_drag_move ";
+              task.parentNode.appendChild(copy); //return copy;
+            }
+          }
+        } else if (task.$split_subtask) {
+          var renderedParent = task.$rendered_parent;
+          visible = gantt.isTaskVisible(renderedParent);
+
+          if (!visible) {
+            return;
+          }
+
+          currentDndId = taskId;
+
+          for (var _i2 = 0; _i2 < renders.length; _i2++) {
+            var parent = renders[_i2].rendered[renderedParent];
+            var taskNode = void 0;
+
+            if (parent && parent.childNodes) {
+              taskNode = parent.querySelector("[".concat(gantt.config.task_attribute, "=\"").concat(task.id, "\"]"));
+            }
+
+            if (taskNode) {
+              // move the child node to a different parent as the task bar will be repainted
+              // and the initial node will be lost
+              var _copy = taskNode.cloneNode(true);
+
+              taskNode.parentNode.appendChild(_copy);
+              gantt.$task_bars.appendChild(taskNode);
+              taskNode.style.display = "none"; // don't add the node as rendered otherwise it will be lost:
+              // renders[i].rendered[taskId] = taskNode;
+              // instead, add it to dndNodes as its elements will be removed after drag
+
+              dndNodes.push(taskNode);
+              taskNode = null;
+            }
           }
         }
       }
@@ -49570,7 +49695,9 @@ module.exports = function (gantt) {
     if (!multiselect.isActive()) return true;
 
     if (multiselect._selected[id]) {
-      multiselect.unselect(id, null);
+      // GS-1057: don't unselect the task here because the task is already unselected 
+      // it was in the select.js file before it was deleted
+      // multiselect.unselect(id, null);
       multiselect._selected[id] = false;
       multiselect.setLastSelected(multiselect.getDefaultSelected());
     }
@@ -51182,7 +51309,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.6";
+  this.version = "8.0.7";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

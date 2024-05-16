@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 8.0.6
+// Type definitions for dhtmlxGantt 8.0.7
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -3914,7 +3914,7 @@ export interface InlineEditorMethods {
 	 * @param the name of the event handler
 	 * @param the function that will be called when the event fires
 	*/
-	attachEvent<T extends keyof InlineEditorEvents>(event: T, handler: InlineEditorEvents[T]): boolean,
+	attachEvent<T extends keyof InlineEditorEvents>(event: T, handler: InlineEditorEvents[T]): string,
 
 	/**
 	 * detaches a handler from an event (which was attached before by the attachEvent() method)

@@ -1,3 +1,18 @@
+### 8.0.7
+
+Fix the script error occurring in the trial build on SalesForce
+The onAfterTaskUpdate event now fires before Auto Scheduling events after dragging tasks in the timeline
+Fix the duplicate event firing while interacting with a selected task when the Multiselect extension is enabled
+Fix the script error that happened when the first task in the chart did not contain dates
+Add the lightbox section name as a class name to the section element for better identification
+Fix the inability to unschedule tasks from the lightbox when Auto Scheduling is enabled
+Fix the resize_rows marker positioning when scrolling the Gantt chart
+Prevent Auto Scheduling of linked unscheduled tasks
+Fix Gantt crash while adding Rollup tasks with disabled smart rendering
+Fix dragging of split tasks on touch devices
+Fix errors that occurred with the isCriticalTask, getFreeSlack, and getTotalSlack methods for unscheduled tasks
+Fix the error occurring when a linked project contains only unscheduled child tasks
+
 ### 8.0.6
 
 Enhancements and corrections in the usage of WAI-ARIA attributes for improved accessibility
