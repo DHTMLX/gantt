@@ -1,3 +1,12 @@
+### 8.0.8
+
+Fix the issue that caused the Undo extension to skip some actions in bulk operations
+Fix the script error that occurs when gantt.deleteLink is called from the gantt.silent function
+Fix the incorrect behavior of Auto Scheduling when two connected tasks have different calendars
+Fix the script error that occurs after creating a circular link
+Fix the script error that occurs after destroying the Gantt which has an editable Resource Panel
+Fix the issue that caused the tooltip to disappear in some browsers
+
 ### 8.0.7
 
 Fix the script error occurring in the trial build on SalesForce

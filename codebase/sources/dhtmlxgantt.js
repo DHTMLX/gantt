@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.7 Standard
+dhtmlxGantt v.8.0.8 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -19231,6 +19231,10 @@ DataStore.prototype = {
 
     this._removeItemInner(id);
 
+    if (this.isSilent()) {
+      this.callEvent("onAfterSilentDelete", [obj.id, obj]);
+    }
+
     if (!this.isSilent()) {
       this.filter();
       this.callEvent("onAfterDelete", [obj.id, obj]); //repaint signal
@@ -19756,6 +19760,9 @@ function initDataStores(gantt) {
     sync_links();
   });
   linksStore.attachEvent("onAfterDelete", function (id, link) {
+    sync_link_delete(link);
+  });
+  linksStore.attachEvent("onAfterSilentDelete", function (id, link) {
     sync_link_delete(link);
   });
   linksStore.attachEvent("onBeforeIdChange", function (oldId, newId) {
@@ -22306,12 +22313,22 @@ module.exports = function (gantt) {
       this.$root = domHelpers.toNode(node);
       rebuildLayout();
       this.$mouseEvents.reset(this.$root);
+      addMinimalSizes(gantt);
     }
 
     this.callEvent("onTemplatesReady", []);
     this.callEvent("onGanttReady", []);
     this.render();
   };
+
+  function addMinimalSizes(gantt) {
+    if (gantt.$container && !gantt.config.autosize) {
+      if (gantt.$root.offsetHeight < 50) {
+        // eslint-disable-next-line no-console
+        console.warn("The Gantt container has a small height, so you cannot see its content. If it is not intended, you need to set the 'height' style rule to the container:\nhttps://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly");
+      }
+    }
+  }
 
   gantt.$click = {
     buttons: {
@@ -24680,10 +24697,12 @@ function createHelper(gantt) {
           }
 
           timeoutId = requestAnimationFrame(function () {
-            var cells = Array.prototype.slice.call(gantt.$container.querySelectorAll(".resourceTimeline_cell [data-assignment-cell]"));
-            cells.forEach(function (cell) {
-              cell.contentEditable = true;
-            });
+            if (gantt.$container) {
+              var cells = Array.prototype.slice.call(gantt.$container.querySelectorAll(".resourceTimeline_cell [data-assignment-cell]"));
+              cells.forEach(function (cell) {
+                cell.contentEditable = true;
+              });
+            }
           });
           return true;
         }
@@ -39201,6 +39220,14 @@ function ScaleHelper(gantt) {
       var scales;
 
       if (legacyMode) {
+        var docLink = "https://docs.dhtmlx.com/gantt/migrating.html#:~:text=%3D%20false%3B-,Time%20scale%20settings,-Configuration%20of%20time";
+
+        if (gantt.env.isFF) {
+          docLink = "https://docs.dhtmlx.com/gantt/migrating.html#6162";
+        } // eslint-disable-next-line no-console
+
+
+        console.warn("You are using the obsolete scale configuration.\nIt will stop working in the future versions.\nPlease migrate the configuration to the newer version:\n".concat(docLink));
         scales = scaleConfig.subscales || [];
       } else {
         scales = scaleConfig.scales.slice(1);
@@ -40906,7 +40933,7 @@ module.exports = Timeline;
 /***/ (function(module, exports) {
 
 module.exports = function (gantt) {
-  gantt.config.touch_drag = 500; //nearly immediate dnd
+  gantt.config.touch_drag = 75; //nearly immediate dnd
 
   gantt.config.touch = true;
   gantt.config.touch_feedback = true;
@@ -50282,6 +50309,10 @@ var Tooltip = /** @class */ (function () {
         var node = this.getNode();
         if (!domHelpers.isChildOf(node, container)) {
             this.hide();
+            // GS-2463. Don't put the node beyond the body coordinates
+            // as it may trigger the resize event
+            node.style.top = node.style.top || "0px";
+            node.style.left = node.style.left || "0px";
             container.appendChild(node);
         }
         if (this._isLikeMouseEvent(left)) {
@@ -50979,15 +51010,65 @@ var Monitor = /** @class */ (function () {
             saveInitialAll();
             return true;
         });
-        gantt.attachEvent("onBeforeTaskDrag", function (taskId) { return _this.store(taskId, gantt.config.undo_types.task); });
+        var dragId = null;
+        var projectDrag = false;
+        gantt.attachEvent("onBeforeTaskDrag", function (taskId) {
+            dragId = gantt.getState().drag_id;
+            if (dragId === taskId) {
+                var task = gantt.getTask(taskId);
+                if (gantt.isSummaryTask(task) && gantt.config.drag_project) {
+                    projectDrag = true;
+                }
+            }
+            // GS-99. Store the initial task dates before multiple drag
+            if (gantt.plugins().multiselect) {
+                var selectedIds = gantt.getSelectedTasks();
+                if (selectedIds.length > 1) {
+                    selectedIds.forEach(function (id) {
+                        _this.store(id, gantt.config.undo_types.task, true);
+                    });
+                }
+            }
+            return _this.store(taskId, gantt.config.undo_types.task);
+        });
+        gantt.attachEvent("onAfterTaskDrag", function (taskId) {
+            // if we drag multiple tasks and other tasks move to another date after that,
+            // auto-scheduling/correct work time should occur in anoher command.
+            // otherwise, when we undo the changes, the task constraint is not restored correctly
+            var multipleDrag = projectDrag || (gantt.plugins().multiselect && gantt.getSelectedTasks().length > 1);
+            if (multipleDrag && dragId === taskId) {
+                projectDrag = false;
+                dragId = null;
+                _this.stopBatchAction();
+            }
+            // GS-99. When dragging multiple tasks, we need to store the initial tasks
+            _this.store(taskId, gantt.config.undo_types.task, true);
+        });
         gantt.attachEvent("onLightbox", function (taskId) { return _this.store(taskId, gantt.config.undo_types.task); });
         gantt.attachEvent("onBeforeTaskAutoSchedule", function (task) {
-            _this.store(task.id, gantt.config.undo_types.task);
+            _this.store(task.id, gantt.config.undo_types.task, true);
             return true;
         });
         if (gantt.ext.inlineEditors) {
-            gantt.ext.inlineEditors.attachEvent("onEditStart", function (state) {
-                _this.store(state.id, gantt.config.undo_types.task);
+            // remove the onGanttLayoutReady wrapper when GS-1288 is merged
+            var onBeforeEditStartId_1 = null;
+            var onEditStart_1 = null;
+            gantt.attachEvent("onGanttLayoutReady", function () {
+                if (onBeforeEditStartId_1) {
+                    gantt.ext.inlineEditors.detachEvent(onBeforeEditStartId_1);
+                }
+                if (onEditStart_1) {
+                    gantt.ext.inlineEditors.detachEvent(onEditStart_1);
+                }
+                onEditStart_1 = gantt.ext.inlineEditors.attachEvent("onEditStart", function (state) {
+                    _this.store(state.id, gantt.config.undo_types.task);
+                });
+                // GS-99. If another inline editor is opened and we open a new inline editor,
+                // we shouldn't use the batchAction
+                onBeforeEditStartId_1 = gantt.ext.inlineEditors.attachEvent("onBeforeEditStart", function (state) {
+                    _this.stopBatchAction();
+                    return true;
+                });
             });
         }
     };
@@ -51261,6 +51342,9 @@ var Undo = /** @class */ (function () {
             isExists: "isLinkExists"
         };
         gantt.batchUpdate(function () {
+            // it is logical to undo actions from the last one to the first one
+            // but we have to do it from the first one because the order
+            // of tasks ($index and $local_index) depends on the existing tasks
             for (var i = 0; i < action.commands.length; i++) {
                 command = action.commands[i];
                 var method = methods[command.entity][command.type];
@@ -51309,7 +51393,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.7";
+  this.version = "8.0.8";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
