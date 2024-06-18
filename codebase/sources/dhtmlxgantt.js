@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.8 Standard
+dhtmlxGantt v.8.0.9 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -17507,6 +17507,7 @@ var simple_storage_1 = __webpack_require__(/*! ./simple_storage */ "./sources/co
 function createDataProcessor(config) {
     var router;
     var tMode;
+    var headers;
     if (config instanceof Function) {
         router = config;
     }
@@ -17515,6 +17516,10 @@ function createDataProcessor(config) {
     }
     else if (config.hasOwnProperty("assignment") || config.hasOwnProperty("link") || config.hasOwnProperty("task")) {
         router = config;
+    }
+    else if (config.hasOwnProperty("headers")) {
+        // GS-2312 for custom headers
+        headers = config.headers;
     }
     if (router) {
         tMode = "CUSTOM";
@@ -17527,7 +17532,8 @@ function createDataProcessor(config) {
     dp.init(gantt);
     dp.setTransactionMode({
         mode: tMode,
-        router: router
+        router: router,
+        headers: headers
     }, config.batchUpdate);
     if (config.deleteAfterConfirmation) {
         dp.deleteAfterConfirmation = config.deleteAfterConfirmation;
@@ -20074,17 +20080,20 @@ var storeRenderCreator = function storeRenderCreator(name, gantt) {
     },
     updateItems: function updateItems(layer) {
       if (layer.update_items) {
-        var data;
+        var data = [];
 
         if (layer.get_visible_range) {
           var range = layer.get_visible_range(store);
 
           if (range.start !== undefined && range.end !== undefined) {
             data = store.getIndexRange(range.start, range.end);
-          } else if (range.ids !== undefined) {
-            data = range.ids.map(function (id) {
+          }
+
+          if (range.ids !== undefined) {
+            var extraData = range.ids.map(function (id) {
               return store.getItem(id);
             });
+            data = data.concat(extraData);
           } else {
             throw new Error("Invalid range returned from 'getVisibleRange' of the layer");
           }
@@ -20704,6 +20713,11 @@ TreeDataStore.prototype = utils.mixin({
 
     if (placeholderIds.length) {
       tbranch = tbranch.concat(placeholderIds);
+    } // GS-2423 to return initial parent to the task before it will be moved
+
+
+    if (source.$rendered_parent !== source_pid && source_pid !== parent) {
+      source.$rendered_parent = source_pid;
     }
 
     this.setParent(source, parent);
@@ -23781,6 +23795,12 @@ module.exports = function addPlaceholder(gantt) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 module.exports = function (gantt) {
   var resourceAssignmentsProperty = "$resourceAssignments";
   gantt.config.resource_assignment_store = "resourceAssignments";
@@ -23975,7 +23995,8 @@ module.exports = function (gantt) {
         }
 
         usedIds[id] = true;
-        var assignment = {
+
+        var assignment = _objectSpread(_objectSpread({}, res), {}, {
           id: id,
           start_date: res.start_date,
           duration: res.duration,
@@ -23985,7 +24006,7 @@ module.exports = function (gantt) {
           resource_id: res.resource_id,
           value: res.value,
           mode: res.mode || defaultMode
-        };
+        });
 
         if (!(assignment.start_date && assignment.start_date.getMonth && assignment.end_date && assignment.end_date.getMonth && typeof assignment.duration === "number")) {
           initAssignmentFields(assignment, task);
@@ -32034,8 +32055,17 @@ module.exports = function (gantt) {
   });
 
   gantt.showLightbox = function (id) {
-    if (!this.callEvent("onBeforeLightbox", [id])) return;
     var task = this.getTask(id);
+
+    if (!this.callEvent("onBeforeLightbox", [id])) {
+      if (gantt.isTaskExists(id) && gantt.getTask(id).$new) {
+        //GS-2340 if 'onBeforeLightbox' returns 'false' need update the order in datastore
+        this.$data.tasksStore._updateOrder();
+      }
+
+      return;
+    }
+
     var box = this.getLightbox(this.getTaskType(task.type));
 
     this._center_lightbox(box);
@@ -35701,7 +35731,7 @@ var rendererFactory = function rendererFactory(gantt) {
           if (specializedViewPortChecker) {
             isVisible = specializedViewPortChecker(item, rendererViewPort, view, config, gantt);
           } else {
-            isVisible = genericViewPortChecker(rendererViewPort, getRectangle(item, view, config, gantt));
+            isVisible = genericViewPortChecker(rendererViewPort, getRectangle(item, view, config, gantt), gantt);
           }
 
           if (isVisible) {
@@ -35845,7 +35875,7 @@ var rendererFactory = function rendererFactory(gantt) {
             if (specializedViewPortChecker) {
               isVisible = specializedViewPortChecker(item, viewPort, view, viewConfig, gantt);
             } else {
-              isVisible = genericViewPortChecker(viewPort, getRectangle(item, view, viewConfig, gantt));
+              isVisible = genericViewPortChecker(viewPort, getRectangle(item, view, viewConfig, gantt), gantt);
             }
 
             if (!isVisible) {
@@ -37046,6 +37076,8 @@ var getRowRectangle = __webpack_require__(/*! ./viewport/get_grid_row_rectangle 
 
 var getVisibleRange = __webpack_require__(/*! ./viewport/get_visible_bars_range */ "./sources/core/ui/render/viewport/get_visible_bars_range.js");
 
+var isInViewPort = __webpack_require__(/*! ./viewport/is_grid_row_in_viewport */ "./sources/core/ui/render/viewport/is_grid_row_in_viewport.js");
+
 function createGridLineRender(gantt) {
   function _render_grid_item(item, view, config, viewport) {
     var columns = view.getGridColumns();
@@ -37204,6 +37236,7 @@ function createGridLineRender(gantt) {
     render: _render_grid_item,
     update: null,
     getRectangle: getRowRectangle,
+    isInViewPort: isInViewPort,
     getVisibleRange: getVisibleRange,
     onrender: onrender
   };
@@ -37730,10 +37763,26 @@ module.exports = function getVisibleTasksRange(gantt, view, config, datastore, v
   var start = view.getItemIndexByTopPosition(viewport.y) || 0;
   var end = view.getItemIndexByTopPosition(viewport.y_end) || datastore.count();
   var indexStart = Math.max(0, start - buffer);
-  var indexEnd = Math.min(datastore.count(), end + buffer);
+  var indexEnd = Math.min(datastore.count(), end + buffer); // GS-2481 and GS-1715, need to take into account selected task when using keyboard shortcuts and when the inline editor is opened 
+
+  var extraTasksIds = [];
+
+  if (gantt.config.keyboard_navigation && gantt.getSelectedId()) {
+    extraTasksIds.push(gantt.getSelectedId());
+  }
+
+  if (gantt.$ui.getView("grid") && gantt.ext.inlineEditors && gantt.ext.inlineEditors.getState().id) {
+    var inlineEditorId = gantt.ext.inlineEditors.getState().id;
+
+    if (datastore.exists(inlineEditorId)) {
+      extraTasksIds.push(inlineEditorId);
+    }
+  }
+
   return {
     start: indexStart,
-    end: indexEnd
+    end: indexEnd,
+    ids: extraTasksIds
   };
 };
 
@@ -37836,6 +37885,31 @@ module.exports = function isColumnVisible(columnIndex, scale, viewPort, gantt) {
 
 /***/ }),
 
+/***/ "./sources/core/ui/render/viewport/is_grid_row_in_viewport.js":
+/*!********************************************************************!*\
+  !*** ./sources/core/ui/render/viewport/is_grid_row_in_viewport.js ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = function (item, viewport, view, config, gantt) {
+  // GS-2481 and GS-1715, don't remove selected task when using keyboard shortcuts and when the inline editor is opened
+  if (gantt.$ui.getView("grid") && (gantt.config.keyboard_navigation && gantt.getSelectedId() || gantt.ext.inlineEditors && gantt.ext.inlineEditors.getState().id)) {
+    return true;
+  }
+
+  var top = view.getItemTop(item.id);
+  var height = view.getItemHeight(item.id);
+
+  if (top > viewport.y_end || top + height < viewport.y) {
+    return false;
+  }
+
+  return true;
+};
+
+/***/ }),
+
 /***/ "./sources/core/ui/render/viewport/is_in_viewport.js":
 /*!***********************************************************!*\
   !*** ./sources/core/ui/render/viewport/is_in_viewport.js ***!
@@ -37843,7 +37917,7 @@ module.exports = function isColumnVisible(columnIndex, scale, viewPort, gantt) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = function (viewport, box) {
+module.exports = function (viewport, box, gantt) {
   if (!box) {
     return false;
   }
@@ -49313,8 +49387,8 @@ module.exports = function (gantt) {
     div.style.left = start + "px";
     var markerHeight = Math.max(gantt.getRowTop(gantt.getVisibleTaskCount()), 0) + "px";
 
-    if (gantt.config.timeline_placeholder) {
-      markerHeight = gantt.$container.scrollHeight + "px";
+    if (gantt.config.timeline_placeholder && gantt.$task_data) {
+      markerHeight = gantt.$task_data.scrollHeight + "px";
     }
 
     div.style.height = markerHeight;
@@ -51393,7 +51467,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.8";
+  this.version = "8.0.9";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

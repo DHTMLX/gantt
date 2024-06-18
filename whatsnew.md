@@ -1,3 +1,15 @@
+### 8.0.9
+
+Fix the issue that prevented reopening the Inline editor after vertically scrolling the Gantt
+Fix the issue with DataProcessor ignoring custom headers specified in the gantt.createDataProcessor method
+Fix tasks display issue that occurs when onBeforeLightbox handler returns false while creating a new task
+Fix the incorrect markers height when timeline_placeholder config is enabled
+Fix Formatter working only with Latin symbols
+Fix the issue that causes tasks to disappear after vertically dragging a parent task
+Fix the incorrect work of keyboard shortcut for scrolling when smart_rendering is enabled
+Fix the issue with custom properties of Resource Assignments objects not being included after parsing
+Update TypeScript type definitions
+
 ### 8.0.8
 
 Fix the issue that caused the Undo extension to skip some actions in bulk operations
