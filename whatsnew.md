@@ -1,3 +1,16 @@
+### 8.0.10
+
+Fix the issue where Gantt didn't merge date settings from the second Calendar
+Fix the issue where Resources were not assigned when the "hide empty" option was enabled
+Fix the getLightboxSection method returning a null for the Resource Section until any value was modified
+Fix the issue where templates of the Resource Histogram were not called for tasks starting before the minimum date but ending within the displayed date range
+Fix the issue where Resource Assignments were not saved after changing the task type
+Fix the issue where the 'project' task type was not set in the lightbox
+Fix the issue where worktime settings of the merged calendar were treated as weekends
+Fix the issue that prevented grouping by resources when a task had Resource Assignments on different dates
+Fix the error caused by attempting to filter split tasks with no children using the onBeforeSplitTaskDisplay event
+Fix the issue where Resource Assignments were not updated after dragging the project with subtasks
+
 ### 8.0.9
 
 Fix the issue that prevented reopening the Inline editor after vertically scrolling the Gantt

@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 8.0.9
+// Type definitions for dhtmlxGantt 8.0.10
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -1367,8 +1367,14 @@ export interface GanttConfigOptions {
 
 	/**
 	 * renders an external component into the DOM
+	 * @param an object that is returned by the **onrender* function.
+	 * @param an object that is returned by the **onrender* function.
+	 * @param a DOM element where the native component will be attached to.
 	*/
-	external_render: any;
+	external_render: {
+		isElement(element: any): boolean,
+		renderElement(element: any, container: HTMLElement): void
+	}
 
 	/**
 	 * 'says' the Gantt chart to automatically extend the time scale in order to fit all displayed tasks
@@ -2454,7 +2460,7 @@ export interface GanttStatic {
 	 * creates a datastore according to the provided configuration
 	 * @param config a configuration object of a datastore
 	*/
-	createDatastore(config: any): DatastoreMethods & TreeDatastoreMethods;
+	createDatastore(config: DatastoreConfig): DatastoreMethods & TreeDatastoreMethods;
 
 	/**
 	 * adds a new task and opens the lightbox to confirm
@@ -2814,7 +2820,7 @@ export interface GanttStatic {
 	/**
 	 * returns the scroll position
 	*/
-	getScrollState(): any;
+	getScrollState(): { x: number, y: number };
 
 	/**
 	 * returns the id of the selected task
@@ -4554,6 +4560,30 @@ export interface DomHelpers {
 	[customMethod: string]: any;
 }
 
+export interface DatastoreConfig {
+
+	/**
+	 * an arbitrary string name of the datastore. The datastore can be accessed by its name using api/gantt_getdatastore.md.
+	*/
+	name: string,
+
+	/**
+	 * optional, accepts only one fixed value **"treeDatastore"**. If the type:"treeDatastore" is specified, the datastore will support hierarchical data, with the **id** property as a primary key, and **parent** as a link to the parent id. Any other value will produce a flat list datastore.
+	*/
+	type?: string,
+
+	/**
+	 * optional, enables showing all tasks assigned to a certain resource in the resource view panel. This functionality works both for the resource diagram and resource histogram types of layout.
+	*/
+	fetchTasks?: boolean,
+
+	/**
+	 * optional, preprocesses items loaded into the datastore. It is a good place to set the default values of the datastore items. The function takes the following parameter:
+	 * @param the resource item.
+	*/
+	initItem?(item: any): any
+}
+
 export interface DatastoreMethods {
 
 	/**
@@ -5012,17 +5042,8 @@ export interface InlineEditor {
 
 	/**
 	 * optional, the function is called when hiding the inline editor
-	 * @param the value of the task property
-	 * @param task ID
-	 * @param the column configuration object
-	 * @param the DOM element of the inline editor
 	*/
-	hide?(
-		value: any,
-		id: string | number,
-		column: GridColumn,
-		node: HTMLElement
-	): void,
+	hide?(): void,
 
 	/**
 	 * the function is called after the **show** function. There, you need to set the values to the inline editor elements from the **task** object. The parameters are:
@@ -5218,16 +5239,35 @@ export interface InlineEditorMethods {
 	 * sets a mapping object
 	 * @param an object with the mapping configuration:
 	 * @param the method to initialize mapping
+	 * @param the inlineEditors object
+	 * @param the Grid layout view
 	 * @param the method that will be called when the inline editor is opened
+	 * @param the inlineEditors object
+	 * @param the HTML element
+	 * @param the Grid layout view
 	 * @param the method that will be called when the inline editor is closed
+	 * @param the inlineEditors object
+	 * @param the HTML element
+	 * @param the Grid layout view
 	 * @param the method to destroy mapping
 	*/
 	setMapping(
 		mapping: {
-			init: Function,
-			onShow: Function,
-			onHide: Function,
-			destroy: Function,
+			init: ((
+				inlineEditors: InlineEditorMethods,
+				grid: any,
+			) => void),
+			onShow: ((
+				inlineEditors: InlineEditorMethods,
+				node: HTMLElement,
+				grid: any,
+			) => void),
+			onHide: ((
+				inlineEditors: InlineEditorMethods,
+				node: HTMLElement,
+				grid: any,
+			) => void),
+			destroy: (() => void),
 		}
 	): void,
 
@@ -5371,7 +5411,7 @@ export interface QuickInfo {
 			header?: {
 				title?: string,
 				date?: string,
-			}
+			},
 			content?: string,
 			buttons?: string[],
 		}
@@ -5550,9 +5590,15 @@ export interface Overlay {
 	/**
 	 * adds a new overlay into the Gantt Chart and returns its id
 	 * @param the render function. Takes a container with custom content as a parameter
+	 * @param the overlay container
 	 * @param optional, the ID of the overlay
 	*/
-	addOverlay(render: Function, id?: number | string): string | number,
+	addOverlay(
+		render: ((
+			container: HTMLElement,
+		) => HTMLElement),
+		id?: number | string
+	): string | number,
 
 	/**
 	 * removes an overlay by its id
@@ -5592,21 +5638,32 @@ export interface Overlay {
 	[customMethod: string]: any;
 }
 
-export interface ZoomLevels {
+export interface ZoomLevel {
 
 	/**
-	 * required, an array of zooming levels, each of which includes the following properties:
-	 * @param the name of the level
-	 * @param the height of the scale
-	 * @param the height of the scale
-	 * @param the minimal width of a column. It has a higher priority than minColumnWidth and maxColumnWidth
-	 * @param an array of scales to switch between while zooming in/out on this level
+	 * the name of the level
 	*/
-	name: string,
-	scale_height?: number,
-	height?: number,
-	min_column_width?: number,
-	scales: Scale[],
+	name: string
+
+	/**
+	 * the height of the scale
+	*/
+	scale_height?: number
+
+	/**
+	 * the height of the scale
+	*/
+	height?: number
+
+	/**
+	 * the minimal width of a column. It has a higher priority than minColumnWidth and maxColumnWidth
+	*/
+	min_column_width?: number
+
+	/**
+	 * an array of scales to switch between while zooming in/out on this level
+	*/
+	scales: Scale[]
 }
 
 export interface ZoomMethods {
@@ -5614,8 +5671,9 @@ export interface ZoomMethods {
 	/**
 	 * initializes the extension with the provided configuration.
 	 * @param an object with configuration settings that contains the *levels* array of zooming levels and a number of additional properties:
-	 * @param required, an array of zooming levels, each of which includes the following properties:
+	 * @param required, an array of zooming levels
 	 * @param allows specifying a custom handler of the mouse wheel to work with zooming manually
+	 * @param a native event object.
 	 * @param the start value of the time scale zooming
 	 * @param the end value of the time scale zooming
 	 * @param the number of the default active level
@@ -5628,8 +5686,10 @@ export interface ZoomMethods {
 	*/
 	init(
 		zoomConfig: {
-			levels: ZoomLevels[],
-			handler?: Function,
+			levels: ZoomLevel[],
+			handler?: ((
+				e: Event,
+			) => void),
 			startDate?: Date,
 			endDate?: Date,
 			activeLevelIndex?: number,
@@ -5638,7 +5698,7 @@ export interface ZoomMethods {
 			maxColumnWidth?: number,
 			useKey?: string,
 			trigger?: string | null | undefined,
-			element?: HTMLElement | Function,
+			element?: HTMLElement | (() => HTMLElement),
 		}
 	): void,
 
@@ -5692,9 +5752,7 @@ export interface ZoomMethods {
 	 * checks whether an event has some handler(s) specified
 	 * @param the event's name
 	*/
-	checkEvent(name: string): boolean
-
-	[customMethod: string]: any;
+	checkEvent(name: string): boolean,
 }
 
 export interface ZoomEvents {
@@ -5704,37 +5762,39 @@ export interface ZoomEvents {
 	 * @param the number of the level
 	 * @param the config of the level
 	*/
-	"onAfterZoom": (level: number | string, config: ZoomLevels) => any
+	"onAfterZoom": (level: number | string, config: ZoomLevel) => any
 }
 
 export interface Tooltip {
 
 	/**
 	 * returns the HTML element of the tooltip
-	 * @param the HTML element under the question
 	*/
-	getNode(node: HTMLElement): HTMLElement
+	getNode(): HTMLElement,
+
 	/**
 	 * locks the position of tooltip to the boundaries of the specified HTML element
 	 * @param the HTML element under the question
 	*/
-	setViewport(node: HTMLElement): object
+	setViewport(node: HTMLElement): object,
+
 	/**
 	 * displays the tooltip at specific coordinates (relative to document.body). The method can take different parameters, depending on the position you want to show the tooltip at. To display tooltip at specific coordinates (relative to document.body), pass x,y coordinates. To display tooltip at the mouse event coordinates pass the Event object. The *tooltip_offset_x/y* and viewport will be taken into account.
 	 * @param the X coordinate or the mouse event object
 	 * @param the Y coordinate
 	*/
-	show(config?: number | Event, top?: number): object
+	show(config?: number | Event, top?: number): object,
+
 	/**
 	 * hides the tooltip element
-	 * @param a string with HTML content for the tooltip
 	*/
-	hide(html: string): object
+	hide(): object,
+
 	/**
 	 * puts HTML content into the tooltip. Takes as a parameter:
 	 * @param a string with HTML content for the tooltip
 	*/
-	setContent(html: string): object
+	setContent(html: string): object,
 }
 
 export interface Tooltips {
@@ -5793,7 +5853,7 @@ export interface Tooltips {
 			html: ((
 				event: Event,
 				node: HTMLElement,
-			) => HTMLElement),
+			) => HTMLElement | string | number | void),
 			global?: boolean,
 		}
 	): void,
@@ -5802,7 +5862,7 @@ export interface Tooltips {
 	 * removes tooltip. As a parameter the method takes:
 	 * @param the CSS selector of a Gantt element
 	*/
-	detach(selector: string): void
+	detach(selector: string): void,
 }
 
 export interface DurationFormatter {
@@ -5811,17 +5871,20 @@ export interface DurationFormatter {
 	 * returns *true* if the provided string can be parsed into the duration value, otherwise
 	 * @param the string that will be checked
 	*/
-	canParse(value: string): boolean
+	canParse(value: string): boolean,
+
 	/**
 	 * converts the provided duration value into the duration string
 	 * @param the duration value that will be converted
 	*/
-	format(value: number): string
+	format(value: number): string,
+
 	/**
 	 * parses the provided string into the duration value. If the value can’t be parsed, ‘null’ will be returned
 	 * @param the string that will be converted
 	*/
-	parse(value: string): number
+	parse(value: string): number,
+
 }
 
 export interface LinkFormatter {
@@ -5830,17 +5893,20 @@ export interface LinkFormatter {
 	 * returns *true* if the provided string can be parsed into the link object, otherwise
 	 * @param the string that will be checked
 	*/
-	canParse(value: string): boolean
+	canParse(value: string): boolean,
+
 	/**
 	 * converts the provided link value into the string
 	 * @param the link object that will be converted
 	*/
-	format(value: Link): string
+	format(value: Link): string,
+
 	/**
 	 * parses the provided string into the link object. If the value can’t be parsed, ‘null’ will be returned. **Note** that the *link.target* of the given link will have "null" value
 	 * @param the string that will be converted
 	*/
-	parse(value: string): object
+	parse(value: string): object,
+
 }
 
 export interface Formatters {
@@ -5949,7 +6015,7 @@ export interface Formatters {
 				start_to_finish?: string,
 			},
 		}
-	): LinkFormatter
+	): LinkFormatter,
 }
 
 export interface EmptyState {
@@ -5961,15 +6027,13 @@ export interface EmptyState {
 
 	/**
 	 * returns *true* if there is no data loaded into the Gantt chart, otherwise
-	 * @param the container element
 	*/
-	isGanttEmpty(container: HTMLElement): boolean,
+	isGanttEmpty(): boolean,
 
 	/**
 	 * returns *true* if the api/gantt_show_empty_state_config.md property is enabled, otherwise
-	 * @param the container element
 	*/
-	isEnabled(container: HTMLElement): boolean,
+	isEnabled(): boolean,
 
 	/**
 	 * puts an HTML content into the empty state element. The method can be redefined.

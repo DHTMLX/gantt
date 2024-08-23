@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.9 Standard
+dhtmlxGantt v.8.0.10 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -16998,6 +16998,10 @@ module.exports = function (gantt) {
           task: item
         });
       } else {
+        if (!parent.start_date) {
+          return getDefaultTaskDate(parent, gantt.getParent(parent));
+        }
+
         startDate = parent.start_date;
       }
     } else if (gantt.config.schedule_from_end) {
@@ -22327,22 +22331,12 @@ module.exports = function (gantt) {
       this.$root = domHelpers.toNode(node);
       rebuildLayout();
       this.$mouseEvents.reset(this.$root);
-      addMinimalSizes(gantt);
     }
 
     this.callEvent("onTemplatesReady", []);
     this.callEvent("onGanttReady", []);
     this.render();
   };
-
-  function addMinimalSizes(gantt) {
-    if (gantt.$container && !gantt.config.autosize) {
-      if (gantt.$root.offsetHeight < 50) {
-        // eslint-disable-next-line no-console
-        console.warn("The Gantt container has a small height, so you cannot see its content. If it is not intended, you need to set the 'height' style rule to the container:\nhttps://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly");
-      }
-    }
-  }
 
   gantt.$click = {
     buttons: {
@@ -23795,12 +23789,6 @@ module.exports = function addPlaceholder(gantt) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 module.exports = function (gantt) {
   var resourceAssignmentsProperty = "$resourceAssignments";
   gantt.config.resource_assignment_store = "resourceAssignments";
@@ -23995,8 +23983,7 @@ module.exports = function (gantt) {
         }
 
         usedIds[id] = true;
-
-        var assignment = _objectSpread(_objectSpread({}, res), {}, {
+        var assignment = {
           id: id,
           start_date: res.start_date,
           duration: res.duration,
@@ -24006,6 +23993,13 @@ module.exports = function (gantt) {
           resource_id: res.resource_id,
           value: res.value,
           mode: res.mode || defaultMode
+        }; // GS-2490: to add custom properties to assignment
+        // need to exclude $id which incfluences on render 
+
+        Object.keys(res).forEach(function (key) {
+          if (key != "$id") {
+            assignment[key] = res[key];
+          }
         });
 
         if (!(assignment.start_date && assignment.start_date.getMonth && assignment.end_date && assignment.end_date.getMonth && typeof assignment.duration === "number")) {
@@ -25288,11 +25282,20 @@ module.exports = function createResourceTimelineBuilder(gantt) {
 
         if (item.end_date) {
           maxDate = new Date(Math.min(item.end_date.valueOf(), task.end_date.valueOf()));
+        } // GS-2063: handle case with fixedDates mode
+
+
+        if (item.mode && item.mode == "fixedDates") {
+          minDate = item.start_date;
+          maxDate = item.end_date;
         }
       }
 
       var firstColumn = helpers.findBinary(scale.trace_x, minDate.valueOf());
-      var currDate = new Date(scale.trace_x[firstColumn] || gantt.date[scaleUnit + "_start"](new Date(minDate)));
+      var minScaleDate = new Date(scale.trace_x[firstColumn] || gantt.date[scaleUnit + "_start"](new Date(minDate))); // GS-2307: need to take into account that task could start before the min scale date
+      // so the task would be added to timegrid
+
+      var currDate = new Date(Math.min(minDate.valueOf(), minScaleDate.valueOf()));
       var calendar = gantt.config.work_time ? gantt.getTaskCalendar(task) : gantt;
       precalculatedTimes[calendar.id] = {};
 
@@ -25354,7 +25357,7 @@ module.exports = function createResourceTimelineBuilder(gantt) {
       items = gantt.getTaskBy(resourceProperty, resource.id);
     }
 
-    var timegrid = calculateResourceLoadFromAssignments(items, scale, assignmentsPassed);
+    timegrid = calculateResourceLoadFromAssignments(items, scale, assignmentsPassed);
     var scaleUnit = scale.unit;
     var scaleStep = scale.step;
     var timetable = [];
@@ -31974,11 +31977,8 @@ module.exports = function (gantt) {
     var oldOnChange = sns.onchange;
 
     sns.onchange = function () {
+      gantt._lightbox_current_type = this.value;
       gantt.changeLightboxType(this.value);
-
-      if (this.value === gantt.config.types.task) {
-        gantt._lightbox_new_type = "task";
-      }
 
       if (typeof oldOnChange == 'function') {
         oldOnChange.apply(this, arguments);
@@ -32291,7 +32291,7 @@ module.exports = function (gantt) {
     };
 
     gantt.lightbox_events.gantt_delete_btn = function () {
-      gantt._lightbox_new_type = null;
+      gantt._lightbox_current_type = null;
       if (!gantt.callEvent("onLightboxDelete", [gantt._lightbox_id])) return;
 
       if (gantt.isTaskExists(gantt._lightbox_id)) {
@@ -32401,6 +32401,7 @@ module.exports = function (gantt) {
 
   gantt._cancel_lightbox = function () {
     var task = this.getLightboxValues();
+    gantt._lightbox_current_type = null;
     this.callEvent("onLightboxCancel", [this._lightbox_id, task.$new]);
 
     if (gantt.isTaskExists(task.id) && task.$new) {
@@ -32417,6 +32418,7 @@ module.exports = function (gantt) {
 
   gantt._save_lightbox = function () {
     var task = this.getLightboxValues();
+    gantt._lightbox_current_type = null;
     if (!this.callEvent("onLightboxSave", [this._lightbox_id, task, !!task.$new])) return; // GS-2170. Do not recalculate the indexes and dates of other tasks
     // as they will be recalculated in the `refreshData`
 
@@ -32497,11 +32499,11 @@ module.exports = function (gantt) {
         }
       }
     } // GS-1282 We need to preserve the task type even if the lightbox doesn't have the typeselect section
+    // GS-2460 set the current type from selector
 
 
-    if (gantt._lightbox_new_type == "task") {
-      task.type = gantt.config.types.task;
-      gantt._lightbox_new_type = null;
+    if (gantt._lightbox_current_type) {
+      task.type = gantt._lightbox_current_type;
     }
 
     return task;
@@ -33163,8 +33165,10 @@ var initializer = function () {
               if (!mainGrid.$config.scrollable && mainGrid.$config.scrollY && gantt.$root.offsetWidth) {
                 var ganttContainerWidth = mainGrid.$gantt.$layout.$container.offsetWidth;
                 var verticalScrollbar = gantt.$ui.getView(mainGrid.$config.scrollY);
-                var verticalScrollbarWidth = verticalScrollbar.$config.width;
-                var gridOverflow = ganttContainerWidth - (mainGrid.$config.width + verticalScrollbarWidth);
+                var verticalScrollbarWidth = verticalScrollbar.$config.width; // GS-2488: to prevent grid from occupying the whole gantt container(timeline will be disabled) 
+                // need to leave min width for timeline
+
+                var gridOverflow = ganttContainerWidth - (mainGrid.$config.width + verticalScrollbarWidth) - 4;
 
                 if (gridOverflow < 0) {
                   mainGrid.$config.width += gridOverflow;
@@ -39294,14 +39298,6 @@ function ScaleHelper(gantt) {
       var scales;
 
       if (legacyMode) {
-        var docLink = "https://docs.dhtmlx.com/gantt/migrating.html#:~:text=%3D%20false%3B-,Time%20scale%20settings,-Configuration%20of%20time";
-
-        if (gantt.env.isFF) {
-          docLink = "https://docs.dhtmlx.com/gantt/migrating.html#6162";
-        } // eslint-disable-next-line no-console
-
-
-        console.warn("You are using the obsolete scale configuration.\nIt will stop working in the future versions.\nPlease migrate the configuration to the newer version:\n".concat(docLink));
         scales = scaleConfig.subscales || [];
       } else {
         scales = scaleConfig.scales.slice(1);
@@ -41007,7 +41003,7 @@ module.exports = Timeline;
 /***/ (function(module, exports) {
 
 module.exports = function (gantt) {
-  gantt.config.touch_drag = 75; //nearly immediate dnd
+  gantt.config.touch_drag = 500; //nearly immediate dnd
 
   gantt.config.touch = true;
   gantt.config.touch_feedback = true;
@@ -44952,6 +44948,8 @@ WorkTimeCalendarMerger.prototype = {
     return this._mergeAdjacentIntervals(this._intersectHourRanges(firstHours, secondHours));
   },
   merge: function merge(first, second) {
+    var _this = this;
+
     var firstConfig = utils.copy(first.getConfig().parsed);
     var secondConfig = utils.copy(second.getConfig().parsed);
     var mergedSettings = {
@@ -44960,25 +44958,34 @@ WorkTimeCalendarMerger.prototype = {
       customWeeks: {}
     };
 
-    for (var i in firstConfig.dates) {
-      var firstDate = firstConfig.dates[i];
-      var secondDate = secondConfig.dates[i]; // if this key is a working date in both calendars
+    var processCalendar = function processCalendar(config1, config2) {
+      for (var _i in config1.dates) {
+        var date1 = config1.dates[_i]; // dates contain day-of-week rules [0-7] and rules for specific dates (js date timestamps) - set false date rules initially
 
-      if (firstDate && secondDate) {
-        // if at least one of working date is set by hours config - build intersection
-        if (Array.isArray(firstDate) || Array.isArray(secondDate)) {
-          var firstHours = Array.isArray(firstDate) ? firstDate : firstConfig.hours;
-          var secondHours = Array.isArray(secondDate) ? secondDate : secondConfig.hours;
-          mergedSettings.dates[i] = this._toHoursArray(this._mergeHoursConfig(firstHours, secondHours));
-        } else {
-          // date will use global hours
-          mergedSettings.dates[i] = true;
+        if (+_i > 1000) {
+          mergedSettings.dates[_i] = false;
+        } // Check if the key exists in the fisrt calendar object
+
+
+        for (var key in config2.dates) {
+          var date2 = config2.dates[key]; // Logical AND for week days
+
+          if (key == _i) {
+            mergedSettings.dates[_i] = !!(date1 && date2);
+          } // Handle case where dates are arrays
+
+
+          if (Array.isArray(date1)) {
+            var hours2 = Array.isArray(date2) ? date2 : config2.hours;
+            mergedSettings.dates[_i] = _this._toHoursArray(_this._mergeHoursConfig(date1, hours2));
+          }
         }
-      } else {
-        mergedSettings.dates[i] = false;
       }
-    } // transfer and overwrite custom week calendars
+    }; // Check both calendars
 
+
+    processCalendar(firstConfig, secondConfig);
+    processCalendar(secondConfig, firstConfig); // transfer and overwrite custom week calendars
 
     if (firstConfig.customWeeks) {
       for (var i in firstConfig.customWeeks) {
@@ -51467,7 +51474,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.9";
+  this.version = "8.0.10";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
