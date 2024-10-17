@@ -1,0 +1,258 @@
+/* default terrace theme is here */
+
+:root {
+	--dhx-gantt-theme: terrace;
+	--dhx-gantt-font-family: Inter, Helvetica, Arial, sans-serif;
+	--dhx-gantt-font-size: 14px;
+
+	--dhx-gantt-heading-font-size: calc(var(--dhx-gantt-font-size) + 2px);
+	--dhx-gantt-heading-font-weight: 600;
+
+	--dhx-gantt-important-font-size: var(--dhx-gantt-font-size);
+	--dhx-gantt-important-line-height: 142%;
+	--dhx-gantt-important-font-weight: 500;
+	--dhx-gantt-regular-font-size: var(--dhx-gantt-font-size);
+	--dhx-gantt-regular-font-weight: 400;
+	--dhx-gantt-regular-line-height: 142%;
+
+	--dhx-gantt-caption-font-size: calc(var(--dhx-gantt-font-size) - 2px);
+	--dhx-gantt-caption-font-weight: 400;
+	--dhx-gantt-caption-line-height: 132%;
+
+	--dhx-gantt-base-colors-white: #FFFFFF;
+	--dhx-gantt-base-colors-select: #EFF3FF;
+	--dhx-gantt-base-colors-hover-color: #e0e0e0;
+	--dhx-gantt-base-colors-border-light: #F0F0F0;
+	--dhx-gantt-base-colors-border: #DFE0E1;
+
+	--dhx-gantt-base-colors-icons: #A1A4A6;
+	--dhx-gantt-base-colors-icons-active: #8b8e90;
+	--dhx-gantt-base-colors-icons-active: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-icons) 100%, #000000 12.6%);
+	--dhx-gantt-base-colors-icons-hover: #76787a;
+	--dhx-gantt-base-colors-icons-hover: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-icons) 100%, #000000 28.5%);
+
+	--dhx-gantt-base-colors-disabled: #E9E9E9;
+	--dhx-gantt-base-colors-select: #E0E5F3;
+	--dhx-gantt-base-colors-readonly: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-base-colors-text-light: #555D63;
+	--dhx-gantt-base-colors-text-base: #23272A;
+	--dhx-gantt-base-colors-text-on-fill: rgba(255, 255, 255, 0.90);
+	--dhx-gantt-base-colors-background: #FFFFFF;
+	--dhx-gantt-base-colors-background-alt: #F2F2F2;
+
+	--dhx-gantt-base-colors-primary: #537CFA;
+	--dhx-gantt-base-colors-primary-hover: #4269E0;
+	--dhx-gantt-base-colors-primary-hover: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-primary) 100%, #000000 6%);
+	--dhx-gantt-base-colors-primary-active: #3365fb;
+	--dhx-gantt-base-colors-primary-active: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-primary) 100%, #000000 16.6%);
+	--dhx-gantt-base-colors-primary-lighter: #537cfa33;
+	--dhx-gantt-base-colors-primary-lighter: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-primary) 20%, rgba(0, 0, 0, 0) 100%);
+
+	--dhx-gantt-base-colors-warning: #FAB936;
+	--dhx-gantt-base-colors-error: #E3334E;
+	--dhx-gantt-base-colors-error-hover: #D3233E;
+	--dhx-gantt-base-colors-error-hover: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-error) 100%, #000000 6%);
+
+	--dhx-gantt-base-colors-error-active: #C3132E;
+	--dhx-gantt-base-colors-error-active: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-error) 100%, #000000 16.6%);
+
+	--dhx-gantt-base-colors-error-lighter: #E3334E33;
+	--dhx-gantt-base-colors-error-lighter:  color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-error) 20%, rgba(0, 0, 0, 0) 100%);
+
+
+	--dhx-gantt-base-colors-error-text: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-base-colors-success: #1BC297;
+
+	// --dhx-gantt-base-colors-hover-color: rgba(0, 0, 0, 0.1);
+
+
+
+	--dhx-gantt-container-background: var(--dhx-gantt-base-colors-background);
+	--dhx-gantt-container-color: var(--dhx-gantt-base-colors-text-base);
+	--dhx-gantt-offtime-background: var(--dhx-gantt-base-colors-background-alt);
+
+	--dhx-gantt-scale-background: var(--dhx-gantt-container-background);
+	--dhx-gantt-scale-border-vertical: 1px solid var(--dhx-gantt-base-colors-border-light);
+	--dhx-gantt-scale-border-horizontal: 1px solid var(--dhx-gantt-base-colors-border);
+
+	--dhx-gantt-scale-color: var(--dhx-gantt-base-colors-text-light);
+
+	--dhx-gantt-grid-body-background: transparent;
+	--dhx-gantt-grid-scale-background: var(--dhx-gantt-scale-background);
+	--dhx-gantt-grid-scale-color: var(--dhx-gantt-scale-color);
+	--dhx-gantt-grid-scale-border-vertical: var(--dhx-gantt-scale-border-vertical);
+	--dhx-gantt-timeline-scale-background: var(--dhx-gantt-scale-background);
+	--dhx-gantt-timeline-scale-color: var(--dhx-gantt-scale-color);
+	--dhx-gantt-timeline-scale-border-vertical:  var(--dhx-gantt-scale-border-vertical);
+
+	--dhx-gantt-grid-cell-border: 1px solid transparent;
+	--dhx-gantt-grid-row-border: var(--dhx-gantt-scale-border-horizontal);
+
+	--dhx-gantt-base-transition: 0.2s ease;
+
+	--dhx-gantt-box-shadow-s: 0px 4px 24px 0px rgba(44, 47, 60, 0.08);
+	--dhx-gantt-box-shadow-m: 0px 4px 24px 0px rgba(44, 47, 60, 0.36);
+
+	--dhx-gantt-box-shadow-l: 0px 4px 24px 0px rgba(44, 47, 60, 0.56);
+
+	--dhx-gantt-icon-size: 1.5em;
+
+	--dhx-gantt-base-module: 4px;
+	--dhx-gantt-base-padding: 4px;
+	--dhx-gantt-border-radius: var(--dhx-gantt-base-module);
+
+	--dhx-gantt-transition: all 0.3s;
+
+	--dhx-gantt-default-border: 1px solid var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-header-border: var(--dhx-gantt-default-border);
+
+	/* tasks */
+
+
+	--dhx-gantt-task-blue: var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-task-green: #20B56D;;
+	--dhx-gantt-task-violet: #D071EF;
+	--dhx-gantt-task-yellow: linear-gradient(180deg, #FFB725 0%, #FFBB25 31.25%, #FAEA27 100%);
+
+	--dhx-gantt-baseline-background-0: #00B4FF;
+    --dhx-gantt-baseline-background-1: #DF6DE3;
+    --dhx-gantt-baseline-background-2: #FF957D;
+    --dhx-gantt-baseline-background-3: #25C79D;
+    --dhx-gantt-baseline-background-4: #FF6FB0;
+    --dhx-gantt-baseline-background-5: #FFC470;
+    --dhx-gantt-baseline-background-6: #FDE720;
+    --dhx-gantt-baseline-background-7: #47AFD0;
+    --dhx-gantt-baseline-background-8: #DA9DFF;
+    --dhx-gantt-baseline-background-9: #BEE964;
+
+	--dhx-gantt-task-font-size: var(--dhx-gantt-regular-font-size);
+	--dhx-gantt-task-line-height: var(--dhx-gantt-regular-line-height);
+	--dhx-gantt-task-font-weight: var(--dhx-gantt-regular-font-weight);
+	--dhx-gantt-task-background-primary: var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-task-border-radius: var(--dhx-gantt-border-radius);
+
+	--dhx-gantt-task-background: var(--dhx-gantt-task-blue);
+	--dhx-gantt-task-border: none;
+	--dhx-gantt-task-color: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-project-color: var(--dhx-gantt-task-color);
+	--dhx-gantt-task-line-text: var(--dhx-gantt-container-color);
+
+	--dhx-gantt-task-row-border: 1px solid var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-task-row-background: var(--dhx-gantt-container-background);
+	--dhx-gantt-task-row-background--odd: var(--dhx-gantt-container-background);
+	--dhx-gantt-task-progress-color: rgba(0, 0, 0, .15);
+	--dhx-gantt-project-progress-color: var(--dhx-gantt-task-progress-color);
+
+	--dhx-gantt-project-background: var(--dhx-gantt-task-green);
+	--dhx-gantt-milestone-background: var(--dhx-gantt-task-violet);
+
+	--dhx-gantt-task-marker-color: var(--dhx-gantt-task-background);
+
+	--dhx-gantt-popup-background: var(--dhx-gantt-container-background);
+	--dhx-gantt-popup-color: var(--dhx-gantt-container-color);
+	--dhx-gantt-popup-border: none;
+	--dhx-gantt-popup-border-radius: var(--dhx-gantt-border-radius);
+
+
+	--dhx-gantt-tooltip-background: var(--dhx-gantt-base-colors-text-base);
+	--dhx-gantt-tooltip-color: var(--dhx-gantt-container-background);
+	--dhx-gantt-tooltip-border: none;
+	--dhx-gantt-tooltip-border-radius: var(--dhx-gantt-popup-border-radius);
+
+	--dhx-gantt-link-background: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-link-background-hover: var(--dhx-gantt-base-colors-text-light);
+	--dhx-gantt-link-critical-background: var(--dhx-gantt-base-colors-error);
+
+	--dhx-gantt-link-handle-offset: 8px;
+	--dhx-gantt-link-handle-size: 10px;
+	--dhx-gantt-link-handle-border: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-link-handle-border-hover: var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-link-handle-background: var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-link-handle-background-hover: var(--dhx-gantt-base-colors-text-light);
+
+	--dhx-gantt-progress-handle-border: var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-progress-handle-background: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-progress-handle-background-hover: var(--dhx-gantt-base-colors-icons-hover);
+	/* form */
+
+	--dhx-gantt-control-height: 32px;
+	--dhx-gantt-checkbox-height: 20px;
+
+	--dhx-gantt-lightbox_font-family: var(--dhx-gantt-font-family);
+	--dhx-gantt-lightbox-font-size: var(--dhx-gantt-important-font-size);
+	--dhx-gantt-lightbox-font-weight: var(--dhx-gantt-important-font-weight);
+
+	--dhx-gantt-lightbox-background: var(--dhx-gantt-popup-background);
+	--dhx-gantt-lightbox-border: var(--dhx-gantt-popup-border);
+	--dhx-gantt-lightbox-control-border: var(--dhx-gantt-default-border);
+	
+	--dhx-gantt-lightbox-color: var(--dhx-gantt-popup-color);
+	--dhx-gantt-lightbox-padding: 12px;
+
+	--dhx-gantt-lightbox-title-background: var(--dhx-gantt-base-colors-select);
+	--dhx-gantt-lightbox-title-color: var(--dhx-gantt-lightbox-color);
+	--dhx-gantt-lightbox-title-font-size: var(--dhx-gantt-heading-font-size);
+
+	--dhx-gantt-lightbox-max-width: 622px;
+	--dhx-gantt-lightbox-wide-max-width: 738px;
+	--dhx-gantt-lightbox-width: max-content;
+
+	--dhx-gantt-btn-order: row-reverse;
+	/* buttons */
+
+	--dhx-gantt-btn-background: var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-btn-color: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-btn-border-color: var(--dhx-gantt-base-colors-primary);
+
+	--dhx-gantt-btn-color-hover: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-btn-background-hover: var(--dhx-gantt-base-colors-primary-hover);
+	--dhx-gantt-btn-border-hover: var(--dhx-gantt-base-colors-primary-hover);
+
+	--dhx-gantt-btn-color-active: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-btn-background-active: var(--dhx-gantt-base-colors-primary-active);
+	--dhx-gantt-btn-border-active: var(--dhx-gantt-base-colors-primary-active);
+
+	--dhx-gantt-btn-background-disabled: var(--dhx-gantt-base-colors-disabled);
+	--dhx-gantt-btn-color-disabled: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-btn-border-color-disabled: var(--dhx-gantt-base-colors-disabled);
+
+	--dhx-gantt-btn-outline-background: transparent;
+	--dhx-gantt-btn-outline-color: var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-btn-outline-border-color: var(--dhx-gantt-base-colors-primary);
+
+	--dhx-gantt-btn-outline-background-hover: var(--dhx-gantt-base-colors-primary-lighter);
+	--dhx-gantt-btn-outline-color-hover: var(--dhx-gantt-base-colors-primary-hover);
+	--dhx-gantt-btn-outline-border-hover: var(--dhx-gantt-base-colors-primary-hover);
+
+	--dhx-gantt-btn-outline-background-active: var(--dhx-gantt-base-colors-primary-active);
+	--dhx-gantt-btn-outline-color-active: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-btn-outline-border-active: var(--dhx-gantt-base-colors-primary-active);
+
+	--dhx-gantt-btn-outline-background-disabled: transparent;
+	--dhx-gantt-btn-outline-color-disabled: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-btn-outline-border-color-disabled: var(--dhx-gantt-base-colors-icons);
+
+	--dhx-gantt-btn-text-transform: none;
+
+
+
+	/* modals */
+
+	--dhx-gantt-info-background: var(--dhx-gantt-popup-background);
+	--dhx-gantt-info-color: var(--dhx-gantt-popup-color);
+	--dhx-gantt-info-border: var(--dhx-gantt-popup-border);
+	--dhx-gantt-info-shadow: var(--dhx-gantt-box-shadow-m);
+
+
+
+	--dhx-gantt-modal-background: var(--dhx-gantt-popup-background);
+	--dhx-gantt-modal-color: var(--dhx-gantt-popup-color);
+	--dhx-gantt-modal-border: var(--dhx-gantt-popup-border);
+	--dhx-gantt-modal-padding: 16px;
+	--dhx-gantt-modal-width: 320px;
+	--dhx-gantt-modal-border-radius: var(--dhx-gantt-popup-border-radius);
+
+	/* undo delete */
+	--dhx-gantt-undo-delete-background: var(--dhx-gantt-base-colors-text-base);
+	--dhx-gantt-undo-delete-color: var(--dhx-gantt-task-color);
+}

@@ -1,0 +1,163 @@
+.gantt {
+    &_layout_x > &_layout_cell {
+        display: inline-block;
+        vertical-align: top;
+    }
+    &_layout_x {
+        white-space: nowrap;
+    }
+    &_resizing {
+        opacity: 0.7;
+        background: #f2f2f2;
+    }
+
+    &_layout_cell_border_right&_resizer {
+        overflow: visible;
+        border-right: 0;
+    }
+
+    &_resizer{
+        cursor: e-resize;
+        position: relative;
+
+        &_y {
+            cursor: n-resize;
+        }
+
+        &_stick {
+            background: #33aae8;
+            z-index: 9999;
+            position: absolute;
+            top: 0;
+            width: 100%;
+        }
+
+        &_x &_x {
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            margin-left: -10px;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        &_y &_y{
+            position: absolute;
+            height: 20px;
+            width: 100%;
+            top: -10px;
+            left: 0;
+            z-index: 1;
+        }
+
+        &_error{
+            background: indianred!important;
+        }
+    }
+
+
+
+    &_noselect{
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+
+    &_layout_cell_border{
+        &_left{
+            border-left:var(--dhx-gantt-default-border);
+        }
+
+        &_right{
+            border-right:var(--dhx-gantt-default-border);
+        }
+
+        &_top{
+            border-top:var(--dhx-gantt-default-border);
+        }
+
+        &_bottom{
+            border-bottom:var(--dhx-gantt-default-border);
+        }
+
+        &_transparent{
+            border-color:transparent;
+        }
+    }
+
+    &_window{
+        position: absolute;
+        top: 50%;
+        left:50%;
+        z-index: 999999999;
+        background: white;
+        &_content{
+            position: relative;
+            &_header{
+                background:#39c;
+                color:#ffffff;
+                height: 33px;
+                padding: 10px 10px 0 10px;
+                border-bottom: solid 2px #ffffff;
+                position: relative;
+                &_text{
+                    padding-left:10%;
+                }
+                &_buttons{
+                    position: absolute;
+                    top:10px;
+                    right:10px;
+                    &:hover{
+                        color:#000000;
+                        cursor: pointer;
+                    }
+                }
+            }
+            &_resizer{
+                position: absolute;
+                width: 15px;
+                height: 15px;
+                bottom: 0;
+                line-height: 15px;
+                right: -1px;
+                text-align: center;
+                background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAMAAAAMCGV4AAAABlBMVEUAAAAAAAClZ7nPAAAAAXRSTlMAQObYZgAAABZJREFUeAFjIAUwUshlpJDLSIhLGAAACQ4AFk79JaMAAAAASUVORK5CYII=);
+                cursor: nw-resize;
+                z-index: 999;
+            }
+            &_frame{
+                position: absolute;
+                top: 0;
+                left:0;
+                width: 100%;
+                height:100%;
+                background: rgba(0,0,0,0.1);
+                z-index: 9999;
+            }
+
+        }
+
+        &_drag{
+             cursor: pointer!important;
+        }
+
+        &_resizing{
+            overflow: visible;
+            &_body{
+                overflow: hidden!important;
+            }
+        }
+
+        &_modal{
+            background: rgba(0,0,0,0.1);
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+        }
+    }
+
+}

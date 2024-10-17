@@ -1,0 +1,50 @@
+.gantt_resource_marker{
+	position:absolute;
+	text-align: center;
+	font-size: var(--dhx-gantt-font-size);
+	color:#FFF;
+}
+
+.gantt_resource_marker_ok {
+	background: var(--dhx-gantt-base-colors-success);
+}
+
+.gantt_resource_marker_overtime {
+	background: var(--dhx-gantt-base-colors-error);
+}
+
+.gantt_histogram_label{
+	width:100%;
+	height: 100%;
+	position:absolute;
+	z-index: 1;
+	font-weight: bold;
+	font-size:var(--dhx-gantt-font-size);
+}
+.gantt_histogram_fill{
+	background-color: rgba(83, 124, 250, 0.30);
+	background-color: color-mix(in srgb, var(--dhx-gantt-base-colors-primary), transparent 60%);
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+}
+
+.gantt_histogram_hor_bar{
+	height:1px;
+	position: absolute;
+	background: var(--dhx-gantt-base-colors-primary);
+	margin-top: -1px;
+	margin-left: -1px;
+}
+.gantt_histogram_vert_bar{
+	width:1px;
+	position: absolute;
+	background: var(--dhx-gantt-base-colors-primary);
+	margin-left:-1px;
+}
+
+.gantt_histogram_cell {
+	position:absolute;
+	text-align: center;
+	font-size: var(--dhx-gantt-font-size);
+}

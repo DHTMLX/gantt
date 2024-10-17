@@ -1,0 +1,30 @@
+{
+  "name": "dhtmlx-gantt-skins",
+  "version": "9.0.0", 
+  "description": "Less sources and a build tool for DHTMLX Gantt skins",
+  "scripts": {
+    "build": "node scripts.js --file=dhtmlxgantt",
+    "watch": "npm-watch build"
+  },
+  "watch":{
+    "build": {
+      "patterns":["./"],
+      "extensions": "less"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DHTMLX/gantt"
+  },
+  "author": "XB Software Ltd.",
+  "license": "GPL-2.0",
+  "homepage": "https://dhtmlx.com",
+  "dependencies": {
+    "less": "^3.0.4",
+    "minimist": "^1.2.6",
+    "npm-watch": "^0.11.0",
+    "postcss": "^8.4.14",
+    "postcss-url": "^10.1.3"
+  },
+  "devDependencies": {}
+}

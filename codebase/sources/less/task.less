@@ -1,0 +1,446 @@
+.gantt_grid div,
+.gantt_data_area div {
+  -ms-touch-action: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.gantt_data_area {
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  user-select: none;
+}
+
+.gantt_links_area {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
+.gantt_task_content,
+.gantt_task_progress,
+.gantt_side_content {
+  line-height: inherit;
+  overflow: hidden;
+  height: 100%;
+}
+
+.gantt_task_content {
+  font-size: var(--dhx-gantt-task-font-size);
+  color: var(--dhx-gantt-task-color);
+  width: 100%;
+  padding-top: 1px;;
+  top:0;
+  cursor: pointer;
+  position: absolute;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.gantt_task_progress {
+  text-align: center;
+  z-index: 0;
+  background: var(--dhx-gantt-task-progress-color);
+}
+
+.gantt_task_progress_wrapper {
+  border-radius: inherit;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.gantt_task_line {
+  border-radius: var(--dhx-gantt-task-border-radius);
+  position: absolute;
+  box-sizing: border-box;
+  background: var(--dhx-gantt-task-background);
+  border: var(--dhx-gantt-task-border);
+  user-select: none;
+}
+
+.gantt_task_line.gantt_drag_move div {
+  cursor: move;
+}
+
+.gantt_touch_move,
+.gantt_touch_progress,
+.gantt_touch_resize {
+  transform: scale(1.02, 1.1);
+  transform-origin: 50%;
+}
+
+.gantt_touch_progress .gantt_task_progress_drag,
+.gantt_touch_resize .gantt_task_drag {
+  transform: scaleY(1.3);
+  transform-origin: 50%;
+}
+
+.gantt_side_content {
+  position: absolute;
+  white-space: nowrap;
+  color: var(--dhx-gantt-base-colors-text-light);
+  top: 0;
+  font-size: calc(var(--dhx-gantt-task-font-size) - 1px);
+}
+
+.gantt_side_content.gantt_left {
+  right: 100%;
+  padding-right: var(--dhx-gantt-base-padding);
+}
+
+.gantt_side_content.gantt_right {
+  left: 100%;
+  padding-left: var(--dhx-gantt-base-padding);
+}
+
+.gantt_side_content.gantt_link_crossing {
+  margin-top:-6px;
+}
+
+/* Link line */
+.gantt_task_link .gantt_line_wrapper,
+.gantt_link_arrow,
+.gantt_link_corner {
+  position: absolute;
+  cursor: pointer;
+}
+
+.gantt_line_wrapper div {
+  background-color: var(--dhx-gantt-link-background);
+}
+
+.gantt_link_corner{
+  box-sizing: content-box !important;
+  border-color: var(--dhx-gantt-link-background);
+  background-color: transparent;
+}
+
+.gantt_task_link:hover{
+  --dhx-gantt-link-background: var(--dhx-gantt-link-background-hover);
+}
+
+/* Link arrow */
+.gantt_task_link div.gantt_link_arrow {
+  .dhx_gantt_icon();
+  .dhx_gantt_icon.dhx_gantt_icon_rounded_arrow_right();
+  color: var(--dhx-gantt-link-background);
+}
+
+.gantt_link_control {
+
+  position: absolute;
+  width:calc(var(--dhx-gantt-link-handle-offset) + var(--dhx-gantt-link-handle-size));
+  top: 50%;
+  display: flex;
+  align-items: center;
+  transition: all var(--dhx-gantt-base-transition)
+}
+
+.gantt_link_control div {
+  display: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  position: relative;
+  border: 2px solid var(--dhx-gantt-link-handle-border);
+  border-radius: 50%;
+  height: var(--dhx-gantt-link-handle-size);
+  width: var(--dhx-gantt-link-handle-size);
+  background: var(--dhx-gantt-link-handle-background);
+}
+
+.gantt_link_control div:hover {
+  --dhx-gantt-link-handle-background: var(--dhx-gantt-link-handle-background-hover);
+  --dhx-gantt-link-handle-border: var(--dhx-gantt-link-handle-border-hover);
+}
+
+.gantt_link_control.task_left {
+  transform: translate(-100%, -50%);
+  left: 0;
+  justify-content: flex-start;
+}
+
+.gantt_link_control.task_right {
+  transform: translate(100%, -50%);
+  right: 0;
+  justify-content: flex-end;
+}
+
+.gantt_task_line.gantt_link_source,
+.gantt_task_line.gantt_selected,
+.gantt_task_line:hover,
+.gantt_task_line.gantt_drag_move,
+.gantt_task_line.gantt_drag_resize {
+
+  .gantt_link_control div,
+  .gantt_task_drag {
+    display: block;
+  }
+}
+
+.gantt_task_line.gantt_selected,
+.gantt_task_line:hover,
+.gantt_task_line.gantt_drag_progress{
+  .gantt_task_progress_drag{
+    display: flex;
+  }
+}
+
+.gantt_link_target .gantt_link_control div {
+  display: block;
+}
+
+.gantt_link_source,
+.gantt_link_target {
+  box-shadow: 0px 0px 3px var(--dhx-gantt-base-colors-primary);
+}
+
+.gantt_link_target.link_start_allow,
+.gantt_link_target.link_finish_allow {
+  box-shadow: 0px 0px 3px var(--dhx-gantt-base-colors-success);
+}
+
+.gantt_link_target.link_start_deny,
+.gantt_link_target.link_finish_deny {
+  box-shadow: 0px 0px 3px var(--dhx-gantt-base-colors-error);
+}
+
+
+.gantt_link_from_start .gantt_link_control.task_start_date div,
+.gantt_link_from_end .gantt_link_control.task_end_date div,
+.link_start_allow .gantt_link_control.task_start_date div,
+.link_finish_allow .gantt_link_control.task_end_date div {
+  --dhx-gantt-link-handle-border: var(--dhx-gantt-link-handle-border-hover);
+  --dhx-gantt-link-handle-background: var(--dhx-gantt-base-colors-primary);
+  
+}
+
+.link_start_deny .gantt_link_control.task_start_date div,
+.link_finish_deny .gantt_link_control.task_end_date div {
+  --dhx-gantt-link-handle-border: var(--dhx-gantt-link-handle-border-hover);
+  --dhx-gantt-link-handle-background: var(--dhx-gantt-base-colors-error);
+}
+
+/* Link arrows */
+
+.gantt_link_arrow_left {
+  transform:rotate(180deg);
+}
+
+.gantt_task_drag,
+.gantt_task_progress_drag {
+  cursor: ew-resize;
+  display: none;
+  position: absolute;
+}
+
+.gantt_task_drag.task_right {
+  cursor: e-resize;
+}
+
+.gantt_task_drag.task_left {
+  cursor: w-resize;
+}
+
+.gantt_task_drag {
+  height: 16px;
+  width: 8px;
+  z-index: 1;
+  top: -1px;
+}
+
+.gantt_task_drag.task_left {
+  left: -7px;
+}
+
+.gantt_task_drag.task_right {
+  right: -7px;
+}
+
+.gantt_task_progress_drag {
+  height: 70%;
+  min-height: 12px;
+  bottom: -3px;
+  transform: translate(-50%);
+  z-index: 1;
+  align-items: flex-end;
+}
+
+.gantt_task_progress_drag:hover{
+  --dhx-gantt-base-colors-icons : var(--dhx-gantt-base-colors-icons-hover);
+}
+
+.gantt_link_tooltip {
+  box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+  background-color: var(--dhx-gantt-popup-background);
+  border-left: 1px solid var(--dhx-gantt-base-colors-border);
+  border-top: 1px solid var(--dhx-gantt-base-colors-border);
+  font-family: var(--dhx-gantt-font-family);
+  font-size: var(--dhx-gantt-regular-font-size);
+  color: var(--dhx-gantt-popup-color);
+  padding: var(--dhx-gantt-base-padding);
+  line-height: var(--dhx-gantt-regular-line-height);
+}
+
+.gantt_link_direction {
+  height: 0px;
+  border: none;
+  border-bottom: 2px dashed var(--dhx-gantt-base-colors-primary);
+  transform-origin: 0% 0%;
+  z-index: 2;
+  margin-left: 1px;
+  position: absolute;
+}
+
+.gantt_grid_data .gantt_row.gantt_selected,
+.gantt_grid_data .gantt_row.odd.gantt_selected {
+  background-color: var(--dhx-gantt-base-colors-select);
+}
+
+.gantt_row_project{
+  font-weight: 500;
+}
+
+.gantt_task_row.odd.gantt_selected, 
+.gantt_task_row.gantt_selected{ 
+  background-color: var(--dhx-gantt-base-colors-select);
+  .gantt_task_cell {
+    // border-right-color: var(--dhx-gantt-base-colors-primary);
+  }
+}
+
+.gantt_task_line.gantt_selected {
+  box-shadow: var(--dhx-gantt-box-shadow-s);
+}
+
+
+.gantt_cal_quick_info.gantt_project,
+.gantt_task_line.gantt_project{
+	--dhx-gantt-task-color: var(--dhx-gantt-project-color);
+	--dhx-gantt-task-background: var(--dhx-gantt-project-background);
+  --dhx-gantt-task-progress-color: var(--dhx-gantt-project-progress-color);
+}
+
+.gantt_task_line.gantt_project.gantt_task_line_planned{
+  --dhx-gantt-task-background: var(--dhx-gantt-base-colors-text-light);
+}
+
+.gantt_task_line_planned{
+  --dhx-gantt-scheduled-summary-bracket-size: 8px;
+}
+
+.gantt_task_line_planned::before,
+.gantt_task_line_planned::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent; 
+}
+
+.gantt_task_line_planned::before {
+  border-width: var(--dhx-gantt-scheduled-summary-bracket-size) var(--dhx-gantt-scheduled-summary-bracket-size) 0 0;
+  border-right-color: var(--dhx-gantt-task-background);
+
+  transform: rotate(180deg);
+}
+
+.gantt_task_line_planned::after {
+  border-width: 0 var(--dhx-gantt-scheduled-summary-bracket-size) var(--dhx-gantt-scheduled-summary-bracket-size) 0;
+  border-right-color: var(--dhx-gantt-task-background);
+  right: 0; 
+  
+}
+
+.gantt_task_line_actual{
+  opacity: 0.3;
+  --dhx-gantt-task-border-radius: 2px;
+}
+
+.gantt_task_line.gantt_project.gantt_project_scheduling_conflict .gantt_task_line_actual{
+  --dhx-gantt-task-background: var(--dhx-gantt-base-colors-error);
+}
+
+.gantt_task_line.gantt_project.gantt_selected {
+  box-shadow: var(--dhx-gantt-box-shadow-s);
+}
+
+.gantt_task_line.gantt_milestone {
+  --dhx-gantt-task-background: var(--dhx-gantt-milestone-background);
+  visibility: hidden;
+  border: none;
+  box-sizing: content-box;
+}
+
+.gantt_task_line.gantt_milestone div {
+  visibility: visible;
+}
+
+.gantt_task_line.gantt_milestone .gantt_task_content {
+  background: inherit;
+  border: inherit;
+  border-width: 1px;
+  border-radius: inherit;
+  box-sizing: border-box;
+  transform: rotate(45deg);
+}
+
+.gantt_task_line.gantt_task_inline_color {
+  border-color: var(--dhx-gantt-task-background);
+}
+
+.gantt_task_line.gantt_task_inline_color .gantt_task_progress {
+  background-color: var(--dhx-gantt-task-background);
+  opacity: 0.2;
+}
+
+.gantt_task_line.gantt_task_inline_color.gantt_selected {
+  box-shadow: 0 0 5px var(--dhx-gantt-task-background);
+}
+
+.gantt_task_line.gantt_task_inline_color.gantt_project.gantt_selected {
+  box-shadow: 0 0 5px var(--dhx-gantt-task-background);
+}
+
+.gantt_task_link.gantt_link_inline_color:hover .gantt_line_wrapper div {
+  box-shadow: 0 0 5px 0px var(--dhx-gantt-task-background);
+}
+
+.gantt_critical_task {
+  --dhx-gantt-task-background: var(--dhx-gantt-link-critical-background);
+}
+
+.gantt_critical_task .gantt_task_progress {
+  --dhx-gantt-task-progress: rgba(0, 0, 0, 0.4);
+}
+
+.gantt_critical_link  {
+  --dhx-gantt-link-background: var(--dhx-gantt-link-critical-background);
+}
+
+.gantt_link_arrow{
+  --dhx-gantt-base-colors-icons: var(--dhx-gantt-link-background);
+}
+
+.gantt_row:focus,
+.gantt_cell:focus,
+.gantt_btn_set:focus,
+.gantt_qi_big_icon:focus,
+.gantt_popup_button:focus,
+.gantt_grid_head_cell:focus {
+  box-shadow: inset 0px 0px 1px 1px var(--dhx-gantt-base-colors-primary);
+}
+
+.gantt_split_parent,
+.gantt_split_subproject {
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.gantt_rollup_child .gantt_link_control,
+.gantt_rollup_child:hover .gantt_link_control {
+  display: none;
+}

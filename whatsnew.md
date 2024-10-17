@@ -1,3 +1,29 @@
+### 9.0.0
+
+Skins customization with CSS variables
+New Dark skin is introduced
+Built-in support for Baselines is added
+Manually Scheduled Summary tasks are now supported
+Sticky labels for time scales
+
+Terrace skin is updated
+Added support for Deadlines
+Added default display of Constraints
+Source files of skins are now included in the package
+Add setUndoStack and setRedoStack methods to the Undo plugin for managing the undo/redo stacks
+Ability to install the professional versions of the Gantt via npm
+Bluebird Promise library is removed from the core library
+Various improvements for scaling on high-definition screens and responsiveness on smaller screens
+Updated type definitions
+
+Fix the incorrect link positions for Milestones when the parent task has a larger height
+Resolve the error that occurs during Auto Scheduling if auto-scheduling is canceled for a task
+Ensure split tasks are properly displayed within the split parent row
+Correct the Auto Scheduling of projects when a subtask link has a lag of 0
+Fix incorrect link positions for split tasks that have different row heights
+Ensure Gantt properly auto-schedules projects with 2 levels of tasks
+Fix the issue where Gantt doesn't return the fixedDate "assignments" in the resource_cell_value when the task is outside the specified date range
+
 ### 8.0.11
 
 Fix the Grid scrolling with the Timeline when a column resizer is present on the rightmost column

@@ -1,8 +1,8 @@
 {
   "name": "dhtmlx-gantt",
-  "version": "8.0.11",
+  "version": "9.0.0",
   "description": "An open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.",
-  "main": "codebase/dhtmlxgantt.js",
+  "main": "codebase/dhtmlxgantt.es.js",
   "types": "codebase/dhtmlxgantt.d.ts",
   "repository": {
     "type": "git",

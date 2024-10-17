@@ -1,0 +1,447 @@
+.gantt_container {
+  background: var(--dhx-gantt-container-background);
+  color: var(--dhx-gantt-container-color);
+  font-family: var(--dhx-gantt-font-family);
+  font-size: var(--dhx-gantt-font-size);
+  border: 1px solid var(--dhx-gantt-base-colors-border);
+  position: relative;
+  white-space: nowrap;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.gantt_touch_active {
+  overscroll-behavior: none;
+}
+
+.gantt_task_scroll {
+  overflow-x: scroll;
+}
+
+.gantt_task,
+.gantt_grid {
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.gantt_grid_scale,
+.gantt_task_scale {
+  font-family: var(--dhx-gantt-font-family);
+  font-size: var(--dhx-gantt-font-size);
+  border-bottom: var(--dhx-gantt-scale-border-horizontal);
+  box-sizing: border-box;
+}
+
+.gantt_grid_scale {
+  background: var(--dhx-gantt-grid-scale-background);
+  color: var(--dhx-gantt-grid-scale-color);
+}
+
+.gantt_task_scale {
+  background: var(--dhx-gantt-timeline-scale-background);
+  color: var(--dhx-gantt-timeline-scale-color);
+}
+
+.gantt_task_vscroll {
+  background: var(--dhx-gantt-container-background);
+}
+
+.gantt_scale_line {
+  box-sizing: border-box;
+  border-top: var(--dhx-gantt-scale-border-horizontal);
+}
+
+.gantt_scale_line:first-child {
+  border-top: none;
+}
+
+.gantt_grid_head_cell {
+  display: inline-block;
+  vertical-align: top;
+  border-right: var(--dhx-gantt-grid-scale-border-vertical);
+  text-align: center;
+  position: relative;
+  cursor: default;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.gantt_scale_line {
+  clear: both;
+}
+
+
+.gantt_grid_data {
+  width: 100%;
+  overflow: hidden; // otherwise we can see it
+  position: relative;
+  background: var(--dhx-gantt-grid-body-background);
+}
+
+.gantt_row {
+  position: relative;
+  user-select: none;
+}
+
+.gantt_add,
+.gantt_grid_head_add {
+  .dhx_gantt_icon();
+  .dhx_gantt_icon.dhx_gantt_icon_plus();
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+  opacity: 0.6;
+}
+
+.gantt_grid_head_cell.gantt_grid_head_add {
+  opacity: 0.6;
+  top: 0;
+}
+
+.gantt_grid_head_cell.gantt_grid_head_add:hover {
+  opacity: 1;
+}
+
+.gantt_grid_data .gantt_row:hover,
+.gantt_grid_data .gantt_row.odd:hover {
+  background-color: var(--dhx-gantt-base-colors-hover-color);
+}
+
+.gantt_grid_data .gantt_row:hover .gantt_add {
+  opacity: 1;
+}
+
+.gantt_task_row,
+.gantt_row {
+  border-bottom:var(--dhx-gantt-task-row-border);
+  background: var(--dhx-gantt-task-row-background);
+}
+
+
+.gantt_row.odd,
+.gantt_task_row.odd {
+  background: var(--dhx-gantt-task-row-background--odd);
+}
+
+.gantt_row,
+.gantt_cell,
+.gantt_task_row,
+.gantt_task_cell,
+.gantt_grid_head_cell,
+.gantt_scale_cell {
+  box-sizing: border-box;
+}
+
+.gantt_grid_head_cell,
+.gantt_scale_cell {
+  line-height: inherit;
+}
+
+.gantt_grid_scale .gantt_grid_column_resize_wrap {
+  cursor: col-resize;
+  position: absolute;
+  width: 13px;
+  margin-left: -7px;
+}
+
+.gantt_grid_column_resize_wrap .gantt_grid_column_resize {
+  background-color: var(--dhx-gantt-base-colors-border);
+  height: 100%;
+  width: 1px;
+  margin: 0 auto;
+}
+
+.gantt_task_grid_row_resize_wrap {
+  cursor: row-resize;
+  position: absolute;
+  height: 13px;
+  margin-top: -7px;
+  left: 0px;
+  width: 100%;
+}
+
+.gantt_task_grid_row_resize_wrap .gantt_task_grid_row_resize {
+  background-color: var(--dhx-gantt-base-colors-border-light);
+  top: 6px;
+  height: 1px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.gantt_drag_marker {
+  pointer-events: none;
+}
+
+.gantt_drag_marker.gantt_grid_resize_area,
+.gantt_drag_marker.gantt_row_grid_resize_area {
+  background-color: rgba(231, 231, 231, 0.5);
+  height: 100%;
+  width: 100%;
+}
+
+.gantt_drag_marker.gantt_grid_resize_area {
+  border-left: var(--dhx-gantt-scale-border-vertical);
+  border-right: var(--dhx-gantt-scale-border-vertical);
+}
+
+.gantt_drag_marker.gantt_row_grid_resize_area {
+  border-top: var(--dhx-gantt-scale-border-horizontal);
+  border-bottom: var(--dhx-gantt-scale-border-horizontal);
+}
+
+.gantt_row {
+  display: flex;
+}
+
+.gantt_row>div {
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.gantt_cell {
+  vertical-align: top;
+  border-right: var(--dhx-gantt-grid-cell-border);
+  padding-left: 6px;
+  padding-right: 6px;
+  height: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.gantt_cell_tree {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.gantt_grid_scale .gantt_last_cell,
+.gantt_grid_data .gantt_last_cell,
+.gantt_task .gantt_task_scale .gantt_scale_cell.gantt_last_cell,
+.gantt_task_bg .gantt_last_cell {
+  border-right-width: 0px;
+}
+
+.gantt_task .gantt_task_scale .gantt_scale_cell.gantt_last_cell {
+  border-right-width: 1px;
+}
+
+.gantt_task_bg {
+  overflow: hidden;
+}
+
+.gantt_scale_cell {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: var(--dhx-gantt-grid-scale-border-vertical);
+  text-align: center;
+  height: 100%;
+}
+
+.gantt_task_cell {
+  display: inline-block;
+  height: 100%;
+  border-right: var(--dhx-gantt-timeline-scale-border-vertical);
+}
+
+.gantt_layout_cell.gantt_ver_scroll {
+  width: 0px;
+  background-color: transparent;
+  height: 1px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  position: absolute;
+  right: 0px;
+  z-index: 1;
+}
+
+.gantt_ver_scroll>div {
+  width: 1px;
+  height: 1px;
+}
+
+.gantt_hor_scroll {
+  height: 0px;
+  background-color: transparent;
+  width: 100%;
+  clear: both;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+.gantt_layout_cell .gantt_hor_scroll {
+  position: absolute;
+}
+
+.gantt_hor_scroll>div {
+  width: 5000px;
+  height: 1px;
+}
+
+.gantt_tree_indent,
+.gantt_tree_icon {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.gantt_tree_indent {
+  width: 15px;
+  height: 100%;
+}
+
+.gantt_tree_content,
+.gantt_tree_icon {
+  vertical-align: top;
+}
+
+.gantt_tree_icon {
+  width: 28px;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.gantt_tree_content {
+  height: 100%;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  width: auto;
+  text-overflow: ellipsis;
+}
+
+.gantt_tree_icon.gantt_open,
+.gantt_tree_icon.gantt_close {
+  .dhx_gantt_icon();
+  width: 20px;
+  cursor: pointer;
+}
+
+.gantt_tree_icon.gantt_open {
+  .dhx_gantt_icon.dhx_gantt_icon_menu_right();
+}
+
+.gantt_tree_icon.gantt_close {
+  .dhx_gantt_icon.dhx_gantt_icon_menu_down();
+}
+
+.gantt_tree_icon.gantt_blank {
+  width: 18px;
+}
+
+.gantt_tree_icon.gantt_folder_open {
+  display: none;
+}
+
+.gantt_tree_icon.gantt_folder_closed {
+  display: none;
+}
+
+.gantt_tree_icon.gantt_file {
+  display: none;
+}
+
+.gantt_grid_head_cell .gantt_sort {
+  position: absolute;
+  right: 5px;
+  top: 0;
+  width: 7px;
+  height: 13px;
+}
+
+.gantt_grid_head_cell .gantt_sort.gantt_asc {
+  .dhx_gantt_icon();
+  .dhx_gantt_icon.dhx_gantt_icon_arrow_down();
+}
+
+.gantt_grid_head_cell .gantt_sort.gantt_desc {
+  .dhx_gantt_icon();
+  .dhx_gantt_icon.dhx_gantt_icon_arrow_up();
+}
+
+.gantt_inserted,
+.gantt_updated {
+  font-weight: bold;
+}
+
+.gantt_deleted {
+  text-decoration: line-through;
+}
+
+.gantt_invalid {
+  background-color: #FFE0E0;
+}
+
+.gantt_error {
+  color: var(--dhx-gantt-base-colors-error);
+}
+
+.gantt_status {
+  right: 1px;
+  padding: 5px 10px;
+  background: rgba(155, 155, 155, 0.1);
+  position: absolute;
+  top: 1px;
+  transition: opacity 0.2s;
+  opacity: 0;
+}
+
+.gantt_status.gantt_status_visible {
+  opacity: 1;
+}
+
+#gantt_ajax_dots span {
+  transition: opacity 0.2s;
+  background-repeat: no-repeat;
+  opacity: 0;
+}
+
+#gantt_ajax_dots span.gantt_dot_visible {
+  opacity: 1;
+}
+
+.gantt_column_drag_marker {
+  border: var(--dhx-gantt-grid-scale-border-vertical);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.gantt_grid_head_cell_dragged {
+  border: var(--dhx-gantt-grid-scale-border-vertical);
+  opacity: 0.3;
+}
+
+.gantt_grid_target_marker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background-color: var(--dhx-gantt-base-colors-primary);
+  transform: translateX(-1px);
+}
+
+.gantt_grid_target_marker::before,
+.gantt_grid_target_marker::after {
+  display: block;
+  content: "";
+  position: absolute;
+  left: -5px;
+  width: 0px;
+  height: 0px;
+  border: 6px solid transparent;
+}
+
+.gantt_grid_target_marker::before {
+  border-top-color: var(--dhx-gantt-base-colors-primary);
+}
+
+.gantt_grid_target_marker::after {
+  bottom: 0;
+  border-bottom-color: var(--dhx-gantt-base-colors-primary);
+}

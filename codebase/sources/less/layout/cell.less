@@ -1,0 +1,63 @@
+.gantt_layout{
+    &_content{
+        width:100%;
+        overflow:auto;
+        box-sizing: border-box;
+    }
+
+    &_cell{
+        position:relative;
+        box-sizing:border-box;
+    }
+
+    &_cell > &_header{
+        background:  #33aae8;
+        color:white;
+        font-size:17px;
+        padding:5px 10px;
+        box-sizing: border-box;
+    }
+
+    &_header.collapsed_x{
+        background: #a9a9a9;
+        .gantt_header_arrow{
+            &:before{
+                content:"⇧";
+            }
+        }
+    }
+    &_header.collapsed_y{
+        background: #a9a9a9;
+        .gantt_header_arrow{
+            &:before{
+                content:"⇩";
+            }
+        }
+    }
+    &_header{
+        cursor:pointer;
+        .gantt_header_arrow{
+            &:before{
+                content:"⇦"
+            }
+            float:right;
+            text-align: right;
+        }
+    }
+    &_header.vertical{
+        .gantt_header_arrow{
+            &:before{
+                content:"⇧"
+            }
+        }
+
+    }
+
+    &_outer_scroll_vertical &_content{
+        overflow-y:hidden;
+    }
+    &_outer_scroll_horizontal &_content{
+        overflow-x:hidden;
+    }
+}
+

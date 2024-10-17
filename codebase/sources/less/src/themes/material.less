@@ -1,0 +1,157 @@
+:root[data-gantt-theme='material'] {
+	--dhx-gantt-theme: material;
+	--dhx-gantt-font-family: Roboto, Inter, Helvetica, Arial, sans-serif;
+
+	--dhx-gantt-base-colors-primary: #448aff;
+
+	--dhx-gantt-task-background: var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-project-background: #1de9b6;
+	--dhx-gantt-milestone-background: #ffc107;
+	--dhx-gantt-task-progress-color: rgba(0,0,0,0.2);
+	--dhx-gantt-project-color: rgba(0,0,0,.6);
+
+	--dhx-gantt-base-colors-border: #e0e0e0;
+	--dhx-gantt-task-title-font-size: calc(var(--dhx-gantt-font-size) - 2px);
+
+
+	--dhx-gantt-task-text-font-size: var(--dhx-gantt-font-size);
+	--dhx-gantt-task-text-font-weight: 500;
+
+	--dhx-gantt-heading-font-size: 20px;
+	--dhx-gantt-caption-font-size: var(--dhx-gantt-font-size);
+	--dhx-gantt-caption-font-weight: 500;
+	--dhx-gantt-btn-font-weight: 500;
+	--dhx-gantt-heading-font-weight: 500;
+
+	--dhx-gantt-hours-font-size: calc(var(--dhx-gantt-font-size) - 2px);
+
+	--dhx-gantt-base-colors-text-base: rgba(0,0,0,.75);
+	--dhx-gantt-base-transition: 0.15s ease;
+
+	--dhx-gantt-header-border: 1px solid transparent;
+	--dhx-gantt-scale-color: rgba(0,0,0,.54);
+	--dhx-gantt-base-colors-select: rgba(0, 199, 181, .2);
+	--dhx-gantt-base-colors-hover-color: var(--dhx-gantt-base-colors-select);
+	
+
+	--dhx-gantt-border-radius:0;
+	--dhx-gantt-task-border-radius:18px;
+
+	--dhx-gantt-btn-text-transform: uppercase;
+	--dhx-gantt-btn-padding: 1px 20px 0;
+
+	--dhx-gantt-link-handle-size: 16px;
+
+	--dhx-gantt-progress-handle-background: #FFF;
+	--dhx-gantt-progress-handle-border: var(--dhx-gantt-base-colors-border);
+
+	--dhx-gantt-box-shadow-s: 0 3px 5px 0 rgba(0,0,0,.1);;
+	--dhx-gantt-box-shadow-m: 0px 4px 24px 0px rgba(44, 47, 60, 0.36);
+	
+	--dhx-gantt-box-shadow-l: 0px 4px 24px 0px rgba(44, 47, 60, 0.56);
+	--dhx-gantt-lightbox-title-background: var(--dhx-gantt-container-background);
+	--dhx-gantt-lightbox-title-color: var(--dhx-gantt-base-colors-text-base);
+	--dhx-gantt-lightbox-title-font-size: calc(var(--dhx-gantt-font-size) + 2px);
+
+	--dhx-gantt-lightbox-padding: 30px;
+	--dhx-gantt-lightbox-width: 610px;
+	--dhx-gantt-lightbox-wide-max-width: 640px;
+
+	--dhx-gantt-btn-order: row;
+	--dhx-gantt-btn-outline-border-color: transparent;
+	--dhx-gantt-btn-outline-border-hover: transparent;
+	--dhx-gantt-btn-outline-border-active: transparent;
+	--dhx-gantt-btn-outline-border-color-disabled: transparent;
+
+
+	.dhx_cal_ltitle{
+		font-weight: 400;
+		text-transform: uppercase;
+		padding: 18px var(--dhx-gantt-lightbox-padding) 8px;
+		border-bottom-color: transparent;
+	}
+
+	.gantt_grid .gantt_grid_scale .gantt_grid_head_cell,
+	.gantt_task .gantt_task_scale .gantt_scale_cell{
+		font-weight: 500;
+		text-transform: uppercase;
+	}
+
+
+	.dhx_cal_ltitle_controls{
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-lightbox-title-color);
+	}
+
+	
+	.gantt_cal_lsection {
+		margin-top: 12px;
+		margin-bottom: 4px;
+	}
+	
+	
+	.gantt_cal_ltitle{
+		padding: 18px var(--dhx-gantt-lightbox-padding);
+		border-bottom-color: transparent;
+	}
+	.gantt_cal_lcontrols{
+		padding-bottom: 40px;
+		padding-top: 30px;
+	}
+
+	.gantt_add,
+	.gantt_grid_head_add {
+		--dhx-gantt-base-colors-icons: #70d0c2;
+		--dhx-gantt-base-colors-icons-active: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-icons) 100%, #000000 12.6%);
+		--dhx-gantt-base-colors-icons-hover: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-icons) 100%, #000000 28.5%);
+	
+	}
+
+	.gantt_grid_data .gantt_row, .gantt_grid_data .gantt_row.odd {
+		transition: background var(--dhx-gantt-base-transition);
+	}
+
+
+	.gantt_grid_head_cell{
+		transition: border-color ground var(--dhx-gantt-base-transition);
+		border-right: 1px solid transparent;
+	}
+
+	.gantt_grid_scale:hover .gantt_grid_head_cell{
+		border-right: var(--dhx-gantt-grid-scale-border-vertical)
+	}
+
+	.gantt_grid_column_resize_wrap .gantt_grid_column_resize{
+		transition: background var(--dhx-gantt-base-transition);
+		background-color: transparent;
+	}
+	.gantt_grid_column_resize_wrap:hover .gantt_grid_column_resize{
+		background-color: var(--dhx-gantt-base-colors-border);
+	}
+
+	div.gantt_grid_scale:after, div.gantt_scale_line:last-child:after {
+		content: "";
+		width: 100%;
+		display: block;
+		height: 1px;
+		background-color: transparent;
+		position: absolute;
+		box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .2), 0 2px 3px 0 rgba(0, 0, 0, .1);
+		z-index: 1;
+	}
+	div.gantt_scale_line:last-child:after {
+		bottom: -1px;
+	}
+
+	.gantt_link_control {
+		--dhx-gantt-link-handle-border: var(--dhx-gantt-task-background);
+		--dhx-gantt-link-handle-background: #FFF;
+		--dhx-gantt-link-handle-border-hover: var(--dhx-gantt-task-background);
+		--dhx-gantt-link-handle-background-hover: #FFF;
+	}
+
+	.gantt_task_line.gantt_milestone {
+		margin-top:-1px;
+		--dhx-gantt-task-border-radius:2px;
+	}
+
+}

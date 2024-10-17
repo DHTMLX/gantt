@@ -1,0 +1,144 @@
+.gantt_marker {
+	height: 100%;
+	width: 1px;
+	top: 0;
+	position: absolute;
+	text-align: center;
+	background-color: var(--dhx-gantt-base-colors-error);
+}
+
+.gantt_marker .gantt_marker_content {
+	padding: 2px;
+	background: inherit;
+	color: var(--dhx-gantt-base-colors-white);
+	position: absolute;
+	font-size: var(--dhx-gantt-caption-font-size);
+	line-height: var(--dhx-gantt-caption-line-height);
+	font-weight: var(--dhx-gantt-caption-line-weight);
+}
+
+.gantt_marker_area {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.gantt_grid_editor_placeholder {
+	position: absolute;
+
+	>div,
+	input,
+	select {
+		width: 100%;
+		height: 100%;
+		box-sizing: border-box;
+	}
+}
+
+.gantt_row_placeholder {
+	div {
+		opacity: 0.5;
+	}
+
+	.gantt_file,
+	.gantt_add {
+		display: none;
+	}
+}
+
+.gantt_drag_marker.gantt_grid_dnd_marker {
+	background-color: transparent;
+	transition: all 0.1s ease;
+}
+
+.gantt_grid_dnd_marker_line {
+	height: 4px;
+	width: 100%;
+	background-color: var(--dhx-gantt-base-colors-primary);
+}
+
+.gantt_grid_dnd_marker_line::before {
+	background: var(--dhx-gantt-base-colors-white);
+	width: 12px;
+	height: 12px;
+	box-sizing: border-box;
+	border: 3px solid var(--dhx-gantt-base-colors-primary);
+	border-radius: 6px;
+	content: "";
+	line-height: 1px;
+	display: block;
+	position: absolute;
+	margin-left: -11px;
+	margin-top: -4px;
+	pointer-events: none;
+}
+
+.gantt_grid_dnd_marker_folder {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	pointer-events: none;
+	box-sizing: border-box;
+	box-shadow: 0 0 0px 2px var(--dhx-gantt-base-colors-primary) inset;
+	background: transparent;
+}
+
+.gantt_overlay_area {
+	position: absolute;
+	height: inherit;
+	width: inherit;
+	top: 0;
+	left: 0;
+	display: none;
+}
+
+.gantt_overlay {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: inherit;
+	width: inherit;
+}
+
+.gantt_click_drag_rect {
+	position: absolute;
+	left: 0;
+	top: 0;
+	outline: 1px solid var(--dhx-gantt-base-colors-primary);
+	background-color: var(--dhx-gantt-base-colors-primary-lighter);
+}
+
+.gantt_timeline_move_available,
+.gantt_timeline_move_available * {
+	cursor: move;
+}
+
+.gantt_constraint_marker {
+	position: absolute;
+	pointer-events: none;
+	--dhx-gantt-base-colors-icons: var(--dhx-gantt-base-colors-text-light);
+
+	&.gantt_constraint_marker_snlt,
+	&.gantt_constraint_marker_fnlt,
+	&.gantt_constraint_marker_mfo {
+		transform: rotate(180deg);
+	}
+}
+
+.gantt_rtl{
+	.gantt_constraint_marker{
+		&.gantt_constraint_marker_snlt,
+		&.gantt_constraint_marker_fnlt,
+		&.gantt_constraint_marker_mfo {
+			transform: rotate(0deg);
+		}	
+	}
+
+	.gantt_constraint_marker{
+		&.gantt_constraint_marker_snet,
+		&.gantt_constraint_marker_fnet,
+		&.gantt_constraint_marker_mso {
+			transform: rotate(180deg);
+		}
+	}
+}
