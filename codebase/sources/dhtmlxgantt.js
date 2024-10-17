@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.10 Standard
+dhtmlxGantt v.8.0.11 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -20094,11 +20094,19 @@ var storeRenderCreator = function storeRenderCreator(name, gantt) {
           }
 
           if (range.ids !== undefined) {
-            var extraData = range.ids.map(function (id) {
+            var extraDataArr = range.ids.map(function (id) {
               return store.getItem(id);
-            });
-            data = data.concat(extraData);
-          } else {
+            }); // GS-2502: range.ids might not exist in other datastores
+
+            if (extraDataArr.length > 0) {
+              extraDataArr = extraDataArr.filter(function (element) {
+                return element !== undefined;
+              });
+              data = data.concat(extraDataArr);
+            }
+          }
+
+          if ((range.start == undefined || range.end == undefined) && range.ids == undefined) {
             throw new Error("Invalid range returned from 'getVisibleRange' of the layer");
           }
         } else {
@@ -21118,80 +21126,6 @@ function extend(gantt) {
 }
 
 module.exports = extend;
-
-/***/ }),
-
-/***/ "./sources/core/dynamic_loading.js":
-/*!*****************************************!*\
-  !*** ./sources/core/dynamic_loading.js ***!
-  \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = function (gantt) {
-  var TreeDataStore = __webpack_require__(/*! ./datastore/treedatastore */ "./sources/core/datastore/treedatastore.js");
-
-  var loadedBranches = {};
-  gantt.attachEvent("onClearAll", function () {
-    loadedBranches = {};
-  });
-  var oldHasChildren = TreeDataStore.prototype.hasChild;
-
-  gantt.$data.tasksStore.hasChild = function (id) {
-    if (!gantt.config.branch_loading) {
-      return oldHasChildren.call(this, id);
-    } else {
-      if (oldHasChildren.call(this, id)) return true;
-
-      if (this.exists(id)) {
-        return this.getItem(id)[gantt.config.branch_loading_property];
-      }
-    }
-
-    return false;
-  };
-
-  function needLoading(id) {
-    if (gantt.config.branch_loading && gantt._load_url) {
-      var alreadyLoaded = !!loadedBranches[id]; // call ajax only if branch has children
-
-      if (!alreadyLoaded && !gantt.getChildren(id).length && gantt.hasChild(id)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  gantt.attachEvent("onTaskOpened", function (id) {
-    if (gantt.config.branch_loading && gantt._load_url) {
-      // call ajax only if branch has children
-      if (needLoading(id)) {
-        var url = gantt._load_url;
-        url = url.replace(/(\?|&)?parent_id=.+&?/, "");
-        var param = url.indexOf("?") >= 0 ? "&" : "?";
-        var y = gantt.getScrollState().y || 0;
-        var requestData = {
-          taskId: id,
-          url: url + param + "parent_id=" + encodeURIComponent(id)
-        };
-
-        if (gantt.callEvent("onBeforeBranchLoading", [requestData]) === false) {
-          return;
-        }
-
-        gantt.load(requestData.url, this._load_type, function () {
-          if (y) {
-            gantt.scrollTo(null, y);
-          }
-
-          gantt.callEvent("onAfterBranchLoading", [requestData]);
-        });
-        loadedBranches[id] = true;
-      }
-    }
-  });
-};
 
 /***/ }),
 
@@ -22754,16 +22688,12 @@ module.exports = function (gantt) {
 
 /***/ }),
 
-/***/ "./sources/core/load.js":
-/*!******************************!*\
-  !*** ./sources/core/load.js ***!
-  \******************************/
+/***/ "./sources/core/loading/ajax_loading.js":
+/*!**********************************************!*\
+  !*** ./sources/core/loading/ajax_loading.js ***!
+  \**********************************************/
 /*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-var helpers = __webpack_require__(/*! ../utils/helpers */ "./sources/utils/helpers.js");
+/***/ (function(module, exports) {
 
 module.exports = function (gantt) {
   gantt.load = function (url, type, callback) {
@@ -22786,6 +22716,99 @@ module.exports = function (gantt) {
       this.callEvent("onLoadEnd", [url, tp]);
       if (typeof cl == "function") cl.call(this);
     }, this));
+  };
+};
+
+/***/ }),
+
+/***/ "./sources/core/loading/dynamic_loading.js":
+/*!*************************************************!*\
+  !*** ./sources/core/loading/dynamic_loading.js ***!
+  \*************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = function (gantt) {
+  var TreeDataStore = __webpack_require__(/*! ../datastore/treedatastore */ "./sources/core/datastore/treedatastore.js");
+
+  var loadedBranches = {};
+  gantt.attachEvent("onClearAll", function () {
+    loadedBranches = {};
+  });
+  var oldHasChildren = TreeDataStore.prototype.hasChild;
+
+  gantt.$data.tasksStore.hasChild = function (id) {
+    if (!gantt.config.branch_loading) {
+      return oldHasChildren.call(this, id);
+    } else {
+      if (oldHasChildren.call(this, id)) return true;
+
+      if (this.exists(id)) {
+        return this.getItem(id)[gantt.config.branch_loading_property];
+      }
+    }
+
+    return false;
+  };
+
+  function needLoading(id) {
+    if (gantt.config.branch_loading && gantt._load_url) {
+      var alreadyLoaded = !!loadedBranches[id]; // call ajax only if branch has children
+
+      if (!alreadyLoaded && !gantt.getChildren(id).length && gantt.hasChild(id)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  gantt.attachEvent("onTaskOpened", function (id) {
+    if (gantt.config.branch_loading && gantt._load_url) {
+      // call ajax only if branch has children
+      if (needLoading(id)) {
+        var url = gantt._load_url;
+        url = url.replace(/(\?|&)?parent_id=.+&?/, "");
+        var param = url.indexOf("?") >= 0 ? "&" : "?";
+        var y = gantt.getScrollState().y || 0;
+        var requestData = {
+          taskId: id,
+          url: url + param + "parent_id=" + encodeURIComponent(id)
+        };
+
+        if (gantt.callEvent("onBeforeBranchLoading", [requestData]) === false) {
+          return;
+        }
+
+        gantt.load(requestData.url, this._load_type, function () {
+          if (y) {
+            gantt.scrollTo(null, y);
+          }
+
+          gantt.callEvent("onAfterBranchLoading", [requestData]);
+        });
+        loadedBranches[id] = true;
+      }
+    }
+  });
+};
+
+/***/ }),
+
+/***/ "./sources/core/loading/parsing.js":
+/*!*****************************************!*\
+  !*** ./sources/core/loading/parsing.js ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+var helpers = __webpack_require__(/*! ../../utils/helpers */ "./sources/utils/helpers.js");
+
+module.exports = function (gantt) {
+  gantt.load = function () {
+    throw new Error("gantt.load() method is not available in the node.js, use gantt.parse() instead");
   };
 
   gantt.parse = function (data, type) {
@@ -26256,7 +26279,17 @@ module.exports = function (gantt) {
       var minAttr = minValue ? " min='" + dateToStr(minValue) + "' " : "";
       var maxAttr = maxValue ? " max='" + dateToStr(maxValue) + "' " : "";
       var html = "<div style='width:140px' role='cell'><input type='date' ".concat(minAttr, " ").concat(maxAttr, " name='").concat(column.name, "' title='").concat(column.name, "'></div>");
-      placeholder.innerHTML = html;
+      placeholder.innerHTML = html; // GS-1914. Do not allow entering alues beyond min and max via keyboard
+
+      placeholder.oninput = function (e) {
+        if (+gantt.date.str_to_date("%Y-%m-%d")(e.target.value) < +minValue) {
+          e.target.value = gantt.date.date_to_str("%Y-%m-%d")(minValue);
+        }
+
+        if (+gantt.date.str_to_date("%Y-%m-%d")(e.target.value) > +maxValue) {
+          e.target.value = gantt.date.date_to_str("%Y-%m-%d")(maxValue);
+        }
+      };
     },
     set_value: function set_value(value, id, column, node) {
       if (value && value.getFullYear) {
@@ -26352,7 +26385,17 @@ module.exports = function (gantt) {
       var min = config.min || 0,
           max = config.max || 100;
       var html = "<div role='cell'><input type='number' min='".concat(min, "' max='").concat(max, "' name='").concat(column.name, "' title='").concat(column.name, "'></div>");
-      placeholder.innerHTML = html;
+      placeholder.innerHTML = html; // GS-1914. Do not allow entering alues beyond min and max via keyboard
+
+      placeholder.oninput = function (e) {
+        if (+e.target.value < min) {
+          e.target.value = min;
+        }
+
+        if (+e.target.value > max) {
+          e.target.value = max;
+        }
+      };
     },
     get_value: function get_value(id, column, node) {
       return this.get_input(node).value || "";
@@ -26951,7 +26994,10 @@ module.exports = {
   onShow: function onShow(controller, placeholder, grid) {},
   onHide: function onHide(controller, placeholder, grid) {
     var gantt = grid.$gantt;
-    gantt.focus();
+
+    if (gantt) {
+      gantt.focus();
+    }
   },
   destroy: function destroy() {}
 };
@@ -27682,7 +27728,7 @@ Grid.prototype = {
 
       if (last && gridWidth > width + colWidth) col.width = colWidth = gridWidth - width;
       width += colWidth;
-      var sort = gantt._sort && col.name == gantt._sort.name ? "<div class='gantt_sort gantt_" + gantt._sort.direction + "'></div>" : "";
+      var sort = gantt._sort && col.name == gantt._sort.name ? "<div data-column-id=\"".concat(col.name, "\" class=\"gantt_sort gantt_").concat(gantt._sort.direction, "\"></div>") : "";
       var cssClass = ["gantt_grid_head_cell", "gantt_grid_head_" + col.name, last ? "gantt_last_cell" : "", templates.grid_header_class(col.name, col)].join(" ");
       var style = "width:" + (colWidth - (last ? 1 : 0)) + "px;";
       var label = col.label || labels["column_" + col.name] || labels[col.name];
@@ -32154,10 +32200,9 @@ module.exports = function (gantt) {
       lightboxDiv = document.createElement("div");
       classNames = "gantt_cal_light";
       fullWidth = this._is_lightbox_timepicker();
-      if (gantt.config.wide_form || fullWidth) classNames += " gantt_cal_light_wide";
+      if (gantt.config.wide_form) classNames += " gantt_cal_light_wide";
 
       if (fullWidth) {
-        gantt.config.wide_form = true;
         classNames += " gantt_cal_light_full";
       }
 
@@ -32257,11 +32302,21 @@ module.exports = function (gantt) {
       box.style.display = "block";
       var scroll_top = window.pageYOffset || gantt._lightbox_root.scrollTop || document.documentElement.scrollTop;
       var scroll_left = window.pageXOffset || gantt._lightbox_root.scrollLeft || document.documentElement.scrollLeft;
-      var view_height = window.innerHeight || document.documentElement.clientHeight;
-      if (scroll_top) // if vertical scroll on window
-        box.style.top = Math.round(scroll_top + Math.max((view_height - box.offsetHeight) / 2, 0)) + "px";else // vertical scroll on body
+      var view_height = window.innerHeight || document.documentElement.clientHeight; // Adjust the position in the Salesforce environment because Gantt container has the relative position
+
+      if (gantt._lightbox_root == gantt.$root) {
+        var containerTop = document.documentElement.scrollTop + gantt.$root.getBoundingClientRect().top;
+        scroll_top -= containerTop;
+      }
+
+      if (scroll_top) {
+        // vertical scroll on window
+        box.style.top = Math.round(scroll_top + Math.max((view_height - box.offsetHeight) / 2, 0)) + "px";
+      } else {
+        // vertical scroll on body
         box.style.top = Math.round(Math.max((view_height - box.offsetHeight) / 2, 0) + 9) + "px"; // +9 for compatibility with auto tests
-      // not quite accurate but used for compatibility reasons
+      } // not quite accurate but used for compatibility reasons
+
 
       if (document.documentElement.scrollWidth > gantt._lightbox_root.offsetWidth) // if horizontal scroll on the window
         box.style.left = Math.round(scroll_left + (gantt._lightbox_root.offsetWidth - box.offsetWidth) / 2) + "px";else // horizontal scroll on the body
@@ -41016,7 +41071,11 @@ module.exports = function (gantt) {
     }
   };
 
-  gantt.attachEvent("onGanttReady", addTouchEvents);
+  gantt.attachEvent("onGanttReady", function () {
+    if (gantt.$container) {
+      addTouchEvents();
+    }
+  });
   gantt.attachEvent("onGanttLayoutReady", function () {
     if (gantt.$container) {
       gantt.attachEvent("onGanttRender", addTouchEvents, {
@@ -46132,6 +46191,9 @@ var EventsManager = /** @class */ (function () {
             gantt.$root.classList.remove("gantt_noselect");
             if (_this._originalReadonly !== undefined) {
                 gantt.config.readonly = _this._originalReadonly;
+                if (_this._mouseDown && gantt.config.drag_timeline && gantt.config.drag_timeline.render) {
+                    gantt.render();
+                }
             }
             if (_this._originAutoscroll !== undefined) {
                 gantt.config.autoscroll = _this._originAutoscroll;
@@ -46151,6 +46213,9 @@ var EventsManager = /** @class */ (function () {
             gantt.$root.classList.add("gantt_noselect");
             _this._originalReadonly = gantt.config.readonly;
             gantt.config.readonly = true;
+            if (gantt.config.drag_timeline && gantt.config.drag_timeline.render) {
+                gantt.render();
+            }
             _this._trace = [];
             _this._mouseDown = true;
             var _a = _this._getScrollPosition(_this._timeline), x = _a.x, y = _a.y;
@@ -46282,7 +46347,8 @@ function default_1(gantt) {
         create: function () { return eventsManager_1.EventsManager.create(gantt); }
     };
     gantt.config.drag_timeline = {
-        enabled: true
+        enabled: true,
+        render: false
     };
 }
 exports.default = default_1;
@@ -47947,9 +48013,16 @@ module.exports = function (gantt) {
         gantt.$data.tasksStore.attachEvent("onStoreUpdated", function (id) {
           if (gantt.config.keyboard_navigation && dispatcher.isEnabled()) {
             var currentNode = dispatcher.getActiveNode();
+            var grid = gantt.$ui.getView("grid");
+            var top = grid.getItemTop(id);
+            var gridDataTopScroll = grid.$grid_data.scrollTop;
+            var gridDataBottomScroll = gridDataTopScroll + grid.$grid_data.getBoundingClientRect().height;
 
             if (currentNode && currentNode.taskId == id) {
-              reFocusActiveNode();
+              // GS-2539:  Don't refocus the node if it is selected and outside the visible range in the grid
+              if (gridDataTopScroll <= top && gridDataBottomScroll >= top) {
+                reFocusActiveNode();
+              }
             }
           }
         });
@@ -49102,7 +49175,8 @@ module.exports = function (gantt) {
         }
 
         if (pos.top < scroll.y || pos.top + height > scroll.y + viewHeight) {
-          gantt.scrollTo(null, pos.top - height * 5);
+          // GS-2346: additional scrolling to be sure that the task will be in the required range
+          gantt.scrollTo(null, pos.top - 20);
         } else if (gantt.config.scroll_on_click && gantt.config.show_chart) {
           // horizontal scroll activated
           if (pos.left > scroll.x + viewWidth) {
@@ -51474,7 +51548,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 function DHXGantt() {
   this.constants = __webpack_require__(/*! ../constants */ "./sources/constants/index.js");
-  this.version = "8.0.10";
+  this.version = "8.0.11";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -51564,13 +51638,11 @@ module.exports = function (supportedExtensions) {
 
   __webpack_require__(/*! ../core/plugins */ "./sources/core/plugins/index.js")(gantt);
 
-  __webpack_require__(/*! ../core/dynamic_loading */ "./sources/core/dynamic_loading.js")(gantt);
-
   __webpack_require__(/*! ../core/grid_column_api */ "./sources/core/grid_column_api.js")(gantt);
 
   __webpack_require__(/*! ../core/tasks */ "./sources/core/tasks.js")(gantt);
 
-  __webpack_require__(/*! ../core/load */ "./sources/core/load.js")(gantt);
+  __webpack_require__(/*! ../core/loading/parsing */ "./sources/core/loading/parsing.js")(gantt);
 
   __webpack_require__(/*! ../core/worktime/work_time */ "./sources/core/worktime/work_time.js")(gantt);
 
@@ -51643,6 +51715,10 @@ module.exports = function (supportedExtensions) {
 
   if (!gantt.env.isNode) {
     __webpack_require__(/*! ../core/ui_core */ "./sources/core/ui_core.js")(gantt);
+
+    __webpack_require__(/*! ../core/loading/ajax_loading */ "./sources/core/loading/ajax_loading.js")(gantt);
+
+    __webpack_require__(/*! ../core/loading/dynamic_loading */ "./sources/core/loading/dynamic_loading.js")(gantt);
   }
 
   return gantt;

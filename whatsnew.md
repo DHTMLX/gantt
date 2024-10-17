@@ -1,3 +1,21 @@
+### 8.0.11
+
+Fix the Grid scrolling with the Timeline when a column resizer is present on the rightmost column
+Prevent the lightbox from switching to the wide_form mode upon adding the Time section
+Ensure the number editor respects min and max properties, preventing entry of values outside the defined range
+Fix the error on deleting a task inside the gantt.batchUpdate method while tasks are displayed in the Resource Panel
+Resolve the issue where tasks disappear after using keyboard shortcuts to indent or outdent multiple times
+Correct the lightbox positioning to be properly centered in the Salesforce environment
+Fix Keyboard navigation stopping due to the row_height setting
+Correct the dates for project Auto Scheduling in some scenarios, so only one auto-scheduling call is needed for accurate results
+Resolve the issue with Keyboard navigation when the Resource Histogram is present on the page
+Fix the initialization error on touch-enabled devices when gantt.getGanttInstance is called with configuration parameters
+The gantt.load method is removed from the Node.js version
+Fix the error thrown by Gantt when defining a custom getVisibleRange function
+Resolve the regression causing Gantt to scroll to a task after it is updated when Keyboard navigation is enabled
+Ensure grid sorting works properly when clicking the sort icon in the header
+Fix inconsistent task repainting when drag_timeline is enabled
+
 ### 8.0.10
 
 Fix the issue where Gantt didn't merge date settings from the second Calendar

@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 8.0.10
+// Type definitions for dhtmlxGantt 8.0.11
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -240,7 +240,7 @@ export interface GanttEventCallback {
 	 * fires before an action is added into the redo stack
 	 * @param action a user action as an array of command objects
 	*/
-	"onBeforeRedoStack"(action: any[]): boolean;
+	"onBeforeRedoStack"(action: UndoRedoAction): boolean;
 
 	/**
 	 * fires before the rollup task is displayed on its parent project
@@ -373,7 +373,7 @@ export interface GanttEventCallback {
 	 * fires before an action is added into the undo stack
 	 * @param action a user action as an array of command objects
 	*/
-	"onBeforeUndoStack"(action: any[]): boolean;
+	"onBeforeUndoStack"(action: UndoRedoAction): boolean;
 
 	/**
 	 * fires when the circular reference has been detected and auto scheduling is not possible
@@ -1346,14 +1346,16 @@ export interface GanttConfigOptions {
 	 * an object that contains definitions of inline editors
 	 * @param for editing text columns, e.g. task name
 	 * @param for editing number columns, e.g. task duration, order, etc.
+	 * @param for editing duration columns, i.e. task duration.
 	 * @param for editing date columns, e.g. start and end dates of the task
 	 * @param for choosing an option from a list
-	 * @param for setting task-predecessor for the currently edited task. This editor gets the [WBS codes of tasks](desktop/specifying_columns.md#wbscode) to set connection with the predecessor task.
+	 * @param for setting task-predecessor for the currently edited task. This editor gets the [WBS codes of tasks](desktop/specifying_columns.md#wbscode) to set connection with the predecessor task
 	 * @param custom inline editors
 	*/
 	editor_types: {
 		text?: InlineEditor,
 		number?: InlineEditor,
+		duration?: InlineEditor,
 		date?: InlineEditor,
 		select?: InlineEditor,
 		predecessor?: InlineEditor,
@@ -1369,7 +1371,7 @@ export interface GanttConfigOptions {
 	 * renders an external component into the DOM
 	 * @param an object that is returned by the **onrender* function.
 	 * @param an object that is returned by the **onrender* function.
-	 * @param a DOM element where the native component will be attached to.
+	 * @param a DOM element the native component will be attached to.
 	*/
 	external_render: {
 		isElement(element: any): boolean,
@@ -1702,7 +1704,7 @@ export interface GanttConfigOptions {
 	/**
 	 * defines configuration settings of the time scale
 	*/
-	scales: Scale[];
+	scales: Scales;
 
 	/**
 	 * enables backward scheduling
@@ -2091,7 +2093,7 @@ export interface GanttInitializationConfig {
 
 export interface GanttInternationalization {
 	setLocale(locale: any): void;
-	getLocale(language?: string): GanttLocale;
+	getLocale(language: string): GanttLocale;
 	addLocale(language: string, locale: GanttLocale): void;
 }
 export type GanttPlugin = (gantt: GanttStatic) => void;
@@ -2148,6 +2150,40 @@ export interface GanttStatic {
 	 * an object that stores various extensions
 	*/
 	ext: Ext;
+
+	/**
+	 * an object of the lightbox controls
+	 * @param the [Checkbox](desktop/checkbox.md) control
+	 * @param the [Constraint](desktop/constraint.md) control
+	 * @param the [Duration](desktop/duration.md) control
+	 * @param the [Duration](desktop/duration.md) control that allows changing the [section visibility](desktop/duration.md#switchingsectionvisibility)
+	 * @param the [Parent](desktop/parent.md) control
+	 * @param the [Radio button](desktop/radio.md) control
+	 * @param the [Resources](desktop/resources.md) control
+	 * @param the [Select](desktop/select.md) control
+	 * @param the [Template](desktop/template.md) control
+	 * @param the [Textarea](desktop/textarea.md) control
+	 * @param the [Time](desktop/time.md) control
+	 * @param the [Time](desktop/time.md) control that allows changing the [section visibility](desktop/time.md#switchingsectionvisibility)
+	 * @param the [Typeselect](desktop/typeselect.md) control
+	 * @param a custom control
+	*/
+	form_blocks: {
+		checkbox?: LightboxControl,
+		constraint?: LightboxControl,
+		duration?: LightboxControl,
+		duration_optional?: LightboxControl,
+		parent?: LightboxControl,
+		radio?: LightboxControl,
+		resources?: LightboxControl,
+		select?: LightboxControl,
+		template?: LightboxControl,
+		textarea?: LightboxControl,
+		time?: LightboxControl,
+		time_optional?: LightboxControl,
+		typeselect?: LightboxControl,
+		[ControlName: string]: LightboxControl | undefined
+	}
 
 	/**
 	 * a set of methods for Gantt chart localization
@@ -2259,7 +2295,7 @@ export interface GanttStatic {
 	 * adds a calendar into Gantt
 	 * @param calendar an object with configuration of the calendar
 	*/
-	addCalendar(calendar: any): string;
+	addCalendar(calendar: CalendarConfig): string;
 
 	/**
 	 * adds a new dependency link
@@ -2277,7 +2313,7 @@ export interface GanttStatic {
 	 * adds a marker to the timeline area
 	 * @param marker the marker's configuration object
 	*/
-	addMarker(marker: any): string;
+	addMarker(marker: MarkerConfig): number | string;
 
 	/**
 	 * adds a new keyboard shortcut
@@ -2293,7 +2329,7 @@ export interface GanttStatic {
 	 * @param parent optional, the parent's id
 	 * @param index optional, the position the task will be added into (0 or greater)
 	*/
-	addTask(task: any, parent?: string | number, index?: number): string | number;
+	addTask(task: NewTask, parent?: string | number, index?: number): string | number;
 
 	/**
 	 * displays an additional layer with custom elements for a task in the timeline area
@@ -2305,7 +2341,7 @@ export interface GanttStatic {
 	 * calls an alert message box
 	 * @param config either an object with the alert box's configuration or the text to show
 	*/
-	alert(config: any): HTMLElement;
+	alert(config: AlertBoxConfig | string | number): HTMLElement;
 
 	/**
 	 * if the specified expression is false, an errorMessage is shown in the red popup at the top right corner of the screen
@@ -2320,7 +2356,7 @@ export interface GanttStatic {
 	 * @param handler the handler function
 	 * @param settings optional, an <a href="#propertiesofsettingsobject">object with settings</a> for the event handler
 	*/
-	attachEvent<T extends keyof GanttEventCallback>(event: T, handler: GanttEventCallback[T], settings?: object): string
+	attachEvent<T extends keyof GanttEventCallback>(event: T, handler: GanttEventCallback[T], settings?: HandlerSettings): string
 	/**
 	 * recalculates the schedule of the project
 	 * @param taskId optional, the task id
@@ -2430,7 +2466,7 @@ export interface GanttStatic {
 	 * calls a confirm message box
 	 * @param config either an object with the confirm box's configuration or the text to show
 	*/
-	confirm(config: any): HTMLElement;
+	confirm(config: ConfirmBoxConfig | string | number): HTMLElement;
 
 	/**
 	 * creates a deep copy of provided object
@@ -2454,7 +2490,7 @@ export interface GanttStatic {
 	 * creates a new dataProcessor instance and attaches it to gantt
 	 * @param config dataProcessor configuration object
 	*/
-	createDataProcessor(config: any): any;
+	createDataProcessor(config: DataProcessorConfig | RouterFunction | RouterConfig): any;
 
 	/**
 	 * creates a datastore according to the provided configuration
@@ -2468,7 +2504,7 @@ export interface GanttStatic {
 	 * @param parent optional, the parent's id
 	 * @param index optional, the position the task will be added into (0 or greater)
 	*/
-	createTask(task?: any, parent?: string | number, index?: number): string | number;
+	createTask(task?: NewTask, parent?: string | number, index?: number): string | number;
 
 	/**
 	 * dataProcessor constructor
@@ -2552,7 +2588,7 @@ export interface GanttStatic {
 	 * @param handler the event handler
 	 * @param options optional, the value of either the <i>useCapture</i> or <i>options</i> parameter. <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">Read details</a>
 	*/
-	event(node: HTMLElement | string, event: string, handler: GanttCallback, options?: any): void;
+	event(node: HTMLElement | string, event: string, handler: GanttCallback, options?: boolean | HandlerSettings): void;
 
 	/**
 	 * removes an event handler from an HTML element
@@ -2561,7 +2597,7 @@ export interface GanttStatic {
 	 * @param handler the event handler
 	 * @param options optional, the value of either the <i>useCapture</i> or <i>options</i> parameter. <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener">Read details</a>
 	*/
-	eventRemove(node: HTMLElement | string, event: string, handler: GanttCallback, options?: any): void;
+	eventRemove(node: HTMLElement | string, event: string, handler: GanttCallback, options?: boolean | HandlerSettings): void;
 
 	/**
 	 * expands gantt to the full screen mode
@@ -2724,7 +2760,7 @@ export interface GanttStatic {
 	 * returns the object of the lightbox's section
 	 * @param name the name of the section
 	*/
-	getLightboxSection(name: string | number): any;
+	getLightboxSection(name: string | number): LightboxSectionState;
 
 	/**
 	 * returns the name of the active lighbox's structure
@@ -2797,14 +2833,14 @@ export interface GanttStatic {
 	/**
 	 * returns the stack of stored redo user actions
 	*/
-	getRedoStack(): any[];
+	getRedoStack(): UndoRedoAction[];
 
 	/**
 	 * returns all tasks assigned to the resource
 	 * @param resourceId the id of the resource
 	 * @param taskId the id of the task
 	*/
-	getResourceAssignments(resourceId: string | number, taskId?: string | number): any[];
+	getResourceAssignments(resourceId: string | number, taskId?: string | number): ResourceAssignment[];
 
 	/**
 	 * returns a calendar which the resource is assigned to
@@ -2848,7 +2884,7 @@ export interface GanttStatic {
 	/**
 	 * gets the current state of the Gantt chart
 	*/
-	getState(): any;
+	getState(): GanttUIState;
 
 	/**
 	 * calculates the combined start/end dates of tasks nested in a project or another task
@@ -2872,7 +2908,7 @@ export interface GanttStatic {
 	 * returns the parsed resource assignments of a specific task from the datastore
 	 * @param taskId the task id
 	*/
-	getTaskAssignments(taskId: string | number): any[];
+	getTaskAssignments(taskId: string | number): ResourceAssignment[];
 
 	/**
 	 * returns the height (in pixels) of the DOM element of the task
@@ -2971,7 +3007,7 @@ export interface GanttStatic {
 	/**
 	 * returns the stack of stored undo user actions
 	*/
-	getUndoStack(): any[];
+	getUndoStack(): UndoRedoAction[];
 
 	/**
 	 * gets the number of tasks visible on the screen (those that are not collapsed)
@@ -2994,7 +3030,7 @@ export interface GanttStatic {
 	 * groups tasks by the specified task's attribute
 	 * @param config the grouping configuration object, or false to ungroup tasks
 	*/
-	groupBy(config: any): void;
+	groupBy(config: GroupConfig | boolean): void;
 
 	/**
 	 * returns the number of child task(s)
@@ -3071,9 +3107,12 @@ export interface GanttStatic {
 
 	/**
 	 * checks whether the specified link is correct
-	 * @param link the link object
+	 * @param linkOrFrom either ID of the source (predecessor) task or a link object with the following properties:
+	 * @param from_start optional, specifies if the link is being dragged from the start of the source (predecessor) task (*true*) or from its end (*false*). Not needed at all when the first parameter is specified as an object
+	 * @param to optional, the ID of the target (successor) task. Can have the *null* or *undefined* value if the target task isn't specified yet. Not needed at all when the first parameter is specified as an object
+	 * @param to_start optional, specifies if the link is being dragged to the start of the target (successor) task (*true*) or from its end (*false*). Not needed at all when the first parameter is specified as an object
 	*/
-	isLinkAllowed(link: any): boolean;
+	isLinkAllowed(linkOrFrom: string | number | LinkForValidation, from_start?: boolean, to?: string | number | null | undefined, to_start?: boolean): boolean;
 
 	/**
 	 * checks whether the specified link exists
@@ -3145,15 +3184,16 @@ export interface GanttStatic {
 
 	/**
 	 * merges several working calendars into one
-	 * @param calendars an array of calendars' objects
+	 * @param calendars an array of calendars' objects or the first calendar object
+	 * @param calendar2 optional, the second calendar object
 	*/
-	mergeCalendars(calendars: any[]): void;
+	mergeCalendars(calendars: Calendar[] | Calendar, calendar2?: Calendar): void;
 
 	/**
 	 * calls a message box of the specified type
 	 * @param config either an object with the message box's configuration or the text to show
 	*/
-	message(config: any): HTMLElement;
+	message: MessagePopupObject;
 
 	/**
 	 * adds properties of the 'source' object into the 'target' object
@@ -3161,13 +3201,13 @@ export interface GanttStatic {
 	 * @param source the source object
 	 * @param force optional, if true, properties of the 'source' will overwrite matching properties of the 'target', if there are any. If false (by default), properties that already exist in the 'target' will be omitted
 	*/
-	mixin(target: any, source: any, force?: boolean): void;
+	mixin(target: CustomObject, source: CustomObject, force?: boolean): void;
 
 	/**
 	 * calls a modalbox
 	 * @param config the modal box's configuration
 	*/
-	modalbox(config: any): HTMLElement;
+	modalbox(config: ModalBoxConfig): HTMLElement;
 
 	/**
 	 * moves a task to a new position
@@ -3188,13 +3228,13 @@ export interface GanttStatic {
 	 * @param data a string or object which represents <a href="https://docs.dhtmlx.com/gantt/desktop__loading.html#dataproperties">data</a>
 	 * @param type optional, (<i>'json', 'xml'</i>) the data type. The default value - <i>'json'</i>
 	*/
-	parse(data: any, type?: string): void;
+	parse(data: string | DataToLoad1 | DataToLoad2, type?: string): void;
 
 	/**
 	 * activates the specified extensions
 	 * @param ext an object with the extensions' names that need to be activated
 	*/
-	plugins(ext: any): void;
+	plugins(ext?: GanttPlugins): GanttPlugins;
 
 	/**
 	 * gets the relative horizontal position of the specified date in the chart area
@@ -3236,7 +3276,7 @@ export interface GanttStatic {
 	 * @param shortcut the key name or the name of keys combination for a shortcut (<a href="desktop/keyboard_navigation.md#shortcutsyntax">shortcut syntax</a>)
 	 * @param scope the element to which the shortcut is attached (<a href="desktop/keyboard_navigation.md#scopes">list of scopes</a>)
 	*/
-	removeShortcut(shortcut: string, scope: any): void;
+	removeShortcut(shortcut: string, scope: string): void;
 
 	/**
 	 * removes the specified layer related to a task
@@ -3284,7 +3324,7 @@ export interface GanttStatic {
 	 * rounds the specified date to the nearest date in the time scale
 	 * @param date the Date object to round or an object with settings
 	*/
-	roundDate(date: any): Date;
+	roundDate(date: Date | RoundDateConfig): Date;
 
 	/**
 	 * rounds the start and end task's dates to the nearest dates in the time scale
@@ -3387,7 +3427,7 @@ export interface GanttStatic {
 	 * @param parent the id of the parent task. Specify the parameter if you want to sort tasks only in the branch of the specified parent.
 	 * @param silent specifies whether rendering should be invoked after reordering items
 	*/
-	sort(field: string | GanttCallback, desc?: boolean, parent?: string | number, silent?: boolean): void;
+	sort(field: string | ((task1: Task, task2: Task) => 1 | 0 | -1), desc?: boolean, parent?: string | number, silent?: boolean): void;
 
 	/**
 	 * selects the specified task if it was unselected and vice versa
@@ -3819,7 +3859,7 @@ export interface Task {
 
 	/**
 	 * the task type. The available values are stored in the api/gantt_types_config.md object:
-				"task" -  a regular task (default value).
+						"task" -  a regular task (default value).
 				"project" -  a task that starts, when its earliest child task starts, and ends, when its latest child ends. 
 								The start_date, end_date, duration properties are ignored for such tasks. 
 							 	
@@ -3986,7 +4026,7 @@ export interface Link {
 
 	/**
 	 * the dependency type. The available values are stored in the api/gantt_links_config.md object. By default, they are:
-				"0" -  'finish_to_start'.
+						"0" -  'finish_to_start'.
 				"1" -  'start_to_start'.
 				"2" -  'finish_to_finish'.
 				"3" -  'start_to_finish'.
@@ -4010,37 +4050,6 @@ export interface Link {
 
 	[customProperty: string]: any;
 
-}
-
-export interface Scale {
-
-	/**
-	 * the name of the scale unit. The available values are: "minute", "hour", "day" (default), "week", "quarter", "month", "year".
-	*/
-	unit: string,
-
-	/**
-	 * the step of the time scale (X-Axis), 1 by default.
-	*/
-	step?: number,
-
-	/**
-	 * a function that returns the name of a CSS class that will be applied to the scale units. Takes a date object as a parameter.
-	 * @param a date that will be checked
-	*/
-	css?(date: Date): any,
-
-	/**
-	 * the format of the scale's labels. If set as a function, expects a date object as a parameter.
-	 * @param a date that will be converted
-	*/
-	format?: string | ((date: Date,) => any),
-
-	/**
-	 * the format of the scale's labels. If set as a function, expects a date object as a parameter.
-	 * @param a date that will be converted
-	*/
-	date?: string | ((date: Date,) => any)
 }
 
 export interface GridColumn {
@@ -4180,6 +4189,11 @@ export interface LightboxSection {
 	focus?: boolean,
 
 	/**
+	 * optional, a formatter for the section
+	*/
+	formatter?: DurationFormatter | LinkFormatter,
+
+	/**
 	 * optional, if you set the "true" value, the section will be read-only
 	*/
 	readonly?: boolean,
@@ -4262,6 +4276,875 @@ export interface LightboxSection {
 		end_date: Date | number,
 		task: Task
 	): string | number
+}
+
+export interface LightboxControl {
+
+	/**
+	 * a function that returns a string with the HTML elements of the section
+	 * @param the section's configuration object
+	*/
+	render(sns: LightboxSection): string,
+
+	/**
+	 * a function that obtains the value from the **Task** object and sets it to the section
+	 * @param an html object related to the html defined above
+	 * @param a value defined by the **map_to** property
+	 * @param the task object
+	 * @param the section's configuration object
+	*/
+	set_value(
+		node: HTMLElement,
+		value: any,
+		task: Task,
+		section: LightboxSection
+	): any,
+
+	/**
+	 * a function that obtains the value from the section and saves it to the **Task** object
+	 * @param an html object related to the html defined above
+	 * @param the task object
+	 * @param the section's configuration object
+	*/
+	get_value(
+		node: HTMLElement,
+		task: Task,
+		section: LightboxSection
+	): any,
+
+	/**
+	 * a function to set focus to the section
+	 * @param an html object related to the html defined above
+	*/
+	focus(node: HTMLElement): void
+}
+
+export interface LightboxSectionState {
+
+	/**
+	 * the configuration object of the section
+	 * @param the section id
+	 * @param the section name. According to the name, the gantt takes the label for the section from the **locale.labels** collection. For example, for the 'description' section, the label will be taken as **gantt.locale.labels.section_description**
+	 * @param the section height
+	 * @param the name of a property mapped to the editor
+	 * @param the editor type
+	 * @param if set to *true*, the related field will take the focus on opening the lightbox
+	*/
+	section: {
+		id: string,
+		name: string,
+		height: number,
+		map_to: string,
+		type: string,
+		focus: boolean
+	},
+
+	/**
+	 * a div with the section body
+	*/
+	node: HTMLElement,
+
+	/**
+	 * a div with the section header
+	*/
+	header: HTMLElement,
+
+	/**
+	 * a collection of controls used in the section
+	*/
+	control: HTMLCollection,
+
+	/**
+	 * returns an object with the section's data
+	*/
+	getValue(): any,
+
+	/**
+	 * sets the value(s) for the section. As a parameter the method takes a value (or an object with values if the section has several controls) that should be set
+	 * @param a value for the section
+	 * @param optional, an object with any properties
+	*/
+	setValue(value: any, valueObject?: CustomObject): any
+}
+
+export interface DataToLoad1 {
+
+	/**
+	 * the array with the task data
+	*/
+	data: [] | NewTask[]
+	tasks?: undefined
+	/**
+	 * the array with the link data
+	*/
+	links?: Link[]
+
+	/**
+	 * the array with the resource data
+	*/
+	resources?: NewResourceItem[]
+
+	/**
+	 * the array with the assignment data
+	*/
+	assignments?: NewAssignmentItem[]
+
+	/**
+	 * the object that has the arrays with the custom data
+	*/
+	collections?: Сollections
+}
+
+export interface DataToLoad2 {
+
+	/**
+	 * the array with the task data
+	*/
+	tasks: [] | NewTask[]
+	data?: undefined
+	/**
+	 * the array with the link data
+	*/
+	links?: Link[]
+
+	/**
+	 * the array with the resource data
+	*/
+	resources?: NewResourceItem[]
+
+	/**
+	 * the array with the assignment data
+	*/
+	assignments?: NewAssignmentItem[]
+
+	/**
+	 * the object that has the arrays with the custom data
+	*/
+	collections?: Сollections
+}
+
+/**
+ * the task object that will be added to Gantt. It can have the following properties:
+ * @param optional, the task ID, auto-generated if not set.
+ * @param optional, the date when a task is scheduled to begin.
+ * @param optional, the task duration.
+ * @param optional, the date when a task is scheduled to be completed.
+ * @param optional, the task name.
+ * @param optional, specifies if the task will be opened on load (to show child tasks).
+ * @param optional, the ID of the parent task.
+ * @param optional, the date of the task constraint.
+ * @param any other property you want to add, including the ones from the [**Task** object](desktop/task_properties.md)
+*/
+export type NewTask = string | {} | {
+	id?: string | number,
+	start_date?: string | Date,
+	duration?: number,
+	end_date?: string | Date,
+	text?: string,
+	open?: boolean,
+	parent?: string | number,
+	constraint_date?: string | Date,
+	[customProperty: string]: any
+}
+
+
+/**
+ * the resource item object that will be added to Gantt. It can have the following properties:
+ * @param optional, the resource ID, auto-generated if not set
+ * @param optional, the ID of the parent resource
+ * @param optional, the resource name
+ * @param optional, specifies if the resource will be opened on load (to show child items)
+ * @param optional, the unit of the resource assignment
+ * @param optional, the value that is assigned by default when adding the assignment in the lightbox section
+ * @param any other property you want to add
+*/
+export type NewResourceItem = {
+	id?: string | number,
+	parent?: string | number,
+	text?: string,
+	open?: boolean,
+	unit?: string | number,
+	default_value?: string | number,
+	[customProperty: string]: any
+}
+
+
+/**
+ * the assignment item object that will be added to Gantt. It can have the following properties:
+ * @param optional, the assignment ID, auto-generated if not set
+ * @param the ID of the task the resource is assigned to
+ * @param the ID of the resource that is assigned to the task
+ * @param optional, the assignment value
+ * @param optional, the calculation mode of the time of the resource assignment: "default"|"fixedDates"|"fixedDuration"
+ * @param optional, the difference between the assignment start date and the task start date
+ * @param optional, the date the assignment should start
+ * @param optional, the assignment duration
+ * @param optional, the date the assignment should end
+ * @param any other property you want to add
+*/
+export type NewAssignmentItem = {
+	id?: string | number,
+	task_id: string | number,
+	resource_id: string | number,
+	value: number | string,
+	mode?: string,
+	delay?: number,
+	start_date?: string | Date,
+	duration?: number,
+	end_date?: string | Date,
+	[customProperty: string]: any
+}
+
+
+export interface Сollections {
+
+	/**
+	 * an array that contains the collection items.
+	*/
+	[collectionName: string]: [] | СollectionItem[]
+}
+
+export interface СollectionItem {
+
+	/**
+	 * any custom property of the collection item.
+	*/
+	[itemProperty: string]: any
+}
+
+export interface ScaleArray<ScaleObj> extends Array<ScaleObj> {
+	0: ScaleObj
+}
+
+export type Scales = ScaleArray<Scale>;
+
+export interface Scale {
+
+	/**
+	 * the name of the scale unit. The available values are: "minute", "hour", "day" (default), "week", "quarter", "month", "year".
+	*/
+	unit: string,
+
+	/**
+	 * the step of the time scale (X-Axis), 1 by default.
+	*/
+	step?: number,
+
+	/**
+	 * a function that returns the name of a CSS class that will be applied to the scale units. Takes a date object as a parameter.
+	 * @param a date that will be checked
+	*/
+	css?(date: Date): any,
+
+	/**
+	 * the format of the scale's labels. If set as a function, expects a date object as a parameter.
+	 * @param a date that will be converted
+	*/
+	format?: string | ((date: Date,) => any),
+
+	/**
+	 * the format of the scale's labels. If set as a function, expects a date object as a parameter.
+	 * @param a date that will be converted
+	*/
+	date?: string | ((date: Date,) => any)
+}
+
+export interface MessagePopupConfig {
+
+	/**
+	 * optional, the ID of the popup message
+	*/
+	id?: number | string
+
+	/**
+	 * the content of the popup message
+	*/
+	text: number | string
+
+	/**
+	 * optional, the class name of the popup message
+	*/
+	type?: string
+
+	/**
+	 * optional, the time period until the popup message disappears. -1 means, it won't hide by itself
+	*/
+	expire?: number
+}
+
+export interface MessagePopupObject {
+
+	/**
+	 * calls a message box of the specified type
+	*/
+	(config: string | number | MessagePopupConfig): string | number | HTMLElement
+
+	/**
+	 * the position of the popup message. Possible values are: "top", "bottom", "left", "right"
+	*/
+	position: string
+
+	/**
+	 * specifies if Gantt should block keyboard events. *true* by default.
+	*/
+	keyboard: boolean
+
+	/**
+	 * a function that hides the popup message. Uses **id** as a parameter:
+	 * @param the ID of the popup message
+	*/
+	hide(id: number | string): any
+}
+
+export interface AlertBoxConfig {
+
+	/**
+	 * optional, the ID of the alert box
+	*/
+	id?: number | string
+
+	/**
+	 * the text of the alert box's body
+	*/
+	text: number | string
+
+	/**
+	 * optional, the text of the header
+	*/
+	title?: number | string
+
+	/**
+	 * optional, the text of the "OK" button
+	*/
+	ok?: number | string
+
+	/**
+	 * optional, the position of the alert box for now supports only one value - "top", any other value will result in "center-align"
+	*/
+	position?: string
+
+	/**
+	 * optional, the width of the alert box (set as CSS [<length>](https://developer.mozilla.org/en-US/docs/Web/CSS/length) or
+	*/
+	width?: string
+
+	/**
+	 * optional, the height of the alert box (set as CSS [<length>](https://developer.mozilla.org/en-US/docs/Web/CSS/length) or
+	*/
+	height?: string
+
+	/**
+	 * optional, the function called on button click. Takes *true* as a parameter (subject to the clicked button)
+	 * @param result of the clicked button, always returns **true** (because there is only the "OK" button)
+	*/
+	callback?(result: boolean): void
+}
+
+export interface ConfirmBoxConfig {
+
+	/**
+	 * optional, the ID of the confirm box
+	*/
+	id?: number | string
+
+	/**
+	 * the text of the confirm box's body
+	*/
+	text: number | string
+
+	/**
+	 * optional, the text of the header
+	*/
+	title?: number | string
+
+	/**
+	 * optional, the text of the "OK" button
+	*/
+	ok?: number | string
+
+	/**
+	 * optional, the text of the "Cancel" button
+	*/
+	cancel?: number | string
+
+	/**
+	 * optional, the position of the confirm box for now supports only one value - "top", any other value will result in "center-align"
+	*/
+	position?: string
+
+	/**
+	 * optional, the width of the confirm box (set as CSS [<length>](https://developer.mozilla.org/en-US/docs/Web/CSS/length) or
+	*/
+	width?: string
+
+	/**
+	 * optional, the height of the confirm box (set as CSS [<length>](https://developer.mozilla.org/en-US/docs/Web/CSS/length) or
+	*/
+	height?: string
+
+	/**
+	 * optional, the function called on button click. Takes *true* or *false* as a parameter (subject to the clicked button)
+	 * @param result of the clicked button: **true** for "OK", **false** for "Cancel".
+	*/
+	callback?(result: boolean): void
+}
+
+export interface ModalBoxConfig {
+
+	/**
+	 * optional, the ID of the modal box
+	*/
+	id?: number | string
+
+	/**
+	 * the text of the modal box's body
+	*/
+	text: number | string
+
+	/**
+	 * optional, the text of the header
+	*/
+	title?: number | string
+
+	/**
+	 * the array of buttons
+	*/
+	buttons: string[] | number[] | ModalboxButton[]
+
+	/**
+	 * optional, the position of the modal box for now supports only one value - "top", any other value will result in "center-align"
+	*/
+	position?: string
+
+	/**
+	 * optional, the width of the modal box (set as CSS [<length>](https://developer.mozilla.org/en-US/docs/Web/CSS/length) or
+	*/
+	width?: string
+
+	/**
+	 * optional, the height of the modal box (set as CSS [<length>](https://developer.mozilla.org/en-US/docs/Web/CSS/length) or
+	*/
+	height?: string
+
+	/**
+	 * optional, the function called on button click. Takes *true* or *false* as a parameter (subject to the clicked button)
+	 * @param The result of the callback function will be equal to the stringified index of a pressed button from the array ("0", "1", "2",...)
+	*/
+	callback?(result: string | number | boolean): void
+}
+
+export interface ModalboxButton {
+
+	/**
+	 * the text of the button
+	*/
+	label: string | number
+
+	/**
+	 * optional, the value that is returned in the *result* argument of the *callback* function.
+	*/
+	value?: string | number | boolean
+
+	/**
+	 * optional, a custom class name for the button, prefixed with the "gantt_" string.
+	*/
+	css?: string | number
+}
+
+export type WorkDayConfig = string | number | boolean | Array<string | number>
+
+export type WorkDaysTuple = [WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig,]
+
+export interface CalendarConfig {
+
+	/**
+	 * optional, the calendar id
+	*/
+	id?: string | number,
+
+	/**
+	 * an object that sets the worktime in days and hours. It can include:
+	 * @param optional, an array with global working hours, sets the start and end hours of the task
+	 * @param optional, an array of 7 days of the week (from 0 - Sunday, to 6 - Saturday), where 1/true stands for a working day and 0/false - a non-working day
+	 * @param optional, an object with different working-time rules for different periods of time. The object can contain a set of key:value pairs where key is the name of a time span and value is an object with a list of attributes.
+	 * @param the time span with the working time settings. The name of that object is used as the name of the time span
+	 * @param the date when the time span is scheduled to begin
+	 * @param the date when the time span is scheduled to be completed
+	 * @param optional, an array of working hours as 'from'-'to' pairs.'false' value sets a day-off, 'true' (default value) applies the default hours (["8:00-17:00"])
+	 * @param optional, an array of 7 days of the week (from 0 - Sunday, to 6 - Saturday), where 1/true stands for a working day and 0/false - a non-working day.
+	*/
+	worktime?: {
+		hours?: string[] | number[] | boolean,
+		days?: WorkDaysTuple,
+		customWeeks?: {
+			[timespan: string]: {
+				from: Date,
+				to: Date,
+				hours?: Array<string | number>,
+				days?: WorkDaysTuple | boolean,
+			},
+		}
+	}
+}
+
+export interface MarkerConfig {
+
+	/**
+	 * the marker id
+	*/
+	id?: string | number,
+
+	/**
+	 * a Date object that sets the marker's start date
+	*/
+	start_date: Date,
+
+	/**
+	 * a Date object that sets the marker's end date
+	*/
+	end_date?: Date,
+
+	/**
+	 * a CSS class applied to the marker
+	*/
+	css?: string,
+
+	/**
+	 * the marker title
+	*/
+	text?: string | number,
+
+	/**
+	 * the marker's tooltip
+	*/
+	title?: string | number
+}
+
+export interface HandlerSettings {
+
+	/**
+	 * the id of the event handler.
+	*/
+	id?: string | number,
+
+	/**
+	 * defines whether the event will be executed only once.
+	*/
+	once?: boolean,
+
+	/**
+	 * specifies the `this` object for the listener.
+	*/
+	thisObject?: any
+}
+
+export interface GanttUIState {
+
+	/**
+	 * reveals if Gantt is auto-scrolled (*true*). Added only when the
+	*/
+	autoscroll: boolean,
+
+	/**
+	 * the update mode. *true* if the method is called inside the [*batchUpdate*](api/gantt_batchupdate.md) method.
+	*/
+	batch_update: boolean,
+
+	/**
+	 * the resizing mode of a task. *true* means the task is resized from the start, *false* means that the task is resized from the end. When the task is not resized, it is *null*.
+	*/
+	drag_from_start: boolean | null,
+
+	/**
+	 * the id of a task that the user is currently dragging in the Gantt chart. *undefined* or *null*, if no tasks are being dragged in the Gantt chart.
+	*/
+	drag_id: string | null | undefined,
+
+	/**
+	 * the drag mode. Has these values: 'move','resize','progress', 'ignore' when a task is dragged. Otherwise, has *null* or *undefined* value.
+	*/
+	drag_mode: string | null | undefined,
+
+	/**
+	 * the flag for the fullscreen mode. *true*, if the Gantt chart is in the fullscreen mode, *false* otherwise.
+	*/
+	fullscreen: boolean,
+
+	/**
+	 * the id of a task that is currently opened in the lightbox. *undefined* or *null*, if no tasks are opened in the lightbox.
+	*/
+	lightbox: string | null | undefined,
+
+	/**
+	 * the new link creation state, returns *true* when the link is created from the start of the predecessor task.
+	*/
+	link_from_start: boolean | null,
+
+	/**
+	 * the new link creation state, returns *true* if the mouse points to the link drag element (bubble).
+	*/
+	link_landing_area: boolean,
+
+	/**
+	 * the new link creation state. the id of the source (predecessor) task.
+	*/
+	link_source_id: string | number | null,
+
+	/**
+	 * the new link creation state. the id of the target (successor) task.
+	*/
+	link_target_id: string | number | null,
+
+	/**
+	 * the new link creation state, returns *true* when the link is created to the start of the successor task.
+	*/
+	link_to_start: boolean,
+
+	/**
+	 * the date that tasks are displayed in the chart from
+	*/
+	min_date: Date,
+
+	/**
+	 * the date that tasks are displayed in the chart till
+	*/
+	max_date: Date,
+
+	/**
+	 * the unit of the background grid of the timeline
+	*/
+	scale_unit: string,
+
+	/**
+	 * the step of the background grid of the timeline
+	*/
+	scale_step: number,
+
+	/**
+	 * the id of the currently selected task. *undefined* or *null*, if no tasks are selected in the Gantt chart.
+	*/
+	selected_task: string | null | undefined
+}
+
+export interface RoundDateConfig {
+
+	/**
+	 * the Date object to round;
+	*/
+	date: Date,
+
+	/**
+	 * the time unit ("minute", "hour", "day", "week", "month", "year");
+	*/
+	unit?: string,
+
+	/**
+	 * the step of the time scale (X-Axis), 1 by default.
+	*/
+	step?: number
+}
+
+export interface LinkForValidation {
+
+	/**
+	 * the ID of the source (predecessor) task.
+	*/
+	source: string | number,
+
+	/**
+	 * the ID of the target (successor) task.
+	*/
+	target: string | number,
+
+	/**
+	 * the link type.
+	*/
+	type: string
+}
+
+export interface GroupConfig {
+
+	/**
+	 * a property of a task object that will be used to group items.
+	*/
+	relation_property: string,
+
+	/**
+	 * an array of the groups (summary) items. Each item should have the properties set in the **group_id** and **group_text** parameters (by default, *key* and *label*).
+	*/
+	groups: СollectionItem[],
+
+	/**
+	 * optional, the group's id. The default value is 'key'.
+	*/
+	group_id?: string,
+
+	/**
+	 * optional, the group's label. The default value is 'label'.
+	*/
+	group_text?: string,
+
+	/**
+	 * optional, the delimiter is used for automatic creation of groups for tasks with multiple resources. The default value is ",".
+	*/
+	delimiter?: string,
+
+	/**
+	 * optional, the name of the default group. Optional. The default value is 'None'.
+	*/
+	default_group_label?: string,
+
+	/**
+	 * optional, defines whether the gantt should save its tree structure inside groups. If not specified or set to *false*, gantt tasks will be displayed in a flat list view.
+	*/
+	save_tree_structure?: boolean
+}
+
+/**
+ * an object that stores the commands of the Undo or Redo action
+ * @param an array that stores the changes (commands) of the Undo or Redo action.
+*/
+export type UndoRedoAction = { commands: UndoRedoCommand[] }
+
+
+/**
+ * an object that stores the initial and updated state of the **Task** or **Link** objects:
+ * @param the type of a command: "add/remove/update"
+ * @param the type of the object which was changed: "task" or "link"
+ * @param the changed task/link object
+ * @param the task/link object before changes
+*/
+export type UndoRedoCommand = {
+	type: string,
+	entity: string,
+	value: Task | Link,
+	oldValue: Task | Link
+}
+
+
+export interface ResourceAssignment {
+
+	/**
+	 * the id of the assignment
+	*/
+	id: string | number,
+
+	/**
+	 * the ID of the task the resource is assigned to.
+	*/
+	task_id: string | number,
+
+	/**
+	 * the ID of the resource that is assigned to the task.
+	*/
+	resource_id: string | number,
+
+	/**
+	 * the quantity of the resources assigned to a task
+	*/
+	value: number | string,
+
+	/**
+	 * the difference between the assignment start date and the task start date
+	*/
+	delay: number,
+
+	/**
+	 * the date the assignment should start
+	*/
+	start_date: Date,
+
+	/**
+	 * the date the assignment should end
+	*/
+	end_date: Date,
+
+	/**
+	 * the duration of the assignment
+	*/
+	duration: number,
+
+	/**
+	 * the calculation mode of the time of the resource assignment: "default"|"fixedDates"|"fixedDuration"
+	*/
+	mode: string,
+
+	/**
+	 * any custom property
+	*/
+	[customProperty: string]: any
+}
+
+/**
+ * object specifying one of the predefined modes of sending the data
+ * @param the URL to the server side
+ * @param optional, the mode of sending data to the server: "JSON" | "REST-JSON" | "JSON" | "POST" | "GET"
+ * @param optional, defines whether the task must be deleted from the gantt only after a successful response from the server. Dependency links and subtasks will be deleted after the deletion of the parent task is confirmed.
+*/
+export type DataProcessorConfig = {
+	url: string,
+	mode?: string,
+	deleteAfterConfirmation?: boolean
+}
+
+
+/**
+ * the router configuration for different entities
+ * @param the router object for tasks
+ * @param the router object for links
+ * @param the router object for resources
+ * @param the router object for assignments
+*/
+export type RouterConfig = {
+	task?: RouterForEntity,
+	link?: RouterForEntity,
+	resource?: RouterForEntity,
+	assignment?: RouterForEntity
+}
+
+
+/**
+ * the router function to process changes in Gantt
+ * @param the name of the relevant entity. Possible values are: "task"|"link"|"resource"|"assignment"
+ * @param the name of the relevant action. Possible values are:  "create"|"update"|"delete"
+ * @param the processed object
+ * @param the id of a processed object
+*/
+export type RouterFunction = (
+	entity: string,
+	action: string,
+	data: Task | Link | ResourceAssignment | CustomObject,
+	id: string | number
+) => Promise<any>
+
+
+export interface RouterForEntity {
+
+	/**
+	 * a function to process adding of items
+	 * @param the processed item
+	*/
+	create(data: Task | Link | ResourceAssignment | CustomObject): Promise<any>
+
+	/**
+	 * a function to process updating of items
+	 * @param the processed item
+	 * @param the id of a processed item
+	*/
+	update(data: Task | Link | ResourceAssignment | CustomObject, id: string | number): Promise<any>
+
+	/**
+	 * a function to process deleting of items
+	 * @param the id of a processed item
+	*/
+	delete(id: string | number): Promise<any>
+}
+
+export interface CustomObject {
+	/*
+	 * @param Any custom property with any type
+	*/
+	[propertyName: string]: any
 }
 
 export interface DateHelpers {
@@ -4419,13 +5302,13 @@ export interface Calendar {
 		config: {
 			day?: string | number,
 			date?: Date,
-			hours?: Array<string | number> | boolean,
+			hours?: string[] | number[] | boolean,
 			customWeeks?: {
 				[timespan: string]: {
 					from: Date,
 					to: Date,
-					hours?: Array<string | number>,
-					days?: Array<string | number | Array<string | number>> | boolean,
+					hours?: string[] | number[],
+					days?: WorkDaysTuple | boolean,
 				},
 			},
 		}
@@ -4442,7 +5325,7 @@ export interface Calendar {
 		config: {
 			day?: string | number,
 			date?: Date,
-			hours?: Array<string | number> | boolean,
+			hours?: string[] | number[] | boolean,
 		}
 	): void,
 
@@ -5435,12 +6318,12 @@ export interface Undo {
 	/**
 	 * returns the stack of stored undo user actions
 	*/
-	getUndoStack(): Array<object>,
+	getUndoStack(): UndoRedoAction[],
 
 	/**
 	 * returns the stack of stored redo user actions
 	*/
-	getRedoStack(): Array<object>,
+	getRedoStack(): UndoRedoAction[],
 
 	/**
 	 * clears the stack of stored undo commands
@@ -5663,7 +6546,7 @@ export interface ZoomLevel {
 	/**
 	 * an array of scales to switch between while zooming in/out on this level
 	*/
-	scales: Scale[]
+	scales: Scales
 }
 
 export interface ZoomMethods {

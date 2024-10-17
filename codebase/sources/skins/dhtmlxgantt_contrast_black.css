@@ -1,7 +1,7 @@
 /*
 @license
 
-dhtmlxGantt v.8.0.10 Standard
+dhtmlxGantt v.8.0.11 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1386,8 +1386,11 @@ div.dhx_modal_cover {
 .gantt_cal_light_wide .gantt_repeat_right {
   margin-right: 55px;
 }
-.gantt_cal_light_wide.gantt_cal_light_full {
+.gantt_cal_light_wide {
   width: 738px;
+}
+.gantt_cal_light_full {
+  width: auto;
 }
 .gantt_cal_wide_checkbox input {
   margin-top: 8px;
