@@ -1,3 +1,13 @@
+### 9.0.1
+
+Fix the regression with the incorrect link position while dragging with smart_rendering enabled
+Fix the regression where the Resource Control of the lightbox expands beyond its container
+Correct the missing bottom border of time scale cells in the last row when cells are highlighted with custom CSS
+Fix the incorrect behavior of sticky labels when smart_scales is disabled
+Resolve the issue where Gantt continues vertically dragging a task after a right click
+Fix the issue where calling resetLayout breaks the functionality of the S-Curve Overlay plugin
+Prevent creation of duplicate links by the predecessor editor
+
 ### 9.0.0
 
 Skins customization with CSS variables

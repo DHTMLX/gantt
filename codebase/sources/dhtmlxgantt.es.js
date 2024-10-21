@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.0 Standard
+dhtmlxGantt v.9.0.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5628,6 +5628,9 @@ function DnD(gantt2) {
           if (!input.accessor(e)) {
             return;
           }
+          if (typeof e.button !== "undefined" && e.button !== 0) {
+            return;
+          }
           if (config2.preventDefault && config2.selector && closest(e.target, config2.selector)) {
             e.preventDefault();
           }
@@ -5635,7 +5638,7 @@ function DnD(gantt2) {
             return;
           }
           this._settings.original_target = copyDomEvent(e);
-          this._settings.original_element_sizes = { ...getRelativeNodePosition(e.target, getClosestSizedElement(obj)), width: e.target.offsetWidth, height: e.target.offsetHeight };
+          this._settings.original_element_sizes = { ...getRelativeEventPosition(e, getClosestSizedElement(obj)), width: e.target.offsetWidth, height: e.target.offsetHeight };
           if (gantt2.config.touch) {
             this.clearDragTimer();
             this._drag_start_timer = setTimeout(bind(function() {
@@ -14264,7 +14267,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.0";
+  this.version = "9.0.1";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -17461,10 +17464,12 @@ Timeline.prototype = { init: function(container) {
   for (var i = startIndex; i < endIndex; i++) {
     if (!config2.trace_x[i]) break;
     date2 = new Date(config2.trace_x[i]);
-    var value = content.call(this, date2), width = config2.width[i], height = config2.height, left = config2.left[i], style = "", template = "", cssclass = "";
+    var value = content.call(this, date2), width = config2.width[i];
+    config2.height;
+    var left = config2.left[i], style = "", template = "", cssclass = "";
     if (width) {
       var position = globalConfig.smart_scales ? "position:absolute;left:" + left + "px" : "";
-      style = "width:" + width + "px;height:" + height + "px;" + position;
+      style = "width:" + width + "px;" + position;
       const viewPort = this.getViewPort();
       const floatConfig = (globalConfig.scales[index] || {}).sticky;
       let labelPosition = "";
@@ -18960,7 +18965,7 @@ function predecessorEditorFactory(gantt2) {
   }
   function getSelectedLinks(taskId, predecessorCodes, config2) {
     var links = [];
-    predecessorCodes.forEach(function(code) {
+    [...new Set(predecessorCodes)].forEach(function(code) {
       var link = getFormatter(config2).parse(code);
       if (link) {
         link.target = taskId;
@@ -19490,9 +19495,6 @@ function createTaskRenderer$2(gantt2) {
       _render_task_progress(task, div, width, cfg, templates2);
     }
     var content = _render_task_content(task, width, templates2);
-    if (task.textColor) {
-      content.style.color = task.textColor;
-    }
     div.appendChild(content);
     var css = _combine_item_class("gantt_task_line", templates2.task_class(task.start_date, task.end_date, task), task.id, view);
     if (task.color || task.progressColor || task.textColor) {
@@ -22062,7 +22064,7 @@ var initLinksDND = function(timeline, gantt2) {
       var node = locateClassName(e, link_landing_hover_area);
       const point = node.querySelector(`.${link_edge_marker}`);
       if (point) {
-        const absCoords = getRelativeNodePosition(point, timeline.$task_data);
+        const absCoords = getRelativeNodePosition(point, timeline.$task_bg);
         this._dir_end = { x: absCoords.x + point.offsetWidth / 2, y: absCoords.y + point.offsetHeight / 2 };
       }
     } else {

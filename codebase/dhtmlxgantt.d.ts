@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 9.0.0
+// Type definitions for dhtmlxGantt 9.0.1
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -3386,11 +3386,6 @@ export interface GanttStatic  {
 	 * re-calculates the skin's settings from the related attached skin CSS file
 	*/
 	resetSkin(): void;
-
-	/**
-	 * forces the lightbox to resize
-	*/
-	resizeLightbox(): void;
 
 	/**
 	 * rounds the specified date to the nearest date in the time scale

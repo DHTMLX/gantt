@@ -187,7 +187,7 @@
   --dhx-gantt-lightbox-title-font-size: var(--dhx-gantt-heading-font-size);
   --dhx-gantt-lightbox-max-width: 622px;
   --dhx-gantt-lightbox-wide-max-width: 738px;
-  --dhx-gantt-lightbox-width: max-content;
+  --dhx-gantt-lightbox-width: 560px;
   --dhx-gantt-btn-order: row-reverse;
   /* buttons */
   --dhx-gantt-btn-background: var(--dhx-gantt-base-colors-primary);
@@ -342,12 +342,14 @@
   --dhx-gantt-box-shadow-m: 0px 4px 24px 0px rgba(44, 47, 60, 0.36);
   --dhx-gantt-box-shadow-l: 0px 4px 24px 0px rgba(44, 47, 60, 0.56);
   --dhx-gantt-grid-scale-background: #4f4f4f;
-  --dhx-gantt-grid-scale-border-vertical: 1px solid #5b5b5b;
+  --dhx-gantt-grid-scale-border-vertical: 1px solid #c1c1c1;
   --dhx-gantt-grid-scale-color: #e1e1e1;
   --dhx-gantt-timeline-scale-background: #dbdbdb;
-  --dhx-gantt-timeline-scale-border-vertical: 1px solid #bababa;
+  --dhx-gantt-timeline-scale-border-vertical: 1px solid #ebebeb;
   --dhx-gantt-timeline-scale-color: #494949;
   --dhx-gantt-grid-body-background: #dbdbdb;
+  --dhx-gantt-lightbox-title-background: #4f4f4f;
+  --dhx-gantt-lightbox-title-color: #e1e1e1;
   --dhx-gantt-task-color: #FFF;
   --dhx-gantt-link-background: #ffb96d;
   --dhx-gantt-project-background: #65c16f;
@@ -1171,6 +1173,7 @@ url("src/dhx-gantt-icons.woff2?d2ea3e087edb3b9fad35a6580bd8acd3") format("woff2"
   overflow: hidden;
 }
 .gantt_scale_cell {
+  position: relative;
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
@@ -1897,7 +1900,8 @@ div.dhx_modal_cover {
 .gantt_cal_light {
   margin-top: auto;
   margin-bottom: auto;
-  width: var(--dhx-gantt-lightbox-width);
+  min-width: var(--dhx-gantt-lightbox-width);
+  width: max-content;
   max-width: var(--dhx-gantt-lightbox-max-width);
   height: auto;
   -webkit-tap-highlight-color: transparent;
@@ -1996,6 +2000,7 @@ div.dhx_modal_cover {
 .gantt_cal_larea {
   border: none;
   padding: 0 var(--dhx-gantt-lightbox-padding) 4px;
+  overflow: hidden;
   height: auto;
   gap: calc(var(--dhx-gantt-base-padding) * 2);
 }
@@ -2152,8 +2157,15 @@ div.dhx_modal_cover {
 .gantt_resource_toggle {
   vertical-align: middle;
 }
+.gantt_section_resources {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
 .gantt_resources_filter {
   display: flex;
+  flex-grow: 0;
   align-items: center;
 }
 .gantt_resources_filter label {

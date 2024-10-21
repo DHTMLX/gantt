@@ -41,7 +41,8 @@
 	margin-top: auto;
 	margin-bottom: auto;
 
-	width: var(--dhx-gantt-lightbox-width);
+	min-width: var(--dhx-gantt-lightbox-width);
+	width: max-content;
 	max-width: var(--dhx-gantt-lightbox-max-width);
 	height: auto;
 	-webkit-tap-highlight-color: transparent;
@@ -83,14 +84,6 @@
 
 
 }
-
-// .gantt_cal_light select {
-// 	font-family: var(--dhx-gantt-font-family);
-// 	border: 1px solid var(--dhx-gantt-base-colors-border);
-// 	font-size: var(--dhx-gantt-font-size);
-// 	padding: 2px;
-// 	margin: 0px;
-// }
 
 .gantt_cal_ltitle {
 
@@ -140,106 +133,19 @@
 	}
 }
 
-
-
-// .gantt_cal_ltext {
-// 	padding: 2px 10px;
-// 	overflow: hidden;
-// }
-
-// .gantt_cal_ltext textarea {
-// 	overflow-y: auto;
-// 	overflow-x: hidden;
-// 	font-family: var(--dhx-gantt-font-family);
-// 	font-size: var(--dhx-gantt-font-size);
-// 	border: 1px solid var(--dhx-gantt-base-colors-border);
-// 	height: 100%;
-// 	width: 100%;
-// 	outline: none !important;
-// 	resize: none;
-// }
-
 .gantt_section_constraint [data-constraint-time-select] {
 	margin-left: 20px;
 }
 
-// .gantt_time {
-// 	font-weight: var(--dhx-gantt-heading-font-weight);
-// }
-
-// .gantt_cal_light .gantt_title {
-// 	padding-left: 10px;
-// }
-
 .gantt_cal_larea {
 	border: none;
 	padding: 0 var(--dhx-gantt-lightbox-padding) 4px;
-	// overflow: hidden;
+	overflow: hidden;
 	height: auto;
 
 	gap: calc(var(--dhx-gantt-base-padding) * 2);
 
 }
-
-// .gantt_btn_set {
-// 	margin: 10px 7px 5px 10px;
-// 	padding: 0 16px;
-// 	float: left;
-// 	border: 1px solid var(--dhx-gantt-btn-border-color);
-// 	height: var(--dhx-gantt-control-height);
-// 	line-height: calc(var(--dhx-gantt-control-height) - 2px);
-// 	background-color: var(--dhx-gantt-btn-background);
-// 	color: var(--dhx-gantt-btn-color);
-// 	border-radius: var(--dhx-gantt-border-radius);
-// 	cursor: pointer;
-// 	text-align: center;
-// 	font-size: var(--dhx-gantt-important-font-size);
-// 	font-weight: var(--dhx-gantt-important-font-weight);
-// 	transition: var(--dhx-gantt-base-transition);
-// }
-
-// .gantt_btn_set:hover {
-// 	background-color: var(--dhx-gantt-btn-background-hover);
-// 	border-color: var(--dhx-gantt-btn-border-hover);
-// 	color: var(--dhx-gantt-btn-color-hover);
-// }
-
-// .gantt_btn_set:active {
-// 	background-color: var(--dhx-gantt-btn-background-active);
-// 	border-color: var(--dhx-gantt-btn-border-active);
-// 	color: var(--dhx-gantt-btn-color-active);
-// }
-
-// .gantt_hidden {
-// 	display: none;
-// }
-
-// .gantt_btn_set div {
-// 	float: left;
-// 	font-size: var(--dhx-gantt-important-font-size);
-// 	height: calc(var(--dhx-gantt-control-height) - 2px);
-// 	line-height: calc(var(--dhx-gantt-control-height) - 2px);
-// 	background-repeat: no-repeat;
-// 	vertical-align: middle;
-// }
-
-// .gantt_save_btn {
-// 	background-image: url("/save.png");
-// 	margin-top: 2px;
-// 	width: 21px;
-// }
-
-// .gantt_cancel_btn {
-// 	margin-top: 2px;
-// 	background-image: url("/cancel.png");
-// 	width: 20px;
-// }
-
-// .gantt_delete_btn {
-// 	background-image: url("/delete.png");
-// 	margin-top: 2px;
-// 	width: 20px;
-// }
 
 .gantt_cal_cover {
 	width: 100%;
@@ -254,43 +160,6 @@
 	align-items: center;
 	overflow: auto;
 }
-
-// .gantt_custom_button {
-// 	padding: 0px 3px;
-// 	font-family: var(--dhx-gantt-font-family);
-// 	font-size: var(--dhx-gantt-font-size);
-// 	font-weight: var(--dhx-gantt-regular-font-weight);
-// 	margin-right: 10px;
-// 	margin-top: -5px;
-// 	cursor: pointer;
-// 	float: right;
-// 	height: 21px;
-// 	width: 90px;
-// 	border: 1px solid var(--dhx-gantt-base-colors-border-light);
-// 	text-align: center;
-// 	border-radius: var(--dhx-gantt-border-radius);
-// }
-
-// .gantt_custom_button div {
-// 	cursor: pointer;
-// 	float: none;
-// 	height: 21px;
-// 	line-height: 21px;
-// 	vertical-align: middle;
-// }
-
-// .gantt_custom_button div:first-child {
-// 	display: none;
-// }
-
-// .gantt_cal_light_wide {
-// 	width: var(--dhx-gantt-lightbox-wide-max-width);
-// 	padding: 2px 4px;
-// }
-
-// .gantt_cal_light_wide .gantt_cal_larea {
-// 	border: 1px solid var(--dhx-gantt-base-colors-border);
-// }
 
 .gantt_lightbox_time_select {
 	min-width: 80px;
@@ -355,92 +224,6 @@
 		margin-left: unset;
 	}
 }
-
-// .gantt_cal_light_wide .gantt_cal_lsection {
-// 	border: none;
-// 	float: left;
-// 	text-align: right;
-// 	width: 80px;
-// 	height: 20px;
-// 	padding: 5px 10px 0px 0px;
-// }
-
-// .gantt_cal_light_wide .gantt_wrap_section {
-// 	position: relative;
-// 	padding: 10px 0;
-// 	overflow: hidden;
-// 	border-bottom: 1px solid var(--dhx-gantt-base-colors-border-light);
-// }
-
-// .gantt_cal_light_wide .gantt_section_time {
-// 	overflow: hidden;
-// 	padding-top: 2px !important;
-// 	padding-right: 0px;
-// 	height: 20px !important;
-// 	background: transparent;
-// }
-
-// .gantt_cal_light_wide .gantt_cal_ltext {
-// 	padding-right: 0px;
-// }
-
-// .gantt_cal_light_wide .gantt_cal_larea {
-// 	padding: 0 10px;
-// 	width: 100%;
-// }
-
-// .gantt_cal_light_wide .gantt_cal_checkbox label {
-// 	padding-left: 0px;
-// }
-
-// .gantt_cal_light_wide .gantt_cal_lsection .gantt_fullday {
-// 	float: none;
-// 	margin-right: 0px;
-// 	font-weight: var(--dhx-gantt-heading-font-weight);
-// 	cursor: pointer;
-// }
-
-// .gantt_cal_light_wide .gantt_custom_button {
-// 	position: absolute;
-// 	top: 0;
-// 	right: 0;
-// 	margin-top: 2px;
-// }
-
-// .gantt_cal_light_wide .gantt_repeat_right {
-// 	margin-right: 55px;
-// }
-
-// .gantt_cal_light_wide.gantt_cal_light_full {
-// 	width: var(--dhx-gantt-lightbox-wide-max-width);
-// }
-
-// .gantt_cal_wide_checkbox input {
-// 	margin-top: 8px;
-// 	margin-left: 14px;
-// }
-
-// .gantt_cal_light input {
-// 	font-size: var(--dhx-gantt-font-size);
-// }
-
-// .gantt_section_time {
-// 	background-color: var(--dhx-gantt-lightbox-background);
-// 	white-space: nowrap;
-// 	padding: 2px 10px 5px;
-// 	padding-top: 2px !important;
-// }
-
-// .gantt_section_time .gantt_time_selects {
-// 	float: left;
-// 	height: 25px;
-// }
-
-// .gantt_section_time .gantt_time_selects select {
-// 	height: 23px;
-// 	padding: 2px;
-// 	border: 1px solid var(--dhx-gantt-base-colors-border);
-// }
 
 .gantt_duration {
 	display: flex;
@@ -527,8 +310,16 @@
 	vertical-align: middle;
 }
 
+.gantt_section_resources{
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
 .gantt_resources_filter{
 	display: flex;
+	flex-grow: 0;
 	align-items: center;
 	label{
 		display: inline-flex;
