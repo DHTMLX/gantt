@@ -3,7 +3,7 @@
 })(this, function(exports2) {
   "use strict";/** @license
 
-dhtmlxGantt v.9.0.1 Standard
+dhtmlxGantt v.9.0.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1572,7 +1572,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
         if (cols[i].name === "add" || cols[i].name === "buttons") {
           continue;
         }
-        columns[ccount] = { id: cols[i].template ? "_" + i : cols[i].name, header: cols[i].label || gantt2.locale.labels["column_" + cols[i].name], width: cols[i].width ? Math.floor(cols[i].width / 4) : "" };
+        columns[ccount] = { id: cols[i].template ? "_" + i : cols[i].name, header: cols[i].label || gantt2.locale.labels["column_" + cols[i].name], width: cols[i].width ? Math.floor(cols[i].width / 4) : "", tree: cols[i].tree || false };
         if (cols[i].name === "duration") {
           columns[ccount].type = "number";
         }
@@ -3105,9 +3105,11 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       var div = document.createElement("div");
       div.setAttribute("data-marker-id", marker2.id);
       var css = "gantt_marker";
+      if (gantt2.templates.marker_class) css += " " + gantt2.templates.marker_class(marker2);
       if (marker2.css) {
         css += " " + marker2.css;
       }
+      if (gantt2.templates.marker_class) css += " " + gantt2.templates.marker_class(marker2);
       if (marker2.title) {
         div.title = marker2.title;
       }
@@ -3302,6 +3304,10 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
           var first_indx = gantt2.getGlobalTaskIndex(this.getFirstSelected());
           var target_indx = gantt2.getGlobalTaskIndex(target_ev);
           var last_indx = gantt2.getGlobalTaskIndex(last);
+          if (first_indx == -1 || last_indx == -1) {
+            first_indx = target_indx;
+            this.reset();
+          }
           var tmp = last;
           while (gantt2.getGlobalTaskIndex(tmp) !== first_indx) {
             this.unselect(tmp, e);
@@ -3428,8 +3434,21 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       });
     });
     gantt2.attachEvent("onBeforeTaskMultiSelect", function(id, state, e) {
-      var multiselect2 = gantt2._multiselect;
+      const multiselect2 = gantt2._multiselect;
       if (state && multiselect2.isActive()) {
+        let oldSelectedId = gantt2.getSelectedId();
+        let oldSelectedTask = null;
+        if (oldSelectedId) {
+          oldSelectedTask = gantt2.getTask(oldSelectedId);
+        }
+        let newSelectedTask = gantt2.getTask(id);
+        let differentTreeLevel = false;
+        if (oldSelectedTask && oldSelectedTask.$level != newSelectedTask.$level) {
+          differentTreeLevel = true;
+        }
+        if (gantt2.config.multiselect_one_level && differentTreeLevel && !e.ctrlKey && !e.shiftKey) {
+          return true;
+        }
         if (multiselect2._one_level) {
           return multiselect2.isSameLevel(id);
         }
@@ -8036,6 +8055,9 @@ ${docLink}`);
       if (task.parent === void 0) {
         task.parent = this.config.root_id;
       }
+      if (task.open) {
+        task.$open = true;
+      }
       return task;
     }
     function _init_link(link) {
@@ -10869,6 +10891,9 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
   function baselines(gantt2) {
     gantt2.config.baselines = { datastore: "baselines", render_mode: false, dataprocessor_baselines: false, row_height: 16, bar_height: 8 };
     function initBaselineFields(item, task) {
+      if (!item.task_id || !item.start_date && !item.end_date) {
+        return false;
+      }
       if (item.start_date) {
         item.start_date = gantt2.date.parseDate(item.start_date, "parse_date");
       } else {
@@ -10879,8 +10904,11 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
       } else {
         item.end_date = null;
       }
-      if (!item.task_id) {
-        return false;
+      item.duration = item.duration || 1;
+      if (item.start_date && !item.end_date) {
+        item.end_date = gantt2.calculateEndDate(item.start_date, item.duration);
+      } else if (item.end_date && !item.start_date) {
+        item.start_date = gantt2.calculateEndDate(item.end_date, -item.duration);
       }
     }
     const baselineStore = gantt2.createDatastore({ name: gantt2.config.baselines.datastore, initItem: function(item) {
@@ -14271,7 +14299,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
   }
   function DHXGantt() {
     this.constants = constants;
-    this.version = "9.0.1";
+    this.version = "9.0.2";
     this.license = "gpl";
     this.templates = {};
     this.ext = {};
@@ -20367,7 +20395,9 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         }
         this.point_to(dir.right, shiftX);
       } else if (!lineType.from_start && lineType.to_start) {
-        forward = pt.e_x > pt.x + 2 * shiftX;
+        if (dy !== 0) {
+          forward = pt.e_x > pt.x + 2 * shiftX;
+        }
         this.point_to(dir.right, shiftX);
         if (forward) {
           dx -= shiftX;
@@ -20392,7 +20422,9 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         }
         this.point_to(dir.left, shiftX);
       } else if (lineType.from_start && !lineType.to_start) {
-        forward = pt.e_x > pt.x - 2 * shiftX;
+        if (dy !== 0) {
+          forward = pt.e_x > pt.x - 2 * shiftX;
+        }
         this.point_to(dir.left, shiftX);
         if (!forward) {
           dx += shiftX;
@@ -23775,7 +23807,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
     TextareaControl.prototype.render = function(sns) {
       const height = (sns.height || "130") + "px";
       const placeholder = sns.placeholder ? `placeholder='${sns.placeholder}'` : "";
-      return `<div class='gantt_cal_ltext' style='height:${height};' ${placeholder}><textarea></textarea></div>`;
+      return `<div class='gantt_cal_ltext gantt_section_${sns.name}' style='height:${height};' ${placeholder}><textarea></textarea></div>`;
     };
     TextareaControl.prototype.set_value = function(node, value) {
       gantt2.form_blocks.textarea._get_input(node).value = value || "";

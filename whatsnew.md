@@ -1,3 +1,18 @@
+### 9.0.2
+
+Fix the regression causing incorrect styles for task borders and progress when the task color is specified via properties of a task object
+Restore the functionality of the marker_class
+Restore missing classname from the textarea section of the lightbox
+Correct the issue where deadlines are displayed outside the task row and are not fully centered
+Ensure that links are displayed above other links on mouse hover
+Fix the issue where baseline dates are not calculated when loading them using the parse method
+Correct positions of constrains for both regular and RTL views
+Prevent unnecessary link loops when linking parts of split tasks
+Fix the issue where Quick Info in detached mode is not hidden due to increased width and hardcoded styles
+Update the Export API to support tree indentation for Excel export
+Resolve the issue preventing task selection when the multiselect_one_level is enabled and a task on another tree level is selected
+Updated type definitions
+
 ### 9.0.1
 
 Fix the regression with the incorrect link position while dragging with smart_rendering enabled

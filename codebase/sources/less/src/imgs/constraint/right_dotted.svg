@@ -1,6 +1,6 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Frame 2080">
+<g id="Start No Earlier Than">
 <line id="Line 3" x1="30.5" y1="6.92097e-08" x2="30.5" y2="32" stroke="#555D63" stroke-width="3" stroke-dasharray="3 3"/>
-<path id="Vector" d="M18.3979 23L18.3979 17L3.05161 17L3 13.985L18.3979 13.985L18.3979 8L27 15.5L18.3979 23Z" fill="#555D63"/>
+<path id="Vector" d="m 18.3979,23.5 v -6 H 3.05161 L 3,14.485 H 18.3979 V 8.5 L 27,16 Z" fill="#555D63"/>
 </g>
 </svg>

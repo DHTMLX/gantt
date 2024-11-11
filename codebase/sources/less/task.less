@@ -119,6 +119,10 @@
 
 .gantt_task_link:hover{
   --dhx-gantt-link-background: var(--dhx-gantt-link-background-hover);
+
+  & > div {
+    z-index: 1;
+  }
 }
 
 /* Link arrow */
@@ -388,26 +392,6 @@
   transform: rotate(45deg);
 }
 
-.gantt_task_line.gantt_task_inline_color {
-  border-color: var(--dhx-gantt-task-background);
-}
-
-.gantt_task_line.gantt_task_inline_color .gantt_task_progress {
-  background-color: var(--dhx-gantt-task-background);
-  opacity: 0.2;
-}
-
-.gantt_task_line.gantt_task_inline_color.gantt_selected {
-  box-shadow: 0 0 5px var(--dhx-gantt-task-background);
-}
-
-.gantt_task_line.gantt_task_inline_color.gantt_project.gantt_selected {
-  box-shadow: 0 0 5px var(--dhx-gantt-task-background);
-}
-
-.gantt_task_link.gantt_link_inline_color:hover .gantt_line_wrapper div {
-  box-shadow: 0 0 5px 0px var(--dhx-gantt-task-background);
-}
 
 .gantt_critical_task {
   --dhx-gantt-task-background: var(--dhx-gantt-link-critical-background);
