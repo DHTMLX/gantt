@@ -2018,8 +2018,8 @@ div.dhx_modal_cover {
 }
 .gantt_cal_light_wide .gantt_cal_lsection {
   width: 120px;
-  justify-content: start;
-  align-items: start;
+  justify-content: flex-start;
+  align-items: flex-start;
   flex-shrink: 0;
   margin-top: 0;
   margin-bottom: 0;
@@ -2034,7 +2034,7 @@ div.dhx_modal_cover {
   flex: 1;
 }
 .gantt_cal_light_wide .gantt_section_time {
-  justify-content: start;
+  justify-content: flex-start;
 }
 .gantt_cal_light_wide .gantt_fullday {
   margin-left: unset;
@@ -2432,7 +2432,7 @@ div.dhx_modal_cover {
 }
 .gantt_cal_qi_tcontrols {
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   height: 8px;
 }
 .gantt_cal_qi_tcontrols .gantt_cal_qi_close_btn {
@@ -2490,7 +2490,7 @@ div.dhx_modal_cover {
   position: relative;
   display: flex;
   flex-direction: row;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   gap: 8px;
   overflow: hidden;
@@ -2523,7 +2523,7 @@ div.dhx_modal_cover {
 .gantt_cal_qi_controls {
   display: flex;
   flex-direction: row;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   padding-top: 8px;
   gap: 12px;

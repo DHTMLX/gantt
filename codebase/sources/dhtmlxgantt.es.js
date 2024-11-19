@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.2 Standard
+dhtmlxGantt v.9.0.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -3555,7 +3555,7 @@ class QuickInfo {
       for (let i = 0; i < buttons.length; i++) {
         const ariaAttr = gantt3._waiAria.quickInfoButtonAttrString(gantt3.locale.labels[buttons[i]]);
         html += `<div class="gantt_qi_big_icon ${buttons[i]} dhx_gantt_${buttons[i]}" title="${gantt3.locale.labels[buttons[i]]}" ${ariaAttr}>
-            <div class='dhx_menu_icon ${buttons[i]} gantt_menu_icon dhx_gantt_${buttons[i]}'></div>
+            <div class='dhx_menu_icon dhx_gantt_icon ${buttons[i]} gantt_menu_icon dhx_gantt_${buttons[i]}'></div>
             <div>${gantt3.locale.labels[buttons[i]]}</div>
          </div>`;
       }
@@ -4221,7 +4221,7 @@ function tooltip(gantt2) {
   });
 }
 const noTrack = { onBeforeUndo: "onAfterUndo", onBeforeRedo: "onAfterRedo" };
-const batchActions = ["onTaskDragStart", "onAfterTaskUpdate", "onAfterTaskDelete", "onBeforeBatchUpdate"];
+const batchActions = ["onTaskDragStart", "onAfterTaskUpdate", "onAfterParentExpand", "onAfterTaskDelete", "onBeforeBatchUpdate"];
 class Monitor {
   constructor(undo2, gantt2) {
     this._batchAction = null;
@@ -4430,6 +4430,9 @@ class Monitor {
       this.onTaskAdded(task);
     });
     gantt2.attachEvent("onAfterTaskUpdate", (id, task) => {
+      this.onTaskUpdated(task);
+    });
+    gantt2.attachEvent("onAfterParentExpand", (id, task) => {
       this.onTaskUpdated(task);
     });
     gantt2.attachEvent("onAfterTaskDelete", (id, task) => {
@@ -4755,7 +4758,13 @@ class Undo {
         } else if (command.type === actions.update) {
           const item = gantt2[getMethod](command.value.id);
           for (const prop in command.value) {
-            if (!prop.startsWith("$") && !prop.startsWith("_")) {
+            const internalProperty = prop.startsWith("$") || prop.startsWith("_");
+            const whitelist = ["$open"];
+            let copyProperty = !internalProperty;
+            if (whitelist.indexOf(prop) > -1) {
+              copyProperty = true;
+            }
+            if (copyProperty) {
               item[prop] = command.value[prop];
             }
           }
@@ -5784,7 +5793,7 @@ function DnD(gantt2) {
     if (this._settings) mixin(this.config, this._settings, true);
     this.traceDragEvents(obj, inputMethod);
     gantt2._prevent_touch_scroll = true;
-    document.body.className += " gantt_noselect";
+    document.body.classList.add("gantt_noselect");
     if (gantt2.config.touch) {
       this.dragMove(obj, e, inputMethod.accessor);
     }
@@ -5831,7 +5840,7 @@ function DnD(gantt2) {
     }
     this.config.started = false;
     gantt2._touch_drag = false;
-    document.body.className = document.body.className.replace(" gantt_noselect", "");
+    document.body.classList.remove("gantt_noselect");
   }, getPosition: function(e) {
     var x = 0, y = 0;
     if (e.pageX || e.pageY) {
@@ -6017,6 +6026,10 @@ var createTasksDatastoreFacade = function() {
     if (!defined(parent)) parent = this.getParent(item) || 0;
     if (!this.isTaskExists(parent)) parent = this.config.root_id;
     this.setParent(item, parent);
+    if (this.getState().lightbox && this.isTaskExists(parent)) {
+      var parentObj = this.getTask(parent);
+      this.callEvent("onAfterParentExpand", [parent, parentObj]);
+    }
     return this.$data.tasksStore.addItem(item, index, parent);
   }, deleteTask: function(id) {
     id = replaceValidZeroId(id, this.config.root_id);
@@ -13427,6 +13440,9 @@ function data(gantt2) {
       this.setParent(item, parent, true);
       var parentObj = this.getTask(parent);
       parentObj.$open = true;
+      if (!this.config.details_on_create) {
+        this.callEvent("onAfterParentExpand", [parent, parentObj]);
+      }
     }
     if (!this.callEvent("onTaskCreated", [item])) {
       return null;
@@ -14233,6 +14249,9 @@ function extend(gantt2) {
     if (this.resetLightbox) {
       this.resetLightbox();
     }
+    if (this.ext.inlineEditors) {
+      this.ext.inlineEditors.destructor();
+    }
     if (this._dp && this._dp.destructor) {
       this._dp.destructor();
     }
@@ -14295,7 +14314,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.2";
+  this.version = "9.0.3";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -19428,7 +19447,7 @@ function create(gantt2) {
       if (gantt2.isTaskExists(prev)) {
         this.startEdit(prev, this._columnName);
       }
-    }, destructor: function() {
+    }, detachStore: function() {
       handlers.forEach(function(handlerId) {
         store.detachEvent(handlerId);
       });
@@ -19439,6 +19458,8 @@ function create(gantt2) {
       ganttHandlers = [];
       store = null;
       this.hide();
+    }, destructor: function() {
+      this.detachStore();
       this.detachAllEvents();
     } };
     mixin(controller, keyboardMapping);
@@ -20696,11 +20717,6 @@ function createResourceTimelineBuilder(gantt2) {
         if (cachedTimes[timestamp] === false) {
           continue;
         }
-        var isWorkTime = calendar.isWorkTime({ date: date2, task, unit: scaleUnit });
-        if (!isWorkTime) {
-          cachedTimes[timestamp] = false;
-          continue;
-        }
         if (!timegrid[timestamp]) {
           timegrid[timestamp] = { tasks: [], assignments: [] };
         }
@@ -21496,7 +21512,7 @@ var initializer$2 = /* @__PURE__ */ function() {
       }
     }, onDestroyed: function(grid) {
       if (grid.$config.id == "grid") {
-        gantt2.ext.inlineEditors.destructor();
+        gantt2.ext.inlineEditors.detachStore();
       }
       this.clearEvents(grid, gantt2);
     }, initEvents: function(grid, gantt3) {
@@ -23304,6 +23320,16 @@ class TimelineZoom {
       const chartConfig = gantt3.copy(nextConfig);
       delete chartConfig.name;
       gantt3.mixin(gantt3.config, chartConfig, true);
+      const resourceViews = ["resourceTimeline", "resourceHistogram"];
+      resourceViews.forEach(function(name) {
+        const resourceView = gantt3.$ui.getView(name);
+        if (resourceView) {
+          const resourceConfig = resourceView.$getConfig();
+          if (!resourceConfig.fixed_scales) {
+            gantt3.mixin(resourceConfig, chartConfig, true);
+          }
+        }
+      });
       const isRendered = !!gantt3.$root && !!gantt3.$task;
       if (isRendered) {
         if (cursorOffset) {
@@ -24753,7 +24779,7 @@ function lightbox(gantt2) {
             }
           } else {
             index = src.getAttribute("data-index");
-            sec = src.parentNode;
+            sec = src.closest(".gantt_cal_lsection");
             src = src.firstChild;
           }
         }

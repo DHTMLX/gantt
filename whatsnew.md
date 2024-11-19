@@ -1,3 +1,14 @@
+### 9.0.3
+
+Fix the regression in styles for the Quick Info popup
+Resolve build warnings from PostCSS caused by the usage of 'start'/'end' instead of 'flex-start'/'flex-end'
+Prevent resource assignment from being removed when updated via the lightbox
+Fix the issue with an empty task array in resource_cell_value on non-working days when resource_render_empty_cells is enabled
+Correct the error occurring when clicking on buttons embedded into sections of the lightbox
+Ensure the resource panel and zoom levels remain in sync
+Prevent Inline Editors events from being removed after reinitializing Gantt or resetting the layout
+Fix the issue where the open state is not restored after redoing changes
+
 ### 9.0.2
 
 Fix the regression causing incorrect styles for task borders and progress when the task color is specified via properties of a task object
