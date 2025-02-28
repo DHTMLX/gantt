@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 9.0.3
+// Type definitions for dhtmlxGantt 9.0.5
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;

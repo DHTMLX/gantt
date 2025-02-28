@@ -1,3 +1,28 @@
+### 9.0.5
+
+Fix the error that occurs while resizing rows in the Resource Grid
+Ensure the last year is specified in the range specified by the year_range property of the Time control
+Correct the position of link arrows affected by the line-height CSS style
+Fix the error that occurs while loading collections without the links array
+Resolve the issue with gantt.config.baselines when it is falsy but not explicitly set to false
+Fix the issue where click_drag doesn't work after calling resetLayout
+Ensure selected child tasks are not displayed above their parent when keyboard_navigation is enabled
+Fix keyboard navigation issues that occur when task IDs contain single quotes
+Correct calculateEndDate behavior when the duration is negative
+Resolve the error that occurs while loading datasets with baselines without an active timeline
+Ensure grid cells are focused even when tasks fall outside the chart time range
+Fix the error that occurs while partially deleting a date value in the inline editor
+Fix the issue where the resource panel is displayed incorrectly after filtering when fetchTasks is enabled
+
+### 9.0.4
+
+Fix the issue where the SNET constraint date cannot be changed via the inline editor
+Fix the issue where Gantt returns the global calendar instead of the resource calendar for tasks that have a single resource assignment when the dynamic_resource_calendars config is disabled
+Fix the constraint date issue when changing the start date via the inline editor after reinitializing Gantt or resetting the layout
+Fix the script error with some configurations of gantt.plugins when using the gantt.getGanttInstance method without specifying a container
+Fix the issue where Gantt stops working when the auto_scheduling_project_constraint configuration is enabled, and tasks are grouped
+Ensure Gantt retains the task constraint after dragging a task
+
 ### 9.0.3
 
 Fix the regression in styles for the Quick Info popup

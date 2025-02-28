@@ -1583,6 +1583,7 @@ div.dhx_modal_cover {
 /* Link arrow */
 .gantt_task_link div.gantt_link_arrow {
   color: var(--dhx-gantt-link-background);
+  line-height: normal;
 }
 .gantt_task_link div.gantt_link_arrow:before {
   font-family: dhx-gantt-icons !important;

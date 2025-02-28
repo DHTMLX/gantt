@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.3 Standard
+dhtmlxGantt v.9.0.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -1152,17 +1152,23 @@ class Fn {
 }
 const Vn = { click_drag: function(t) {
   t.ext || (t.ext = {});
-  const e = { className: "gantt_click_drag_rect", useRequestAnimationFrame: !0, callback: void 0, singleRow: !1 }, n = new Mn(t);
-  t.ext.clickDrag = n, t.attachEvent("onGanttReady", () => {
+  const e = { className: "gantt_click_drag_rect", useRequestAnimationFrame: !0, callback: void 0, singleRow: !1 };
+  function n() {
     const i = { viewPort: t.$task_data, ...e };
-    if (t.config.click_drag) {
-      const a = t.config.click_drag;
-      i.render = a.render || e.render, i.className = a.className || e.className, i.callback = a.callback || e.callback, i.viewPort = a.viewPort || t.$task_data, i.useRequestAnimationFrame = a.useRequestAnimationFrame === void 0 ? e.useRequestAnimationFrame : a.useRequestAnimationFrame, i.singleRow = a.singleRow === void 0 ? e.singleRow : a.singleRow;
-      const r = t.$ui.getView("timeline"), s = new Pn(i, t, r);
-      t.ext.clickDrag.attach(s, a.useKey, a.ignore);
-    }
+    t.ext.clickDrag && t.ext.clickDrag.destructor(), t.ext.clickDrag = new Mn(t);
+    const a = t.config.click_drag;
+    i.render = a.render || e.render, i.className = a.className || e.className, i.callback = a.callback || e.callback, i.viewPort = a.viewPort || t.$task_data, i.useRequestAnimationFrame = a.useRequestAnimationFrame === void 0 ? e.useRequestAnimationFrame : a.useRequestAnimationFrame, i.singleRow = a.singleRow === void 0 ? e.singleRow : a.singleRow;
+    const r = t.$ui.getView("timeline"), s = new Pn(i, t, r);
+    t.ext.clickDrag.attach(s, a.useKey, a.ignore);
+  }
+  t.attachEvent("onGanttReady", () => {
+    t.config.click_drag && n();
+  }), t.attachEvent("onGanttLayoutReady", function() {
+    t.$container && t.config.click_drag && t.attachEvent("onGanttRender", function() {
+      n();
+    }, { once: !0 });
   }), t.attachEvent("onDestroy", () => {
-    n.destructor();
+    t.ext.clickDrag && t.ext.clickDrag.destructor();
   });
 }, drag_timeline: function(t) {
   t.ext || (t.ext = {}), t.ext.dragTimeline = { create: () => xe.create(t) }, t.config.drag_timeline = { enabled: !0, render: !1 };
@@ -1428,7 +1434,7 @@ const Vn = { click_drag: function(t) {
         var a = n.locate(i);
         return n.isTaskExists(a) ? new n.$keyboardNavigation.TaskRow(a) : null;
       }, getNode: function() {
-        if (n.isTaskExists(this.taskId) && n.isTaskVisible(this.taskId)) return n.config.show_grid ? n.$grid.querySelector(".gantt_row[" + n.config.task_attribute + "='" + this.taskId + "']") : n.getTaskNode(this.taskId);
+        if (n.isTaskExists(this.taskId) && n.isTaskVisible(this.taskId)) return n.config.show_grid ? n.$grid.querySelector(`.gantt_row[${n.config.task_attribute}="${String(this.taskId).replaceAll('"', '\\"')}"]`) : n.getTaskNode(this.taskId);
       }, focus: function(i) {
         if (!i) {
           const a = n.getTaskPosition(n.getTask(this.taskId)), r = n.getTaskHeight(this.taskId), s = n.getScrollState();
@@ -1509,7 +1515,7 @@ const Vn = { click_drag: function(t) {
         }
         return null;
       }, getNode: function() {
-        if (n.isTaskExists(this.taskId) && n.isTaskVisible(this.taskId)) {
+        if (n.isTaskExists(this.taskId) && (n.isTaskVisible(this.taskId) || n.config.show_tasks_outside_timescale)) {
           if (n.config.show_grid) {
             var i = n.$grid.querySelector(".gantt_row[" + n.config.task_attribute + "='" + this.taskId + "']");
             return i ? i.querySelector("[data-column-index='" + this.columnIndex + "']") : null;
@@ -1623,7 +1629,7 @@ const Vn = { click_drag: function(t) {
       e.attachEvent("onDataRender", function() {
         e.config.keyboard_navigation && r();
       }), e.attachEvent("onGanttRender", function() {
-        e.eventRemove(e.$root, "keydown", i), e.eventRemove(e.$container, "focus", a), e.eventRemove(e.$container, "mousedown", l), e.config.keyboard_navigation ? (e.event(e.$root, "keydown", i), e.event(e.$container, "focus", a), e.event(e.$container, "mousedown", l), e.$container.setAttribute("tabindex", "0")) : e.$container.removeAttribute("tabindex");
+        e.$root && (e.eventRemove(e.$root, "keydown", i), e.eventRemove(e.$container, "focus", a), e.eventRemove(e.$container, "mousedown", l), e.config.keyboard_navigation ? (e.event(e.$root, "keydown", i), e.event(e.$container, "focus", a), e.event(e.$container, "mousedown", l), e.$container.setAttribute("tabindex", "0")) : e.$container.removeAttribute("tabindex"));
       });
       var d = e.attachEvent("onGanttReady", function() {
         if (e.detachEvent(d), e.$data.tasksStore.attachEvent("onStoreUpdated", function(b) {
@@ -1764,7 +1770,7 @@ const Vn = { click_drag: function(t) {
   t.config.tooltip_timeout = 30, t.config.tooltip_offset_y = 20, t.config.tooltip_offset_x = 10, t.config.tooltip_hide_timeout = 30;
   const e = new Wn(t);
   t.ext.tooltips = e, t.attachEvent("onGanttReady", function() {
-    e.tooltipFor({ selector: "[" + t.config.task_attribute + "]:not(.gantt_task_row)", html: (n) => {
+    t.$root && e.tooltipFor({ selector: "[" + t.config.task_attribute + "]:not(.gantt_task_row)", html: (n) => {
       if (t.config.touch && !t.config.touch_tooltip) return;
       const i = t.locate(n);
       if (t.isTaskExists(i)) {
@@ -3641,7 +3647,7 @@ function ei(t) {
       a = { start_date: new Date(l), end_date: new Date(d) };
     } else a = t.getSubtaskDates();
     a.start_date && a.end_date || (a = { start_date: /* @__PURE__ */ new Date(), end_date: /* @__PURE__ */ new Date() }), t.eachTask(function(c) {
-      t.config.deadlines !== !1 && c.deadline && Qt(a, c.deadline, c.deadline), c.constraint_date && c.constraint_type && t.config.constraint_types && c.constraint_type !== t.config.constraint_types.ASAP && c.constraint_type !== t.config.constraint_types.ALAP && Qt(a, c.constraint_date, c.constraint_date), t.config.baselines !== !1 && c.baselines && c.baselines.forEach(function(u) {
+      t.config.deadlines && c.deadline && Qt(a, c.deadline, c.deadline), c.constraint_date && c.constraint_type && t.config.constraint_types && c.constraint_type !== t.config.constraint_types.ASAP && c.constraint_type !== t.config.constraint_types.ALAP && Qt(a, c.constraint_date, c.constraint_date), t.config.baselines && c.baselines && c.baselines.forEach(function(u) {
         Qt(a, u.start_date, u.end_date);
       });
     }), a.start_date = t.date[n + "_start"](a.start_date), a.start_date = t.calculateEndDate({ start_date: t.date[n + "_start"](a.start_date), duration: -1, unit: n, step: i }), a.end_date = t.date[n + "_start"](a.end_date), a.end_date = t.calculateEndDate({ start_date: a.end_date, duration: 2, unit: n, step: i });
@@ -5046,19 +5052,19 @@ function pi(t) {
   }
   t.$data.baselineStore = e, t.adjustTaskHeightForBaselines = function(a) {
     let r, s, o = a.baselines && a.baselines.length || 0;
-    const l = t.config.baselines.row_height;
-    switch (t.config.baselines.render_mode) {
+    const l = t.config.baselines.row_height, d = t.getLayoutView("timeline");
+    if (d && t.config.show_chart) switch (t.config.baselines.render_mode) {
       case "taskRow":
         a.row_height = a.bar_height + 4;
         break;
       case "separateRow":
-        r = t.getLayoutView("timeline").getBarHeight(a.id), o ? (a.bar_height = a.bar_height || r, a.bar_height > r && (r = a.bar_height), a.row_height = r + l) : a.bar_height && (a.row_height = a.bar_height + 4), i(a);
+        r = d.getBarHeight(a.id), o ? (a.bar_height = a.bar_height || r, a.bar_height > r && (r = a.bar_height), a.row_height = r + l) : a.bar_height && (a.row_height = a.bar_height + 4), i(a);
         break;
       case "individualRow":
-        r = t.getLayoutView("timeline").getBarHeight(a.id), o ? (a.bar_height = a.bar_height || r, a.bar_height > r && (r = a.bar_height), s = l * o, a.row_height = r + s + 2) : a.bar_height && (a.row_height = a.bar_height + 4), i(a);
+        r = d.getBarHeight(a.id), o ? (a.bar_height = a.bar_height || r, a.bar_height > r && (r = a.bar_height), s = l * o, a.row_height = r + s + 2) : a.bar_height && (a.row_height = a.bar_height + 4), i(a);
     }
   }, t.attachEvent("onGanttReady", function() {
-    t.config.baselines !== !1 && (t.attachEvent("onParse", function() {
+    t.config.baselines && (t.attachEvent("onParse", function() {
       e.eachItem(function(a) {
         const r = a.task_id;
         if (t.isTaskExists(r)) {
@@ -5072,7 +5078,7 @@ function pi(t) {
               break;
             }
           }
-          o && s.baselines.push(a), xt(s) ? n(s) : t.adjustTaskHeightForBaselines(s);
+          o && s.baselines.push(a), j(t) || (xt(s) ? n(s) : t.adjustTaskHeightForBaselines(s));
         }
       });
     }), t.attachEvent("onBeforeTaskUpdate", function(a, r) {
@@ -5152,7 +5158,7 @@ function mi(t) {
       this._process_loading(r);
     }
   }, t._process_loading = function(n) {
-    n.collections && this._load_collections(n.collections), n.resources && this.$data.resourcesStore && this.$data.resourcesStore.parse(n.resources), t.config.baselines !== !1 && n.baselines && this.$data.baselineStore && this.$data.baselineStore.parse(n.baselines);
+    n.collections && this._load_collections(n.collections), n.resources && this.$data.resourcesStore && this.$data.resourcesStore.parse(n.resources), t.config.baselines && n.baselines && this.$data.baselineStore && this.$data.baselineStore.parse(n.baselines);
     const i = n.data || n.tasks;
     n.assignments && function(r, s) {
       const o = {};
@@ -5162,7 +5168,7 @@ function mi(t) {
         l[t.config.resource_property] = o[l.id] || [];
       });
     }(i, n.assignments), this.$data.tasksStore.parse(i);
-    var a = n.links || (n.collections ? n.collections.links : []);
+    var a = n.links || (n.collections && n.collections.links ? n.collections.links : []);
     this.$data.linksStore.parse(a), this.callEvent("onParse", []), this.render();
   }, t._load_collections = function(n) {
     var i = !1;
@@ -5813,7 +5819,7 @@ pe.prototype = { units: ["year", "month", "week", "day", "hour", "minute"], _cle
   var f = n;
   return i === e && (f = new Date(t.getFullYear(), t.getMonth(), t.getDate(), 0, 0, s)), { added: i, end: f };
 }, _subtractMinuteDate: function(t, e, n) {
-  var i = new Date(t), a = 0;
+  var i = this.getClosestWorkTime({ date: t, dir: "past", unit: "minute" }), a = 0;
   n = n || -1, e = Math.abs(1 * e), e = Math.round(e);
   const r = this._isMinutePrecision(i);
   let s = this._subtractMinutesUntilHourStart(i, e);
@@ -6050,7 +6056,7 @@ gn.prototype = { _calendars: {}, _convertWorkTimeSettings: function(t) {
   if (t[e.calendar_property]) return this.getCalendar(t[e.calendar_property]);
   if (e.resource_calendars) {
     var n;
-    if (n = this._legacyConfig === !1 ? e.resource_property : At.getResourceProperty(e), Array.isArray(t[n])) e.dynamic_resource_calendars && (i = $i.getCalendarIdFromMultipleResources(t[n], this));
+    if (n = this._legacyConfig === !1 ? e.resource_property : At.getResourceProperty(e), Array.isArray(t[n])) e.dynamic_resource_calendars ? i = $i.getCalendarIdFromMultipleResources(t[n], this) : a = this.getResourceCalendar(t[n]);
     else if (this._legacyConfig === void 0 && (this._legacyConfig = At.isLegacyResourceCalendarFormat(e.resource_calendars)), this._legacyConfig) var i = At.getCalendarIdFromLegacyConfig(t, e.resource_calendars);
     else if (n && t[n] && e.resource_calendars[t[n]]) var a = this.getResourceCalendar(t[n]);
     if (i && (a = this.getCalendar(i)), a) return a;
@@ -6061,7 +6067,7 @@ gn.prototype = { _calendars: {}, _convertWorkTimeSettings: function(t) {
   var e = null;
   e = typeof t == "number" || typeof t == "string" ? t : t.id || t.key;
   var n = this.$gantt.config, i = n.resource_calendars, a = null;
-  if (i) {
+  if (Array.isArray(t) && t.length === 1 && (e = typeof t[0] == "object" ? t[0].resource_id : t[0]), i) {
     if (this._legacyConfig === void 0 && (this._legacyConfig = At.isLegacyResourceCalendarFormat(n.resource_calendars)), this._legacyConfig) {
       for (var r in i) if (i[r][e]) {
         a = i[r][e];
@@ -6433,11 +6439,13 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
             r && (o = Math.max(t.posFromDate(r) - t.config.task_scroll_offset, 0)), s.y && (c = s.y), t.scrollTo(o, c);
           }
         }
-        var u = t.$ui.getView("grid");
-        if (u) {
-          var h = u.$config.scrollY, g = t.$ui.getView(h);
-          g && (t.utils.dom.isChildOf(g.$view, t.$container) || u.scrollTo(void 0, 0));
-        }
+        this.$layout.getScrollbarsInfo().forEach((u) => {
+          const h = t.$ui.getView(u.id), g = t.utils.dom.isChildOf(h.$view, t.$container);
+          u.boundViews.forEach((f) => {
+            const y = t.$ui.getView(f);
+            u.y && u.y != s.y && y && !g && y.scrollTo(void 0, 0);
+          });
+        });
       }
     }
     this.callEvent("onGanttRender", []);
@@ -6484,7 +6492,7 @@ class Gi {
 }
 const Yi = { date: { month_full: ["Januar", "Februar", "Mars", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Desember"], month_short: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"], day_full: ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"], day_short: ["Søn", "Mon", "Tir", "Ons", "Tor", "Fre", "Lør"] }, labels: { new_task: "Ny oppgave", icon_save: "Lagre", icon_cancel: "Avbryt", icon_details: "Detaljer", icon_edit: "Rediger", icon_delete: "Slett", confirm_closing: "", confirm_deleting: "Hendelsen vil bli slettet permanent. Er du sikker?", section_description: "Beskrivelse", section_time: "Tidsperiode", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Avbryt", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Ji = { date: { month_full: ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"], month_short: ["Jan", "Feb", "mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"], day_full: ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"], day_short: ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"] }, labels: { new_task: "Nieuwe taak", icon_save: "Opslaan", icon_cancel: "Annuleren", icon_details: "Details", icon_edit: "Bewerken", icon_delete: "Verwijderen", confirm_closing: "", confirm_deleting: "Item zal permanent worden verwijderd, doorgaan?", section_description: "Beschrijving", section_time: "Tijd periode", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Taak omschrijving", column_start_date: "Startdatum", column_duration: "Duur", column_add: "", link: "Koppeling", confirm_link_deleting: "zal worden verwijderd", link_start: " (start)", link_end: " (eind)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "minuten", hours: "uren", days: "dagen", weeks: "weken", months: "maanden", years: "jaren", message_ok: "OK", message_cancel: "Annuleren", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Ki = { date: { month_full: ["Januar", "Februar", "Mars", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Desember"], month_short: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"], day_full: ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"], day_short: ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"] }, labels: { new_task: "Ny oppgave", icon_save: "Lagre", icon_cancel: "Avbryt", icon_details: "Detaljer", icon_edit: "Endre", icon_delete: "Slett", confirm_closing: "Endringer blir ikke lagret, er du sikker?", confirm_deleting: "Oppføringen vil bli slettet, er du sikker?", section_description: "Beskrivelse", section_time: "Tidsperiode", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Avbryt", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Xi = { date: { month_full: ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"], month_short: ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"], day_full: ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"], day_short: ["Nie", "Pon", "Wto", "Śro", "Czw", "Pią", "Sob"] }, labels: { new_task: "Nowe zadanie", icon_save: "Zapisz", icon_cancel: "Anuluj", icon_details: "Szczegóły", icon_edit: "Edytuj", icon_delete: "Usuń", confirm_closing: "", confirm_deleting: "Zdarzenie zostanie usunięte na zawsze, kontynuować?", section_description: "Opis", section_time: "Okres czasu", section_type: "Typ", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Nazwa zadania", column_start_date: "Początek", column_duration: "Czas trwania", column_add: "", link: "Link", confirm_link_deleting: "zostanie usunięty", link_start: " (początek)", link_end: " (koniec)", type_task: "Zadanie", type_project: "Projekt", type_milestone: "Milestone", minutes: "Minuty", hours: "Godziny", days: "Dni", weeks: "Tydzień", months: "Miesiące", years: "Lata", message_ok: "OK", message_cancel: "Anuluj", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Zi = { date: { month_full: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], month_short: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"], day_full: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"], day_short: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"] }, labels: { new_task: "Nova tarefa", icon_save: "Salvar", icon_cancel: "Cancelar", icon_details: "Detalhes", icon_edit: "Editar", icon_delete: "Excluir", confirm_closing: "", confirm_deleting: "As tarefas serão excluidas permanentemente, confirme?", section_description: "Descrição", section_time: "Período", section_type: "Tipo", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "EAP", column_text: "Nome tarefa", column_start_date: "Data início", column_duration: "Duração", column_add: "", link: "Link", confirm_link_deleting: "Será excluído!", link_start: " (início)", link_end: " (fim)", type_task: "Task", type_project: "Projeto", type_milestone: "Marco", minutes: "Minutos", hours: "Horas", days: "Dias", weeks: "Semanas", months: "Meses", years: "Anos", message_ok: "OK", message_cancel: "Cancelar", section_constraint: "Restrição", constraint_type: "Tipo Restrição", constraint_date: "Data restrição", asap: "Mais breve possível", alap: "Mais tarde possível", snet: "Não começar antes de", snlt: "Não começar depois de", fnet: "Não terminar antes de", fnlt: "Não terminar depois de", mso: "Precisa começar em", mfo: "Precisa terminar em", resources_filter_placeholder: "Tipo de filtros", resources_filter_label: "Ocultar vazios", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Qi = { date: { month_full: ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "November", "December"], month_short: ["Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Nov", "Dec"], day_full: ["Duminica", "Luni", "Marti", "Miercuri", "Joi", "Vineri", "Sambata"], day_short: ["Du", "Lu", "Ma", "Mi", "Jo", "Vi", "Sa"] }, labels: { new_task: "Sarcina noua", icon_save: "Salveaza", icon_cancel: "Anuleaza", icon_details: "Detalii", icon_edit: "Editeaza", icon_delete: "Sterge", confirm_closing: "Schimbarile nu vor fi salvate, esti sigur?", confirm_deleting: "Evenimentul va fi sters permanent, esti sigur?", section_description: "Descriere", section_time: "Interval", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Anuleaza", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ta = { date: { month_full: ["Январь", "Февраль", "Март", "Апрель", "Maй", "Июнь", "Июль", "Август", "Сентябрь", "Oктябрь", "Ноябрь", "Декабрь"], month_short: ["Янв", "Фев", "Maр", "Aпр", "Maй", "Июн", "Июл", "Aвг", "Сен", "Окт", "Ноя", "Дек"], day_full: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"], day_short: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"] }, labels: { new_task: "Новое задание", icon_save: "Сохранить", icon_cancel: "Отменить", icon_details: "Детали", icon_edit: "Изменить", icon_delete: "Удалить", confirm_closing: "", confirm_deleting: "Событие будет удалено безвозвратно, продолжить?", section_description: "Описание", section_time: "Период времени", section_type: "Тип", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "ИСР", column_text: "Задача", column_start_date: "Начало", column_duration: "Длительность", column_add: "", link: "Связь", confirm_link_deleting: "будет удалена", link_start: " (начало)", link_end: " (конец)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Минута", hours: "Час", days: "День", weeks: "Неделя", months: "Месяц", years: "Год", message_ok: "OK", message_cancel: "Отменить", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "начните вводить слово для фильтрации", resources_filter_label: "спрятать не установленные", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ea = { date: { month_full: ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"], month_short: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"], day_full: ["Nedelja", "Ponedeljek", "Torek", "Sreda", "Četrtek", "Petek", "Sobota"], day_short: ["Ned", "Pon", "Tor", "Sre", "Čet", "Pet", "Sob"] }, labels: { new_task: "Nova naloga", icon_save: "Shrani", icon_cancel: "Prekliči", icon_details: "Podrobnosti", icon_edit: "Uredi", icon_delete: "Izbriši", confirm_closing: "", confirm_deleting: "Dogodek bo izbrisan. Želite nadaljevati?", section_description: "Opis", section_time: "Časovni okvir", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Prekliči", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, na = { date: { month_full: ["Január", "Február", "Marec", "Apríl", "Máj", "Jún", "Júl", "August", "September", "Október", "November", "December"], month_short: ["Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sept", "Okt", "Nov", "Dec"], day_full: ["Nedeľa", "Pondelok", "Utorok", "Streda", "Štvrtok", "Piatok", "Sobota"], day_short: ["Ne", "Po", "Ut", "St", "Št", "Pi", "So"] }, labels: { new_task: "Nová úloha", icon_save: "Uložiť", icon_cancel: "Späť", icon_details: "Detail", icon_edit: "Edituj", icon_delete: "Zmazať", confirm_closing: "Vaše zmeny nebudú uložené. Skutočne?", confirm_deleting: "Udalosť bude natrvalo vymazaná. Skutočne?", section_description: "Poznámky", section_time: "Doba platnosti", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Späť", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ia = { date: { month_full: ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"], month_short: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"], day_full: ["Söndag", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag"], day_short: ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"] }, labels: { new_task: "Ny uppgift", icon_save: "Spara", icon_cancel: "Avbryt", icon_details: "Detajer", icon_edit: "Ändra", icon_delete: "Ta bort", confirm_closing: "", confirm_deleting: "Är du säker på att du vill ta bort händelsen permanent?", section_description: "Beskrivning", section_time: "Tid", section_type: "Typ", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Uppgiftsnamn", column_start_date: "Starttid", column_duration: "Varaktighet", column_add: "", link: "Länk", confirm_link_deleting: "kommer tas bort", link_start: " (start)", link_end: " (slut)", type_task: "Uppgift", type_project: "Projekt", type_milestone: "Milstolpe", minutes: "Minuter", hours: "Timmar", days: "Dagar", weeks: "Veckor", months: "Månader", years: "År", message_ok: "OK", message_cancel: "Avbryt", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, aa = { date: { month_full: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"], month_short: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"], day_full: ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"], day_short: ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"] }, labels: { new_task: "Yeni görev", icon_save: "Kaydet", icon_cancel: "İptal", icon_details: "Detaylar", icon_edit: "Düzenle", icon_delete: "Sil", confirm_closing: "", confirm_deleting: "Görev silinecek, emin misiniz?", section_description: "Açıklama", section_time: "Zaman Aralığı", section_type: "Tip", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Görev Adı", column_start_date: "Başlangıç", column_duration: "Süre", column_add: "", link: "Bağlantı", confirm_link_deleting: "silinecek", link_start: " (başlangıç)", link_end: " (bitiş)", type_task: "Görev", type_project: "Proje", type_milestone: "Kilometretaşı", minutes: "Dakika", hours: "Saat", days: "Gün", weeks: "Hafta", months: "Ay", years: "Yıl", message_ok: "OK", message_cancel: "Ýptal", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ra = { date: { month_full: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"], month_short: ["Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру"], day_full: ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"], day_short: ["Нед", "Пон", "Вів", "Сер", "Чет", "Птн", "Суб"] }, labels: { new_task: "Нове завдання", icon_save: "Зберегти", icon_cancel: "Відміна", icon_details: "Деталі", icon_edit: "Редагувати", icon_delete: "Вилучити", confirm_closing: "", confirm_deleting: "Подія вилучиться назавжди. Ви впевнені?", section_description: "Опис", section_time: "Часовий проміжок", section_type: "Тип", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Відміна", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } };
 function sa() {
-  this.constants = Un, this.version = "9.0.3", this.license = "gpl", this.templates = {}, this.ext = {}, this.keys = { edit_save: this.constants.KEY_CODES.ENTER, edit_cancel: this.constants.KEY_CODES.ESC };
+  this.constants = Un, this.version = "9.0.5", this.license = "gpl", this.templates = {}, this.ext = {}, this.keys = { edit_save: this.constants.KEY_CODES.ENTER, edit_cancel: this.constants.KEY_CODES.ESC };
 }
 function oa(t) {
   var e = new sa(), n = new qn(t), i = {};
@@ -7224,7 +7232,7 @@ function Gt(t, e, n) {
 function gt(t, e, n, i, a) {
   var r = e.getItemIndexByTopPosition(a.y) || 0, s = e.getItemIndexByTopPosition(a.y_end) || i.count(), o = Math.max(0, r - 1), l = Math.min(i.count(), s + 1);
   const d = [];
-  if (t.config.keyboard_navigation && t.getSelectedId() && d.push(t.getSelectedId()), t.$ui.getView("grid") && t.ext.inlineEditors && t.ext.inlineEditors.getState().id) {
+  if (t.config.keyboard_navigation && t.getSelectedId() && t.getTask(t.getSelectedId()).$expanded_branch && d.push(t.getSelectedId()), t.$ui.getView("grid") && t.ext.inlineEditors && t.ext.inlineEditors.getState().id) {
     let c = t.ext.inlineEditors.getState().id;
     i.exists(c) && d.push(c);
   }
@@ -7554,6 +7562,14 @@ var vn = function(t) {
       }
     }
     return a;
+  }, e.prototype.getScrollbarsInfo = function() {
+    const n = this.getCellsByType("scroller"), i = [];
+    return n.forEach((a) => {
+      let r = {};
+      const { visible: s, direction: o, size: l, scrollSize: d, position: c } = a.getScrollState();
+      let u = a._getLinkedViews().map((h) => h.$config.id);
+      r.id = a.$id, r.visible = s, r.boundViews = u, o === "x" ? (r.x = l, r.x_inner = d, r.x_pos = c || 0) : (r.y = l, r.y_inner = d, r.y_pos = c || 0), i.push(r);
+    }), i;
   }, e.prototype._syncCellSizes = function(n, i) {
     if (n) {
       var a = {};
@@ -8411,7 +8427,7 @@ ve.prototype = { init: function(t) {
       return (S = w - x) < T && (S = T), _.marker.style.left = $.x + "px", _.marker.style.top = x - 1 + "px", _.marker.style.height = Math.abs(S) + 1 + "px", _.marker_height = S, u.callEvent("onRowResize", [m, v.getItem(m), S + p]), !0;
     }, c), row_drag_end: c.bind(function(g, f, y) {
       var v = u.$config.rowStore, b = g.config, _ = b.drag_id, m = v.getItem(_), p = u.getItemHeight(_), k = b.marker_height;
-      u.callEvent("onBeforeRowResizeEnd", [_, m, k]) !== !1 && m.row_height != k && (m.row_height = k, c.updateTask(_), u.callEvent("onAfterRowResize", [_, m, p, k]), this.render());
+      u.callEvent("onBeforeRowResizeEnd", [_, m, k]) !== !1 && m.row_height != k && (m.row_height = k, v.updateItem(_), u.callEvent("onAfterRowResize", [_, m, p, k]), this.render());
     }, c) };
     return { init: function() {
       var g = c.$services.getService("dnd"), f = u.$getConfig(), y = new g(u.$grid_data, { updates_per_second: 60 });
@@ -8812,7 +8828,7 @@ function Ta(t) {
     c = typeof l.min == "function" ? l.min(s, o) : l.min, u = typeof l.max == "function" ? l.max(s, o) : l.max;
     var h = `<div style='width:140px' role='cell'><input type='date' ${c ? " min='" + i(c) + "' " : ""} ${u ? " max='" + i(u) + "' " : ""} name='${o.name}' title='${o.name}'></div>`;
     d.innerHTML = h, d.oninput = function(g) {
-      +t.date.str_to_date("%Y-%m-%d")(g.target.value) < +c && (g.target.value = t.date.date_to_str("%Y-%m-%d")(c)), +t.date.str_to_date("%Y-%m-%d")(g.target.value) > +u && (g.target.value = t.date.date_to_str("%Y-%m-%d")(u));
+      g.target.value && (c || u) && (+t.date.str_to_date("%Y-%m-%d")(g.target.value) < +c && (g.target.value = t.date.date_to_str("%Y-%m-%d")(c)), +t.date.str_to_date("%Y-%m-%d")(g.target.value) > +u && (g.target.value = t.date.date_to_str("%Y-%m-%d")(u)));
     };
   }, set_value: function(s, o, l, d) {
     s && s.getFullYear ? this.get_input(d).value = i(s) : this.get_input(d).value = s;
@@ -9108,7 +9124,7 @@ function yn(t) {
     var l = s.getItemPosition(r), d = o, c = s.$getTemplates(), u = t.getTaskType(r.type), h = s.getBarHeight(r.id, u == d.types.milestone), g = 0;
     u == d.types.milestone && (g = (h - l.height) / 2);
     var f = Math.floor((s.getItemHeight(r.id) - h) / 2);
-    const y = t.config.baselines !== !1 && r.baselines && r.baselines.length, v = t.config.baselines !== !1 && (t.config.baselines.render_mode == "separateRow" || t.config.baselines.render_mode == "individualRow");
+    const y = t.config.baselines && r.baselines && r.baselines.length, v = t.config.baselines && (t.config.baselines.render_mode == "separateRow" || t.config.baselines.render_mode == "individualRow");
     if (y && v && r.bar_height !== "full" && r.bar_height < r.row_height) if (u === d.types.milestone) {
       let x = s.getBarHeight(r.id, !0), S = Math.sqrt(2 * x * x);
       f = Math.floor((S - h) / 2) + 2;
@@ -9336,7 +9352,7 @@ function Na(t) {
   function i(a, r, s) {
     var o = r.getItemPosition(a);
     let l = fi(t, r, a), d = l.maxHeight, c = l.splitChild;
-    const u = t.config.baselines !== !1 && (t.config.baselines.render_mode == "separateRow" || t.config.baselines.render_mode == "individualRow") && a.baselines && a.baselines.length;
+    const u = t.config.baselines && (t.config.baselines.render_mode == "separateRow" || t.config.baselines.render_mode == "individualRow") && a.baselines && a.baselines.length;
     let h;
     l.shrinkHeight && (o.rowHeight = d);
     let g = t.getTaskType(a.type) == s.types.milestone;
@@ -9423,7 +9439,7 @@ function Na(t) {
   }, update: null, isInViewPort: mn, getVisibleRange: pn() };
 }
 function La(t, e, n, i, a) {
-  if (a.$ui.getView("grid") && (a.config.keyboard_navigation && a.getSelectedId() || a.ext.inlineEditors && a.ext.inlineEditors.getState().id)) return !0;
+  if (a.$ui.getView("grid") && (a.config.keyboard_navigation && a.getSelectedId() || a.ext.inlineEditors && a.ext.inlineEditors.getState().id)) return !!t.$expanded_branch;
   var r = n.getItemTop(t.id), s = n.getItemHeight(t.id);
   return !(r > e.y_end || r + s < e.y);
 }
@@ -11318,7 +11334,7 @@ function Qa(t) {
     var k, $, w, x, S, T, E = "";
     switch (p.timeFormat[m]) {
       case "%Y":
-        for (_._time_format_order[2] = m, _._time_format_order.size++, _.year_range && (isNaN(_.year_range) ? _.year_range.push && (w = _.year_range[0], x = _.year_range[1]) : k = _.year_range), k = k || 10, $ = $ || Math.floor(k / 2), w = w || p.date.getFullYear() - $, x = x || t.getState().max_date.getFullYear() + $, S = w; S < x; S++) E += "<option value='" + S + "'>" + S + "</option>";
+        for (_._time_format_order[2] = m, _._time_format_order.size++, _.year_range && (isNaN(_.year_range) ? _.year_range.push && (w = _.year_range[0], x = _.year_range[1]) : k = _.year_range), k = k || 10, $ = $ || Math.floor(k / 2), w = w || p.date.getFullYear() - $, x = x || t.getState().max_date.getFullYear() + $, S = w; S <= x; S++) E += "<option value='" + S + "'>" + S + "</option>";
         break;
       case "%m":
         for (_._time_format_order[1] = m, _._time_format_order.size++, S = 0; S < 12; S++) E += "<option value='" + S + "'>" + t.locale.date.month_full[S] + "</option>";

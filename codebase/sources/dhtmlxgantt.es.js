@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.3 Standard
+dhtmlxGantt v.9.0.5 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -811,25 +811,39 @@ function click_drag(gantt2) {
     gantt2.ext = {};
   }
   const defaultConfig = { className: "gantt_click_drag_rect", useRequestAnimationFrame: true, callback: void 0, singleRow: false };
-  const eventsManager = new EventsManager$1(gantt2);
-  gantt2.ext.clickDrag = eventsManager;
-  gantt2.attachEvent("onGanttReady", () => {
+  function setClickDrag() {
     const config2 = { viewPort: gantt2.$task_data, ...defaultConfig };
+    if (gantt2.ext.clickDrag) {
+      gantt2.ext.clickDrag.destructor();
+    }
+    gantt2.ext.clickDrag = new EventsManager$1(gantt2);
+    const clickDrag = gantt2.config.click_drag;
+    config2.render = clickDrag.render || defaultConfig.render;
+    config2.className = clickDrag.className || defaultConfig.className;
+    config2.callback = clickDrag.callback || defaultConfig.callback;
+    config2.viewPort = clickDrag.viewPort || gantt2.$task_data;
+    config2.useRequestAnimationFrame = clickDrag.useRequestAnimationFrame === void 0 ? defaultConfig.useRequestAnimationFrame : clickDrag.useRequestAnimationFrame;
+    config2.singleRow = clickDrag.singleRow === void 0 ? defaultConfig.singleRow : clickDrag.singleRow;
+    const timeline = gantt2.$ui.getView("timeline");
+    const selectedRegion = new SelectedRegion(config2, gantt2, timeline);
+    gantt2.ext.clickDrag.attach(selectedRegion, clickDrag.useKey, clickDrag.ignore);
+  }
+  gantt2.attachEvent("onGanttReady", () => {
     if (gantt2.config.click_drag) {
-      const clickDrag = gantt2.config.click_drag;
-      config2.render = clickDrag.render || defaultConfig.render;
-      config2.className = clickDrag.className || defaultConfig.className;
-      config2.callback = clickDrag.callback || defaultConfig.callback;
-      config2.viewPort = clickDrag.viewPort || gantt2.$task_data;
-      config2.useRequestAnimationFrame = clickDrag.useRequestAnimationFrame === void 0 ? defaultConfig.useRequestAnimationFrame : clickDrag.useRequestAnimationFrame;
-      config2.singleRow = clickDrag.singleRow === void 0 ? defaultConfig.singleRow : clickDrag.singleRow;
-      const timeline = gantt2.$ui.getView("timeline");
-      const selectedRegion = new SelectedRegion(config2, gantt2, timeline);
-      gantt2.ext.clickDrag.attach(selectedRegion, clickDrag.useKey, clickDrag.ignore);
+      setClickDrag();
+    }
+  });
+  gantt2.attachEvent("onGanttLayoutReady", function() {
+    if (gantt2.$container && gantt2.config.click_drag) {
+      gantt2.attachEvent("onGanttRender", function() {
+        setClickDrag();
+      }, { once: true });
     }
   });
   gantt2.attachEvent("onDestroy", () => {
-    eventsManager.destructor();
+    if (gantt2.ext.clickDrag) {
+      gantt2.ext.clickDrag.destructor();
+    }
   });
 }
 class EventsManager2 {
@@ -2364,7 +2378,7 @@ function task_row(gantt2) {
   }, getNode: function() {
     if (gantt2.isTaskExists(this.taskId) && gantt2.isTaskVisible(this.taskId)) {
       if (gantt2.config.show_grid) {
-        return gantt2.$grid.querySelector(".gantt_row[" + gantt2.config.task_attribute + "='" + this.taskId + "']");
+        return gantt2.$grid.querySelector(`.gantt_row[${gantt2.config.task_attribute}="${String(this.taskId).replaceAll('"', '\\"')}"]`);
       } else {
         return gantt2.getTaskNode(this.taskId);
       }
@@ -2544,7 +2558,7 @@ function task_cell(gantt2) {
       return null;
     }
   }, getNode: function() {
-    if (gantt2.isTaskExists(this.taskId) && gantt2.isTaskVisible(this.taskId)) {
+    if (gantt2.isTaskExists(this.taskId) && (gantt2.isTaskVisible(this.taskId) || gantt2.config.show_tasks_outside_timescale)) {
       if (gantt2.config.show_grid) {
         var row = gantt2.$grid.querySelector(".gantt_row[" + gantt2.config.task_attribute + "='" + this.taskId + "']");
         if (!row) return null;
@@ -2833,6 +2847,7 @@ function keyboard_navigation(gantt2) {
         reFocusActiveNode();
       });
       gantt3.attachEvent("onGanttRender", function() {
+        if (!gantt3.$root) return;
         gantt3.eventRemove(gantt3.$root, "keydown", keyDownHandler);
         gantt3.eventRemove(gantt3.$container, "focus", focusHandler);
         gantt3.eventRemove(gantt3.$container, "mousedown", mousedownHandler);
@@ -4189,6 +4204,7 @@ function tooltip(gantt2) {
   const tooltipManager = new TooltipManager(gantt2);
   gantt2.ext.tooltips = tooltipManager;
   gantt2.attachEvent("onGanttReady", function() {
+    if (!gantt2.$root) return;
     tooltipManager.tooltipFor({ selector: "[" + gantt2.config.task_attribute + "]:not(.gantt_task_row)", html: (event2) => {
       if (gantt2.config.touch && !gantt2.config.touch_tooltip) {
         return;
@@ -7705,7 +7721,7 @@ function _init_tasks_range(gantt2) {
       range = { start_date: /* @__PURE__ */ new Date(), end_date: /* @__PURE__ */ new Date() };
     }
     gantt2.eachTask(function(task2) {
-      if (gantt2.config.deadlines !== false && task2.deadline) {
+      if (gantt2.config.deadlines && task2.deadline) {
         extendRangeForDates(range, task2.deadline, task2.deadline);
       }
       if (task2.constraint_date && task2.constraint_type) {
@@ -7713,7 +7729,7 @@ function _init_tasks_range(gantt2) {
           extendRangeForDates(range, task2.constraint_date, task2.constraint_date);
         }
       }
-      if (gantt2.config.baselines !== false && task2.baselines) {
+      if (gantt2.config.baselines && task2.baselines) {
         task2.baselines.forEach(function(baseline) {
           extendRangeForDates(range, baseline.start_date, baseline.end_date);
         });
@@ -10989,12 +11005,16 @@ function baselines(gantt2) {
     let margins = 2;
     let baselineAmount = task.baselines && task.baselines.length || 0;
     const subrowHeight = gantt2.config.baselines.row_height;
+    const timelineView = gantt2.getLayoutView("timeline");
+    if (!timelineView || !gantt2.config.show_chart) {
+      return;
+    }
     switch (gantt2.config.baselines.render_mode) {
       case "taskRow":
         task.row_height = task.bar_height + 4;
         break;
       case "separateRow":
-        height = gantt2.getLayoutView("timeline").getBarHeight(task.id);
+        height = timelineView.getBarHeight(task.id);
         if (baselineAmount) {
           task.bar_height = task.bar_height || height;
           if (task.bar_height > height) {
@@ -11007,7 +11027,7 @@ function baselines(gantt2) {
         _increaseSplitParentHeight(task);
         break;
       case "individualRow":
-        height = gantt2.getLayoutView("timeline").getBarHeight(task.id);
+        height = timelineView.getBarHeight(task.id);
         if (baselineAmount) {
           task.bar_height = task.bar_height || height;
           if (task.bar_height > height) {
@@ -11044,7 +11064,7 @@ function baselines(gantt2) {
     }, task.id);
   }
   gantt2.attachEvent("onGanttReady", function() {
-    if (gantt2.config.baselines === false) {
+    if (!gantt2.config.baselines) {
       return;
     }
     gantt2.attachEvent("onParse", function() {
@@ -11065,10 +11085,12 @@ function baselines(gantt2) {
           if (newBaseline) {
             task.baselines.push(baseline);
           }
-          if (isSplitParent(task)) {
-            _adjustSplitParentHeight(task);
-          } else {
-            gantt2.adjustTaskHeightForBaselines(task);
+          if (!isHeadless(gantt2)) {
+            if (isSplitParent(task)) {
+              _adjustSplitParentHeight(task);
+            } else {
+              gantt2.adjustTaskHeightForBaselines(task);
+            }
           }
         }
       });
@@ -11220,7 +11242,7 @@ function parsing(gantt2) {
     if (data2.resources && this.$data.resourcesStore) {
       this.$data.resourcesStore.parse(data2.resources);
     }
-    if (gantt2.config.baselines !== false && data2.baselines && this.$data.baselineStore) {
+    if (gantt2.config.baselines && data2.baselines && this.$data.baselineStore) {
       this.$data.baselineStore.parse(data2.baselines);
     }
     const tasks2 = data2.data || data2.tasks;
@@ -11228,7 +11250,7 @@ function parsing(gantt2) {
       attachAssignmentsToTasks(tasks2, data2.assignments);
     }
     this.$data.tasksStore.parse(tasks2);
-    var links = data2.links || (data2.collections ? data2.collections.links : []);
+    var links = data2.links || (data2.collections && data2.collections.links ? data2.collections.links : []);
     this.$data.linksStore.parse(links);
     this.callEvent("onParse", []);
     this.render();
@@ -12557,7 +12579,7 @@ CalendarWorkTimeStrategy.prototype = { units: ["year", "month", "week", "day", "
   }
   return { added, end: intervalEnd };
 }, _subtractMinuteDate: function(from, duration, step) {
-  var start = new Date(from), added = 0;
+  var start = this.getClosestWorkTime({ date: from, dir: "past", unit: "minute" }), added = 0;
   step = step || -1;
   duration = Math.abs(duration * 1);
   duration = Math.round(duration);
@@ -13067,6 +13089,8 @@ CalendarManager.prototype = { _calendars: {}, _convertWorkTimeSettings: function
     if (Array.isArray(task[resourceProperty])) {
       if (config2.dynamic_resource_calendars) {
         calendarId = dynamicResourceCalendars.getCalendarIdFromMultipleResources(task[resourceProperty], this);
+      } else {
+        calendar = this.getResourceCalendar(task[resourceProperty]);
       }
     } else {
       if (this._legacyConfig === void 0) {
@@ -13099,6 +13123,15 @@ CalendarManager.prototype = { _calendars: {}, _convertWorkTimeSettings: function
   var config2 = this.$gantt.config;
   var calendarsConfig = config2.resource_calendars;
   var calendarId = null;
+  if (Array.isArray(resource)) {
+    if (resource.length === 1) {
+      if (typeof resource[0] === "object") {
+        resourceId = resource[0].resource_id;
+      } else {
+        resourceId = resource[0];
+      }
+    }
+  }
   if (calendarsConfig) {
     if (this._legacyConfig === void 0) {
       this._legacyConfig = legacyResourceCalendarConfig.isLegacyResourceCalendarFormat(config2.resource_calendars);
@@ -14150,17 +14183,19 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
             gantt2.scrollTo(posX, posY);
           }
         }
-        var gridCell = gantt2.$ui.getView("grid");
-        if (gridCell) {
-          var attachedScrollbar = gridCell.$config.scrollY;
-          var verticalScrollbar = gantt2.$ui.getView(attachedScrollbar);
-          if (verticalScrollbar) {
-            var scrollbarNodeVisible = gantt2.utils.dom.isChildOf(verticalScrollbar.$view, gantt2.$container);
-            if (!scrollbarNodeVisible) {
-              gridCell.scrollTo(void 0, 0);
+        const scrollbarsInfo = this.$layout.getScrollbarsInfo();
+        scrollbarsInfo.forEach((scroll_info) => {
+          const scroll = gantt2.$ui.getView(scroll_info.id);
+          const scrollbarNodeVisible = gantt2.utils.dom.isChildOf(scroll.$view, gantt2.$container);
+          scroll_info.boundViews.forEach((viewName) => {
+            const view = gantt2.$ui.getView(viewName);
+            if (scroll_info.y && scroll_info.y != pos.y) {
+              if (view && !scrollbarNodeVisible) {
+                view.scrollTo(void 0, 0);
+              }
             }
-          }
-        }
+          });
+        });
       }
     } else {
       gantt2.refreshData();
@@ -14314,7 +14349,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.3";
+  this.version = "9.0.5";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -14958,7 +14993,10 @@ function getVisibleTasksRange(gantt2, view, config2, datastore, viewport) {
   var indexEnd = Math.min(datastore.count(), end + buffer);
   const extraTasksIds = [];
   if (gantt2.config.keyboard_navigation && gantt2.getSelectedId()) {
-    extraTasksIds.push(gantt2.getSelectedId());
+    let task = gantt2.getTask(gantt2.getSelectedId());
+    if (task.$expanded_branch) {
+      extraTasksIds.push(gantt2.getSelectedId());
+    }
   }
   if (gantt2.$ui.getView("grid") && gantt2.ext.inlineEditors && gantt2.ext.inlineEditors.getState().id) {
     let inlineEditorId = gantt2.ext.inlineEditors.getState().id;
@@ -15885,6 +15923,30 @@ var Layout = function(_super) {
       }
     }
     return scrollChanged;
+  };
+  Layout2.prototype.getScrollbarsInfo = function() {
+    const scrollbars = this.getCellsByType("scroller");
+    const scrollbarsInfo = [];
+    scrollbars.forEach((scrollbar) => {
+      let obj = {};
+      const { visible, direction, size, scrollSize, position } = scrollbar.getScrollState();
+      let linkedViews = scrollbar._getLinkedViews();
+      let boundViews = linkedViews.map((view) => view.$config.id);
+      obj.id = scrollbar.$id;
+      obj.visible = visible;
+      obj.boundViews = boundViews;
+      if (direction === "x") {
+        obj.x = size;
+        obj.x_inner = scrollSize;
+        obj.x_pos = position || 0;
+      } else {
+        obj.y = size;
+        obj.y_inner = scrollSize;
+        obj.y_pos = position || 0;
+      }
+      scrollbarsInfo.push(obj);
+    });
+    return scrollbarsInfo;
   };
   Layout2.prototype._syncCellSizes = function(groupName, newSize) {
     if (!groupName) return;
@@ -17783,7 +17845,7 @@ function createRowResizer(gantt2, grid) {
     if (grid.callEvent("onBeforeRowResizeEnd", [id, item, finalHeight]) === false) return;
     if (item.row_height == finalHeight) return;
     item.row_height = finalHeight;
-    gantt2.updateTask(id);
+    store.updateItem(id);
     grid.callEvent("onAfterRowResize", [id, item, oldItemHeight, finalHeight]);
     this.render();
   }, gantt2) };
@@ -18950,11 +19012,13 @@ function dateEditorFactory(gantt2) {
     var html = `<div style='width:140px' role='cell'><input type='date' ${minAttr} ${maxAttr} name='${column.name}' title='${column.name}'></div>`;
     placeholder.innerHTML = html;
     placeholder.oninput = function(e) {
-      if (+gantt2.date.str_to_date("%Y-%m-%d")(e.target.value) < +minValue) {
-        e.target.value = gantt2.date.date_to_str("%Y-%m-%d")(minValue);
-      }
-      if (+gantt2.date.str_to_date("%Y-%m-%d")(e.target.value) > +maxValue) {
-        e.target.value = gantt2.date.date_to_str("%Y-%m-%d")(maxValue);
+      if (e.target.value && (minValue || maxValue)) {
+        if (+gantt2.date.str_to_date("%Y-%m-%d")(e.target.value) < +minValue) {
+          e.target.value = gantt2.date.date_to_str("%Y-%m-%d")(minValue);
+        }
+        if (+gantt2.date.str_to_date("%Y-%m-%d")(e.target.value) > +maxValue) {
+          e.target.value = gantt2.date.date_to_str("%Y-%m-%d")(maxValue);
+        }
       }
     };
   }, set_value: function(value, id, column, node) {
@@ -19517,8 +19581,8 @@ function createTaskRenderer$2(gantt2) {
       controlsMargin = (height - pos.height) / 2;
     }
     var padd = Math.floor((view.getItemHeight(task.id) - height) / 2);
-    const hasBaselines = gantt2.config.baselines !== false && task.baselines && task.baselines.length;
-    const baselinesOnDifferentRow = gantt2.config.baselines !== false && (gantt2.config.baselines.render_mode == "separateRow" || gantt2.config.baselines.render_mode == "individualRow");
+    const hasBaselines = gantt2.config.baselines && task.baselines && task.baselines.length;
+    const baselinesOnDifferentRow = gantt2.config.baselines && (gantt2.config.baselines.render_mode == "separateRow" || gantt2.config.baselines.render_mode == "individualRow");
     if (hasBaselines && baselinesOnDifferentRow) {
       if (task.bar_height !== "full" && task.bar_height < task.row_height) {
         if (taskType === cfg.types.milestone) {
@@ -20490,7 +20554,7 @@ function createLinkRender(gantt2) {
     let splitParams = getMaxParentHeight(gantt2, view, task);
     let maxHeight = splitParams.maxHeight;
     let splitChild = splitParams.splitChild;
-    const baselinesOnDifferentRow = gantt2.config.baselines !== false && (gantt2.config.baselines.render_mode == "separateRow" || gantt2.config.baselines.render_mode == "individualRow");
+    const baselinesOnDifferentRow = gantt2.config.baselines && (gantt2.config.baselines.render_mode == "separateRow" || gantt2.config.baselines.render_mode == "individualRow");
     const baselines2 = baselinesOnDifferentRow && task.baselines && task.baselines.length;
     if (splitParams.shrinkHeight) {
       pos.rowHeight = maxHeight;
@@ -20537,6 +20601,7 @@ function createLinkRender(gantt2) {
 }
 function isInViewPort(item, viewport, view, config2, gantt2) {
   if (gantt2.$ui.getView("grid") && (gantt2.config.keyboard_navigation && gantt2.getSelectedId() || gantt2.ext.inlineEditors && gantt2.ext.inlineEditors.getState().id)) {
+    if (!item.$expanded_branch) return false;
     return true;
   }
   var top = view.getItemTop(item.id);
@@ -25228,7 +25293,7 @@ function lightbox(gantt2) {
         offset = offset || Math.floor(range / 2);
         start_year = start_year || settings.date.getFullYear() - offset;
         end_year = end_year || gantt2.getState().max_date.getFullYear() + offset;
-        for (i = start_year; i < end_year; i++) html += "<option value='" + i + "'>" + i + "</option>";
+        for (i = start_year; i <= end_year; i++) html += "<option value='" + i + "'>" + i + "</option>";
         break;
       case "%m":
         sns._time_format_order[1] = index;
