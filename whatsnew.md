@@ -1,3 +1,18 @@
+### 9.0.6
+
+Fix the issue with the lightbox buttons not reflecting the current locale until reinitializing Gantt
+Resolve the error occurring when deleting links if tasks are partially loaded
+Prevent tasks from incorrectly moving to the bottom of their branch after changing the parent property type from numeric to string
+Improve scrollbar behavior by adjusting the resizers near scrollbars
+Ensure resource assignments persist correctly when adding tasks within gantt.batchUpdate
+Fix task disappearance during drag-and-drop actions in the infinite scale
+Ensure correct display of resource names in the lightbox after parsing data multiple times
+Fix incorrect date calculation by getClosestWorkTime when using the duration_step config
+Allow the onColumnDragMove event to be properly cancellable
+Fix compatibility issue preventing the trial build from running in Lightning Web Components (LWC)
+Resolve issues related to fetchTasks and deepcopy_on_parse configurations affecting the resource panel
+Correct incorrect font icons appearance during Gantt initialization
+
 ### 9.0.5
 
 Fix the error that occurs while resizing rows in the Resource Grid

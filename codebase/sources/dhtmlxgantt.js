@@ -3,7 +3,7 @@
 })(this, function(exports2) {
   "use strict";/** @license
 
-dhtmlxGantt v.9.0.5 Standard
+dhtmlxGantt v.9.0.6 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5887,10 +5887,6 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       }
     }
     function initTemplates() {
-      var labels = gantt2.locale.labels;
-      labels.gantt_save_btn = labels.icon_save;
-      labels.gantt_cancel_btn = labels.icon_cancel;
-      labels.gantt_delete_btn = labels.icon_delete;
       var date2 = gantt2.date;
       var d = date2.date_to_str;
       var c = gantt2.config;
@@ -5952,11 +5948,11 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
         return "<b>" + from.text + "</b> &ndash;  <b>" + to.text + "</b>";
       }, drag_link: function(from, from_start, to, to_start) {
         from = gantt2.getTask(from);
-        var labels2 = gantt2.locale.labels;
-        var text = "<b>" + from.text + "</b> " + (from_start ? labels2.link_start : labels2.link_end) + "<br/>";
+        var labels = gantt2.locale.labels;
+        var text = "<b>" + from.text + "</b> " + (from_start ? labels.link_start : labels.link_end) + "<br/>";
         if (to) {
           to = gantt2.getTask(to);
-          text += "<b> " + to.text + "</b> " + (to_start ? labels2.link_start : labels2.link_end) + "<br/>";
+          text += "<b> " + to.text + "</b> " + (to_start ? labels.link_start : labels.link_end) + "<br/>";
         }
         return text;
       }, drag_link_class: function(from, from_start, to, to_start) {
@@ -6529,7 +6525,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
         loadedItem = config2.initItem(loadedItem);
       }
       var existingItem = this.getItem(item.id);
-      if (existingItem && existingItem.parent != loadedItem.parent) {
+      if (existingItem && !isEqualIds(existingItem.parent, loadedItem.parent)) {
         this.move(loadedItem.id, loadedItem.$index || -1, loadedItem.parent || this._ganttConfig.root_id);
       }
       return loadedItem;
@@ -6723,7 +6719,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       parent = this.getParent(id);
       tindex = this.getBranchIndex(id);
     }
-    if (sid == parent) {
+    if (isEqualIds(sid, parent)) {
       return;
     }
     if (!defined(parent)) {
@@ -6733,7 +6729,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
     var source_pid = this.getParent(source.id);
     var tbranch = this.getChildren(parent);
     if (tindex == -1) tindex = tbranch.length + 1;
-    if (source_pid == parent) {
+    if (isEqualIds(source_pid, parent)) {
       var sindex = this.getBranchIndex(sid);
       if (sindex == tindex) return;
     }
@@ -6755,7 +6751,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
     if (placeholderIds.length) {
       tbranch = tbranch.concat(placeholderIds);
     }
-    if (source.$rendered_parent !== source_pid && source_pid !== parent) {
+    if (!isEqualIds(source.$rendered_parent, source_pid) && !isEqualIds(source_pid, parent)) {
       source.$rendered_parent = source_pid;
     }
     this.setParent(source, parent);
@@ -6793,7 +6789,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
     }
     while (item && this.exists(pid)) {
       item = this.getItem(pid);
-      if (item && item.id == parentId) return true;
+      if (item && isEqualIds(item.id, parentId)) return true;
       pid = this.getParent(item);
     }
     return false;
@@ -6806,7 +6802,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
   }, getNextSibling: function(id) {
     var siblings = this.getSiblings(id);
     for (var i = 0, len = siblings.length; i < len; i++) {
-      if (siblings[i] == id) {
+      if (isEqualIds(siblings[i], id)) {
         var nextSibling = siblings[i + 1];
         if (nextSibling === 0 && i > 0) {
           nextSibling = "0";
@@ -6818,7 +6814,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
   }, getPrevSibling: function(id) {
     var siblings = this.getSiblings(id);
     for (var i = 0, len = siblings.length; i < len; i++) {
-      if (siblings[i] == id) {
+      if (isEqualIds(siblings[i], id)) {
         var previousSibling = siblings[i - 1];
         if (previousSibling === 0 && i > 0) {
           previousSibling = "0";
@@ -6937,7 +6933,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
   }, _move_branch: function(item, old_parent, new_parent) {
     this._eachItemMainRangeCache = null;
     this._replace_branch_child(old_parent, item.id);
-    if (this.exists(new_parent) || new_parent == this.$getRootId()) {
+    if (this.exists(new_parent) || isEqualIds(new_parent, this.$getRootId())) {
       this._add_branch(item, void 0, new_parent);
     } else {
       delete this._branches[item.id];
@@ -6996,7 +6992,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
     for (let i in this.pull) {
       const renderedParent = this.pull[i].$rendered_parent;
       const actualParent = this.getParent(this.pull[i]);
-      if (renderedParent !== actualParent) {
+      if (!isEqualIds(renderedParent, actualParent)) {
         this._move_branch(this.pull[i], renderedParent, actualParent);
       }
     }
@@ -7019,6 +7015,9 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
     this._indexRangeCache = {};
     this._eachItemMainRangeCache = null;
   } }, DataStore.prototype);
+  function isEqualIds(first, second) {
+    return String(first) === String(second);
+  }
   function createDataStoreSelectMixin(store) {
     var selectedId = null;
     var deleteItem = store._removeItemInner;
@@ -7987,8 +7986,12 @@ ${docLink}`);
       });
     })();
     gantt2.attachEvent("onAfterLinkDelete", function(id, link) {
-      gantt2.refreshTask(link.source);
-      gantt2.refreshTask(link.target);
+      if (gantt2.isTaskExists(link.source)) {
+        gantt2.refreshTask(link.source);
+      }
+      if (gantt2.isTaskExists(link.target)) {
+        gantt2.refreshTask(link.target);
+      }
     });
     gantt2.attachEvent("onParse", sync_links);
     mapEvents({ source: linksStore, target: gantt2, events: { onItemLoading: "onLinkLoading", onBeforeAdd: "onBeforeLinkAdd", onAfterAdd: "onAfterLinkAdd", onBeforeUpdate: "onBeforeLinkUpdate", onAfterUpdate: "onAfterLinkUpdate", onBeforeDelete: "onBeforeLinkDelete", onAfterDelete: "onAfterLinkDelete", onIdChange: "onLinkIdChange" } });
@@ -9967,20 +9970,33 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
         function selectResourceControlOptions(resources2) {
           const lightboxOptions = [];
           resources2.forEach(function(res) {
-            if (!gantt2.$resourcesStore.hasChild(res.id)) {
-              var copy2 = gantt2.copy(res);
-              copy2.key = res.id;
-              copy2.label = res.text;
-              lightboxOptions.push(copy2);
-            }
+            const copy2 = gantt2.copy(res);
+            copy2.key = res.id;
+            copy2.label = res.text;
+            lightboxOptions.push(copy2);
           });
           return lightboxOptions;
         }
         let lightboxOptionsFnc = selectResourceControlOptions;
+        let options;
         if (gantt2.config.resources && gantt2.config.resources.lightbox_resources) {
           lightboxOptionsFnc = gantt2.config.resources.lightbox_resources;
         }
-        const options = lightboxOptionsFnc(gantt2.$resourcesStore.getItems());
+        if (gantt2.config.resources && gantt2.config.resources.editable_resource_diagram) {
+          const resources2 = gantt2.$resourcesStore.getItems();
+          const filteredResources = resources2.filter((resource) => {
+            let assignments = gantt2.getResourceAssignments(resource.id);
+            if (!gantt2.$resourcesStore.hasChild(resource.id) || assignments && assignments.length) {
+              if (resource.$resource_id && resource.$task_id) {
+                return false;
+              }
+              return true;
+            }
+          });
+          options = lightboxOptionsFnc(filteredResources);
+        } else {
+          options = lightboxOptionsFnc(gantt2.$resourcesStore.getItems());
+        }
         gantt2.updateCollection("resourceOptions", options);
       });
     });
@@ -10361,6 +10377,9 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
             var assignmentsHash = {};
             for (var i in needUpdateFor) {
               assignmentsHash[i] = gantt2.getTaskAssignments(needUpdateFor[i].id);
+            }
+            if (gantt2.config.process_resource_assignments && resourceAssignmentFormat === "resourceValueArray") {
+              taskAssignmentsCache = null;
             }
             for (var i in needUpdateFor) {
               _syncAssignments(needUpdateFor[i], assignmentsHash[i]);
@@ -12833,10 +12852,11 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
     var worktimes = this._getWorkHours(start);
     var resultDate = this._findClosestTimeInDay(start, direction, worktimes);
     if (!resultDate) {
-      start = this.calculateEndDate(start, direction, "day");
       if (direction > 0) {
+        start = this.calculateEndDate(start, direction, unit);
         start = this.$gantt.date.day_start(start);
       } else {
+        start = this.calculateEndDate(start, direction, "day");
         start = this.$gantt.date.day_start(start);
         start = this.$gantt.date.add(start, 1, "day");
         start = new Date(start.valueOf() - 1);
@@ -14353,7 +14373,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
   }
   function DHXGantt() {
     this.constants = constants;
-    this.version = "9.0.5";
+    this.version = "9.0.6";
     this.license = "gpl";
     this.templates = {};
     this.ext = {};
@@ -14441,6 +14461,10 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
           }
         }
       }
+      const labels = gantt2.locale.labels;
+      labels.gantt_save_btn = labels.gantt_save_btn || labels.icon_save;
+      labels.gantt_cancel_btn = labels.gantt_cancel_btn || labels.icon_cancel;
+      labels.gantt_delete_btn = labels.gantt_delete_btn || labels.icon_delete;
     }, getLocale: i18n.getLocale };
     gantt2.i18n.setLocale("en");
     return gantt2;
@@ -18013,6 +18037,15 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         this._dragX = e.clientX;
         const x = this.calculateCurrentPosition(e.clientX);
         const columnIndexes = this.findColumnsIndexes();
+        this.setMarkerPosition(x);
+        this.drawTargetMarker(columnIndexes);
+        return true;
+      });
+      this._dnd.attachEvent("onDragEnd", () => {
+        if (!this._draggedCell) {
+          return;
+        }
+        const columnIndexes = this.findColumnsIndexes();
         const targetIndex = columnIndexes.targetIndex;
         const draggedIndex = columnIndexes.draggedIndex;
         const columns = this.$grid.$getConfig().columns;
@@ -18020,14 +18053,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         const targetColumn = columns[targetIndex];
         if (this.$grid.callEvent("onColumnDragMove", [{ draggedColumn, targetColumn, draggedIndex, targetIndex }]) === false) {
           this.cleanTargetMarker();
-          return false;
-        }
-        this.setMarkerPosition(x);
-        this.drawTargetMarker(columnIndexes);
-        return true;
-      });
-      this._dnd.attachEvent("onDragEnd", () => {
-        if (!this._draggedCell) {
+          this.$gantt.render();
           return;
         }
         this.$gantt.config.autoscroll = this._originAutoscroll;
@@ -21830,14 +21856,24 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
               shift = maxShift;
             }
             this._update_item_on_move(shift, drag.id, drag.mode, drag, e);
+            let multipleDragShift;
+            if (maxShift === void 0) {
+              const newStartPos = gantt2.posFromDate(drag.obj.start_date);
+              const newEndPos = gantt2.posFromDate(drag.obj.end_date);
+              if (drag.handle_offset === void 0) {
+                const width = newEndPos - newStartPos;
+                const dragPos = drag.start_x - newStartPos;
+                drag.handle_offset = dragPos / width;
+              }
+              const newWidth = Math.abs(newEndPos - newStartPos);
+              let dragX = newStartPos + newWidth * drag.handle_offset;
+              const shiftDate = gantt2.dateFromPos(dragX);
+              multipleDragShift = curr_date - shiftDate;
+            }
             for (var i in dragHash) {
               var childDrag = dragHash[i];
               if (dragProject && childDrag.id != drag.id) {
                 gantt2._bulk_dnd = true;
-              }
-              if (maxShift === void 0 && (dragProject || Object.keys(dragHash).length > 1)) {
-                var shiftDate = gantt2.dateFromPos(drag.start_x);
-                var multipleDragShift = curr_date - shiftDate;
               }
               this._update_item_on_move(shift, childDrag.id, childDrag.mode, childDrag, e, multipleDragShift);
             }

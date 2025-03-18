@@ -1,3 +1,4 @@
+@charset "UTF-8";
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -2820,18 +2821,18 @@ div.dhx_modal_cover {
 }
 .gantt_resizer_x .gantt_resizer_x {
   position: absolute;
-  width: 20px;
+  width: 12px;
   height: 100%;
-  margin-left: -10px;
+  margin-left: -2px;
   top: 0;
   left: 0;
   z-index: 1;
 }
 .gantt_resizer_y .gantt_resizer_y {
   position: absolute;
-  height: 20px;
+  height: 12px;
   width: 100%;
-  top: -10px;
+  top: -2px;
   left: 0;
   z-index: 1;
 }
