@@ -1,3 +1,19 @@
+### 9.0.7
+
+Fix the error that occurs when clicking on a task in the timeline without a grid if keyboard_navigation is enabled
+Correct WBS code calculation for sorted tasks that include a placeholder task
+Resolve the issue where scale cells in the resource timeline disappear upon collapsing tasks or resizing the grid (placeholder url)
+Ensure that the correct task order is maintained when adding both child and parent tasks inside the gantt.silent function
+Preserve focus in editable resource cells after the value has been edited
+Prevent Gantt from scrolling to the leftmost position of the grid when clicking on a task
+Retain the group property when adding new tasks while in the group mode
+Fix the issue where markers are not displayed if the timeline has been initially disabled
+Prevent duplicate markers when the chart is not initially displayed in the layout configuration
+Fix the disappearing of drag handles (link, progress, task resize) after dragging the timeline
+Ensure the predecessor inline editor functions correctly when the link id type is numeric
+Prevent duplication of the gantt_marker_area elements
+Fix the undo functionality with the changeTaskId action
+
 ### 9.0.6
 
 Fix the issue with the lightbox buttons not reflecting the current locale until reinitializing Gantt

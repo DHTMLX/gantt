@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.6 Standard
+dhtmlxGantt v.9.0.7 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -846,6 +846,7 @@ function click_drag(gantt2) {
     }
   });
 }
+let _dragInProgress = false;
 class EventsManager2 {
   constructor(gantt2) {
     this._mouseDown = false;
@@ -918,11 +919,13 @@ class EventsManager2 {
         }
       }
       this._mouseDown = false;
+      _dragInProgress = false;
     };
     this._startDrag = (event2) => {
       const gantt3 = this._gantt;
       this._originAutoscroll = gantt3.config.autoscroll;
       gantt3.config.autoscroll = false;
+      _dragInProgress = true;
       gantt3.$root.classList.add("gantt_noselect");
       this._originalReadonly = gantt3.config.readonly;
       gantt3.config.readonly = true;
@@ -942,6 +945,9 @@ class EventsManager2 {
   }
   static create(gantt2) {
     return new EventsManager2(gantt2);
+  }
+  static _isDragInProgress() {
+    return _dragInProgress;
   }
   destructor() {
     this._domEvents.detachAll();
@@ -1035,7 +1041,7 @@ function drag_timeline(gantt2) {
   if (!gantt2.ext) {
     gantt2.ext = {};
   }
-  gantt2.ext.dragTimeline = { create: () => EventsManager2.create(gantt2) };
+  gantt2.ext.dragTimeline = { create: () => EventsManager2.create(gantt2), _isDragInProgress: () => EventsManager2._isDragInProgress };
   gantt2.config.drag_timeline = { enabled: true, render: false };
 }
 function export_api(gantt2) {
@@ -2278,7 +2284,11 @@ function header_cell(gantt2) {
       return null;
     }
   }, getNode: function() {
-    var cells = gantt2.$grid_scale.childNodes;
+    const scale = gantt2.$grid_scale;
+    if (!scale) {
+      return null;
+    }
+    const cells = scale.childNodes;
     return cells[this.index];
   }, keys: { left: function() {
     if (this.index > 0) {
@@ -2400,9 +2410,10 @@ function task_row(gantt2) {
       } else {
         viewHeight = scroll.inner_height;
       }
+      const visibleTimeline = gantt2.config.show_chart && gantt2.$ui.getView("timeline");
       if (pos.top < scroll.y || pos.top + height > scroll.y + viewHeight) {
         gantt2.scrollTo(null, pos.top - 20);
-      } else if (gantt2.config.scroll_on_click && gantt2.config.show_chart) {
+      } else if (gantt2.config.scroll_on_click && visibleTimeline) {
         if (pos.left > scroll.x + viewWidth) {
           gantt2.scrollTo(pos.left - gantt2.config.task_scroll_offset);
         } else if (pos.left + pos.width < scroll.x) {
@@ -2414,6 +2425,9 @@ function task_row(gantt2) {
     scrollGrid();
     function scrollGrid() {
       var grid = gantt2.$ui.getView("grid");
+      if (!grid || !grid.$grid_data) {
+        return;
+      }
       var scrollPositionX = parseInt(grid.$grid.scrollLeft);
       var scrollPositionY = parseInt(grid.$grid_data.scrollTop);
       var attachedScrollbarHorizontal = grid.$config.scrollX;
@@ -2559,7 +2573,7 @@ function task_cell(gantt2) {
     }
   }, getNode: function() {
     if (gantt2.isTaskExists(this.taskId) && (gantt2.isTaskVisible(this.taskId) || gantt2.config.show_tasks_outside_timescale)) {
-      if (gantt2.config.show_grid) {
+      if (gantt2.config.show_grid && gantt2.$grid) {
         var row = gantt2.$grid.querySelector(".gantt_row[" + gantt2.config.task_attribute + "='" + this.taskId + "']");
         if (!row) return null;
         return row.querySelector("[data-column-index='" + this.columnIndex + "']");
@@ -2889,6 +2903,37 @@ function keyboard_navigation(gantt2) {
             locateTask = new gantt3.$keyboardNavigation.TaskCell(locateTask.taskId, dispatcher.activeNode.columnIndex);
           }
           focusNode = locateTask;
+          const visibleGrid = gantt3.config.show_grid && gantt3.$ui.getView("grid");
+          if (visibleGrid && gantt3.config.keyboard_navigation_cells) {
+            const taskRow = e.target.classList.contains("gantt_row");
+            const taskBar = e.target.closest(".gantt_task_line");
+            const gridLeft = gantt3.utils.dom.getNodePosition(gantt3.$grid).x;
+            const gridRight = gridLeft + gantt3.$grid.offsetWidth;
+            const nodePosition = gantt3.utils.dom.getNodePosition(document.activeElement).x;
+            const nodeHidden = nodePosition < gridLeft || gridRight < nodePosition;
+            if (taskRow || taskBar && nodeHidden) {
+              let scrollPosition = gantt3.$grid.scrollLeft;
+              const rightPosition = scrollPosition + gantt3.$grid.offsetWidth;
+              let positionX = 0;
+              if (taskRow) {
+                scrollPosition = gantt3.utils.dom.getRelativeEventPosition(e, gantt3.$grid).x;
+              }
+              for (let i = 0; i < gantt3.config.columns.length; i++) {
+                const column = gantt3.config.columns[i];
+                if (column.hide) {
+                  continue;
+                }
+                positionX += column.width;
+                if (scrollPosition < positionX) {
+                  if (rightPosition < positionX) {
+                    positionX -= column.width;
+                  }
+                  focusNode.columnIndex = i;
+                  break;
+                }
+              }
+            }
+          }
         }
         if (focusNode) {
           if (!dispatcher.isEnabled()) {
@@ -2911,6 +2956,9 @@ function keyboard_navigation(gantt2) {
           if (gantt3.config.keyboard_navigation && dispatcher.isEnabled()) {
             const currentNode = dispatcher.getActiveNode();
             const grid = gantt3.$ui.getView("grid");
+            if (!grid || !grid.$grid_data) {
+              return;
+            }
             const top = grid.getItemTop(id);
             const gridDataTopScroll = grid.$grid_data.scrollTop;
             const gridDataBottomScroll = gridDataTopScroll + grid.$grid_data.getBoundingClientRect().height;
@@ -3142,7 +3190,13 @@ function marker(gantt2) {
     return div;
   }
   function initMarkerArea() {
-    if (!gantt2.$task_data) return;
+    if (!gantt2.$task_data || !gantt2.$root.contains(gantt2.$task_data)) {
+      gantt2.$marker_area = null;
+      return;
+    }
+    if (gantt2.$marker_area && gantt2.$task_data.contains(gantt2.$marker_area)) {
+      return;
+    }
     var markerArea = document.createElement("div");
     markerArea.className = "gantt_marker_area";
     gantt2.$task_data.appendChild(markerArea);
@@ -3159,6 +3213,9 @@ function marker(gantt2) {
   });
   gantt2.attachEvent("onGanttLayoutReady", function() {
     gantt2.attachEvent("onBeforeGanttRender", function() {
+      if (gantt2.$marker_area) {
+        gantt2.$marker_area.innerHTML = "";
+      }
       initMarkerArea();
       var layers = gantt2.$services.getService("layers");
       var markerRenderer = layers.createDataRender({ name: "marker", defaultContainer: function() {
@@ -3289,13 +3346,15 @@ function multiselect(gantt2) {
     var last = this.getLastSelected();
     var multiSelect = gantt2.config.multiselect;
     var singleSelection = (function() {
-      var controller = gantt2.ext.inlineEditors;
-      var state = controller.getState();
-      var cell = controller.locateCell(e.target);
-      if (gantt2.config.inline_editors_multiselect_open && cell && controller.getEditorConfig(cell.columnName)) {
-        if (controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName) ;
-        else {
-          controller.startEdit(cell.id, cell.columnName);
+      const controller = gantt2.ext.inlineEditors;
+      if (controller && controller.getState) {
+        const state = controller.getState();
+        const cell = controller.locateCell(e.target);
+        if (gantt2.config.inline_editors_multiselect_open && cell && controller.getEditorConfig(cell.columnName)) {
+          if (controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName) ;
+          else {
+            controller.startEdit(cell.id, cell.columnName);
+          }
         }
       }
       this.setFirstSelected(target_ev);
@@ -4310,10 +4369,6 @@ class Monitor {
   onTaskMoved(task) {
     if (!this._ignore) {
       task.$local_index = this._gantt.getTaskIndex(task.id);
-      const oldValue = this.getInitialTask(task.id);
-      if (task.$local_index === oldValue.$local_index && this._gantt.getParent(task) === this._gantt.getParent(oldValue)) {
-        return;
-      }
       this._storeEntityCommand(task, this.getInitialTask(task.id), this._undo.command.type.move, this._undo.command.entity.task);
     }
   }
@@ -4816,14 +4871,17 @@ function undo(gantt2) {
   gantt2.getRedoStack = gantt2.ext.undo.getRedoStack;
   gantt2.clearUndoStack = gantt2.ext.undo.clearUndoStack;
   gantt2.clearRedoStack = gantt2.ext.undo.clearRedoStack;
+  function isEqualIds2(first, second) {
+    return String(first) === String(second);
+  }
   function updTask(task, oldId, newId) {
     if (!task) {
       return;
     }
-    if (task.id === oldId) {
+    if (isEqualIds2(task.id, oldId)) {
       task.id = newId;
     }
-    if (task.parent === oldId) {
+    if (isEqualIds2(task.parent, oldId)) {
       task.parent = newId;
     }
   }
@@ -4835,10 +4893,10 @@ function undo(gantt2) {
     if (!link) {
       return;
     }
-    if (link.source === oldTaskId) {
+    if (isEqualIds2(link.source, oldTaskId)) {
       link.source = newTaskId;
     }
-    if (link.target === oldTaskId) {
+    if (isEqualIds2(link.target, oldTaskId)) {
       link.target = newTaskId;
     }
   }
@@ -6292,11 +6350,9 @@ DataStore.prototype = { _attachDataChange: function(callback) {
     }
   }
   this.pull[item.id] = item;
-  if (!this.isSilent()) {
-    this._updateOrder(function() {
-      if (this.$find(item.id) === -1) this.$insertAt(item.id, index);
-    });
-  }
+  this._updateOrder(function() {
+    if (this.$find(item.id) === -1) this.$insertAt(item.id, index);
+  });
   this.filter();
 }, isVisible: function(id) {
   return this.visibleOrder.$find(id) > -1;
@@ -9525,7 +9581,7 @@ function createMethod(gantt2) {
 function batch_update(gantt2) {
   gantt2.batchUpdate = createMethod(gantt2);
 }
-var createWbs = function(gantt2) {
+const createWbs = function(gantt2) {
   return { _needRecalc: true, reset: function() {
     this._needRecalc = true;
   }, _isRecalcNeeded: function() {
@@ -9549,11 +9605,11 @@ var createWbs = function(gantt2) {
   }, getWBSCode: function(task) {
     return this._getWBSCode(task);
   }, getByWBSCode: function(code) {
-    var parts = code.split(".");
-    var currentNode = gantt2.config.root_id;
-    for (var i = 0; i < parts.length; i++) {
-      var children = gantt2.getChildren(currentNode);
-      var index = parts[i] * 1 - 1;
+    let parts = code.split(".");
+    let currentNode = gantt2.config.root_id;
+    for (let i = 0; i < parts.length; i++) {
+      const children = gantt2.getChildren(currentNode);
+      let index = parts[i] * 1 - 1;
       if (gantt2.isTaskExists(children[index])) {
         currentNode = children[index];
       } else {
@@ -9567,31 +9623,42 @@ var createWbs = function(gantt2) {
     }
   }, _calcWBS: function() {
     if (!this._isRecalcNeeded()) return;
-    var _isFirst = true;
+    let _isFirst = true;
     gantt2.eachTask(function(ch) {
+      if (ch.type == gantt2.config.types.placeholder) return;
       if (_isFirst) {
         _isFirst = false;
         this._setWBSCode(ch, "1");
         return;
       }
-      var _prevSibling = gantt2.getPrevSibling(ch.id);
+      const _prevSibling = this._getPrevNonPlaceholderSibling(ch.id);
       if (_prevSibling !== null) {
-        var _wbs = gantt2.getTask(_prevSibling).$wbs;
-        if (_wbs) {
-          _wbs = _wbs.split(".");
-          _wbs[_wbs.length - 1]++;
-          this._setWBSCode(ch, _wbs.join("."));
-        }
+        this._increaseWBS(ch, _prevSibling);
       } else {
-        var _parent = gantt2.getParent(ch.id);
+        let _parent = gantt2.getParent(ch.id);
         this._setWBSCode(ch, gantt2.getTask(_parent).$wbs + ".1");
       }
     }, gantt2.config.root_id, this);
     this._needRecalc = false;
+  }, _increaseWBS: function(task, siblingiId) {
+    let _wbs = gantt2.getTask(siblingiId).$wbs;
+    if (_wbs) {
+      _wbs = _wbs.split(".");
+      _wbs[_wbs.length - 1]++;
+      this._setWBSCode(task, _wbs.join("."));
+    }
+  }, _getPrevNonPlaceholderSibling: function(childId) {
+    let prevSibling;
+    let currentId = childId;
+    do {
+      prevSibling = gantt2.getPrevSibling(currentId);
+      currentId = prevSibling;
+    } while (prevSibling !== null && gantt2.getTask(prevSibling).type == gantt2.config.types.placeholder);
+    return prevSibling;
   } };
 };
 function wbs(gantt2) {
-  var wbs2 = createWbs(gantt2);
+  const wbs2 = createWbs(gantt2);
   gantt2.getWBSCode = function getWBSCode(task) {
     return wbs2.getWBSCode(task);
   };
@@ -9826,6 +9893,15 @@ function createHelper$1(gantt2) {
         });
       });
     })();
+    let currentFocusIndex = null;
+    function setNextFocus() {
+      setTimeout(function() {
+        const focusableElementsAfterRender = getFocusableNodes(gantt2.$container);
+        if (currentFocusIndex > -1) {
+          focusableElementsAfterRender[currentFocusIndex + 1].focus();
+        }
+      }, 300);
+    }
     gantt2.attachEvent("onGanttReady", function() {
       let assignmentEditInProcess = false;
       gantt2.event(gantt2.$container, "keypress", function(e) {
@@ -9834,6 +9910,12 @@ function createHelper$1(gantt2) {
           if (e.keyCode === 13 || e.keyCode === 27) {
             target.blur();
           }
+        }
+      });
+      gantt2.event(gantt2.$container, "keydown", function(event2) {
+        if (event2.key === "Tab") {
+          const focusableElements = getFocusableNodes(gantt2.$container);
+          currentFocusIndex = focusableElements.indexOf(document.activeElement);
         }
       });
       gantt2.event(gantt2.$container, "focusout", function(e) {
@@ -9907,11 +9989,13 @@ function createHelper$1(gantt2) {
               }
               gantt2.updateTaskAssignments(task.id);
               gantt2.updateTask(task.id);
+              setNextFocus();
             } else if (value) {
               var assignment = { task_id: taskId, resource_id: resourceId, value, start_date: startDate, end_date: endDate, duration: gantt2.calculateDuration({ start_date: startDate, end_date: endDate, task }), delay: gantt2.calculateDuration({ start_date: task.start_date, end_date: startDate, task }), mode: "fixedDuration" };
               assignmentStore.addItem(assignment);
               gantt2.updateTaskAssignments(task.id);
               gantt2.updateTask(task.id);
+              setNextFocus();
             }
           }
         }
@@ -14214,6 +14298,11 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
                 view.scrollTo(void 0, 0);
               }
             }
+            if (scroll_info.x_pos && scroll_info.x_pos != pos.x) {
+              if (view && scrollbarNodeVisible) {
+                view.scrollTo(scroll_info.x_pos, void 0);
+              }
+            }
           });
         });
       }
@@ -14369,7 +14458,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.6";
+  this.version = "9.0.7";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -19660,7 +19749,9 @@ function createTaskRenderer$2(gantt2) {
     if (side) div.appendChild(side);
     gantt2._waiAria.setTaskBarAttr(task, div);
     var state = gantt2.getState();
-    if (!gantt2.isReadonly(task)) {
+    const taskEditable = !gantt2.isReadonly(task);
+    const timelineDrag = gantt2.ext.dragTimeline && gantt2.ext.dragTimeline._isDragInProgress();
+    if (taskEditable || timelineDrag) {
       if (cfg.drag_resize && !gantt2.isSummaryTask(task) && taskType != cfg.types.milestone) {
         _render_pair(div, "gantt_task_drag", task, function(css2) {
           var el = document.createElement("div");
@@ -19757,7 +19848,9 @@ function createTaskRenderer$2(gantt2) {
     wrapper.className = "gantt_task_progress_wrapper";
     wrapper.appendChild(pr);
     element.appendChild(wrapper);
-    if (gantt2.config.drag_progress && !gantt2.isReadonly(task)) {
+    const taskEditable = !gantt2.isReadonly(task);
+    const timelineDrag = gantt2.ext.dragTimeline && gantt2.ext.dragTimeline._isDragInProgress();
+    if (gantt2.config.drag_progress && (taskEditable || timelineDrag)) {
       var drag = document.createElement("div");
       var markerPos = width;
       if (cfg.rtl) {
@@ -21608,10 +21701,16 @@ var initializer$2 = /* @__PURE__ */ function() {
       this.clearEvents(grid, gantt2);
     }, initEvents: function(grid, gantt3) {
       this._mouseDelegates.delegate("click", "gantt_row", gantt3.bind(function(e, id, trg) {
-        var config2 = grid.$getConfig();
+        const config2 = grid.$getConfig();
         if (id !== null) {
-          var task = this.getTask(id);
-          if (config2.scroll_on_click && !gantt3._is_icon_open_click(e)) this.showDate(task.start_date);
+          const task = this.getTask(id);
+          if (config2.scroll_on_click) {
+            const notOpenIcon = !gantt3._is_icon_open_click(e);
+            const visibleTimeline = gantt3.$ui.getView("timeline");
+            if (notOpenIcon && visibleTimeline) {
+              this.showDate(task.start_date);
+            }
+          }
           gantt3.callEvent("onTaskRowClick", [id, trg]);
         }
       }, gantt3), grid.$grid);
