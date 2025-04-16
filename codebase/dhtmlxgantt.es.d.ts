@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 9.0.7
+// Type definitions for dhtmlxGantt 9.0.9
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -4262,7 +4262,7 @@ export interface GridColumn {
 	/**
 	 * specifies the title of the column
 	*/
-	label?: string | number,
+	label?: string | number | any,
 
 	/**
 	 * sets the maximum column width in case of resize operations
@@ -5303,7 +5303,7 @@ export type RouterFunction = (
 	action: string,
 	data: Task | Link | ResourceAssignment | CustomObject,
 	id: string | number
-) => Promise<any>
+) => Promise<any> | object | void
 
 
 export interface RouterForEntity {
@@ -5824,7 +5824,7 @@ export interface DatastoreMethods {
 	 * @param the handler function
 	 * @param optional, an object with settings for the event handler
 	*/
-	attachEvent<T extends keyof TreeDatastoreEvents>(event: T, handler: TreeDatastoreEvents[T], settings?: object): boolean,
+	attachEvent<T extends keyof TreeDatastoreEvents>(event: T, handler: TreeDatastoreEvents[T], settings?: object): string,
 
 	/**
 	 * calls an inner event

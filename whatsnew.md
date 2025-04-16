@@ -1,3 +1,13 @@
+### 9.0.9
+
+- Added examples of ReactGantt in the Commercial, Enterprice, Ultimate and Evaluation packages 
+- Fix the issue where mouse wheel zooming stopped working after calling the resetLayout method
+- Fix the issue where the Quick Info popup appeared after clicking the expand/collapse button in the Timeline or Units views
+- Fix the script error that occurred when destroying Scheduler without the grid view initially rendered
+- Fix the error when loading a task with a non-existent parent while the Undo extension is enabled
+- Fix the issue where the click_drag extension did not work on touch devices
+- Improve grid scrolling experience on touch devices
+
 ### 9.0.7
 
 Fix the error that occurs when clicking on a task in the timeline without a grid if keyboard_navigation is enabled

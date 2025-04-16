@@ -256,7 +256,7 @@
 }
 :root[data-gantt-theme='meadow'] {
   --dhx-gantt-theme: meadow;
-  --dhx-gantt-font-family: Segoe UI, Arial, san-serif;
+  --dhx-gantt-font-family: Segoe UI,Arial,san-serif;
   --dhx-gantt-base-colors-primary: #0288D1;
   --dhx-gantt-base-colors-select: #ffebbc;
   --dhx-gantt-task-background: var(--dhx-gantt-base-colors-primary);
@@ -290,7 +290,7 @@
 }
 :root[data-gantt-theme='skyblue'] {
   --dhx-gantt-theme: skyblue;
-  --dhx-gantt-font-family: Segoe UI, Arial, san-serif;
+  --dhx-gantt-font-family: Segoe UI,Arial,san-serif;
   --dhx-gantt-base-colors-primary: #0288D1;
   --dhx-gantt-task-background: var(--dhx-gantt-base-colors-primary);
   --dhx-gantt-base-colors-border: #cecece;
@@ -324,7 +324,7 @@
 }
 :root[data-gantt-theme='broadway'] {
   --dhx-gantt-theme: broadway;
-  --dhx-gantt-font-family: Segoe UI, Arial, san-serif;
+  --dhx-gantt-font-family: Segoe UI,Arial,san-serif;
   --dhx-gantt-base-colors-primary: #0288D1;
   --dhx-gantt-base-colors-select: #fff3a1;
   --dhx-gantt-task-background: var(--dhx-gantt-base-colors-primary);
@@ -1392,7 +1392,7 @@ url("src/dhx-gantt-icons.woff2?d2ea3e087edb3b9fad35a6580bd8acd3") format("woff2"
   overflow: hidden;
   margin: 5px;
   margin-bottom: 10px;
-  transition: all .5s ease;
+  transition: all 0.5s ease;
   background: var(--dhx-gantt-info-background);
   color: var(--dhx-gantt-info-color);
   border: var(--dhx-gantt-info-border);
