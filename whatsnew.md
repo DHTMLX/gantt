@@ -1,12 +1,23 @@
+### 9.0.10
+
+Fix the issue preventing changes to the parent field value in the Lightbox
+Fix excessive scroll speed when using a mouse wheel in Firefox 88 and newer
+Fix the inability to drag Project tasks when a subtask is unscheduled and lacks date parameters
+Ensure gantt.render() is not called unexpectedly during the gantt.silent operation when using the open or close methods
+Fix the issue where Project tasks are not repainted if the onBeforeTaskChanged event returns false
+Ensure that task progress bars span the full width of the task when expected
+Remove invalid WAI-ARIA attributes from read-only task links to improve accessibility
+Fix the issue where task bar resizers do not adapt to changes in task bar height
+
 ### 9.0.9
 
-- Added examples of ReactGantt in the Commercial, Enterprice, Ultimate and Evaluation packages 
-- Fix the issue where mouse wheel zooming stopped working after calling the resetLayout method
-- Fix the issue where the Quick Info popup appeared after clicking the expand/collapse button in the Timeline or Units views
-- Fix the script error that occurred when destroying Scheduler without the grid view initially rendered
-- Fix the error when loading a task with a non-existent parent while the Undo extension is enabled
-- Fix the issue where the click_drag extension did not work on touch devices
-- Improve grid scrolling experience on touch devices
+Added examples of ReactGantt in the Commercial, Enterprice, Ultimate and Evaluation packages 
+Fix the issue where mouse wheel zooming stopped working after calling the resetLayout method
+Fix the issue where the Quick Info popup appeared after clicking the expand/collapse button in the Timeline or Units views
+Fix the script error that occurred when destroying Scheduler without the grid view initially rendered
+Fix the error when loading a task with a non-existent parent while the Undo extension is enabled
+Fix the issue where the click_drag extension did not work on touch devices
+Improve grid scrolling experience on touch devices
 
 ### 9.0.7
 

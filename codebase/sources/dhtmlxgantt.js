@@ -3,7 +3,7 @@
 })(this, function(exports2) {
   "use strict";/** @license
 
-dhtmlxGantt v.9.0.9 Standard
+dhtmlxGantt v.9.0.10 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -7338,13 +7338,13 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       }
     });
     store.attachEvent("onItemOpen", function() {
-      if (isHeadless(gantt2)) {
+      if (isHeadless(gantt2) || store.isSilent()) {
         return true;
       }
       gantt2.render();
     });
     store.attachEvent("onItemClose", function() {
-      if (isHeadless(gantt2)) {
+      if (isHeadless(gantt2) || store.isSilent()) {
         return true;
       }
       gantt2.render();
@@ -11196,7 +11196,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
       }
       switch (gantt2.config.baselines.render_mode) {
         case "taskRow":
-          task.row_height = task.bar_height + 4;
+          task.row_height = task.bar_height + 8;
           break;
         case "separateRow":
           height = timelineView.getBarHeight(task.id);
@@ -11224,6 +11224,10 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
             task.row_height = task.bar_height + 4;
           }
           _increaseSplitParentHeight(task);
+          break;
+        default:
+          task.row_height = task.bar_height + 8;
+          break;
       }
     };
     function _increaseSplitParentHeight(task) {
@@ -14543,7 +14547,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
   }
   function DHXGantt() {
     this.constants = constants;
-    this.version = "9.0.9";
+    this.version = "9.0.10";
     this.license = "gpl";
     this.templates = {};
     this.ext = {};
@@ -17197,10 +17201,19 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       var deltaY = ff ? e.deltaY : e.wheelDelta;
       var multiplier = -20;
       if (ff) {
-        if (e.deltaMode !== 0) {
-          multiplier = -40;
+        const version = parseInt(navigator.userAgent.split("Firefox/")[1]);
+        if (version <= 87) {
+          if (e.deltaMode !== 0) {
+            multiplier = -40;
+          } else {
+            multiplier = -10;
+          }
+        } else if (version <= 90) {
+          multiplier = -3;
+        } else if (version <= 96) {
+          multiplier = -1.5;
         } else {
-          multiplier = -10;
+          multiplier = -1;
         }
       }
       var wx = ff ? deltaX * multiplier * wheelSpeed.x : deltaX * 2 * wheelSpeed.x;
@@ -19968,7 +19981,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
     }
     function _render_task_progress(task, element, maxWidth, cfg, templates2) {
       var done = task.progress * 1 || 0;
-      maxWidth = Math.max(maxWidth - 2, 0);
+      maxWidth = Math.max(maxWidth, 0);
       var pr = document.createElement("div");
       var width = Math.round(maxWidth * done);
       width = Math.min(maxWidth, width);
@@ -21989,6 +22002,9 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       for (var i in dragItems) {
         var drag = dragItems[i];
         var task = gantt2.getTask(drag.id);
+        if (task.unscheduled) {
+          continue;
+        }
         var coords_x = this._drag_task_coords(task, drag);
         var minX = gantt2.posFromDate(new Date(gantt2.getState().min_date));
         var maxX = gantt2.posFromDate(new Date(gantt2.getState().max_date));
@@ -22211,6 +22227,31 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
           gantt2.mixin(task, drag.obj, true);
         }
         gantt2.refreshTask(task.id);
+        if (task.$level > 100) {
+          let shouldRepaint = false;
+          gantt2.eachParent(function(parent) {
+            if (!shouldRepaint && parent.type === gantt2.config.types.project) {
+              const initialDates = { start_date: parent.start_date, end_date: parent.end_date };
+              gantt2.resetProjectDates(parent);
+              if (+initialDates.start_date !== +parent.start_date || +initialDates.end_date !== +parent.end_date) {
+                shouldRepaint = true;
+              }
+            }
+          }, task.id);
+          if (shouldRepaint) {
+            gantt2.refreshData();
+          }
+        } else {
+          gantt2.eachParent(function(parent) {
+            if (parent.type === gantt2.config.types.project) {
+              const initialDates = { start_date: parent.start_date, end_date: parent.end_date };
+              gantt2.resetProjectDates(parent);
+              if (+initialDates.start_date !== +parent.start_date || +initialDates.end_date !== +parent.end_date) {
+                gantt2.refreshTask(parent.id);
+              }
+            }
+          }, task.id);
+        }
       } else {
         var drag_id = taskId;
         gantt2._init_task_timing(task);
@@ -24554,6 +24595,9 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
     };
     ParentControl.prototype.set_value = function(node, value, ev, config2) {
       if (value === 0) value = "0";
+      if (!ev.id && gantt2.getState().lightbox) {
+        ev.id = gantt2.getLightboxValues().id;
+      }
       var tmpDom = document.createElement("div");
       tmpDom.innerHTML = _display(config2, ev.id);
       var newOptions = tmpDom.removeChild(tmpDom.firstChild);
@@ -25709,9 +25753,6 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       var content = gantt2.locale.labels.link + " " + gantt2.templates.drag_link(link.source, fromStart, link.target, toStart);
       div.setAttribute("role", "img");
       div.setAttribute("aria-label", stripHTMLLite(content));
-      if (gantt2.isReadonly(link)) {
-        div.setAttribute("aria-readonly", true);
-      }
     }, gridSeparatorAttr: function(div) {
       div.setAttribute("role", "columnheader");
     }, rowResizerAttr: function(div) {

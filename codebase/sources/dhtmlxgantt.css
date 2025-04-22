@@ -1697,7 +1697,8 @@ div.dhx_modal_cover {
   cursor: w-resize;
 }
 .gantt_task_drag {
-  height: 16px;
+  min-height: 16px;
+  height: 50%;
   width: 8px;
   z-index: 1;
   top: -1px;
