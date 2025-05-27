@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.10 Standard
+dhtmlxGantt v.9.0.11 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -91,7 +91,7 @@ function yt(t) {
   var e;
   return t.tagName ? e = t : (e = (t = t || window.event).target || t.srcElement).shadowRoot && t.composedPath && (e = t.composedPath()[0]), e;
 }
-function et(t, e) {
+function nt(t, e) {
   if (e) {
     for (var n = yt(t); n; ) {
       if (n.getAttribute && n.getAttribute(e)) return n;
@@ -133,7 +133,7 @@ function Y(t, e) {
   for (; t && t != e; ) t = t.parentNode;
   return t === e;
 }
-function ct(t, e) {
+function dt(t, e) {
   if (t.closest) return t.closest(e);
   if (t.matches || t.msMatchesSelector || t.webkitMatchesSelector) {
     var n = t;
@@ -165,18 +165,18 @@ function vt(t) {
   for (; t.parentNode && (t = t.parentNode); ) if (t instanceof ShadowRoot) return t.host;
   return document.body;
 }
-const rn = Object.freeze(Object.defineProperty({ __proto__: null, addClassName: wt, closest: ct, getActiveElement: ge, getChildNodes: tn, getClassName: X, getClosestSizedElement: nn, getFocusableNodes: Lt, getNodePosition: V, getRelativeEventPosition: rt, getRelativeNodePosition: en, getRootNode: vt, getScrollSize: Xe, getTargetNode: yt, hasClass: function(t, e) {
+const rn = Object.freeze(Object.defineProperty({ __proto__: null, addClassName: wt, closest: dt, getActiveElement: ge, getChildNodes: tn, getClassName: X, getClosestSizedElement: nn, getFocusableNodes: Lt, getNodePosition: V, getRelativeEventPosition: rt, getRelativeNodePosition: en, getRootNode: vt, getScrollSize: Xe, getTargetNode: yt, hasClass: function(t, e) {
   return "classList" in t ? t.classList.contains(e) : new RegExp("\\b" + e + "\\b").test(t.className);
 }, hasShadowParent: function(t) {
   return !!vt(t);
-}, insertNode: Ze, isChildOf: Y, isShadowDomSupported: an, locateAttribute: et, locateClassName: pt, removeClassName: Gt, removeNode: Qe, toNode: we }, Symbol.toStringTag, { value: "Module" })), dt = typeof window < "u" ? window : global;
+}, insertNode: Ze, isChildOf: Y, isShadowDomSupported: an, locateAttribute: nt, locateClassName: pt, removeClassName: Gt, removeNode: Qe, toNode: we }, Symbol.toStringTag, { value: "Module" })), Z = typeof window < "u" ? window : global;
 let Nn = class {
   constructor(t) {
     this._mouseDown = !1, this._touchStarts = !1, this._touchActive = !1, this._longTapTimer = !1, this._gantt = t, this._domEvents = t._createDomEventScope();
   }
   attach(t, e, n) {
     const i = this._gantt, a = t.getViewPort();
-    this._originPosition = dt.getComputedStyle(a).display, this._restoreOriginPosition = () => {
+    this._originPosition = Z.getComputedStyle(a).display, this._restoreOriginPosition = () => {
       a.style.position = this._originPosition;
     }, this._originPosition === "static" && (a.style.position = "relative");
     const r = i.$services.getService("state");
@@ -325,11 +325,11 @@ function zt(t, e) {
 function fe(t) {
   return Array.isArray ? Array.isArray(t) : t && t.length !== void 0 && t.pop && t.push;
 }
-function Z(t) {
+function Q(t) {
   return !(!t || typeof t != "object") && !!(t.getFullYear && t.getMonth && t.getDate);
 }
 function bt(t) {
-  return Z(t) && !isNaN(t.getTime());
+  return Q(t) && !isNaN(t.getTime());
 }
 function De(t, e) {
   var n, i = function() {
@@ -474,7 +474,7 @@ class Yt {
       });
     }, this._stopDrag = (n) => {
       const i = this._gantt;
-      if (this._trace = [], i.$root.classList.remove("gantt_noselect"), this._originalReadonly !== void 0 && (i.config.readonly = this._originalReadonly, this._mouseDown && i.config.drag_timeline && i.config.drag_timeline.render && i.render()), this._originAutoscroll !== void 0 && (i.config.autoscroll = this._originAutoscroll), i.config.drag_timeline) {
+      if (this._trace = [], i.$root.classList.remove("gantt_noselect"), this._originalReadonly !== void 0 && this._mouseDown && (i.config.readonly = this._originalReadonly, i.config.drag_timeline && i.config.drag_timeline.render && i.render()), this._originAutoscroll !== void 0 && (i.config.autoscroll = this._originAutoscroll), i.config.drag_timeline) {
         const { useKey: a } = i.config.drag_timeline;
         if (a && n[a] !== !0) return;
       }
@@ -716,7 +716,7 @@ var ee, On = {}.constructor.toString();
 function q(t) {
   var e, n;
   if (t && typeof t == "object") switch (!0) {
-    case Z(t):
+    case Q(t):
       n = new Date(t);
       break;
     case fe(t):
@@ -839,7 +839,7 @@ class Wn {
     e.global || (n = i.$root);
     let a = null;
     const r = (s) => {
-      const o = yt(s), l = ct(o, e.selector);
+      const o = yt(s), l = dt(o, e.selector);
       if (Y(o, this.tooltip.getNode())) return;
       const d = () => {
         a = l, e.onmouseenter(s, l);
@@ -1546,7 +1546,7 @@ const Vn = { click_drag: function(t) {
         if (!n.config.keyboard_navigation_cells) return null;
         var a = n.locate(i);
         if (n.isTaskExists(a)) {
-          var r = 0, s = et(i, "data-column-index");
+          var r = 0, s = nt(i, "data-column-index");
           return s && (r = 1 * s.getAttribute("data-column-index")), new n.$keyboardNavigation.TaskCell(a, r);
         }
         return null;
@@ -1631,7 +1631,7 @@ const Vn = { click_drag: function(t) {
       };
       var i = function(v) {
         if (e.config.keyboard_navigation && (e.config.keyboard_navigation_cells || !s(v)) && !o(v) && !function(b) {
-          return !!ct(b.target, ".gantt_cal_light");
+          return !!dt(b.target, ".gantt_cal_light");
         }(v)) return n.keyDownHandler(v);
       }, a = function(v) {
         if (n.$preventDefault) return v.preventDefault(), e.$container.blur(), !1;
@@ -1646,10 +1646,10 @@ const Vn = { click_drag: function(t) {
         }
       };
       function s(v) {
-        return !!ct(v.target, ".gantt_grid_editor_placeholder");
+        return !!dt(v.target, ".gantt_grid_editor_placeholder");
       }
       function o(v) {
-        return !!ct(v.target, ".no_keyboard_navigation");
+        return !!dt(v.target, ".no_keyboard_navigation");
       }
       function l(v) {
         if (!e.config.keyboard_navigation || !e.config.keyboard_navigation_cells && s(v)) return !0;
@@ -2431,8 +2431,8 @@ class qn {
     for (const n in e) this._extensions[n] = e[n];
   }
 }
-var nt = typeof window < "u";
-const mt = { isIE: nt && (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0), isIE6: nt && !XMLHttpRequest && navigator.userAgent.indexOf("MSIE") >= 0, isIE7: nt && navigator.userAgent.indexOf("MSIE 7.0") >= 0 && navigator.userAgent.indexOf("Trident") < 0, isIE8: nt && navigator.userAgent.indexOf("MSIE 8.0") >= 0 && navigator.userAgent.indexOf("Trident") >= 0, isOpera: nt && navigator.userAgent.indexOf("Opera") >= 0, isChrome: nt && navigator.userAgent.indexOf("Chrome") >= 0, isKHTML: nt && (navigator.userAgent.indexOf("Safari") >= 0 || navigator.userAgent.indexOf("Konqueror") >= 0), isFF: nt && navigator.userAgent.indexOf("Firefox") >= 0, isIPad: nt && navigator.userAgent.search(/iPad/gi) >= 0, isEdge: nt && navigator.userAgent.indexOf("Edge") != -1, isNode: !nt || typeof navigator > "u" || !1 };
+var ut = typeof window < "u";
+const mt = { isIE: ut && (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0), isOpera: ut && (navigator.userAgent.indexOf("Opera") >= 0 || navigator.userAgent.indexOf("OPR") >= 0), isChrome: ut && navigator.userAgent.indexOf("Chrome") >= 0, isSafari: ut && (navigator.userAgent.indexOf("Safari") >= 0 || navigator.userAgent.indexOf("Konqueror") >= 0), isFF: ut && navigator.userAgent.indexOf("Firefox") >= 0, isIPad: ut && navigator.userAgent.search(/iPad/gi) >= 0, isEdge: ut && navigator.userAgent.indexOf("Edge") != -1, isNode: !ut || typeof navigator > "u" || !1, isSalesforce: ut && (!!Z.Sfdc || !!Z.$A || Z.Aura) };
 function Ne(t) {
   if (typeof t == "string" || typeof t == "number") return t;
   let e = "";
@@ -2882,7 +2882,7 @@ var Kn = function() {
   } };
 };
 const Xn = Promise;
-var tt = { $create: function(t) {
+var et = { $create: function(t) {
   return P(t || [], this);
 }, $removeAt: function(t, e) {
   t >= 0 && this.splice(t, e || 1);
@@ -2909,7 +2909,7 @@ function Rt(t, e, n, i) {
   return (i = e ? e.config : i) && i.placeholder_task && n.exists(t) ? n.getItem(t).type === i.types.placeholder : !1;
 }
 var it = function(t) {
-  return this.pull = {}, this.$initItem = t.initItem, this.visibleOrder = tt.$create(), this.fullOrder = tt.$create(), this._skip_refresh = !1, this._filterRule = null, this._searchVisibleOrder = {}, this._indexRangeCache = {}, this._getItemsCache = null, this.$config = t, ot(this), this._attachDataChange(function() {
+  return this.pull = {}, this.$initItem = t.initItem, this.visibleOrder = et.$create(), this.fullOrder = et.$create(), this._skip_refresh = !1, this._filterRule = null, this._searchVisibleOrder = {}, this._indexRangeCache = {}, this._getItemsCache = null, this.$config = t, ot(this), this._attachDataChange(function() {
     return this._indexRangeCache = {}, this._getItemsCache = null, !0;
   }), this;
 };
@@ -2975,7 +2975,7 @@ it.prototype = { _attachDataChange: function(t) {
 }, clearAll: function() {
   this.$destroyed || (this.silent(function() {
     this.unselect();
-  }), this.pull = {}, this.visibleOrder = tt.$create(), this.fullOrder = tt.$create(), this.isSilent() || (this.callEvent("onClearAll", []), this.refresh()));
+  }), this.pull = {}, this.visibleOrder = et.$create(), this.fullOrder = et.$create(), this.isSilent() || (this.callEvent("onClearAll", []), this.refresh()));
 }, silent: function(t, e) {
   var n = !1;
   this.isSilent() && (n = !0), this._skip_refresh = !0, t.call(e || this), n || (this._skip_refresh = !1);
@@ -3015,7 +3015,7 @@ it.prototype = { _attachDataChange: function(t) {
   }), e;
 }, filter: function(t) {
   this.isSilent() || this.callEvent("onBeforeFilter", []), this.callEvent("onPreFilter", []);
-  var e = tt.$create(), n = [];
+  var e = et.$create(), n = [];
   this.eachItem(function(a) {
     this.callEvent("onFilterItem", [a.id, a]) && (Rt(a.id, null, this, this._ganttConfig) ? n.push(a.id) : e.push(a.id));
   });
@@ -3059,7 +3059,7 @@ var cn = function(t) {
     return d && !lt(d.parent, l.parent) && this.move(l.id, l.$index || -1, l.parent || this._ganttConfig.root_id), l;
   }, this.$parentProperty = t.parentProperty || "parent", typeof t.rootId != "function" ? this.$getRootId = (e = t.rootId || 0, function() {
     return e;
-  }) : this.$getRootId = t.rootId, this.$openInitially = t.openInitially, this.visibleOrder = tt.$create(), this.fullOrder = tt.$create(), this._searchVisibleOrder = {}, this._indexRangeCache = {}, this._eachItemMainRangeCache = null, this._getItemsCache = null, this._skip_refresh = !1, this._ganttConfig = null, t.getConfig && (this._ganttConfig = t.getConfig());
+  }) : this.$getRootId = t.rootId, this.$openInitially = t.openInitially, this.visibleOrder = et.$create(), this.fullOrder = et.$create(), this._searchVisibleOrder = {}, this._indexRangeCache = {}, this._eachItemMainRangeCache = null, this._getItemsCache = null, this._skip_refresh = !1, this._ganttConfig = null, t.getConfig && (this._ganttConfig = t.getConfig());
   var n = {}, i = {}, a = {}, r = {}, s = !1;
   return this._attachDataChange(function() {
     return this._indexRangeCache = {}, this._eachItemMainRangeCache = null, this._getItemsCache = null, !0;
@@ -3116,7 +3116,7 @@ cn.prototype = P({ _buildTree: function(t) {
     t.call(this, a), this._branches[a] && this._traverseBranches(t, a);
   }
 }, _updateOrder: function(t) {
-  this.fullOrder = tt.$create(), this._traverseBranches(function(e) {
+  this.fullOrder = et.$create(), this._traverseBranches(function(e) {
     this.fullOrder.push(e);
   }), t && it.prototype._updateOrder.call(this, t);
 }, _removeItemInner: function(t) {
@@ -3154,7 +3154,7 @@ cn.prototype = P({ _buildTree: function(t) {
   return e && e.length;
 }, getChildren: function(t) {
   var e = this._branches[t];
-  return e || tt.$create();
+  return e || et.$create();
 }, isChildOf: function(t, e) {
   if (!this.exists(t)) return !1;
   if (e === this.$getRootId()) return !0;
@@ -3167,7 +3167,7 @@ cn.prototype = P({ _buildTree: function(t) {
   }
   return !1;
 }, getSiblings: function(t) {
-  if (!this.exists(t)) return tt.$create();
+  if (!this.exists(t)) return et.$create();
   var e = this.getParent(t);
   return this.getChildren(e);
 }, getNextSibling: function(t) {
@@ -3216,7 +3216,7 @@ cn.prototype = P({ _buildTree: function(t) {
   }
 }, _add_branch: function(t, e, n) {
   var i = n === void 0 ? this.getParent(t) : n;
-  this.hasChild(i) || (this._branches[i] = tt.$create());
+  this.hasChild(i) || (this._branches[i] = et.$create());
   var a = this.getChildren(i);
   a.indexOf(t.id + "") > -1 || a.indexOf(+t.id) > -1 || (1 * e == e ? a.splice(e, 0, t.id) : a.push(t.id), t.$rendered_parent = i);
 }, _move_branch: function(t, e, n) {
@@ -3226,14 +3226,14 @@ cn.prototype = P({ _buildTree: function(t) {
 }, _replace_branch_child: function(t, e, n) {
   var i = this.getChildren(t);
   if (i && t !== void 0) {
-    var a = tt.$create();
+    var a = et.$create();
     let r = i.indexOf(e + "");
     r != -1 || isNaN(+e) || (r = i.indexOf(+e)), r > -1 && (n ? i.splice(r, 1, n) : i.splice(r, 1)), a = i, this._branches[t] = a;
   }
 }, sort: function(t, e, n) {
   this.exists(n) || (n = this.$getRootId()), t || (t = "order");
   var i = typeof t == "string" ? function(l, d) {
-    return l[t] == d[t] || Z(l[t]) && Z(d[t]) && l[t].valueOf() == d[t].valueOf() ? 0 : l[t] > d[t] ? 1 : -1;
+    return l[t] == d[t] || Q(l[t]) && Q(d[t]) && l[t].valueOf() == d[t].valueOf() ? 0 : l[t] > d[t] ? 1 : -1;
   } : t;
   if (e) {
     var a = i;
@@ -3950,7 +3950,7 @@ let Jt = Xt, un = class {
     this.autoUpdate = t === "cell", this.updateMode = t, this.dnd = e;
   }
   ignore(t, e) {
-    this._silent_mode = !0, t.call(e || dt), this._silent_mode = !1;
+    this._silent_mode = !0, t.call(e || Z), this._silent_mode = !1;
   }
   setUpdated(t, e, n) {
     if (this._silent_mode) return;
@@ -4343,7 +4343,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
     return this.$gantt.defined(this.$gantt.templates.xml_format) ? this.$gantt.templates.xml_format(t) : this.$gantt.templates.format_date(t);
   }
   _prepareArray(t, e) {
-    return e.push(t), t.map((n) => Z(n) ? this._prepareDate(n) : Array.isArray(n) && !zt(e, n) ? this._prepareArray(n, e) : n && typeof n == "object" && !zt(e, n) ? this._prepareObject(n, e) : n);
+    return e.push(t), t.map((n) => Q(n) ? this._prepareDate(n) : Array.isArray(n) && !zt(e, n) ? this._prepareArray(n, e) : n && typeof n == "object" && !zt(e, n) ? this._prepareObject(n, e) : n);
   }
   _prepareObject(t, e) {
     const n = {};
@@ -4351,7 +4351,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
     for (const i in t) {
       if (i.substr(0, 1) === "$") continue;
       const a = t[i];
-      Z(a) ? n[i] = this._prepareDate(a) : a === null ? n[i] = "" : Array.isArray(a) && !zt(e, a) ? n[i] = this._prepareArray(a, e) : a && typeof a == "object" && !zt(e, a) ? n[i] = this._prepareObject(a, e) : n[i] = a;
+      Q(a) ? n[i] = this._prepareDate(a) : a === null ? n[i] = "" : Array.isArray(a) && !zt(e, a) ? n[i] = this._prepareArray(a, e) : a && typeof a == "object" && !zt(e, a) ? n[i] = this._prepareObject(a, e) : n[i] = a;
     }
     return n;
   }
@@ -4395,7 +4395,7 @@ function ai(t) {
     try {
       l();
     } catch (d) {
-      dt.console.error(d);
+      Z.console.error(d);
     }
   }
   return t.$services.getService("state").registerProvider("batchUpdate", function() {
@@ -5283,7 +5283,7 @@ function fi(t) {
     return i;
   }, _copyObject: function(n) {
     var i = {};
-    for (var a in n) a.charAt(0) != "$" && (i[a] = n[a], Z(i[a]) && (i[a] = t.defined(t.templates.xml_format) ? t.templates.xml_format(i[a]) : t.templates.format_date(i[a])));
+    for (var a in n) a.charAt(0) != "$" && (i[a] = n[a], Q(i[a]) && (i[a] = t.defined(t.templates.xml_format) ? t.templates.xml_format(i[a]) : t.templates.format_date(i[a])));
     return i;
   }, serialize: function() {
     var n = [], i = [];
@@ -5370,7 +5370,7 @@ function pi(t, e, n, i) {
 var _n = function(t) {
   return { getWorkHoursArguments: function() {
     var e = arguments[0];
-    if (!bt((e = Z(e) ? { date: e } : P({}, e)).date)) throw t.assert(!1, "Invalid date argument for getWorkHours method"), new Error("Invalid date argument for getWorkHours method");
+    if (!bt((e = Q(e) ? { date: e } : P({}, e)).date)) throw t.assert(!1, "Invalid date argument for getWorkHours method"), new Error("Invalid date argument for getWorkHours method");
     return e;
   }, setWorkTimeArguments: function() {
     return arguments[0];
@@ -5384,12 +5384,12 @@ var _n = function(t) {
   }, getClosestWorkTimeArguments: function(e) {
     var n, i = arguments[0];
     if (i instanceof re) return i;
-    if (n = Z(i) ? new re(i) : new re(i.date, i.dir, i.unit, i.task, null, i.calendar), i.id && (n.task = i), n.dir = i.dir || "any", n.unit = i.unit || t.config.duration_unit, !bt(n.date)) throw t.assert(!1, "Invalid date argument for getClosestWorkTime method"), new Error("Invalid date argument for getClosestWorkTime method");
+    if (n = Q(i) ? new re(i) : new re(i.date, i.dir, i.unit, i.task, null, i.calendar), i.id && (n.task = i), n.dir = i.dir || "any", n.unit = i.unit || t.config.duration_unit, !bt(n.date)) throw t.assert(!1, "Invalid date argument for getClosestWorkTime method"), new Error("Invalid date argument for getClosestWorkTime method");
     return n;
   }, _getStartEndConfig: function(e) {
     var n, i = pi;
     if (e instanceof i) return e;
-    if (Z(e) ? n = new i(arguments[0], arguments[1], arguments[2], arguments[3]) : (n = new i(e.start_date, e.end_date, e.task), e.id !== null && e.id !== void 0 && (n.task = e)), n.unit = n.unit || t.config.duration_unit, n.step = n.step || t.config.duration_step, n.start_date = n.start_date || n.start || n.date, !bt(n.start_date)) throw t.assert(!1, "Invalid start_date argument for getDuration method"), new Error("Invalid start_date argument for getDuration method");
+    if (Q(e) ? n = new i(arguments[0], arguments[1], arguments[2], arguments[3]) : (n = new i(e.start_date, e.end_date, e.task), e.id !== null && e.id !== void 0 && (n.task = e)), n.unit = n.unit || t.config.duration_unit, n.step = n.step || t.config.duration_step, n.start_date = n.start_date || n.start || n.date, !bt(n.start_date)) throw t.assert(!1, "Invalid start_date argument for getDuration method"), new Error("Invalid start_date argument for getDuration method");
     if (!bt(n.end_date)) throw t.assert(!1, "Invalid end_date argument for getDuration method"), new Error("Invalid end_date argument for getDuration method");
     return n;
   }, getDurationArguments: function(e, n, i, a) {
@@ -5399,7 +5399,7 @@ var _n = function(t) {
   }, calculateEndDateArguments: function(e, n, i, a) {
     var r, s = arguments[0];
     if (s instanceof se) return s;
-    if (r = Z(s) ? new se(arguments[0], arguments[1], arguments[2], void 0, arguments[3], void 0, arguments[4]) : new se(s.start_date, s.duration, s.unit, s.step, s.task, null, s.calendar), s.id !== null && s.id !== void 0 && (r.task = s, r.unit = null, r.step = null), r.unit = r.unit || t.config.duration_unit, r.step = r.step || t.config.duration_step, !bt(r.start_date)) throw t.assert(!1, "Invalid start_date argument for calculateEndDate method"), new Error("Invalid start_date argument for calculateEndDate method");
+    if (r = Q(s) ? new se(arguments[0], arguments[1], arguments[2], void 0, arguments[3], void 0, arguments[4]) : new se(s.start_date, s.duration, s.unit, s.step, s.task, null, s.calendar), s.id !== null && s.id !== void 0 && (r.task = s, r.unit = null, r.step = null), r.unit = r.unit || t.config.duration_unit, r.step = r.step || t.config.duration_step, !bt(r.start_date)) throw t.assert(!1, "Invalid start_date argument for calculateEndDate method"), new Error("Invalid start_date argument for calculateEndDate method");
     return r;
   } };
 };
@@ -5437,23 +5437,25 @@ gn.prototype = { _getIntervals: function(t) {
 }, _mergeHoursConfig: function(t, e) {
   return this._mergeAdjacentIntervals(this._intersectHourRanges(t, e));
 }, merge: function(t, e) {
-  var n = q(t.getConfig().parsed), i = q(e.getConfig().parsed), a = { hours: this._toHoursArray(this._mergeHoursConfig(n.hours, i.hours)), dates: {}, customWeeks: {} };
-  const r = (o, l) => {
-    for (let d in o.dates) {
-      const c = o.dates[d];
-      +d > 1e3 && (a.dates[d] = !1);
-      for (const u in l.dates) {
-        const h = l.dates[u];
-        if (u == d && (a.dates[d] = !(!c || !h)), Array.isArray(c)) {
-          const g = Array.isArray(h) ? h : l.hours;
-          a.dates[d] = this._toHoursArray(this._mergeHoursConfig(c, g));
+  const n = q(t.getConfig()), i = q(e.getConfig()), a = n.parsed, r = i.parsed;
+  a.customWeeks = n.customWeeks, r.customWeeks = i.customWeeks;
+  var s = { hours: this._toHoursArray(this._mergeHoursConfig(a.hours, r.hours)), dates: {}, customWeeks: {} };
+  const o = (d, c) => {
+    for (let u in d.dates) {
+      const h = d.dates[u];
+      +u > 1e3 && (s.dates[u] = !1);
+      for (const g in c.dates) {
+        const p = c.dates[g];
+        if (g == u && (s.dates[u] = !(!h || !p)), Array.isArray(h)) {
+          const y = Array.isArray(p) ? p : c.hours;
+          s.dates[u] = this._toHoursArray(this._mergeHoursConfig(h, y));
         }
       }
     }
   };
-  if (r(n, i), r(i, n), n.customWeeks) for (var s in n.customWeeks) a.customWeeks[s] = n.customWeeks[s];
-  if (i.customWeeks) for (var s in i.customWeeks) a.customWeeks[s] = i.customWeeks[s];
-  return a;
+  if (o(a, r), o(r, a), a.customWeeks) for (var l in a.customWeeks) s.customWeeks[l] = a.customWeeks[l];
+  if (r.customWeeks) for (var l in r.customWeeks) s.customWeeks[l] ? s.customWeeks[l + "_second"] = r.customWeeks[l] : s.customWeeks[l] = r.customWeeks[l];
+  return s;
 } };
 class mi {
   constructor() {
@@ -6130,7 +6132,7 @@ fn.prototype = { _calendars: {}, _convertWorkTimeSettings: function(t) {
   if (t[e.calendar_property]) return this.getCalendar(t[e.calendar_property]);
   if (e.resource_calendars) {
     var n;
-    if (n = this._legacyConfig === !1 ? e.resource_property : It.getResourceProperty(e), Array.isArray(t[n])) e.dynamic_resource_calendars ? i = bi.getCalendarIdFromMultipleResources(t[n], this) : a = this.getResourceCalendar(t[n]);
+    if (n = this._legacyConfig === !1 ? e.resource_property : It.getResourceProperty(e), Array.isArray(t[n]) && t[n].length) e.dynamic_resource_calendars ? i = bi.getCalendarIdFromMultipleResources(t[n], this) : a = this.getResourceCalendar(t[n]);
     else if (this._legacyConfig === void 0 && (this._legacyConfig = It.isLegacyResourceCalendarFormat(e.resource_calendars)), this._legacyConfig) var i = It.getCalendarIdFromLegacyConfig(t, e.resource_calendars);
     else if (n && t[n] && e.resource_calendars[t[n]]) var a = this.getResourceCalendar(t[n]);
     if (i && (a = this.getCalendar(i)), a) return a;
@@ -6382,7 +6384,7 @@ function $i(t) {
     }
   }, t.roundDate = function(s) {
     var o = t.getScale();
-    Z(s) && (s = { date: s, unit: o ? o.unit : t.config.duration_unit, step: o ? o.step : t.config.duration_step });
+    Q(s) && (s = { date: s, unit: o ? o.unit : t.config.duration_unit, step: o ? o.step : t.config.duration_step });
     var l, d, c, u = s.date, h = s.step, g = s.unit;
     if (!o) return u;
     if (g == o.unit && h == o.step && +u >= +o.min_date && +u <= +o.max_date) c = Math.floor(t.columnIndexByDate(u)), o.trace_x[c] || (c -= 1, o.rtl && (c = 0)), d = new Date(o.trace_x[c]), l = t.date.add(d, h, g);
@@ -6471,7 +6473,7 @@ function wi(t) {
     }), this.callEvent("onGanttLayoutReady", []), this.$layout.render(), this.$container = this.$layout.$container.firstChild, function(r) {
       window.getComputedStyle(r.$root).getPropertyValue("position") == "static" && (r.$root.style.position = "relative");
       var s = document.createElement("iframe");
-      s.className = "gantt_container_resize_watcher", s.tabIndex = -1, r.config.wai_aria_attributes && (s.setAttribute("role", "none"), s.setAttribute("aria-hidden", !0)), (window.Sfdc || window.$A || window.Aura) && (r.config.container_resize_method = "timeout"), r.$root.appendChild(s), s.contentWindow ? Oe(r, s.contentWindow) : (r.$root.removeChild(s), Oe(r, window));
+      s.className = "gantt_container_resize_watcher", s.tabIndex = -1, r.config.wai_aria_attributes && (s.setAttribute("role", "none"), s.setAttribute("aria-hidden", !0)), r.env.isSalesforce && (r.config.container_resize_method = "timeout"), r.$root.appendChild(s), s.contentWindow ? Oe(r, s.contentWindow) : (r.$root.removeChild(s), Oe(r, window));
     }(this));
   }).bind(t);
   t.resetLayout = function() {
@@ -6566,7 +6568,7 @@ class Ui {
 }
 const qi = { date: { month_full: ["Januar", "Februar", "Mars", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Desember"], month_short: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"], day_full: ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"], day_short: ["Søn", "Mon", "Tir", "Ons", "Tor", "Fre", "Lør"] }, labels: { new_task: "Ny oppgave", icon_save: "Lagre", icon_cancel: "Avbryt", icon_details: "Detaljer", icon_edit: "Rediger", icon_delete: "Slett", confirm_closing: "", confirm_deleting: "Hendelsen vil bli slettet permanent. Er du sikker?", section_description: "Beskrivelse", section_time: "Tidsperiode", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Avbryt", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Gi = { date: { month_full: ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"], month_short: ["Jan", "Feb", "mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"], day_full: ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"], day_short: ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"] }, labels: { new_task: "Nieuwe taak", icon_save: "Opslaan", icon_cancel: "Annuleren", icon_details: "Details", icon_edit: "Bewerken", icon_delete: "Verwijderen", confirm_closing: "", confirm_deleting: "Item zal permanent worden verwijderd, doorgaan?", section_description: "Beschrijving", section_time: "Tijd periode", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Taak omschrijving", column_start_date: "Startdatum", column_duration: "Duur", column_add: "", link: "Koppeling", confirm_link_deleting: "zal worden verwijderd", link_start: " (start)", link_end: " (eind)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "minuten", hours: "uren", days: "dagen", weeks: "weken", months: "maanden", years: "jaren", message_ok: "OK", message_cancel: "Annuleren", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Yi = { date: { month_full: ["Januar", "Februar", "Mars", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Desember"], month_short: ["Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des"], day_full: ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"], day_short: ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"] }, labels: { new_task: "Ny oppgave", icon_save: "Lagre", icon_cancel: "Avbryt", icon_details: "Detaljer", icon_edit: "Endre", icon_delete: "Slett", confirm_closing: "Endringer blir ikke lagret, er du sikker?", confirm_deleting: "Oppføringen vil bli slettet, er du sikker?", section_description: "Beskrivelse", section_time: "Tidsperiode", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Avbryt", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Ji = { date: { month_full: ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"], month_short: ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"], day_full: ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"], day_short: ["Nie", "Pon", "Wto", "Śro", "Czw", "Pią", "Sob"] }, labels: { new_task: "Nowe zadanie", icon_save: "Zapisz", icon_cancel: "Anuluj", icon_details: "Szczegóły", icon_edit: "Edytuj", icon_delete: "Usuń", confirm_closing: "", confirm_deleting: "Zdarzenie zostanie usunięte na zawsze, kontynuować?", section_description: "Opis", section_time: "Okres czasu", section_type: "Typ", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Nazwa zadania", column_start_date: "Początek", column_duration: "Czas trwania", column_add: "", link: "Link", confirm_link_deleting: "zostanie usunięty", link_start: " (początek)", link_end: " (koniec)", type_task: "Zadanie", type_project: "Projekt", type_milestone: "Milestone", minutes: "Minuty", hours: "Godziny", days: "Dni", weeks: "Tydzień", months: "Miesiące", years: "Lata", message_ok: "OK", message_cancel: "Anuluj", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Ki = { date: { month_full: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], month_short: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"], day_full: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"], day_short: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"] }, labels: { new_task: "Nova tarefa", icon_save: "Salvar", icon_cancel: "Cancelar", icon_details: "Detalhes", icon_edit: "Editar", icon_delete: "Excluir", confirm_closing: "", confirm_deleting: "As tarefas serão excluidas permanentemente, confirme?", section_description: "Descrição", section_time: "Período", section_type: "Tipo", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "EAP", column_text: "Nome tarefa", column_start_date: "Data início", column_duration: "Duração", column_add: "", link: "Link", confirm_link_deleting: "Será excluído!", link_start: " (início)", link_end: " (fim)", type_task: "Task", type_project: "Projeto", type_milestone: "Marco", minutes: "Minutos", hours: "Horas", days: "Dias", weeks: "Semanas", months: "Meses", years: "Anos", message_ok: "OK", message_cancel: "Cancelar", section_constraint: "Restrição", constraint_type: "Tipo Restrição", constraint_date: "Data restrição", asap: "Mais breve possível", alap: "Mais tarde possível", snet: "Não começar antes de", snlt: "Não começar depois de", fnet: "Não terminar antes de", fnlt: "Não terminar depois de", mso: "Precisa começar em", mfo: "Precisa terminar em", resources_filter_placeholder: "Tipo de filtros", resources_filter_label: "Ocultar vazios", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Xi = { date: { month_full: ["Ianuarie", "Februarie", "Martie", "Aprilie", "Mai", "Iunie", "Iulie", "August", "Septembrie", "Octombrie", "November", "December"], month_short: ["Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Nov", "Dec"], day_full: ["Duminica", "Luni", "Marti", "Miercuri", "Joi", "Vineri", "Sambata"], day_short: ["Du", "Lu", "Ma", "Mi", "Jo", "Vi", "Sa"] }, labels: { new_task: "Sarcina noua", icon_save: "Salveaza", icon_cancel: "Anuleaza", icon_details: "Detalii", icon_edit: "Editeaza", icon_delete: "Sterge", confirm_closing: "Schimbarile nu vor fi salvate, esti sigur?", confirm_deleting: "Evenimentul va fi sters permanent, esti sigur?", section_description: "Descriere", section_time: "Interval", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Anuleaza", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Zi = { date: { month_full: ["Январь", "Февраль", "Март", "Апрель", "Maй", "Июнь", "Июль", "Август", "Сентябрь", "Oктябрь", "Ноябрь", "Декабрь"], month_short: ["Янв", "Фев", "Maр", "Aпр", "Maй", "Июн", "Июл", "Aвг", "Сен", "Окт", "Ноя", "Дек"], day_full: ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"], day_short: ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"] }, labels: { new_task: "Новое задание", icon_save: "Сохранить", icon_cancel: "Отменить", icon_details: "Детали", icon_edit: "Изменить", icon_delete: "Удалить", confirm_closing: "", confirm_deleting: "Событие будет удалено безвозвратно, продолжить?", section_description: "Описание", section_time: "Период времени", section_type: "Тип", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "ИСР", column_text: "Задача", column_start_date: "Начало", column_duration: "Длительность", column_add: "", link: "Связь", confirm_link_deleting: "будет удалена", link_start: " (начало)", link_end: " (конец)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Минута", hours: "Час", days: "День", weeks: "Неделя", months: "Месяц", years: "Год", message_ok: "OK", message_cancel: "Отменить", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "начните вводить слово для фильтрации", resources_filter_label: "спрятать не установленные", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, Qi = { date: { month_full: ["Januar", "Februar", "Marec", "April", "Maj", "Junij", "Julij", "Avgust", "September", "Oktober", "November", "December"], month_short: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"], day_full: ["Nedelja", "Ponedeljek", "Torek", "Sreda", "Četrtek", "Petek", "Sobota"], day_short: ["Ned", "Pon", "Tor", "Sre", "Čet", "Pet", "Sob"] }, labels: { new_task: "Nova naloga", icon_save: "Shrani", icon_cancel: "Prekliči", icon_details: "Podrobnosti", icon_edit: "Uredi", icon_delete: "Izbriši", confirm_closing: "", confirm_deleting: "Dogodek bo izbrisan. Želite nadaljevati?", section_description: "Opis", section_time: "Časovni okvir", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Prekliči", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ta = { date: { month_full: ["Január", "Február", "Marec", "Apríl", "Máj", "Jún", "Júl", "August", "September", "Október", "November", "December"], month_short: ["Jan", "Feb", "Mar", "Apr", "Máj", "Jún", "Júl", "Aug", "Sept", "Okt", "Nov", "Dec"], day_full: ["Nedeľa", "Pondelok", "Utorok", "Streda", "Štvrtok", "Piatok", "Sobota"], day_short: ["Ne", "Po", "Ut", "St", "Št", "Pi", "So"] }, labels: { new_task: "Nová úloha", icon_save: "Uložiť", icon_cancel: "Späť", icon_details: "Detail", icon_edit: "Edituj", icon_delete: "Zmazať", confirm_closing: "Vaše zmeny nebudú uložené. Skutočne?", confirm_deleting: "Udalosť bude natrvalo vymazaná. Skutočne?", section_description: "Poznámky", section_time: "Doba platnosti", section_type: "Type", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Späť", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ea = { date: { month_full: ["Januari", "Februari", "Mars", "April", "Maj", "Juni", "Juli", "Augusti", "September", "Oktober", "November", "December"], month_short: ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"], day_full: ["Söndag", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag"], day_short: ["Sön", "Mån", "Tis", "Ons", "Tor", "Fre", "Lör"] }, labels: { new_task: "Ny uppgift", icon_save: "Spara", icon_cancel: "Avbryt", icon_details: "Detajer", icon_edit: "Ändra", icon_delete: "Ta bort", confirm_closing: "", confirm_deleting: "Är du säker på att du vill ta bort händelsen permanent?", section_description: "Beskrivning", section_time: "Tid", section_type: "Typ", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Uppgiftsnamn", column_start_date: "Starttid", column_duration: "Varaktighet", column_add: "", link: "Länk", confirm_link_deleting: "kommer tas bort", link_start: " (start)", link_end: " (slut)", type_task: "Uppgift", type_project: "Projekt", type_milestone: "Milstolpe", minutes: "Minuter", hours: "Timmar", days: "Dagar", weeks: "Veckor", months: "Månader", years: "År", message_ok: "OK", message_cancel: "Avbryt", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, na = { date: { month_full: ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"], month_short: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"], day_full: ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"], day_short: ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"] }, labels: { new_task: "Yeni görev", icon_save: "Kaydet", icon_cancel: "İptal", icon_details: "Detaylar", icon_edit: "Düzenle", icon_delete: "Sil", confirm_closing: "", confirm_deleting: "Görev silinecek, emin misiniz?", section_description: "Açıklama", section_time: "Zaman Aralığı", section_type: "Tip", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Görev Adı", column_start_date: "Başlangıç", column_duration: "Süre", column_add: "", link: "Bağlantı", confirm_link_deleting: "silinecek", link_start: " (başlangıç)", link_end: " (bitiş)", type_task: "Görev", type_project: "Proje", type_milestone: "Kilometretaşı", minutes: "Dakika", hours: "Saat", days: "Gün", weeks: "Hafta", months: "Ay", years: "Yıl", message_ok: "OK", message_cancel: "Ýptal", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } }, ia = { date: { month_full: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"], month_short: ["Січ", "Лют", "Бер", "Кві", "Тра", "Чер", "Лип", "Сер", "Вер", "Жов", "Лис", "Гру"], day_full: ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота"], day_short: ["Нед", "Пон", "Вів", "Сер", "Чет", "Птн", "Суб"] }, labels: { new_task: "Нове завдання", icon_save: "Зберегти", icon_cancel: "Відміна", icon_details: "Деталі", icon_edit: "Редагувати", icon_delete: "Вилучити", confirm_closing: "", confirm_deleting: "Подія вилучиться назавжди. Ви впевнені?", section_description: "Опис", section_time: "Часовий проміжок", section_type: "Тип", section_deadline: "Deadline", section_baselines: "Baselines", column_wbs: "WBS", column_text: "Task name", column_start_date: "Start time", column_duration: "Duration", column_add: "", link: "Link", confirm_link_deleting: "will be deleted", link_start: " (start)", link_end: " (end)", type_task: "Task", type_project: "Project", type_milestone: "Milestone", minutes: "Minutes", hours: "Hours", days: "Days", weeks: "Week", months: "Months", years: "Years", message_ok: "OK", message_cancel: "Відміна", section_constraint: "Constraint", constraint_type: "Constraint type", constraint_date: "Constraint date", asap: "As Soon As Possible", alap: "As Late As Possible", snet: "Start No Earlier Than", snlt: "Start No Later Than", fnet: "Finish No Earlier Than", fnlt: "Finish No Later Than", mso: "Must Start On", mfo: "Must Finish On", resources_filter_placeholder: "type to filter", resources_filter_label: "hide empty", empty_state_text_link: "Click here", empty_state_text_description: "to create your first task", baselines_section_placeholder: "Start adding a new baseline", baselines_add_button: "Add Baseline", baselines_remove_button: "Remove", baselines_remove_all_button: "Remove All", deadline_enable_button: "Set", deadline_disable_button: "Remove" } };
 function aa() {
-  this.constants = Un, this.version = "9.0.10", this.license = "gpl", this.templates = {}, this.ext = {}, this.keys = { edit_save: this.constants.KEY_CODES.ENTER, edit_cancel: this.constants.KEY_CODES.ESC };
+  this.constants = Un, this.version = "9.0.11", this.license = "gpl", this.templates = {}, this.ext = {}, this.keys = { edit_save: this.constants.KEY_CODES.ENTER, edit_cancel: this.constants.KEY_CODES.ESC };
 }
 function ra(t) {
   var e = new aa(), n = new qn(t), i = {};
@@ -6593,7 +6595,7 @@ function ra(t) {
     } };
   }(), e.config = { layout: { css: "gantt_container", rows: [{ cols: [{ view: "grid", scrollX: "scrollHor", scrollY: "scrollVer" }, { resizer: !0, width: 1 }, { view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer" }, { view: "scrollbar", id: "scrollVer" }] }, { view: "scrollbar", id: "scrollHor", height: 20 }] }, links: { finish_to_start: "0", start_to_start: "1", finish_to_finish: "2", start_to_finish: "3" }, types: { task: "task", project: "project", milestone: "milestone" }, auto_types: !1, duration_unit: "day", work_time: !1, correct_work_time: !1, skip_off_time: !1, cascade_delete: !0, autosize: !1, autosize_min_width: 0, autoscroll: !0, autoscroll_speed: 30, deepcopy_on_parse: !1, show_links: !0, show_task_cells: !0, static_background: !1, static_background_cells: !0, branch_loading: !1, branch_loading_property: "$has_child", show_loading: !1, show_chart: !0, show_grid: !0, min_duration: 36e5, date_format: "%d-%m-%Y %H:%i", xml_date: void 0, start_on_monday: !0, server_utc: !1, show_progress: !0, fit_tasks: !1, select_task: !0, scroll_on_click: !0, smart_rendering: !0, preserve_scroll: !0, readonly: !1, container_resize_timeout: 20, deadlines: !0, date_grid: "%Y-%m-%d", drag_links: !0, drag_progress: !0, drag_resize: !0, drag_project: !1, drag_move: !0, drag_mode: { resize: "resize", progress: "progress", move: "move", ignore: "ignore" }, round_dnd_dates: !0, link_wrapper_width: 20, link_arrow_size: 12, root_id: 0, autofit: !1, columns: [{ name: "text", tree: !0, width: "*", resize: !0 }, { name: "start_date", align: "center", resize: !0 }, { name: "duration", align: "center" }, { name: "add", width: 44 }], scale_offset_minimal: !0, inherit_scale_class: !1, scales: [{ unit: "day", step: 1, date: "%d %M" }], time_step: 60, duration_step: 1, task_date: "%d %F %Y", time_picker: "%H:%i", task_attribute: "data-task-id", link_attribute: "data-link-id", layer_attribute: "data-layer", buttons_left: ["gantt_save_btn", "gantt_cancel_btn"], _migrate_buttons: { dhx_save_btn: "gantt_save_btn", dhx_cancel_btn: "gantt_cancel_btn", dhx_delete_btn: "gantt_delete_btn" }, buttons_right: ["gantt_delete_btn"], lightbox: { sections: [{ name: "description", height: 70, map_to: "text", type: "textarea", focus: !0 }, { name: "time", type: "duration", map_to: "auto" }], project_sections: [{ name: "description", height: 70, map_to: "text", type: "textarea", focus: !0 }, { name: "type", type: "typeselect", map_to: "type" }, { name: "time", type: "duration", readonly: !0, map_to: "auto" }], milestone_sections: [{ name: "description", height: 70, map_to: "text", type: "textarea", focus: !0 }, { name: "type", type: "typeselect", map_to: "type" }, { name: "time", type: "duration", single_date: !0, map_to: "auto" }] }, drag_lightbox: !0, sort: !1, details_on_create: !0, details_on_dblclick: !0, initial_scroll: !0, task_scroll_offset: 100, order_branch: !1, order_branch_free: !1, task_height: void 0, bar_height: "full", bar_height_padding: 9, min_column_width: 70, min_grid_column_width: 70, grid_resizer_column_attribute: "data-column-index", keep_grid_width: !1, grid_resize: !1, grid_elastic_columns: !1, show_tasks_outside_timescale: !1, show_unscheduled: !0, resize_rows: !1, task_grid_row_resizer_attribute: "data-row-index", min_task_grid_row_height: 30, row_height: 36, readonly_property: "readonly", editable_property: "editable", calendar_property: "calendar_id", resource_calendars: {}, dynamic_resource_calendars: !1, inherit_calendar: !1, type_renderers: {}, open_tree_initially: !1, optimize_render: !0, prevent_default_scroll: !1, show_errors: !0, wai_aria_attributes: !0, smart_scales: !0, rtl: !1, placeholder_task: !1, horizontal_scroll_key: "shiftKey", drag_timeline: { useKey: void 0, ignore: ".gantt_task_line, .gantt_task_link", render: !1 }, drag_multiple: !0, csp: "auto" }, e.ajax = /* @__PURE__ */ function(l) {
     return { cache: !0, method: "get", parse: function(d) {
-      return typeof d != "string" ? d : (d = d.replace(/^[\s]+/, ""), typeof DOMParser > "u" || mt.isIE ? dt.ActiveXObject !== void 0 && ((c = new dt.ActiveXObject("Microsoft.XMLDOM")).async = "false", c.loadXML(d)) : c = new DOMParser().parseFromString(d, "text/xml"), c);
+      return typeof d != "string" ? d : (d = d.replace(/^[\s]+/, ""), typeof DOMParser > "u" || mt.isIE ? Z.ActiveXObject !== void 0 && ((c = new Z.ActiveXObject("Microsoft.XMLDOM")).async = "false", c.loadXML(d)) : c = new DOMParser().parseFromString(d, "text/xml"), c);
       var c;
     }, xmltop: function(d, c, u) {
       if (c.status === void 0 || c.status < 400) {
@@ -6629,12 +6631,12 @@ function ra(t) {
       return h.async = !1, this.query(h);
     }, _call: function(d, c, u, h, g, p) {
       return new l.Promise(function(y, v) {
-        var b = typeof XMLHttpRequest !== void 0 ? new XMLHttpRequest() : new dt.ActiveXObject("Microsoft.XMLHTTP"), _ = navigator.userAgent.match(/AppleWebKit/) !== null && navigator.userAgent.match(/Qt/) !== null && navigator.userAgent.match(/Safari/) !== null;
+        var b = typeof XMLHttpRequest !== void 0 ? new XMLHttpRequest() : new Z.ActiveXObject("Microsoft.XMLHTTP"), _ = navigator.userAgent.match(/AppleWebKit/) !== null && navigator.userAgent.match(/Qt/) !== null && navigator.userAgent.match(/Safari/) !== null;
         h && (b.onreadystatechange = function() {
           if (b.readyState == 4 || _ && b.readyState == 3) {
             if ((b.status != 200 || b.responseText === "") && !l.callEvent("onAjaxError", [b])) return;
             setTimeout(function() {
-              typeof g == "function" && g.apply(dt, [{ xmlDoc: b, filePath: c }]), y(b), typeof g == "function" && (g = null, b = null);
+              typeof g == "function" && g.apply(Z, [{ xmlDoc: b, filePath: c }]), y(b), typeof g == "function" && (g = null, b = null);
             }, 0);
           }
         });
@@ -6659,7 +6661,7 @@ function ra(t) {
       }, this));
       for (var p = { passive: !1 }, y = 0; y < g.length; y++) R(function(v) {
         l.event(u, v.down, R(function(_) {
-          v.accessor(_) && (_.button !== void 0 && _.button !== 0 || (h.preventDefault && h.selector && ct(_.target, h.selector) && _.preventDefault(), l.config.touch && _.timeStamp && _.timeStamp - 0 < 300 || (this._settings.original_target = d(_), this._settings.original_element_sizes = { ...rt(_, nn(u)), width: _.target.offsetWidth, height: _.target.offsetHeight }, l.config.touch ? (this.clearDragTimer(), this._drag_start_timer = setTimeout(R(function() {
+          v.accessor(_) && (_.button !== void 0 && _.button !== 0 || (h.preventDefault && h.selector && dt(_.target, h.selector) && _.preventDefault(), l.config.touch && _.timeStamp && _.timeStamp - 0 < 300 || (this._settings.original_target = d(_), this._settings.original_element_sizes = { ...rt(_, nn(u)), width: _.target.offsetWidth, height: _.target.offsetHeight }, l.config.touch ? (this.clearDragTimer(), this._drag_start_timer = setTimeout(R(function() {
             l.getState().lightbox || this.dragStart(u, _, v);
           }, this), l.config.touch_drag)) : this.dragStart(u, _, v))));
         }, this), p);
@@ -6713,9 +6715,9 @@ function ra(t) {
         }
         h ? u.push({ move: "touchmove", down: "touchstart", up: "touchend", accessor: function(g) {
           return g.touches && g.touches.length > 1 ? null : g.touches[0] ? { target: document.elementFromPoint(g.touches[0].clientX, g.touches[0].clientY), pageX: g.touches[0].pageX, pageY: g.touches[0].pageY, clientX: g.touches[0].clientX, clientY: g.touches[0].clientY } : g;
-        } }) : dt.navigator.pointerEnabled ? u.push({ move: "pointermove", down: "pointerdown", up: "pointerup", accessor: function(g) {
+        } }) : Z.navigator.pointerEnabled ? u.push({ move: "pointermove", down: "pointerdown", up: "pointerup", accessor: function(g) {
           return g.pointerType == "mouse" ? null : g;
-        } }) : dt.navigator.msPointerEnabled && u.push({ move: "MSPointerMove", down: "MSPointerDown", up: "MSPointerUp", accessor: function(g) {
+        } }) : Z.navigator.msPointerEnabled && u.push({ move: "MSPointerMove", down: "MSPointerDown", up: "MSPointerUp", accessor: function(g) {
           return g.pointerType == g.MSPOINTER_TYPE_MOUSE ? null : g;
         } });
       }
@@ -7105,7 +7107,7 @@ function sa(t) {
       }
       return E.onclick = function(N) {
         var L = N.target || N.srcElement;
-        if (L.className || (L = L.parentNode), ct(L, ".gantt_popup_button")) {
+        if (L.className || (L = L.parentNode), dt(L, ".gantt_popup_button")) {
           var O = L.getAttribute("data-result");
           i(w, O = O == "true" || O != "false" && O);
         }
@@ -7154,7 +7156,7 @@ function sa(t) {
         return h(_);
       default:
         return function(x) {
-          v.area || (v.area = document.createElement("div"), v.area.className = "gantt_message_area", v.area.style[v.position] = "5px", document.body.appendChild(v.area)), v.hide(x.id);
+          v.area || (v.area = document.createElement("div"), v.area.className = "gantt_message_area", v.area.style[v.position] = "5px"), Y(v.area, document.body) || document.body.appendChild(v.area), v.hide(x.id);
           var $ = document.createElement("div");
           return $.innerHTML = "<div>" + x.text + "</div>", $.className = "gantt-info gantt-" + x.type, $.onclick = function() {
             v.hide(x.id), x = null;
@@ -7417,11 +7419,13 @@ var ua = function(t) {
       return this.renderers[o];
     }, _add: function(o) {
       o && (o.id = o.id || st(), this.tempCollection.push(o));
-      for (var l = this.container(), d = this.tempCollection, c = 0; c < d.length; c++) if (o = d[c], this.container() || o && o.container && Y(o.container, document.body)) {
-        var u = o.container, h = o.id, g = o.topmost;
+      const l = this.container(), d = this.tempCollection;
+      for (let c = 0; c < d.length; c++) {
+        if (o = d[c], !(this.container() || o && o.container && o.container.isConnected)) continue;
+        let u = o.container, h = o.id, g = o.topmost;
         if (!u.parentNode) if (g) l.appendChild(u);
         else {
-          var p = i ? i() : l.firstChild;
+          let p = i ? i() : l.firstChild;
           p && p.parentNode == l ? l.insertBefore(u, p) : l.appendChild(u);
         }
         this.renderers[h] = e.getRenderer(h, o, u), r && r(o, t), this.tempCollection.splice(c, 1), c--;
@@ -7560,7 +7564,7 @@ var Ht = function() {
   }, t.prototype.init = function() {
     var e = this;
     this._headerClickHandler = function(n) {
-      et(n, "data-cell-id") == e.$id && e.toggle();
+      nt(n, "data-cell-id") == e.$id && e.toggle();
     }, this.$gantt.$services.getService("mouseEvents").delegate("click", "gantt_header_arrow", this._headerClickHandler), this.callEvent("onReady", []);
   }, t.prototype.toggle = function() {
     this.$config.collapsed = !this.$config.collapsed, this.resize();
@@ -8510,7 +8514,7 @@ xe.prototype = { init: function(t) {
   var d = function(c, u) {
     var h = { row_before_start: c.bind(function(g, p, y) {
       var v = u.$getConfig(), b = u.$config.rowStore;
-      if (!et(y, v.task_grid_row_resizer_attribute)) return !1;
+      if (!nt(y, v.task_grid_row_resizer_attribute)) return !1;
       var _ = this.locate(y, v.task_grid_row_resizer_attribute), m = b.getItem(_);
       return u.callEvent("onBeforeRowResize", [m]) !== !1 && void 0;
     }, c), row_after_start: c.bind(function(g, p, y) {
@@ -8644,12 +8648,12 @@ xe.prototype = { init: function(t) {
   this._mouseDelegates.delegate("click", "gantt_close", t.bind(function(e, n, i) {
     var a = this.$config.rowStore;
     if (!a) return !0;
-    var r = et(e, this.$config.item_attribute);
+    var r = nt(e, this.$config.item_attribute);
     return r && a.close(r.getAttribute(this.$config.item_attribute)), !1;
   }, this), this.$grid), this._mouseDelegates.delegate("click", "gantt_open", t.bind(function(e, n, i) {
     var a = this.$config.rowStore;
     if (!a) return !0;
-    var r = et(e, this.$config.item_attribute);
+    var r = nt(e, this.$config.item_attribute);
     return r && a.open(r.getAttribute(this.$config.item_attribute)), !1;
   }, this), this.$grid);
 }, _clearLayers: function(t) {
@@ -9077,7 +9081,7 @@ function Da(t) {
     }
     var s = Ea(t), o = [], l = [], d = null, c = { _itemId: null, _columnName: null, _editor: null, _editorType: null, _placeholder: null, locateCell: function(u) {
       if (!Y(u, a.$grid)) return null;
-      var h = et(u, a.$config.item_attribute), g = et(u, "data-column-name");
+      var h = nt(u, a.$config.item_attribute), g = nt(u, "data-column-name");
       if (h && g) {
         var p = g.getAttribute("data-column-name");
         return { id: h.getAttribute(a.$config.item_attribute), columnName: p };
@@ -9589,9 +9593,9 @@ function Na(t) {
           if (T && (N = t.getTask(A.task_id)), N.unscheduled) continue;
           let L = A.start_date || N.start_date, O = A.end_date || N.end_date;
           T && (A.start_date && (L = new Date(Math.max(A.start_date.valueOf(), N.start_date.valueOf()))), A.end_date && (O = new Date(Math.min(A.end_date.valueOf(), N.end_date.valueOf()))), A.mode && A.mode == "fixedDates" && (L = A.start_date, O = A.end_date));
-          let G = At(S.trace_x, L.valueOf()), j = new Date(S.trace_x[G] || t.date[E + "_start"](new Date(L))), H = new Date(Math.min(L.valueOf(), j.valueOf())), Q = t.config.work_time ? t.getTaskCalendar(N) : t;
-          for (M[Q.id] = {}; H < O; ) {
-            const J = M[Q.id], B = H.valueOf();
+          let G = At(S.trace_x, L.valueOf()), j = new Date(S.trace_x[G] || t.date[E + "_start"](new Date(L))), H = new Date(Math.min(L.valueOf(), j.valueOf())), tt = t.config.work_time ? t.getTaskCalendar(N) : t;
+          for (M[tt.id] = {}; H < O; ) {
+            const J = M[tt.id], B = H.valueOf();
             H = t.date.add(H, C, E), J[B] !== !1 && (D[B] || (D[B] = { tasks: [], assignments: [] }), D[B].tasks.push(N), T && D[B].assignments.push(A));
           }
         }
@@ -9611,7 +9615,7 @@ const La = { init: function(t, e) {
     var i = new n(e.$grid_data, { updates_per_second: 60 });
     t.defined(e.$getConfig().dnd_sensitivity) && (i.config.sensitivity = e.$getConfig().dnd_sensitivity), i.attachEvent("onBeforeDragStart", t.bind(function(o, l) {
       var d = a(l);
-      if (!d || (t.hideQuickInfo && t.hideQuickInfo(), ct(l.target, ".gantt_grid_editor_placeholder"))) return !1;
+      if (!d || (t.hideQuickInfo && t.hideQuickInfo(), dt(l.target, ".gantt_grid_editor_placeholder"))) return !1;
       var c = d.getAttribute(e.$config.item_attribute);
       if (s(c)) return !1;
       var u = r().getItem(c);
@@ -9680,7 +9684,7 @@ const La = { init: function(t, e) {
     }, t));
   }
   function a(o) {
-    return et(o, e.$config.item_attribute);
+    return nt(o, e.$config.item_attribute);
   }
   function r() {
     return t.getDatastore(e.$config.bind);
@@ -9795,7 +9799,7 @@ const Ke = { removeLineHighlight: function(t) {
     var i = new n(e.$grid_data, { updates_per_second: 60 });
     t.defined(e.$getConfig().dnd_sensitivity) && (i.config.sensitivity = e.$getConfig().dnd_sensitivity), i.attachEvent("onBeforeDragStart", t.bind(function(o, l) {
       var d = a(l);
-      if (!d || (t.hideQuickInfo && t.hideQuickInfo(), ct(l.target, ".gantt_grid_editor_placeholder"))) return !1;
+      if (!d || (t.hideQuickInfo && t.hideQuickInfo(), dt(l.target, ".gantt_grid_editor_placeholder"))) return !1;
       var c = d.getAttribute(e.$config.item_attribute), u = e.$config.rowStore.getItem(c);
       return !t.isReadonly(u) && !r(c) && (i.config.initial_open_state = u.$open, !!t.callEvent("onRowDragStart", [c, l.target || l.srcElement, l]) && void 0);
     }, t)), i.attachEvent("onAfterDragStart", t.bind(function(o, l) {
@@ -9816,7 +9820,7 @@ const Ke = { removeLineHighlight: function(t) {
     }, t));
   }
   function a(o) {
-    return et(o, e.$config.item_attribute);
+    return nt(o, e.$config.item_attribute);
   }
   function r(o) {
     return Rt(o, t, t.getDatastore(e.$config.bind));
@@ -10461,7 +10465,7 @@ const ja = { init: function(t) {
       return { render: function(s, o, l, d) {
         for (var c = o.getGridColumns(), u = o.$getTemplates(), h = o.$config.rowStore, g = [], p = 0; p < c.length; p++) {
           var y, v, b, _ = p == c.length - 1, m = c[p];
-          m.name == "add" ? (v = "<div " + (S = r._waiAria.gridAddButtonAttrString(m)) + " class='gantt_add'></div>", b = "") : (Z(v = m.template ? m.template(s) : s[m.name]) && (v = u.date_grid(v, s, m.name)), v == null && (v = ""), b = v, v = "<div class='gantt_tree_content'>" + v + "</div>");
+          m.name == "add" ? (v = "<div " + (S = r._waiAria.gridAddButtonAttrString(m)) + " class='gantt_add'></div>", b = "") : (Q(v = m.template ? m.template(s) : s[m.name]) && (v = u.date_grid(v, s, m.name)), v == null && (v = ""), b = v, v = "<div class='gantt_tree_content'>" + v + "</div>");
           var f = "gantt_cell" + (_ ? " gantt_last_cell" : ""), k = [];
           if (m.tree) {
             f += " gantt_cell_tree";
@@ -10496,7 +10500,7 @@ const ja = { init: function(t) {
         for (var d = l.getGridColumns(), c = 0; c < d.length; c++) {
           var u = d[c];
           if (u.onrender) {
-            var h = o.querySelector("[data-column-name=" + u.name + "]");
+            var h = o.querySelector(`[data-column-name="${u.name}"]`);
             if (h) {
               var g = u.onrender(s, h);
               if (g && typeof g == "string") h.innerHTML = g;
@@ -11260,17 +11264,17 @@ function Ja(t) {
         var J = x.call(_, w, E), B = $.call(_, w, E), _t = _.calculateEndDate({ start_date: J, duration: B, task: T }), Tt = _.templates.task_end_date || _.templates.task_date;
         G.innerHTML = Tt(_t);
       }
-      function Q(J) {
+      function tt(J) {
         var B = L.value;
         B = k(E).parse(B), window.isNaN(B) && (B = 0), (B += J) < 1 && (B = 1), L.value = k(E).format(B), H();
       }
       O[0].onclick = _.bind(function() {
-        Q(-1 * _.config.duration_step);
+        tt(-1 * _.config.duration_step);
       }, this), O[1].onclick = _.bind(function() {
-        Q(1 * _.config.duration_step);
+        tt(1 * _.config.duration_step);
       }, this), A[0].onchange = H, A[1].onchange = H, A[2].onchange = H, A[3] && (A[3].onchange = H), L.onkeydown = _.bind(function(J) {
         var B;
-        return (B = (J = J || window.event).charCode || J.keyCode || J.which) == _.constants.KEY_CODES.DOWN ? (Q(-1 * _.config.duration_step), !1) : B == _.constants.KEY_CODES.UP ? (Q(1 * _.config.duration_step), !1) : void window.setTimeout(H, 1);
+        return (B = (J = J || window.event).charCode || J.keyCode || J.which) == _.constants.KEY_CODES.DOWN ? (tt(-1 * _.config.duration_step), !1) : B == _.constants.KEY_CODES.UP ? (tt(1 * _.config.duration_step), !1) : void window.setTimeout(H, 1);
       }, this), L.onchange = _.bind(H, this), typeof (C = _._resolve_default_mapping(E)) == "string" && (C = { start_date: C }), D = T[C.start_date] || /* @__PURE__ */ new Date(), M = T[C.end_date] || _.calculateEndDate({ start_date: D, duration: 1, task: T }), I = Math.round(T[C.duration]) || _.calculateDuration({ start_date: D, end_date: M, task: T }), I = k(E).format(I), _.form_blocks._fill_lightbox_select(A, 0, D, j, E), L.value = I, H();
     }, f.prototype.get_value = function(w, S, T) {
       var E = x(w, T), C = $(w, T), D = _.calculateEndDate({ start_date: E, duration: C, task: S });
@@ -11342,26 +11346,26 @@ function Ja(t) {
       C.formatter && (M = "", O += " gantt_duration_value_formatted");
       const G = "<div class='gantt_duration' " + I + "><div class='gantt_duration_inputs'><input type='button' class='gantt_duration_dec' value='−'" + A + "><input type='text' value='5days' class='" + O + "'" + A + " " + N + "><input type='button' class='gantt_duration_inc' value='+'" + A + "></div><div class='gantt_duration_end_date'>" + M + "<span></span></div></div></div>", j = `<div><div class='baseline_delete_button gantt_custom_button'>${L}</div></div>`, H = document.createElement("div");
       H.className = "gantt_section_time gantt_section_duration", H.setAttribute("data-baseline-id", T.id), H.innerHTML = D + G + j + "<br>", S.appendChild(H);
-      var Q, J, B, _t = H.getElementsByTagName("select"), Tt = H.getElementsByTagName("input"), Et = Tt[1], Ee = [Tt[0], Tt[2]], Sn = H.getElementsByTagName("span")[0], Tn = C._time_format_order;
+      var tt, J, B, _t = H.getElementsByTagName("select"), Tt = H.getElementsByTagName("input"), Et = Tt[1], Ee = [Tt[0], Tt[2]], Sn = H.getElementsByTagName("span")[0], Tn = C._time_format_order;
       function gt() {
-        var ut = $.call(_, H, C), U = w.call(_, H, C), En = _.calculateEndDate({ start_date: ut, duration: U, task: E }), Cn = _.templates.task_end_date || _.templates.task_date;
+        var ct = $.call(_, H, C), U = w.call(_, H, C), En = _.calculateEndDate({ start_date: ct, duration: U, task: E }), Cn = _.templates.task_end_date || _.templates.task_date;
         Sn.innerHTML = Cn(En);
       }
-      function Ot(ut) {
+      function Ot(ct) {
         var U = Et.value;
-        U = k(C).parse(U), window.isNaN(U) && (U = 0), (U += ut) < 1 && (U = 1), Et.value = k(C).format(U), gt();
+        U = k(C).parse(U), window.isNaN(U) && (U = 0), (U += ct) < 1 && (U = 1), Et.value = k(C).format(U), gt();
       }
-      H.querySelector(".baseline_delete_button").onclick = function(ut) {
+      H.querySelector(".baseline_delete_button").onclick = function(ct) {
         const U = H.parentNode;
         H.innerHTML = "", H.remove(), U.innerHTML === "" && (U.innerHTML = _.locale.labels.baselines_section_placeholder);
       }, Ee[0].onclick = _.bind(function() {
         Ot(-1 * _.config.duration_step);
       }, _), Ee[1].onclick = _.bind(function() {
         Ot(1 * _.config.duration_step);
-      }, _), _t[0].onchange = gt, _t[1].onchange = gt, _t[2].onchange = gt, _t[3] && (_t[3].onchange = gt), Et.onkeydown = _.bind(function(ut) {
+      }, _), _t[0].onchange = gt, _t[1].onchange = gt, _t[2].onchange = gt, _t[3] && (_t[3].onchange = gt), Et.onkeydown = _.bind(function(ct) {
         var U;
-        return (U = (ut = ut || window.event).charCode || ut.keyCode || ut.which) == _.constants.KEY_CODES.DOWN ? (Ot(-1 * _.config.duration_step), !1) : U == _.constants.KEY_CODES.UP ? (Ot(1 * _.config.duration_step), !1) : void window.setTimeout(gt, 1);
-      }, _), Et.onchange = _.bind(gt, _), _._resolve_default_mapping(C), Q = T.start_date || /* @__PURE__ */ new Date(), J = T.end_date || _.calculateEndDate({ start_date: Q, duration: 1, task: E }), B = _.calculateDuration({ start_date: Q, end_date: J, task: E }), B = k(C).format(B), _.form_blocks._fill_lightbox_select(_t, 0, Q, Tn, C), Et.value = B, gt();
+        return (U = (ct = ct || window.event).charCode || ct.keyCode || ct.which) == _.constants.KEY_CODES.DOWN ? (Ot(-1 * _.config.duration_step), !1) : U == _.constants.KEY_CODES.UP ? (Ot(1 * _.config.duration_step), !1) : void window.setTimeout(gt, 1);
+      }, _), Et.onchange = _.bind(gt, _), _._resolve_default_mapping(C), tt = T.start_date || /* @__PURE__ */ new Date(), J = T.end_date || _.calculateEndDate({ start_date: tt, duration: 1, task: E }), B = _.calculateDuration({ start_date: tt, end_date: J, task: E }), B = k(C).format(B), _.form_blocks._fill_lightbox_select(_t, 0, tt, Tn, C), Et.value = B, gt();
     }
     function $(S, T) {
       var E = S.getElementsByTagName("select"), C = T._time_format_order, D = 0, M = 0;
@@ -11438,10 +11442,7 @@ function Ja(t) {
     return this.getTaskType(this._lightbox_type);
   }, t.getLightbox = function(_) {
     var m, f, k, x, $, w = "";
-    if (function() {
-      const T = t.config.csp === !0, E = !!window.Sfdc || !!window.$A || window.Aura || "$shadowResolver$" in document.body;
-      t._lightbox_root = T || E ? t.$root : document.body;
-    }(), _ === void 0 && (_ = this.getLightboxType()), !this._lightbox || this.getLightboxType() != this.getTaskType(_)) {
+    if (t.config.csp === !0 || t.env.isSalesforce ? t._lightbox_root = t.$root : t._lightbox_root = document.body, _ === void 0 && (_ = this.getLightboxType()), !this._lightbox || this.getLightboxType() != this.getTaskType(_)) {
       this._lightbox_type = this.getTaskType(_), m = document.createElement("div"), w = "gantt_cal_light", f = this._is_lightbox_timepicker(), t.config.wide_form && (w += " gantt_cal_light_wide"), f && (w += " gantt_cal_light_full"), m.className = w, m.style.visibility = "hidden", k = this._lightbox_template, k += "<div class='gantt_cal_lcontrols'>", k += y(this.config.buttons_left), k += "<div class='gantt_cal_lcontrols_push_right'></div>", k += y(this.config.buttons_right), k += "</div>", m.innerHTML = k, t._waiAria.lightboxAttr(m), t.config.drag_lightbox && (m.firstChild.onmousedown = t._ready_to_dnd, m.firstChild.ontouchstart = function(T) {
         t._ready_to_dnd(T.touches[0]);
       }, m.firstChild.onselectstart = function() {
@@ -11553,17 +11554,17 @@ function Ja(t) {
     var m = _.map_to;
     return { time: !0, time_optional: !0, duration: !0, duration_optional: !0 }[_.type] ? _.map_to == "auto" ? m = { start_date: "start_date", end_date: "end_date", duration: "duration" } : typeof _.map_to == "string" && (m = { start_date: _.map_to }) : _.type === "constraint" && (_.map_to && typeof _.map_to != "string" || (m = { constraint_type: "constraint_type", constraint_date: "constraint_date" })), m;
   }, t.getLightboxValues = function() {
-    var _ = {};
+    let _ = {};
     t.isTaskExists(this._lightbox_id) && (_ = this.mixin({}, this.getTask(this._lightbox_id)));
-    for (var m = this._get_typed_lightbox_config(), f = 0; f < m.length; f++) {
-      var k = t._lightbox_root.querySelector("#" + m[f].id);
+    const m = [...this._get_typed_lightbox_config()].sort((f, k) => f.name === "time" ? 1 : k.name === "time" ? -1 : 0);
+    for (let f = 0; f < m.length; f++) {
+      let k = t._lightbox_root.querySelector("#" + m[f].id);
       k = k && k.nextSibling;
-      var x = this.form_blocks[m[f].type];
-      if (x) {
-        var $ = x.get_value.call(this, k, _, m[f]), w = t._resolve_default_mapping(m[f]);
-        if (typeof w == "string" && w != "auto") _[w] = $;
-        else if (typeof w == "object") for (var S in w) w[S] && (_[w[S]] = $[S]);
-      }
+      let x = this.form_blocks[m[f].type];
+      if (!x) continue;
+      let $ = x.get_value.call(this, k, _, m[f]), w = t._resolve_default_mapping(m[f]);
+      if (typeof w == "string" && w != "auto") _[w] = $;
+      else if (typeof w == "object") for (let S in w) w[S] && (_[w[S]] = $[S]);
     }
     return t._lightbox_current_type && (_.type = t._lightbox_current_type), _;
   }, t.hideLightbox = function() {
@@ -12007,13 +12008,13 @@ function Ka(t) {
       }(i._waiAria[d]);
     }(t), t.locate = function(i) {
       var a = yt(i);
-      if (ct(a, ".gantt_task_row")) return null;
-      var r = arguments[1] || this.config.task_attribute, s = et(a, r);
+      if (dt(a, ".gantt_task_row")) return null;
+      var r = arguments[1] || this.config.task_attribute, s = nt(a, r);
       return s ? s.getAttribute(r) : null;
     }, t._locate_css = function(i, a, r) {
       return pt(i, a, r);
     }, t._locateHTML = function(i, a) {
-      return et(i, a || this.config.task_attribute);
+      return nt(i, a || this.config.task_attribute);
     };
   }
   t.attachEvent("onParse", function() {
@@ -12041,7 +12042,7 @@ To fix it, you need to remove the obsolete file and connect the extension via th
     }
   });
 }
-const Xa = dt.gantt = function(t) {
+const Xa = Z.gantt = function(t) {
   var e = ra(t);
   return e.env.isNode || (Ka(e), function(n) {
     n.load = function(i, a, r) {

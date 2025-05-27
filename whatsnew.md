@@ -1,3 +1,17 @@
+### 9.0.11
+
+Fix the issue where mergeCalendars merged customWeeks values incorrectly
+Fix the error thrown in the onrender function when the column name includes spaces
+Fix the issue where Gantt stayed in read-only mode after click_drag the Timeline when the S-Curve Overlay is enabled
+Fix the issue where task duration was reset to 0 when using a Resource calendar and the Resources section is placed below the duration section of the Lightbox
+Fix the console error triggered by the "This is a Trial version" warning when Gantt is used in React StrictMode
+Fix the issue where the api/gantt_adjusttaskheightforbaselines function did not recalculate row height when gantt.config.baselines.render_mode is disabled
+Fix the issue preventing tasks from being displayed when the Timeline is hidden in the Salesforce environment
+Fix the issue where calendars are not inherited from parent tasks when dynamic_resource_calendars config is disabled
+Fix the issue where scroll position reset on re-render when ReactGantt is in groupBy mode
+Add the isSalesforce flag to gantt.env
+Add the groupTasks prop to React Gantt
+
 ### 9.0.10
 
 Fix the issue preventing changes to the parent field value in the Lightbox

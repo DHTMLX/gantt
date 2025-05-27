@@ -3,7 +3,7 @@
 })(this, function(exports2) {
   "use strict";/** @license
 
-dhtmlxGantt v.9.0.10 Standard
+dhtmlxGantt v.9.0.11 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -956,9 +956,9 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
         const gantt3 = this._gantt;
         this._trace = [];
         gantt3.$root.classList.remove("gantt_noselect");
-        if (this._originalReadonly !== void 0) {
+        if (this._originalReadonly !== void 0 && this._mouseDown) {
           gantt3.config.readonly = this._originalReadonly;
-          if (this._mouseDown && gantt3.config.drag_timeline && gantt3.config.drag_timeline.render) {
+          if (gantt3.config.drag_timeline && gantt3.config.drag_timeline.render) {
             gantt3.render();
           }
         }
@@ -5072,7 +5072,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
     return result;
   };
   var isWindowAwailable = typeof window !== "undefined";
-  const env = { isIE: isWindowAwailable && (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0), isIE6: isWindowAwailable && (!XMLHttpRequest && navigator.userAgent.indexOf("MSIE") >= 0), isIE7: isWindowAwailable && (navigator.userAgent.indexOf("MSIE 7.0") >= 0 && navigator.userAgent.indexOf("Trident") < 0), isIE8: isWindowAwailable && (navigator.userAgent.indexOf("MSIE 8.0") >= 0 && navigator.userAgent.indexOf("Trident") >= 0), isOpera: isWindowAwailable && navigator.userAgent.indexOf("Opera") >= 0, isChrome: isWindowAwailable && navigator.userAgent.indexOf("Chrome") >= 0, isKHTML: isWindowAwailable && (navigator.userAgent.indexOf("Safari") >= 0 || navigator.userAgent.indexOf("Konqueror") >= 0), isFF: isWindowAwailable && navigator.userAgent.indexOf("Firefox") >= 0, isIPad: isWindowAwailable && navigator.userAgent.search(/iPad/gi) >= 0, isEdge: isWindowAwailable && navigator.userAgent.indexOf("Edge") != -1, isNode: !isWindowAwailable || typeof navigator == "undefined" || false === "test" };
+  const env = { isIE: isWindowAwailable && (navigator.userAgent.indexOf("MSIE") >= 0 || navigator.userAgent.indexOf("Trident") >= 0), isOpera: isWindowAwailable && (navigator.userAgent.indexOf("Opera") >= 0 || navigator.userAgent.indexOf("OPR") >= 0), isChrome: isWindowAwailable && navigator.userAgent.indexOf("Chrome") >= 0, isSafari: isWindowAwailable && (navigator.userAgent.indexOf("Safari") >= 0 || navigator.userAgent.indexOf("Konqueror") >= 0), isFF: isWindowAwailable && navigator.userAgent.indexOf("Firefox") >= 0, isIPad: isWindowAwailable && navigator.userAgent.search(/iPad/gi) >= 0, isEdge: isWindowAwailable && navigator.userAgent.indexOf("Edge") != -1, isNode: !isWindowAwailable || typeof navigator == "undefined" || false === "test", isSalesforce: isWindowAwailable && (!!scope["Sfdc"] || !!scope["$A"] || scope["Aura"]) };
   function serialize(data2) {
     if (typeof data2 === "string" || typeof data2 === "number") {
       return data2;
@@ -11856,8 +11856,12 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
   }, _mergeHoursConfig: function(firstHours, secondHours) {
     return this._mergeAdjacentIntervals(this._intersectHourRanges(firstHours, secondHours));
   }, merge: function(first, second) {
-    var firstConfig = copy(first.getConfig().parsed);
-    var secondConfig = copy(second.getConfig().parsed);
+    const firstCalendar = copy(first.getConfig());
+    const secondCalendar = copy(second.getConfig());
+    const firstConfig = firstCalendar.parsed;
+    const secondConfig = secondCalendar.parsed;
+    firstConfig.customWeeks = firstCalendar.customWeeks;
+    secondConfig.customWeeks = secondCalendar.customWeeks;
     var mergedSettings = { hours: this._toHoursArray(this._mergeHoursConfig(firstConfig.hours, secondConfig.hours)), dates: {}, customWeeks: {} };
     const processCalendar = (config1, config2) => {
       for (let i2 in config1.dates) {
@@ -11886,7 +11890,11 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
     }
     if (secondConfig.customWeeks) {
       for (var i in secondConfig.customWeeks) {
-        mergedSettings.customWeeks[i] = secondConfig.customWeeks[i];
+        if (mergedSettings.customWeeks[i]) {
+          mergedSettings.customWeeks[i + "_second"] = secondConfig.customWeeks[i];
+        } else {
+          mergedSettings.customWeeks[i] = secondConfig.customWeeks[i];
+        }
       }
     }
     return mergedSettings;
@@ -13276,7 +13284,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
       } else {
         resourceProperty = legacyResourceCalendarConfig.getResourceProperty(config2);
       }
-      if (Array.isArray(task[resourceProperty])) {
+      if (Array.isArray(task[resourceProperty]) && task[resourceProperty].length) {
         if (config2.dynamic_resource_calendars) {
           calendarId = dynamicResourceCalendars.getCalendarIdFromMultipleResources(task[resourceProperty], this);
         } else {
@@ -14090,8 +14098,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
       resizeWatcher.setAttribute("role", "none");
       resizeWatcher.setAttribute("aria-hidden", true);
     }
-    var salesforce_environment = !!window["Sfdc"] || !!window["$A"] || window["Aura"];
-    if (salesforce_environment) {
+    if (gantt2.env.isSalesforce) {
       gantt2.config.container_resize_method = "timeout";
     }
     gantt2.$root.appendChild(resizeWatcher);
@@ -14547,7 +14554,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
   }
   function DHXGantt() {
     this.constants = constants;
-    this.version = "9.0.10";
+    this.version = "9.0.11";
     this.license = "gpl";
     this.templates = {};
     this.ext = {};
@@ -14702,6 +14709,8 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         messageBox.area = document.createElement("div");
         messageBox.area.className = "gantt_message_area";
         messageBox.area.style[messageBox.position] = "5px";
+      }
+      if (!isChildOf(messageBox.area, document.body)) {
         document.body.appendChild(messageBox.area);
       }
       messageBox.hide(text.id);
@@ -15481,17 +15490,17 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
           layer.id = layer.id || uid();
           this.tempCollection.push(layer);
         }
-        var container = this.container();
-        var pending = this.tempCollection;
-        for (var i = 0; i < pending.length; i++) {
+        const container = this.container();
+        const pending = this.tempCollection;
+        for (let i = 0; i < pending.length; i++) {
           layer = pending[i];
-          if (!this.container() && !(layer && layer.container && isChildOf(layer.container, document.body))) continue;
-          var node = layer.container, id = layer.id, topmost = layer.topmost;
+          if (!this.container() && !(layer && layer.container && layer.container.isConnected)) continue;
+          let node = layer.container, id = layer.id, topmost = layer.topmost;
           if (!node.parentNode) {
             if (topmost) {
               container.appendChild(node);
             } else {
-              var rel = relativeRoot ? relativeRoot() : container.firstChild;
+              let rel = relativeRoot ? relativeRoot() : container.firstChild;
               if (rel && rel.parentNode == container) container.insertBefore(node, rel);
               else container.appendChild(node);
             }
@@ -20974,7 +20983,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       for (var i = 0; i < columns.length; i++) {
         var column = columns[i];
         if (column.onrender) {
-          var cellNode = rowNode.querySelector("[data-column-name=" + column.name + "]");
+          var cellNode = rowNode.querySelector(`[data-column-name="${column.name}"]`);
           if (cellNode) {
             var content = column.onrender(item, cellNode);
             if (content && typeof content === "string") {
@@ -24944,8 +24953,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
     gantt2._lightbox_root = gantt2.$root;
     function setParentNode() {
       const cspEnvironment = gantt2.config.csp === true;
-      const salesforceEnvironment = !!window["Sfdc"] || !!window["$A"] || window["Aura"] || "$shadowResolver$" in document.body;
-      if (cspEnvironment || salesforceEnvironment) {
+      if (cspEnvironment || gantt2.env.isSalesforce) {
         gantt2._lightbox_root = gantt2.$root;
       } else {
         gantt2._lightbox_root = document.body;
@@ -25266,22 +25274,27 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       return mapping;
     };
     gantt2.getLightboxValues = function() {
-      var task = {};
+      let task = {};
       if (gantt2.isTaskExists(this._lightbox_id)) {
         task = this.mixin({}, this.getTask(this._lightbox_id));
       }
-      var sns = this._get_typed_lightbox_config();
-      for (var i = 0; i < sns.length; i++) {
-        var node = gantt2._lightbox_root.querySelector("#" + sns[i].id);
+      const sns = this._get_typed_lightbox_config();
+      const sortedSns = [...sns].sort((a, b) => {
+        if (a.name === "time") return 1;
+        if (b.name === "time") return -1;
+        return 0;
+      });
+      for (let i = 0; i < sortedSns.length; i++) {
+        let node = gantt2._lightbox_root.querySelector("#" + sortedSns[i].id);
         node = node ? node.nextSibling : node;
-        var block = this.form_blocks[sns[i].type];
+        let block = this.form_blocks[sortedSns[i].type];
         if (!block) continue;
-        var res = block.get_value.call(this, node, task, sns[i]);
-        var map_to = gantt2._resolve_default_mapping(sns[i]);
+        let res = block.get_value.call(this, node, task, sortedSns[i]);
+        let map_to = gantt2._resolve_default_mapping(sortedSns[i]);
         if (typeof map_to == "string" && map_to != "auto") {
           task[map_to] = res;
         } else if (typeof map_to == "object") {
-          for (var property in map_to) {
+          for (let property in map_to) {
             if (map_to[property]) task[map_to[property]] = res[property];
           }
         }
