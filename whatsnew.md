@@ -1,3 +1,12 @@
+### 9.0.12
+
+Ensure the contrast-white skin passes color contrast accessibility tests
+Fix the issue where dynamic loading stops working after calling gantt.clearAll()
+Prevent the Tooltip from rendering outside the Gantt container when displaying long text
+Fix the issue where server updates were not finalized when keyboard navigation is active
+Fix the incorrect work of custom class names applied to milestone baselines
+React Gantt is now compatible with Next.js and Remix SSR frameworks without additional configuring
+
 ### 9.0.11
 
 Fix the issue where mergeCalendars merged customWeeks values incorrectly

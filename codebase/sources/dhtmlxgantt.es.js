@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.11 Standard
+dhtmlxGantt v.9.0.12 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -4199,6 +4199,12 @@ class Tooltip {
       tooltip2.top = mouse.y - tooltip2.height - offsetY;
       tooltip2.bottom = tooltip2.top + tooltip2.height;
     }
+    if (tooltip2.left < 0) {
+      tooltip2.left = 0;
+    }
+    if (tooltip2.right < 0) {
+      tooltip2.right = 0;
+    }
     return tooltip2;
   }
   _getViewPortSize() {
@@ -5221,7 +5227,8 @@ function ajax(gantt2) {
       if (!!async) {
         t2.onreadystatechange = function() {
           if (t2.readyState == 4 || isQt && t2.readyState == 3) {
-            if (t2.status != 200 || t2.responseText === "") {
+            const errorStatus = t2.status < 200 || t2.status > 299;
+            if (errorStatus || t2.responseText === "") {
               if (!gantt2.callEvent("onAjaxError", [t2])) return;
             }
             setTimeout(function() {
@@ -14550,7 +14557,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.11";
+  this.version = "9.0.12";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -15201,7 +15208,7 @@ function getVisibleTasksRange(gantt2, view, config2, datastore, viewport) {
   const extraTasksIds = [];
   if (gantt2.config.keyboard_navigation && gantt2.getSelectedId()) {
     let task = gantt2.getTask(gantt2.getSelectedId());
-    if (task.$expanded_branch) {
+    if (task.$expanded_branch && !task.$split_subtask) {
       extraTasksIds.push(gantt2.getSelectedId());
     }
   }
@@ -23568,7 +23575,7 @@ function autoscroll(gantt2) {
     defineScrollInterval(false);
   });
 }
-if (window.jQuery) {
+if (typeof window !== "undefined" && window.jQuery) {
   (function($) {
     var methods = [];
     $.fn.dhx_gantt = function(config2) {
@@ -23599,7 +23606,7 @@ if (window.jQuery) {
   })(window.jQuery);
 }
 const jquery_hooks = null;
-if (window.dhtmlx) {
+if (typeof window !== "undefined" && window.dhtmlx) {
   if (!window.dhtmlx.attaches) window.dhtmlx.attaches = {};
   window.dhtmlx.attaches.attachGantt = function(start, end, gantt2) {
     var obj = document.createElement("DIV");
@@ -23622,7 +23629,7 @@ if (window.dhtmlx) {
     return this.vs[this[method_name]()].grid;
   };
 }
-if (typeof window.dhtmlXCellObject != "undefined") {
+if (typeof window !== "undefined" && typeof window.dhtmlXCellObject != "undefined") {
   window.dhtmlXCellObject.prototype.attachGantt = function(start, end, gantt2) {
     gantt2 = gantt2 || window.gantt;
     var obj = document.createElement("DIV");
