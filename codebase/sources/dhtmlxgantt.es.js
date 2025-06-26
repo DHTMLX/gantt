@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.12 Standard
+dhtmlxGantt v.9.0.13 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -211,9 +211,11 @@ function locateClassName(e, classname, strict) {
   return null;
 }
 function getRelativeEventPosition(ev, node) {
-  var d = document.documentElement;
-  var box = getNodePosition(node);
-  return { x: ev.clientX + d.scrollLeft - d.clientLeft - box.x + node.scrollLeft, y: ev.clientY + d.scrollTop - d.clientTop - box.y + node.scrollTop };
+  var _a;
+  const d = document.documentElement;
+  const box = getNodePosition(node);
+  const { clientX, clientY } = ((_a = ev.touches) == null ? void 0 : _a[0]) ?? ev;
+  return { x: clientX + d.scrollLeft - d.clientLeft - box.x + node.scrollLeft, y: clientY + d.scrollTop - d.clientTop - box.y + node.scrollTop };
 }
 function getRelativeNodePosition(child, parent) {
   const childPos = getNodePosition(child);
@@ -6276,11 +6278,7 @@ var createLinksStoreFacade = function() {
   }, isLinkExists: function(id) {
     return this.$data.linksStore.exists(id);
   }, addLink: function(link) {
-    const newLink = this.$data.linksStore.addItem(link);
-    if (this.$data.linksStore.isSilent()) {
-      this.$data.linksStore.fullOrder.push(newLink);
-    }
-    return newLink;
+    return this.$data.linksStore.addItem(link);
   }, updateLink: function(id, data2) {
     if (!defined(data2)) data2 = this.getLink(id);
     this.$data.linksStore.updateItem(id, data2);
@@ -8138,13 +8136,20 @@ function initDataStores(gantt2) {
     if (gantt2.isTaskExists(link.source)) {
       var sourceTask = gantt2.getTask(link.source);
       sourceTask.$source = sourceTask.$source || [];
-      sourceTask.$source.push(link.id);
+      if (noDuplicateIds(link.id, sourceTask.$source)) {
+        sourceTask.$source.push(link.id);
+      }
     }
     if (gantt2.isTaskExists(link.target)) {
       var targetTask = gantt2.getTask(link.target);
       targetTask.$target = targetTask.$target || [];
-      targetTask.$target.push(link.id);
+      if (noDuplicateIds(link.id, targetTask.$target)) {
+        targetTask.$target.push(link.id);
+      }
     }
+  }
+  function noDuplicateIds(id, array) {
+    return array.indexOf(String(id)) === -1 && array.indexOf(Number(id)) === -1;
   }
   function sync_link_delete(link) {
     if (gantt2.isTaskExists(link.source)) {
@@ -9333,6 +9338,7 @@ let DataProcessor$1 = class DataProcessor {
     if (this._tMode === "CUSTOM") {
       const taskState = this.getState(rowId);
       const taskAction = this.getActionByState(taskState);
+      delete dataToSend[this.action_param];
       const ganttMode = this.getGanttMode();
       const _onResolvedCreateUpdate = (tag) => {
         let action = taskState || "updated";
@@ -13788,6 +13794,9 @@ function data(gantt2) {
     task.duration = task.duration || 0;
     if (this.config.min_duration === 0 && task.duration === 0) {
       task.$no_end = false;
+      if (task.type === gantt2.config.types.project && gantt2.hasChild(task.id)) {
+        task.$no_end = true;
+      }
     }
     var effectiveCalendar = this.getTaskCalendar(task);
     if (task.$effective_calendar && task.$effective_calendar !== effectiveCalendar.id) {
@@ -14557,7 +14566,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.12";
+  this.version = "9.0.13";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

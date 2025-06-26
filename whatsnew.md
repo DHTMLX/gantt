@@ -1,3 +1,13 @@
+### 9.0.13
+
+Fix the issue where Gantt became unusable after creating and deleting a duplicate link
+Ensure link placeholders are displayed correctly on touch devices
+Fix the issue where a project's end_date was not updated when it had a single milestone child
+Prevent unnecessary repaints of resource items when using a custom datastore
+Fix the issue where silently calling gantt.addLink resulted in an incorrect state of the internal datastore
+Prevent DataProcessor from adding the !nativeeditor_status property to custom router arguments
+Fix incorrect handling of tasks and links props changes in the React Gantt component
+
 ### 9.0.12
 
 Ensure the contrast-white skin passes color contrast accessibility tests
