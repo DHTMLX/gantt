@@ -3,7 +3,7 @@
 })(this, function(exports2) {
   "use strict";/** @license
 
-dhtmlxGantt v.9.0.13 Standard
+dhtmlxGantt v.9.0.14 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -2737,7 +2737,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       }
       function restoreFocus() {
         setTimeout(function() {
-          if (focusElement) {
+          if (focusElement && focusElement.focus) {
             focusElement.focus();
             focusElement = null;
           }
@@ -12540,7 +12540,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
           } else if (!settings.customWeeks) {
             calendarConfig.customWeeks[settings.customWeeks].hours = hours;
           }
-        } else if (typeof settings.customWeeks === "object" && Function.prototype.toString.call(settings.customWeeks.constructor) === "function Object() { [native code] }") {
+        } else if (typeof settings.customWeeks === "object" && settings.customWeeks.constructor === Object) {
           for (var i in settings.customWeeks) {
             calendarConfig.customWeeks[i] = settings.customWeeks[i];
           }
@@ -14570,7 +14570,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
   }
   function DHXGantt() {
     this.constants = constants;
-    this.version = "9.0.13";
+    this.version = "9.0.14";
     this.license = "gpl";
     this.templates = {};
     this.ext = {};

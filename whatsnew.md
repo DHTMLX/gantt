@@ -1,3 +1,10 @@
+### 9.0.14
+
+Fix the script error thrown after closing a Modalbox
+Prevent creation of an empty row in the tree after re-parsing data in grouped mode
+Ensure the setWorkTime method correctly applies customWeeks in Firefox
+Fix the issue where calling setTasks with an empty dataset broke the React Gantt component
+
 ### 9.0.13
 
 Fix the issue where Gantt became unusable after creating and deleting a duplicate link
