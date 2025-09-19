@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.0.14 Standard
+dhtmlxGantt v.9.0.15 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -181,7 +181,7 @@ function locateAttribute(e, attribute) {
       var test = trg.getAttribute(attribute);
       if (test) return trg;
     }
-    trg = trg.parentNode;
+    trg = trg.parentNode || trg.host;
   }
   return null;
 }
@@ -12366,6 +12366,16 @@ CalendarWorkTimeStrategy.prototype = { units: ["year", "month", "week", "day", "
         settings.parsed.customWeeksBoundaries.push({ from: rangeStart.valueOf(), fromReadable: new Date(rangeStart), to: rangeEnd.valueOf(), toReadable: new Date(rangeEnd), name: i });
         settings.parsed.haveCustomWeeks = true;
         var currentWeek = settings.parsed.customWeeks[i] = { from: customTime.from, to: customTime.to, hours: this._parseHours(customTime.hours), dates: {} };
+        if (customTime.days && !customTime.dates) {
+          customTime.dates = customTime.dates || {};
+          for (var i = 0; i < customTime.days.length; i++) {
+            customTime.dates[i] = customTime.days[i];
+            if (!(customTime.days[i] instanceof Array)) {
+              customTime.dates[i] = !!customTime.days[i];
+            }
+          }
+          delete customTime.days;
+        }
         for (var d in customTime.dates) {
           currentWeek.dates[d] = this._parseHours(customTime.dates[d]);
         }
@@ -14566,7 +14576,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.0.14";
+  this.version = "9.0.15";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};

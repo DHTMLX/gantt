@@ -1,3 +1,9 @@
+### 9.0.15
+
+Fix the issue where Gantt ignored the weekday configuration of customWeeks when set via the setWorkTime method
+Improve support for Shadow DOM inside elements of Gantt
+Fix the React Gantt issue where multiple component instances caused duplicated templates
+
 ### 9.0.14
 
 Fix the script error thrown after closing a Modalbox

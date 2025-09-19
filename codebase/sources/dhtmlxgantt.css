@@ -4,42 +4,42 @@
   font-style: normal;
   font-weight: 300;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuOKfMZg.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuOKfMZg.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fMZg.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fMZg.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZg.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYMZg.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZg.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/inter/v19/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuDyYMZg.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuDyYMZg.ttf) format('truetype');
 }
 /* default terrace theme is here */
 :root {
@@ -1852,7 +1852,7 @@ div.dhx_modal_cover {
   background-color: var(--dhx-gantt-lightbox-background);
   color: var(--dhx-gantt-lightbox-color);
   border: var(--dhx-gantt-lightbox-control-border);
-  font-size: var(--dhx-gantt-lightbox-font-sizeeduler);
+  font-size: var(--dhx-gantt-lightbox-font-size);
   padding: 6px 8px;
   box-sizing: border-box;
   margin-top: 0;
@@ -1904,7 +1904,7 @@ div.dhx_modal_cover {
   background-color: var(--dhx-gantt-lightbox-background);
   color: var(--dhx-gantt-lightbox-color);
   border: var(--dhx-gantt-lightbox-control-border);
-  font-size: var(--dhx-gantt-lightbox-font-sizeeduler);
+  font-size: var(--dhx-gantt-lightbox-font-size);
   padding: 6px 8px;
   box-sizing: border-box;
   margin-top: 0;
@@ -2060,7 +2060,7 @@ div.dhx_modal_cover {
   background-color: var(--dhx-gantt-lightbox-background);
   color: var(--dhx-gantt-lightbox-color);
   border: var(--dhx-gantt-lightbox-control-border);
-  font-size: var(--dhx-gantt-lightbox-font-sizeeduler);
+  font-size: var(--dhx-gantt-lightbox-font-size);
   padding: 6px 8px;
   box-sizing: border-box;
   margin-top: 0;
