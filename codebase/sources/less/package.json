@@ -1,6 +1,6 @@
 {
   "name": "dhtmlx-gantt-skins",
-  "version": "9.0.15", 
+  "version": "9.1.0", 
   "description": "Less sources and a build tool for DHTMLX Gantt skins",
   "scripts": {
     "build": "node scripts.js --file=dhtmlxgantt",

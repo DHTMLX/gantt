@@ -1,6 +1,6 @@
 {
   "name": "gantt",
-  "version": "9.0.15",
+  "version": "9.1.0",
   "homepage": "https://dhtmlx.com/docs/products/dhtmlxGantt/",
   "description": "An open source JavaScript Gantt chart that helps you illustrate a project schedule in a nice-looking chart.",
   "main": [

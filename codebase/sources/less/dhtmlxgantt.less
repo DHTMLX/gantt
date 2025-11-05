@@ -1,6 +1,6 @@
 @charset "UTF-8";
 // Import the new theme variables
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "./fonts_remote.less";
 
 
 @import "./src/themes/index.less";
@@ -243,6 +243,8 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    padding-top: 4px;
+    padding-bottom: 4px;
     gap:4px;
 }
 
@@ -250,8 +252,33 @@
     margin-left: 0;
 }
 
-// .baseline_delete_button{
-//     float: right;
-//     line-height: 21px;
-//     margin-top: 0px;
-// }
+.resources_section_placeholder{
+    margin-top: 8px;
+    font-weight: 400;
+    color: var(--dhx-gantt-base-colors-text-light);
+}
+
+.gantt_resource_lightbox_row, .gantt_resource_lightbox_header{
+    display: flex;
+    align-items: center;
+}
+.gantt_resource_lightbox_header{
+    background: #F2F2F2;
+}
+.gantt_resource_lightbox_head_cell{
+    display: flex;
+    justify-content: center;
+    padding: 8px;
+}
+.gantt_resources_filter label {
+    position: relative;
+}
+
+.baseline_delete_button{
+    padding: 6px;
+    cursor: pointer;
+}
+
+.baseline_delete_button:hover{
+    
+}

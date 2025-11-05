@@ -1,4 +1,4 @@
-// Type definitions for dhtmlxGantt 9.0.15
+// Type definitions for dhtmlxGantt 9.1.0
 // Project: https://dhtmlx.com/docs/products/dhtmlxGantt
 
 type GanttCallback = (...args: any[]) => any;
@@ -3910,6 +3910,15 @@ export interface Task {
 	row_height?: number,
 
 	/**
+	 * Defines how split task must be displayed. The available values are:
+		"inline" - subtask is always displayed in the same row as the parent task.
+		"subrow" - subtask is always displayed its own row (like a regular subtask) under it's `render:"split"` parent.
+		"auto" -  default behavior. When `render:"split"` parent is collapsed, subtasks will be displayed in the parents row (like with "inline"), if the parent is expanded, tge subtask will be displayed in its own row.
+				Default value: "auto"
+	*/
+	split_placement?: "inline" | "subrow" | "auto" | null | undefined,
+
+	/**
 	 * The id of the target task. The property displays the same value as the $drop_target property. The property is added to the task object only if Data Processor is enabled, after the task is updated and data is sent to the server.
 	*/
 	target?: string,
@@ -4785,7 +4794,67 @@ export interface AutoSchedulingConfig {
 	/**
 	 * controls the display of task constraints on the Gantt chart.
 	*/
-	show_constraints?: boolean
+	show_constraints?: boolean,
+
+	/**
+	 * Enables or disables usage of time constraints for auto scheduling.
+	 */
+	apply_constraints?: boolean,
+
+	/**
+	 * Defines how Gantt handles gaps between dependent tasks during scheduling.
+
+		"preserve" - keeps tasks in their current positions if there are no conflicts
+		"compress" - moves tasks to the earliest allowed date (or latest if schedule_from_end is enabled)
+		By default, tasks are only rescheduled when their current date violates a constraint or dependency.
+	 */
+	gap_behavior?: "preserve"|"compress",
+
+	/**
+	 * Allows or forbids creating links between parent tasks (projects) and their subtasks.
+
+		By default, such links can't be created.
+	 */
+	descendant_links?: boolean,
+
+	/**
+	 * Defines whether Gantt will do auto-scheduling on data loading/parsing.
+	 */
+	schedule_on_parse?: boolean,
+
+	/**By default (when the property is set to true), the whole project is moved during auto scheduling. 
+	 * It means that all tasks in the project remain on their places relative to each other and the beginning of the project. 
+	*/
+	move_projects?: boolean,
+
+	/**
+	 * Specifies whether completed tasks should affect scheduling and critical path calculations.
+
+		When the property is enabled, the critical path, slack, and auto scheduling algorithms will take the value of the task progress into account, similar to how these methods work in MS Project, namely:
+
+		1) Completed tasks (completed tasks - the tasks with 100% progress) always have zero slack;
+
+		2) Completed tasks are excluded from the auto scheduling calculations. Relations that connect predecessors to completed tasks are ignored;
+
+		3) Completed tasks can't be critical.
+	 */
+	use_progress?: boolean,
+
+	/**
+	 * Enables backward scheduling.
+
+		Setting this config to true will switch auto scheduling to the as late as possible mode.
+
+		The value will be only applied if config.project_end is specified as well.
+	 */
+	schedule_from_end?: boolean,
+
+	/**
+	 * Defines whether tasks should inherit the constraint type from their parent project.
+	 */
+	project_constraint?: boolean
+
+
 }
 
 export interface BaselineConfig {
@@ -5000,7 +5069,26 @@ export interface Scale {
 	 * the format of the scale's labels. If set as a function, expects a date object as a parameter.
 	 * @param a date that will be converted
 	*/
-	date?: string | ((date: Date,) => any)
+	date?: string | ((date: Date,) => any),
+
+
+	/**
+	 * If specified, each cell in the scale will have fixed width, regardless of the number of rendered columns:
+	 *	If there are too few columns to fill the container, the remaining space will stay empty on the right.
+	 *	If there are too many columns, a horizontal scrollbar will appear.
+	 * The property applied only to the bottom-most scale item in config.scales, while specifying it on higher levels will have no effect.
+	 * */
+	column_width?: number | undefined,
+
+	/**
+	 * Can size task bars in day/week scales according to working hours or specified hours range rather than full 24-hour days.
+	 * */
+	projection?: ScaleProjectionMode | undefined | null 
+}
+
+export interface ScaleProjectionMode {
+	source: "fixedHours" | "taskCalendar",
+	hours?: string[] | number[],
 }
 
 export interface MessagePopupConfig {
@@ -5209,6 +5297,11 @@ export type WorkDayConfig = string | number | boolean | Array<string | number>
 
 export type WorkDaysTuple = [WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig, WorkDayConfig,]
 
+export type WorkDaysSettings = {
+	weekdays: WorkDaysTuple,
+	dates: {[date: string]: WorkDayConfig}
+}
+
 export interface CalendarConfig {
 
 	/**
@@ -5229,13 +5322,13 @@ export interface CalendarConfig {
 	*/
 	worktime?: {
 		hours?: string[] | number[] | boolean,
-		days?: WorkDaysTuple,
+		days?: WorkDaysTuple | WorkDaysSettings,
 		customWeeks?: {
 			[timespan: string]: {
 				from: Date,
 				to: Date,
 				hours?: Array<string | number>,
-				days?: WorkDaysTuple | boolean,
+				days?: WorkDaysTuple | WorkDaysSettings | boolean,
 			},
 		}
 	}

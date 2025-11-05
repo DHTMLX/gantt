@@ -1,7 +1,7 @@
 # dhtmlxGantt #
 
 [![dhtmlx.com](https://img.shields.io/badge/made%20by-DHTMLX-blue)](https://dhtmlx.com/)
-[![npm: v.9.0.15](https://img.shields.io/badge/npm-v.9.0.15-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
+[![npm: v.9.1.0](https://img.shields.io/badge/npm-v.9.1.0-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 
 [Getting started](#getting-started) | [Features](#features) | [License](#license) | [Useful links](#links) | [Follow us](#followus)
@@ -117,7 +117,7 @@ Resource management, critical path calculation, auto scheduling, and other enhan
 <a name="license"></a>
 ## License ##
 
-dhtmlxGantt v.9.0.15 Standard
+dhtmlxGantt v.9.1.0 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 

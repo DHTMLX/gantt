@@ -567,3 +567,63 @@
 .gantt_cal_light .gantt_readonly {
 	color: var(--dhx-gantt-base-colors-readonly);
 }
+
+// resource selector control
+
+.gantt_resource_selector_filter_wrapper {
+	margin: 8px 0;
+
+	& .gantt_resources_filter_input {
+		padding: 6px 4px 6px 36px;
+		color: var(--dhx-gantt-base-colors-text-light);
+		box-sizing: border-box;
+		border-radius: 2px;
+		border: 1px solid #E2E3E4;
+		height: 28px;
+	}
+
+	& .gantt_custom_button {
+		.dhx_gantt_button--mixin();
+		.dhx_gantt_button_outline--mixin();
+		order: 1;
+		margin-left: auto;
+		margin-right: unset;
+	}
+}
+
+.gantt_cal_light_wide .gantt_resource_selector_filter_wrapper{
+	padding: 0;
+	margin-bottom: 12px;
+}
+
+.gantt_custom_button.gantt_add_resources{
+	border:0;
+	padding: 0 4px;
+
+	& .gantt_add{
+		width: 20px;
+		height: 20px;
+		opacity: 1;
+	}
+}
+
+.gantt_resource_selector_grid{
+    color: var(--dhx-gantt-base-colors-text-light);
+
+    & .gantt_grid{
+        color: var(--dhx-gantt-base-colors-text-base);
+        border: 1px solid #E2E3E4;
+        border-bottom: 0;
+        max-height: 182px;
+    }
+
+    & .gantt_grid_data{
+        font-weight: 400;
+        max-height: 146px;
+        overflow-y: auto;
+    }
+
+    & .gantt_grid_scale{
+        background: var(--dhx-gantt-base-colors-background-alt);
+    }
+}

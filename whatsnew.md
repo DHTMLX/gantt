@@ -1,3 +1,23 @@
+### 9.1.0
+
+Multi-user backend module for real-time updates is added
+Remote updates API for managing data synchronization in real time is added
+New Resource Assignments control is introduced to extend the functionality of the Resources control
+Ability to display tasks in Day/Week scale based on actual working hours instead of the fixed 24-hour period
+
+Ability to fix the size of Timeline cells is added
+Support for specifying dates in the calendar configuration is added
+A configuration object for Auto Scheduling to simplify setup is added
+Improved touch screen support for Windows devices is added
+The obsolete subscales API is removed
+
+Fix the issue where exportToExcel with visual:true and custom data failed when the timeline was hidden
+Fix the issue where exportToPDF with additional_settings.slice_archive setting caused incomplete display of Gantt
+Prevent unscheduled tasks from being included in Excel exports
+Add support for exporting split tasks in Excel output
+Fix the incorrect display of the Resource Histogram after resizing
+Fix the issue with tasks overlapping on changing the zoom level
+
 ### 9.0.15
 
 Fix the issue where Gantt ignored the weekday configuration of customWeeks when set via the setWorkTime method
