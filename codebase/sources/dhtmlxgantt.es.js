@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.1.0 Standard
+dhtmlxGantt v.9.1.1 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -11899,9 +11899,11 @@ function parsing(gantt2) {
     }
     const tasks2 = data2.data || data2.tasks;
     if (data2.assignments) {
-      attachAssignmentsToTasks(tasks2, data2.assignments);
+      attachAssignmentsToTasks(tasks2 && tasks2.length ? tasks2 : gantt2.getTasksByTime(), data2.assignments);
     }
-    this.$data.tasksStore.parse(tasks2);
+    if (tasks2) {
+      this.$data.tasksStore.parse(tasks2);
+    }
     var links = data2.links || (data2.collections && data2.collections.links ? data2.collections.links : []);
     this.$data.linksStore.parse(links);
     this.callEvent("onParse", []);
@@ -11954,9 +11956,6 @@ function parsing(gantt2) {
       } else {
         gantt2.assert(false, "JSON is not supported");
       }
-    }
-    if (!data2.data && !data2.tasks) {
-      jsonParseError(data2);
     }
     if (data2.dhx_security) gantt2.security_key = data2.dhx_security;
     return data2;
@@ -15066,7 +15065,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.1.0";
+  this.version = "9.1.1";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -20169,7 +20168,7 @@ const keyNavMappings = { init: function(controller, grid) {
           if (keyCode >= 48 && keyCode <= 57 || keyCode > 95 && keyCode < 112 || keyCode >= 64 && keyCode <= 91 || keyCode > 185 && keyCode < 193 || keyCode > 218 && keyCode < 223) {
             var modifiers = command.modifiers;
             var anyModifier = modifiers.alt || modifiers.ctrl || modifiers.meta || modifiers.shift;
-            if (modifiers.alt) ;
+            if (modifiers.alt || e.key === "Meta") ;
             else if (anyModifier && keyNav.getCommandHandler(command, "taskCell")) ;
             else if (hasEditor && !controller.isVisible()) {
               self.startEdit(activeCell.id, activeCell.columnName);

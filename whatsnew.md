@@ -1,3 +1,13 @@
+### 9.1.1
+
+Fix the error that occurred in React Gantt when the user provided links prop without the tasks prop
+Fix the issue in React Gantt where reloaded tasks did not have link IDs in their $source and $target properties
+Fix the issue where Gantt opened the inline editor after pressing the Meta key
+Fix the %w date format not working correctly in CSP production environments
+Fix the issue that prevented group tasks from being displayed as split tasks when they had render="split" specified
+Fix the issue with the resource grid disappearing on pressing the Tab key after editing a resource cell
+Allow configuring row and task bar height for virtual tasks
+
 ### 9.1.0
 
 Multi-user backend module for real-time updates is added
