@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.1.1 Standard
+dhtmlxGantt v.9.1.2 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -2340,7 +2340,7 @@ function export_api(gantt2) {
     const store = config2.store || 0;
     const formData = config2.data;
     const callback = config2.callback;
-    const settings = { durationUnit: config2.durationUnit || void 0, projectProperties: config2.projectProperties || void 0, taskProperties: config2.taskProperties || void 0 };
+    const settings = { durationUnit: config2.durationUnit || void 0, projectProperties: config2.projectProperties || void 0, taskProperties: config2.taskProperties || void 0, resourceProperties: config2.resourceProperties || void 0 };
     formData.append("type", config2.type || "msproject-parse");
     formData.append("data", JSON.stringify(settings));
     if (store) {
@@ -6273,12 +6273,13 @@ function DnD(gantt2) {
           this._settings.original_target = copyDomEvent(e);
           this._settings.original_element_sizes = { ...getRelativeEventPosition(e, getClosestSizedElement(obj)), width: e.target.offsetWidth, height: e.target.offsetHeight };
           if (gantt2.config.touch) {
+            let actualTarget = e.target;
             this.clearDragTimer();
             this._drag_start_timer = setTimeout(bind(function() {
               if (gantt2.getState().lightbox) {
                 return;
               }
-              this.dragStart(obj, e, input);
+              this.dragStart(obj, e, input, actualTarget);
             }, this), gantt2.config.touch_drag);
           } else {
             this.dragStart(obj, e, input);
@@ -6340,19 +6341,22 @@ function DnD(gantt2) {
     marker2.className = "gantt_drag_marker";
     marker2.innerHTML = "";
     document.body.appendChild(marker2);
-  }, backupEventTarget: function(domEvent, getEvent) {
+  }, backupEventTarget: function(domEvent, getEvent, actualTarget) {
     if (!gantt2.config.touch) {
       return;
     }
     var e = getEvent(domEvent);
-    var el = e.target || e.srcElement;
+    let el = e.target || e.srcElement;
+    if (el.shadowRoot && actualTarget) {
+      el = actualTarget;
+    }
     var copy2 = el.cloneNode(true);
     this.config.original_target = copyDomEvent(e);
     this.config.original_target.target = copy2;
     this.config.backup_element = el;
     el.parentNode.appendChild(copy2);
     el.style.display = "none";
-    var mousemoveContainer = this.config.mousemoveContainer || document.body;
+    const mousemoveContainer = this.config.mousemoveContainer || gantt2.$root || document.body;
     mousemoveContainer.appendChild(el);
   }, getInputMethods: function() {
     var inputMethods = [];
@@ -6380,7 +6384,7 @@ function DnD(gantt2) {
       clearTimeout(this._drag_start_timer);
       this._drag_start_timer = null;
     }
-  }, dragStart: function(obj, e, inputMethod) {
+  }, dragStart: function(obj, e, inputMethod, actualTarget) {
     if (this.config && this.config.started) {
       return;
     }
@@ -6393,9 +6397,9 @@ function DnD(gantt2) {
     }
     document.body.classList.add("gantt_noselect");
     if (gantt2.config.touch) {
-      this.dragMove(obj, e, inputMethod.accessor);
+      this.dragMove(obj, e, inputMethod.accessor, actualTarget);
     }
-  }, dragMove: function(obj, e, getEvent) {
+  }, dragMove: function(obj, e, getEvent, actualTarget) {
     var source = getEvent(e);
     if (!source) return false;
     if (!this.config.marker && !this.config.started) {
@@ -6408,7 +6412,7 @@ function DnD(gantt2) {
           this.config.ignore = true;
           return false;
         }
-        this.backupEventTarget(e, getEvent);
+        this.backupEventTarget(e, getEvent, actualTarget);
         this.initDnDMarker();
         gantt2._touch_feedback();
         this.callEvent("onAfterDragStart", [obj, this.config.original_target]);
@@ -6418,10 +6422,20 @@ function DnD(gantt2) {
     }
     if (!this.config.ignore) {
       if (e.targetTouches && !source.target) return;
+      const rootNode = gantt2.$root.getRootNode();
+      const insideShadowDOM = rootNode instanceof ShadowRoot;
+      if (insideShadowDOM) {
+        if (actualTarget && Object.getOwnPropertyDescriptor(source, "target")) {
+          source.target = actualTarget;
+        } else if (rootNode.elementFromPoint && e.targetTouches) {
+          const touch2 = e.targetTouches[0];
+          source.target = rootNode.elementFromPoint(touch2.clientX, touch2.clientY);
+        }
+      }
       source.pos = this.getPosition(source);
       this.config.marker.style.left = source.pos.x + "px";
       this.config.marker.style.top = source.pos.y + "px";
-      this.callEvent("onDragMove", [obj, source]);
+      this.callEvent("onDragMove", [obj, source, actualTarget]);
       return true;
     }
     return false;
@@ -7327,10 +7341,14 @@ TreeDataStore.prototype = mixin({ _buildTree: function(data2) {
   var source = this.getItem(sid);
   var source_pid = this.getParent(source.id);
   var tbranch = this.getChildren(parent);
+  const siblings = this.getSiblings(sid);
   if (tindex == -1) tindex = tbranch.length + 1;
   if (isEqualIds(source_pid, parent)) {
     var sindex = this.getBranchIndex(sid);
     if (sindex == tindex) return;
+    if (parent === gantt.config.root_id && siblings.length <= 1) {
+      return;
+    }
   }
   if (this.callEvent("onBeforeItemMove", [sid, parent, tindex]) === false) return false;
   var placeholderIds = [];
@@ -10580,8 +10598,8 @@ function resource_assignments(gantt2) {
     if (!gantt2.isTaskExists(taskId)) {
       return;
     }
-    var task = gantt2.getTask(taskId);
-    var assignments = gantt2.getTaskAssignments(task.id);
+    const task = gantt2.getTask(taskId);
+    const assignments = resourceAssignmentsStore.find((a) => a.task_id == task.id);
     _assignAssignments(task, assignments);
   }
   function _assignAssignments(task, assignments) {
@@ -11368,8 +11386,8 @@ function baselines(gantt2) {
     let shouldRepaint = false;
     const iteratedBaselines = {};
     const taskBaselines = task.baselines || [];
-    const exisingBaselines = gantt2.getTaskBaselines(task.id);
-    if (taskBaselines.length != exisingBaselines.length) {
+    const existingBaselines = gantt2.getTaskBaselines(task.id);
+    if (taskBaselines.length != existingBaselines.length) {
       shouldRepaint = true;
     }
     taskBaselines.forEach(function(baseline) {
@@ -11385,7 +11403,7 @@ function baselines(gantt2) {
         baselineStore.addItem(baseline);
       }
     });
-    exisingBaselines.forEach(function(baseline) {
+    existingBaselines.forEach(function(baseline) {
       if (!iteratedBaselines[baseline.id]) {
         baselineStore.removeItem(baseline.id);
       }
@@ -11487,36 +11505,39 @@ function baselines(gantt2) {
       }
     }, task.id);
   }
+  function _addBaselinesToTask(baseline) {
+    const taskId = baseline.task_id;
+    if (gantt2.isTaskExists(taskId)) {
+      const task = gantt2.getTask(taskId);
+      task.baselines = task.baselines || [];
+      let newBaseline = true;
+      for (let i = 0; i < task.baselines.length; i++) {
+        let existingBaseline = task.baselines[i];
+        if (existingBaseline.id == baseline.id) {
+          newBaseline = false;
+          gantt2.mixin(existingBaseline, baseline, true);
+          break;
+        }
+      }
+      if (newBaseline) {
+        task.baselines.push(baseline);
+      }
+      if (!isHeadless(gantt2)) {
+        if (isSplitParent(task)) {
+          _adjustSplitParentHeight(task);
+        } else {
+          gantt2.adjustTaskHeightForBaselines(task);
+        }
+      }
+    }
+  }
   gantt2.attachEvent("onGanttReady", function() {
     if (!gantt2.config.baselines) {
       return;
     }
     gantt2.attachEvent("onParse", function() {
       baselineStore.eachItem(function(baseline) {
-        const taskId = baseline.task_id;
-        if (gantt2.isTaskExists(taskId)) {
-          const task = gantt2.getTask(taskId);
-          task.baselines = task.baselines || [];
-          let newBaseline = true;
-          for (let i = 0; i < task.baselines.length; i++) {
-            let existingBaseline = task.baselines[i];
-            if (existingBaseline.id == baseline.id) {
-              newBaseline = false;
-              gantt2.mixin(existingBaseline, baseline, true);
-              break;
-            }
-          }
-          if (newBaseline) {
-            task.baselines.push(baseline);
-          }
-          if (!isHeadless(gantt2)) {
-            if (isSplitParent(task)) {
-              _adjustSplitParentHeight(task);
-            } else {
-              gantt2.adjustTaskHeightForBaselines(task);
-            }
-          }
-        }
+        _addBaselinesToTask(baseline);
       });
     });
     gantt2.attachEvent("onBeforeTaskUpdate", function(id, task) {
@@ -11574,6 +11595,9 @@ function baselines(gantt2) {
         }
       });
       return true;
+    });
+    gantt2.$data.baselineStore.attachEvent("onBeforeAdd", function(id, item) {
+      _addBaselinesToTask(item);
     });
     gantt2.$data.tasksStore.attachEvent("onClearAll", function() {
       baselineStore.clearAll();
@@ -15065,7 +15089,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.1.1";
+  this.version = "9.1.2";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -15799,6 +15823,9 @@ var rendererFactory = function(gantt2) {
         renderCallbackMethod.call(gantt2, item, dom, view);
       }
     }, clear: function(container) {
+      if (layer.renderer && layer.renderer.clear) {
+        layer.renderer.clear();
+      }
       this.rendered = task_area_pulls[id] = {};
       if (!layer.append) this.clear_container(container);
     }, clear_container: function(container) {
@@ -18286,11 +18313,11 @@ Timeline.prototype = { init: function(container) {
     this._posFromWorkTimeCache = {};
     if (this._tasks.projection && ((_a = this._tasks.projection) == null ? void 0 : _a.source) === "fixedHours") {
       const calendarId = "timescale-projection-calendar";
-      if (gantt.getCalendar(calendarId)) {
-        gantt.deleteCalendar(calendarId);
+      if (this.$gantt.getCalendar(calendarId)) {
+        this.$gantt.deleteCalendar(calendarId);
       }
       let { hours } = this._tasks.projection;
-      gantt.addCalendar({ id: calendarId, worktime: { hours: hours || gantt.getCalendar("global")._worktime.hours.slice(), days: [1, 1, 1, 1, 1, 1, 1] } });
+      this.$gantt.addCalendar({ id: calendarId, worktime: { hours: hours || this.$gantt.getCalendar("global")._worktime.hours.slice(), days: [1, 1, 1, 1, 1, 1, 1] } });
     }
     scales_html = this._getScaleChunkHtml(cfgs, 0, this.$config.width);
     outer_width = cfg.full_width + "px";
@@ -18379,12 +18406,12 @@ Timeline.prototype = { init: function(container) {
   const { source } = this._tasks.projection || {};
   if (source === "taskCalendar") {
     if (!task) {
-      return { calendar: gantt.getCalendar("global") };
+      return { calendar: this.$gantt.getCalendar("global") };
     }
-    return { calendar: gantt.getTaskCalendar(task) };
+    return { calendar: this.$gantt.getTaskCalendar(task) };
   }
   if (source === "fixedHours") {
-    return { calendar: gantt.getCalendar("timescale-projection-calendar") };
+    return { calendar: this.$gantt.getCalendar("timescale-projection-calendar") };
   }
   return null;
 }, dateFromPos: function dateFromPos(x, context) {
@@ -18488,8 +18515,6 @@ Timeline.prototype = { init: function(container) {
   this.$gantt.assert(index >= 0, "Invalid day index");
   const dayIndex = Math.floor(index);
   const wholeCells = dayIndex;
-  const cellStartDate = this._tasks.trace_x[dayIndex];
-  new Date(cellStartDate.valueOf() + this._getColumnDuration(this._tasks, cellStartDate));
   const { start: workintervalStart, end: workintervalEnd, duration: cellDuration } = this._getWorkTrimForCell(date2, calendar);
   if (cellDuration === 0) {
     const result = this.posFromDate(date2);
@@ -19507,6 +19532,9 @@ function clearTaskStoreHandler(self) {
   }
   var tasks2 = self.$gantt.$data.tasksStore;
   var ownStore = self.$config.rowStore;
+  if (!ownStore) {
+    return;
+  }
   var handlerIdProperty = "_attached_" + ownStore.$config.name;
   if (self[handlerIdProperty]) {
     tasks2.detachEvent(self[handlerIdProperty]);
@@ -21363,6 +21391,27 @@ function bgPlaceholder(items, gantt2) {
 function createTaskBgRender(gantt2) {
   var renderedCells = {};
   var visibleCells = {};
+  function cleanupCell(itemId) {
+    if (renderedCells[itemId]) {
+      for (let columnIndex in renderedCells[itemId]) {
+        const cell = renderedCells[itemId][columnIndex];
+        if (cell && cell.parentNode) {
+          cell.parentNode.removeChild(cell);
+        }
+      }
+      delete renderedCells[itemId];
+    }
+    if (visibleCells[itemId]) {
+      delete visibleCells[itemId];
+    }
+  }
+  function cleanupAll() {
+    for (let itemId in renderedCells) {
+      cleanupCell(itemId);
+    }
+    renderedCells = {};
+    visibleCells = {};
+  }
   function isRendered(item, columnIndex) {
     if (renderedCells[item.id][columnIndex] && renderedCells[item.id][columnIndex].parentNode) {
       return true;
@@ -21523,7 +21572,7 @@ function createTaskBgRender(gantt2) {
     }
     return row;
   }
-  return { render: _render_bg_line, update: renderCells, getRectangle, getVisibleRange: getVisibleTasksRange, prepareData: bgPlaceholder };
+  return { render: _render_bg_line, update: renderCells, clear: cleanupAll, getRectangle, getVisibleRange: getVisibleTasksRange, prepareData: bgPlaceholder };
 }
 function createLinkRender(gantt2) {
   function _render_link_element(link, view, config2) {
@@ -23597,7 +23646,7 @@ var initLinksDND = function(timeline, gantt2) {
     }
     return position;
   }
-  dnd.attachEvent("onDragMove", gantt2.bind(function(obj, e) {
+  dnd.attachEvent("onDragMove", gantt2.bind(function(obj, e, actualTarget) {
     var dd = dnd.config;
     var pos = getPosition(e, dd.marker);
     advanceMarker(dd.marker, pos);
@@ -23605,7 +23654,13 @@ var initLinksDND = function(timeline, gantt2) {
     var prevTarget = _link_target_task;
     var prevLanding = _link_landing;
     var prevToStart = _link_target_task_start;
-    var targ = gantt2.locate(e), to_start = true;
+    let to_start = true;
+    let targ;
+    if (e.target.shadowRoot && actualTarget) {
+      targ = actualTarget;
+    } else {
+      targ = gantt2.locate(e);
+    }
     var eventTarget = getTargetNode(e);
     var sameGantt = isChildOf(eventTarget, gantt2.$root);
     if (!sameGantt) {
@@ -25682,6 +25737,10 @@ function DurationControlConstructor(gantt2) {
     var endDate = gantt2.calculateEndDate({ start_date: startDate, duration, task: ev });
     if (typeof gantt2._resolve_default_mapping(config2) == "string") {
       return startDate;
+    }
+    if (gantt2.getScale().projection && gantt2.getCalendar("timescale-projection-calendar")) {
+      const projectionCalendar = gantt2.getCalendar("timescale-projection-calendar");
+      startDate = projectionCalendar.getClosestWorkTime({ date: startDate, unit: gantt2.config.duration_unit, dir: "future" });
     }
     return { start_date: startDate, end_date: endDate, duration };
   };

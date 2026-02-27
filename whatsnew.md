@@ -1,3 +1,13 @@
+### 9.1.2
+
+- Fix the issue where Gantt could disappear after reordering tasks or creating links when the `touch` mode is enabled and Gantt is rendered inside Shadow DOM
+- Fix the `initial_scroll` option in React Gantt so the chart scrolls to the first task on initialization
+- Fix the issue where task assignments were not updated correctly after drag-and-drop when changes were made inside gantt.batchUpdate
+- Fix a memory leak in the task background row renderer
+- Fix scale projection not working in React Gantt
+- Fix missing rendering of baselines added via a datastore
+- Fix the issue where Gantt stopped working after providing an invalid layout configuration
+
 ### 9.1.1
 
 Fix the error that occurred in React Gantt when the user provided links prop without the tasks prop
