@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.1.2 Standard
+dhtmlxGantt v.9.1.3 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -4185,7 +4185,7 @@ class QuickInfo {
       const main = qi.querySelector(".gantt_cal_qi_content");
       const controls = qi.querySelector(".gantt_cal_qi_controls");
       gantt3._waiAria.quickInfoHeader(qi, [content.header.title, content.header.date].join(" "));
-      titleContent.innerHTML = content.header.title;
+      titleContent.innerHTML = `<span>${content.header.title}</span>`;
       titleDate.innerHTML = content.header.date;
       if (!content.header.title && !content.header.date) {
         titleBox.style.display = "none";
@@ -5913,6 +5913,22 @@ const strToDate = (format, utc, gantt2) => (date2) => {
 };
 const cspVersion = { date_to_str: dateToStr, str_to_date: strToDate };
 function date(gantt2) {
+  var isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/;
+  function parseISODate(dateStr) {
+    var hasTime = dateStr.indexOf("T") !== -1;
+    if (!hasTime && !gantt2.config.server_utc) {
+      var parts = dateStr.split("-");
+      return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+    var d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      return null;
+    }
+    if (gantt2.config.server_utc) {
+      return gantt2.date.convert_to_utc(d);
+    }
+    return d;
+  }
   var canUseCsp = null;
   function cspAutoCheck() {
     try {
@@ -5933,7 +5949,11 @@ function date(gantt2) {
     }
     return result;
   }
-  var dateHelper = { init: function() {
+  var dateHelper = { _isoDateDetected: false, _isoDateOnly: false, formatISODate: function(date2) {
+    return date2.toISOString();
+  }, formatISODateOnly: function(date2) {
+    return date2.getFullYear() + "-" + gantt2.date.to_fixed(date2.getMonth() + 1) + "-" + gantt2.date.to_fixed(date2.getDate());
+  }, init: function() {
     var locale2 = gantt2.locale;
     var s = locale2.date.month_short;
     var t2 = locale2.date.month_short_hash = {};
@@ -6067,6 +6087,23 @@ function date(gantt2) {
     return new Date(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate(), date2.getUTCHours(), date2.getUTCMinutes(), date2.getUTCSeconds());
   }, parseDate: function(date2, format) {
     if (date2 && !date2.getFullYear) {
+      var wouldUseTemplate = !format || format === "parse_date" || format === "xml_date";
+      var userOverrodeParseDate = wouldUseTemplate && (gantt2.defined(gantt2.templates.xml_date) || gantt2.templates.parse_date && !gantt2.templates.parse_date._ganttAuto);
+      if (!userOverrodeParseDate) {
+        if (typeof date2 === "string" && isoDateRegex.test(date2)) {
+          var hasTime = date2.indexOf("T") !== -1;
+          var isoResult = parseISODate(date2);
+          if (isoResult) {
+            if (!dateHelper._isoDateDetected) {
+              dateHelper._isoDateDetected = true;
+              dateHelper._isoDateOnly = !hasTime;
+            } else if (hasTime) {
+              dateHelper._isoDateOnly = false;
+            }
+            return isoResult;
+          }
+        }
+      }
       if (typeof format !== "function") {
         if (typeof format === "string") {
           if (format === "parse_date" || format === "xml_date") {
@@ -6482,8 +6519,16 @@ function templates(gantt2) {
     var date2 = gantt2.date;
     var d = date2.date_to_str;
     var c = gantt2.config;
-    var format_date = d(c.xml_date || c.date_format, c.server_utc);
-    var parse_date = date2.str_to_date(c.xml_date || c.date_format, c.server_utc);
+    var dateFormat = c.xml_date || c.date_format;
+    var isIso = dateFormat === "iso";
+    var format_date = isIso ? function(dateVal) {
+      return date2.formatISODate(dateVal);
+    } : d(dateFormat, c.server_utc);
+    format_date._ganttAuto = true;
+    var parse_date = isIso ? function(dateStr) {
+      return date2.parseDate(dateStr);
+    } : date2.str_to_date(dateFormat, c.server_utc);
+    parse_date._ganttAuto = true;
     initTemplate("date_scale", true, void 0, gantt2.config, gantt2.templates);
     initTemplate("date_grid", true, "grid_date_format", gantt2.config, gantt2.templates);
     initTemplate("task_date", true, void 0, gantt2.config, gantt2.templates);
@@ -7993,6 +8038,8 @@ var createDatastoreFacade = function() {
       stores[i].clearAll();
     }
     this._update_flags();
+    this.date._isoDateDetected = false;
+    this.date._isoDateOnly = false;
     this.userdata = {};
     this.callEvent("onClear", []);
     this.render();
@@ -8210,12 +8257,12 @@ function initDataStores(gantt2) {
     if (gantt2.config.show_tasks_outside_timescale) {
       return true;
     }
-    var min = null, max = null;
+    let min = null, max = null;
     if (gantt2.config.start_date && gantt2.config.end_date) {
       if (gantt2._isAllowedUnscheduledTask(task)) return true;
       min = gantt2.config.start_date.valueOf();
       max = gantt2.config.end_date.valueOf();
-      if (+task.start_date > max || +task.end_date < +min) return false;
+      if (task.start_date && +task.start_date > max || task.end_date && +task.end_date < +min) return false;
     }
     return true;
   });
@@ -9747,7 +9794,13 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
     return hasOne ? out : null;
   }
   _prepareDate(value) {
-    return this.$gantt.defined(this.$gantt.templates.xml_format) ? this.$gantt.templates.xml_format(value) : this.$gantt.templates.format_date(value);
+    if (this.$gantt.defined(this.$gantt.templates.xml_format)) {
+      return this.$gantt.templates.xml_format(value);
+    }
+    if ((this.$gantt.date._isoDateDetected || this.$gantt.config.date_format === "iso") && this.$gantt.templates.format_date._ganttAuto) {
+      return this.$gantt.date._isoDateOnly ? this.$gantt.date.formatISODateOnly(value) : this.$gantt.date.formatISODate(value);
+    }
+    return this.$gantt.templates.format_date(value);
   }
   _prepareArray(value, traversedObjects) {
     traversedObjects.push(value);
@@ -11997,7 +12050,13 @@ function parsing(gantt2) {
       if (key.charAt(0) == "$") continue;
       copy2[key] = obj[key];
       if (isDate(copy2[key])) {
-        copy2[key] = gantt2.defined(gantt2.templates.xml_format) ? gantt2.templates.xml_format(copy2[key]) : gantt2.templates.format_date(copy2[key]);
+        if (gantt2.defined(gantt2.templates.xml_format)) {
+          copy2[key] = gantt2.templates.xml_format(copy2[key]);
+        } else if ((gantt2.date._isoDateDetected || gantt2.config.date_format === "iso") && gantt2.templates.format_date._ganttAuto) {
+          copy2[key] = gantt2.date._isoDateOnly ? gantt2.date.formatISODateOnly(copy2[key]) : gantt2.date.formatISODate(copy2[key]);
+        } else {
+          copy2[key] = gantt2.templates.format_date(copy2[key]);
+        }
       }
     }
     return copy2;
@@ -14927,7 +14986,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
               }
             }
             if (scroll_info.x_pos && scroll_info.x_pos != pos.x) {
-              if (view && scrollbarNodeVisible) {
+              if (view) {
                 view.scrollTo(scroll_info.x_pos, void 0);
               }
             }
@@ -15089,7 +15148,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.1.2";
+  this.version = "9.1.3";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -21290,7 +21349,12 @@ function createTaskRenderer(gantt2) {
   }
   function renderRollupTask(task, timeline, config2, viewPort) {
     if (task.rollup !== false && task.$rollup && task.$rollup.length) {
-      const el = document.createElement("div"), sizes = gantt2.getTaskPosition(task);
+      const el = document.createElement("div"), sizes = gantt2.getTaskPosition(task), timeline2 = gantt2.$ui.getView("timeline");
+      if (timeline2._taskRenderer.rendered && config2.smart_rendering) {
+        if (!timeline2._taskRenderer.rendered[task.id]) {
+          return;
+        }
+      }
       if (viewPort) {
         viewPort.y = 0;
         viewPort.y_end = gantt2.$task_bg.scrollHeight;
@@ -21300,11 +21364,11 @@ function createTaskRenderer(gantt2) {
           return;
         }
         const child = gantt2.getTask(itemId);
-        let isVisible2 = checkVisibility(child, viewPort, timeline, config2);
+        let isVisible2 = checkVisibility(child, viewPort, timeline2, config2);
         if (!isVisible2) {
           return;
         }
-        const element = generateChildElement(task, child, timeline, sizes);
+        const element = generateChildElement(task, child, timeline2, sizes);
         if (element) {
           renderedNodes[getKey(child.id, task.id)] = element;
           el.appendChild(element);
@@ -22037,6 +22101,7 @@ function createLinkRender(gantt2) {
 }
 function isInViewPort(item, viewport, view, config2, gantt2) {
   if (gantt2.$ui.getView("grid") && (gantt2.config.keyboard_navigation && gantt2.getSelectedId() || gantt2.ext.inlineEditors && gantt2.ext.inlineEditors.getState().id)) {
+    if (view && view.$config && !view.$config.type) return true;
     if (!item.$expanded_branch) return false;
     return true;
   }
@@ -24898,22 +24963,33 @@ class TimelineZoom {
           }
         }
       });
-      const isRendered = !!gantt3.$root && !!gantt3.$task;
-      if (isRendered) {
+      if (!!gantt3.$root) {
         if (cursorOffset) {
-          const cursorDate = this.$gantt.dateFromPos(cursorOffset + this.$gantt.getScrollState().x);
-          this.$gantt.render();
-          const newPosition = this.$gantt.posFromDate(cursorDate);
-          this.$gantt.scrollTo(newPosition - cursorOffset);
+          const cursorDate = gantt3.dateFromPos(cursorOffset + gantt3.getScrollState().x);
+          gantt3.render();
+          const newPosition = gantt3.posFromDate(cursorDate);
+          gantt3.scrollTo(newPosition - cursorOffset);
         } else {
-          const viewPort = this.$gantt.$task.offsetWidth;
+          let viewPort;
+          if (gantt3.$task && gantt3.$task.offsetWidth) {
+            viewPort = gantt3.$task.offsetWidth;
+          } else {
+            resourceViews.forEach(function(name) {
+              const resourceView = gantt3.$ui.getView(name);
+              if (resourceView) {
+                viewPort = resourceView.$task.offsetWidth;
+              }
+            });
+          }
           if (!this._visibleDate) {
             this._getVisibleDate();
           }
           const middleDate = this._visibleDate;
-          this.$gantt.render();
-          const newPosition = this.$gantt.posFromDate(middleDate);
-          this.$gantt.scrollTo(newPosition - viewPort / 2);
+          gantt3.render();
+          if (viewPort) {
+            const newPosition = gantt3.posFromDate(middleDate);
+            gantt3.scrollTo(newPosition - viewPort / 2);
+          }
         }
         this.callEvent("onAfterZoom", [this._activeLevelIndex, nextConfig]);
       }

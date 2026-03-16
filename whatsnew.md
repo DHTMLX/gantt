@@ -1,3 +1,16 @@
+### 9.1.3
+
+- Fix the issue where the zoom functionality did not work when the main grid and timeline were not initially displayed in the layout
+- Fix the issue where scale cells disappeared in the resource timeline after changing the zoom level
+- Fix the issue where timeline cells disappeared after scrolling the timeline to the right and changing the zoom level during export
+- Fix the issue where scale cells disappeared after window resize when the timeline was scrolled to the right and the Zoom extension was enabled
+- Fix the issue where tasks disappeared after changing the zoom level when open_split_tasks was enabled
+- Fix the issue where rollup tasks were not displayed correctly with large datasets until the parent task was interacted with
+- Fix the issue where unscheduled tasks were not displayed when show_unscheduled was set to false and a date range was configured
+- Fix the issue where the resource grid disappeared when keyboard navigation was enabled and the resource datastore was initialized without tree structure
+- Fix overflow styles of the Quick Info popup for long content
+- Add auto-detection and support for ISO date format strings in task data
+
 ### 9.1.2
 
 - Fix the issue where Gantt could disappear after reordering tasks or creating links when the `touch` mode is enabled and Gantt is rendered inside Shadow DOM

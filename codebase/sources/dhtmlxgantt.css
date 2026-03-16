@@ -2617,6 +2617,7 @@ div.dhx_modal_cover {
 .gantt_cal_qi_content {
   padding-top: 16px;
   padding-bottom: 8px;
+  white-space: normal;
 }
 .gantt_cal_qi_controls {
   display: flex;
