@@ -1,6 +1,6 @@
 /** @license
 
-dhtmlxGantt v.9.1.3 Standard
+dhtmlxGantt v.9.1.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5949,7 +5949,7 @@ function date(gantt2) {
     }
     return result;
   }
-  var dateHelper = { _isoDateDetected: false, _isoDateOnly: false, formatISODate: function(date2) {
+  var dateHelper = { _isoDateOnly: false, _nonIsoStringDetected: false, formatISODate: function(date2) {
     return date2.toISOString();
   }, formatISODateOnly: function(date2) {
     return date2.getFullYear() + "-" + gantt2.date.to_fixed(date2.getMonth() + 1) + "-" + gantt2.date.to_fixed(date2.getDate());
@@ -6094,15 +6094,18 @@ function date(gantt2) {
           var hasTime = date2.indexOf("T") !== -1;
           var isoResult = parseISODate(date2);
           if (isoResult) {
-            if (!dateHelper._isoDateDetected) {
-              dateHelper._isoDateDetected = true;
-              dateHelper._isoDateOnly = !hasTime;
+            if (!hasTime && !dateHelper._isoDateOnly) {
+              dateHelper._isoDateOnly = true;
             } else if (hasTime) {
               dateHelper._isoDateOnly = false;
             }
             return isoResult;
           }
+        } else if (typeof date2 === "string") {
+          dateHelper._nonIsoStringDetected = true;
         }
+      } else if (typeof date2 === "string") {
+        dateHelper._nonIsoStringDetected = true;
       }
       if (typeof format !== "function") {
         if (typeof format === "string") {
@@ -6472,6 +6475,9 @@ function DnD(gantt2) {
       source.pos = this.getPosition(source);
       this.config.marker.style.left = source.pos.x + "px";
       this.config.marker.style.top = source.pos.y + "px";
+      const maxWidth = obj.parentNode.offsetWidth;
+      this.config.marker.style.maxWidth = maxWidth + "px";
+      this.config.marker.style.overflow = "hidden";
       this.callEvent("onDragMove", [obj, source, actualTarget]);
       return true;
     }
@@ -8038,8 +8044,8 @@ var createDatastoreFacade = function() {
       stores[i].clearAll();
     }
     this._update_flags();
-    this.date._isoDateDetected = false;
     this.date._isoDateOnly = false;
+    this.date._nonIsoStringDetected = false;
     this.userdata = {};
     this.callEvent("onClear", []);
     this.render();
@@ -9797,7 +9803,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
     if (this.$gantt.defined(this.$gantt.templates.xml_format)) {
       return this.$gantt.templates.xml_format(value);
     }
-    if ((this.$gantt.date._isoDateDetected || this.$gantt.config.date_format === "iso") && this.$gantt.templates.format_date._ganttAuto) {
+    if ((!this.$gantt.date._nonIsoStringDetected || this.$gantt.config.date_format === "iso") && this.$gantt.templates.format_date._ganttAuto) {
       return this.$gantt.date._isoDateOnly ? this.$gantt.date.formatISODateOnly(value) : this.$gantt.date.formatISODate(value);
     }
     return this.$gantt.templates.format_date(value);
@@ -12052,7 +12058,7 @@ function parsing(gantt2) {
       if (isDate(copy2[key])) {
         if (gantt2.defined(gantt2.templates.xml_format)) {
           copy2[key] = gantt2.templates.xml_format(copy2[key]);
-        } else if ((gantt2.date._isoDateDetected || gantt2.config.date_format === "iso") && gantt2.templates.format_date._ganttAuto) {
+        } else if ((!gantt2.date._nonIsoStringDetected || gantt2.config.date_format === "iso") && gantt2.templates.format_date._ganttAuto) {
           copy2[key] = gantt2.date._isoDateOnly ? gantt2.date.formatISODateOnly(copy2[key]) : gantt2.date.formatISODate(copy2[key]);
         } else {
           copy2[key] = gantt2.templates.format_date(copy2[key]);
@@ -14958,8 +14964,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       this.$layout.resize();
       this.config.preserve_scroll = preserveScroll;
       if (this.config.preserve_scroll && pos) {
-        const zoom = gantt2.ext.zoom._initialized;
-        if ((posX || pos.y) && !zoom) {
+        if (posX || pos.y) {
           var new_pos = gantt2.getScrollState();
           var new_date = gantt2.dateFromPos(new_pos.x);
           if (!(+visibleDate == +new_date && new_pos.y == pos.y)) {
@@ -15148,7 +15153,7 @@ function i18nFactory() {
 }
 function DHXGantt() {
   this.constants = constants;
-  this.version = "9.1.3";
+  this.version = "9.1.4";
   this.license = "gpl";
   this.templates = {};
   this.ext = {};
@@ -16285,9 +16290,9 @@ function isLinkInViewPort(item, viewport, view, config2, gantt2) {
     targetRight = targetLeft;
     targetLeft = tmp;
   }
-  sourceLeft += -100;
+  sourceLeft += -padding;
   sourceRight += padding;
-  targetLeft += -100;
+  targetLeft += -padding;
   targetRight += padding;
   if (viewport.x > sourceRight && viewport.x > targetRight) {
     return false;
@@ -22802,6 +22807,7 @@ function highlightPosition(target, root, grid) {
   } else {
     highlightRow(target, markerLine, grid);
   }
+  markerLine.style.maxWidth = parseInt(root.marker.style.maxWidth) - parseInt(markerLine.style.left) + "px";
   if (!root.markerLine) {
     document.body.appendChild(markerLine);
     root.markerLine = markerLine;
@@ -25389,14 +25395,28 @@ function touch(gantt2) {
         if (visible) {
           currentDndId = taskId;
           for (let i2 = 0; i2 < renders.length; i2++) {
-            task = renders[i2].rendered[taskId];
-            if (task && task.getAttribute(gantt2.config.task_attribute) && task.getAttribute(gantt2.config.task_attribute) == taskId) {
-              const copy2 = task.cloneNode(true);
-              dndNodes.push(task);
+            const taskNode = renders[i2].rendered[taskId];
+            if (taskNode && taskNode.getAttribute(gantt2.config.task_attribute) && taskNode.getAttribute(gantt2.config.task_attribute) == taskId) {
+              const copy2 = taskNode.cloneNode(true);
+              dndNodes.push(taskNode);
               renders[i2].rendered[taskId] = copy2;
-              task.style.display = "none";
+              taskNode.style.display = "none";
               copy2.className += " gantt_drag_move ";
-              task.parentNode.appendChild(copy2);
+              taskNode.parentNode.appendChild(copy2);
+            }
+            if (task.rollup) {
+              const parentNodes = renders[i2].rendered;
+              for (let parentId in parentNodes) {
+                const parentNode = parentNodes[parentId];
+                const rollupNode = parentNode.querySelector(`[${gantt2.config.task_attribute}="${task.id}"]`);
+                if (rollupNode) {
+                  const copy2 = rollupNode.cloneNode(true);
+                  parentNode.appendChild(copy2);
+                  gantt2.$task_bars.appendChild(rollupNode);
+                  rollupNode.style.display = "none";
+                  dndNodes.push(rollupNode);
+                }
+              }
             }
           }
         } else if (task.$split_subtask) {

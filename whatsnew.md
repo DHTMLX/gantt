@@ -1,3 +1,12 @@
+### 9.1.4
+
+- Fix the issue where rollup tasks could not be dragged on touch devices
+- Fix the issue where Gantt auto-scheduled a linked project to a future date when the project had unscheduled child tasks
+- Fix the issue where the reorder drag marker and task placeholder had incorrect sizes when the grid was scrollable
+- Fix the issue where DataProcessor did not use the ISO date format by default when tasks were loaded with dates in the Date format
+- Fix the script error thrown when drag_links was disabled and a split task row was taller than its parent row
+- Beta release of the Angular Gantt wrapper
+
 ### 9.1.3
 
 - Fix the issue where the zoom functionality did not work when the main grid and timeline were not initially displayed in the layout

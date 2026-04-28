@@ -3,7 +3,7 @@
 })(this, function(exports2) {
   "use strict";/** @license
 
-dhtmlxGantt v.9.1.3 Standard
+dhtmlxGantt v.9.1.4 Standard
 
 This version of dhtmlxGantt is distributed under GPL 2.0 license and can be legally used in GPL projects.
 
@@ -5953,7 +5953,7 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
       }
       return result;
     }
-    var dateHelper = { _isoDateDetected: false, _isoDateOnly: false, formatISODate: function(date2) {
+    var dateHelper = { _isoDateOnly: false, _nonIsoStringDetected: false, formatISODate: function(date2) {
       return date2.toISOString();
     }, formatISODateOnly: function(date2) {
       return date2.getFullYear() + "-" + gantt2.date.to_fixed(date2.getMonth() + 1) + "-" + gantt2.date.to_fixed(date2.getDate());
@@ -6098,15 +6098,18 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
             var hasTime = date2.indexOf("T") !== -1;
             var isoResult = parseISODate(date2);
             if (isoResult) {
-              if (!dateHelper._isoDateDetected) {
-                dateHelper._isoDateDetected = true;
-                dateHelper._isoDateOnly = !hasTime;
+              if (!hasTime && !dateHelper._isoDateOnly) {
+                dateHelper._isoDateOnly = true;
               } else if (hasTime) {
                 dateHelper._isoDateOnly = false;
               }
               return isoResult;
             }
+          } else if (typeof date2 === "string") {
+            dateHelper._nonIsoStringDetected = true;
           }
+        } else if (typeof date2 === "string") {
+          dateHelper._nonIsoStringDetected = true;
         }
         if (typeof format !== "function") {
           if (typeof format === "string") {
@@ -6476,6 +6479,9 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
         source.pos = this.getPosition(source);
         this.config.marker.style.left = source.pos.x + "px";
         this.config.marker.style.top = source.pos.y + "px";
+        const maxWidth = obj.parentNode.offsetWidth;
+        this.config.marker.style.maxWidth = maxWidth + "px";
+        this.config.marker.style.overflow = "hidden";
         this.callEvent("onDragMove", [obj, source, actualTarget]);
         return true;
       }
@@ -8042,8 +8048,8 @@ To use dhtmlxGantt in non-GPL projects (and get Pro version of the product), ple
         stores[i].clearAll();
       }
       this._update_flags();
-      this.date._isoDateDetected = false;
       this.date._isoDateOnly = false;
+      this.date._nonIsoStringDetected = false;
       this.userdata = {};
       this.callEvent("onClear", []);
       this.render();
@@ -9801,7 +9807,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
       if (this.$gantt.defined(this.$gantt.templates.xml_format)) {
         return this.$gantt.templates.xml_format(value);
       }
-      if ((this.$gantt.date._isoDateDetected || this.$gantt.config.date_format === "iso") && this.$gantt.templates.format_date._ganttAuto) {
+      if ((!this.$gantt.date._nonIsoStringDetected || this.$gantt.config.date_format === "iso") && this.$gantt.templates.format_date._ganttAuto) {
         return this.$gantt.date._isoDateOnly ? this.$gantt.date.formatISODateOnly(value) : this.$gantt.date.formatISODate(value);
       }
       return this.$gantt.templates.format_date(value);
@@ -12056,7 +12062,7 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
         if (isDate(copy2[key])) {
           if (gantt2.defined(gantt2.templates.xml_format)) {
             copy2[key] = gantt2.templates.xml_format(copy2[key]);
-          } else if ((gantt2.date._isoDateDetected || gantt2.config.date_format === "iso") && gantt2.templates.format_date._ganttAuto) {
+          } else if ((!gantt2.date._nonIsoStringDetected || gantt2.config.date_format === "iso") && gantt2.templates.format_date._ganttAuto) {
             copy2[key] = gantt2.date._isoDateOnly ? gantt2.date.formatISODateOnly(copy2[key]) : gantt2.date.formatISODate(copy2[key]);
           } else {
             copy2[key] = gantt2.templates.format_date(copy2[key]);
@@ -14962,8 +14968,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         this.$layout.resize();
         this.config.preserve_scroll = preserveScroll;
         if (this.config.preserve_scroll && pos) {
-          const zoom = gantt2.ext.zoom._initialized;
-          if ((posX || pos.y) && !zoom) {
+          if (posX || pos.y) {
             var new_pos = gantt2.getScrollState();
             var new_date = gantt2.dateFromPos(new_pos.x);
             if (!(+visibleDate == +new_date && new_pos.y == pos.y)) {
@@ -15152,7 +15157,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
   }
   function DHXGantt() {
     this.constants = constants;
-    this.version = "9.1.3";
+    this.version = "9.1.4";
     this.license = "gpl";
     this.templates = {};
     this.ext = {};
@@ -15533,7 +15538,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       return parentSettings;
     }
   }
-  var configurable = function(parentView) {
+  var configurable$1 = function(parentView) {
     var parentConfig, parentTemplates;
     return { $getConfig: function() {
       if (!parentConfig) {
@@ -15555,10 +15560,10 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       }
     } };
   };
-  function configurable$1(obj, parent) {
-    mixin(obj, configurable(parent));
+  function configurable(obj, parent) {
+    mixin(obj, configurable$1(parent));
   }
-  var uiFactory = function createFactory(gantt2) {
+  var uiFactory$1 = function createFactory(gantt2) {
     var views = {};
     function ui2(cell, parentView) {
       var content;
@@ -15604,7 +15609,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       if (creator.configure) {
         creator.configure(view);
       }
-      configurable$1(view, parentView);
+      configurable(view, parentView);
       if (!view.$id) {
         view.$id = config2.id || gantt2.uid();
       }
@@ -15632,7 +15637,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
     var factory2 = { initUI: ui2, reset, registerView: register, createView, getView };
     return factory2;
   };
-  const uiFactory$1 = { createFactory: uiFactory };
+  const uiFactory = { createFactory: uiFactory$1 };
   var createMouseHandler = /* @__PURE__ */ function(domHelpers2) {
     return function(gantt2) {
       var eventHandlers = { click: {}, doubleclick: {}, contextMenu: {} };
@@ -16289,9 +16294,9 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
       targetRight = targetLeft;
       targetLeft = tmp;
     }
-    sourceLeft += -100;
+    sourceLeft += -padding;
     sourceRight += padding;
-    targetLeft += -100;
+    targetLeft += -padding;
     targetRight += padding;
     if (viewport.x > sourceRight && viewport.x > targetRight) {
       return false;
@@ -22806,6 +22811,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
     } else {
       highlightRow(target, markerLine, grid);
     }
+    markerLine.style.maxWidth = parseInt(root.marker.style.maxWidth) - parseInt(markerLine.style.left) + "px";
     if (!root.markerLine) {
       document.body.appendChild(markerLine);
       root.markerLine = markerLine;
@@ -24166,7 +24172,7 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
         if (ext.onDestroyed) ext.onDestroyed(view);
       });
     }
-    var factory2 = uiFactory$1.createFactory(gantt2);
+    var factory2 = uiFactory.createFactory(gantt2);
     factory2.registerView("cell", Cell);
     factory2.registerView("resizer", Resizer);
     factory2.registerView("scrollbar", ScrollbarCell);
@@ -25393,14 +25399,28 @@ https://docs.dhtmlx.com/gantt/faq.html#theganttchartisntrenderedcorrectly`);
           if (visible) {
             currentDndId = taskId;
             for (let i2 = 0; i2 < renders.length; i2++) {
-              task = renders[i2].rendered[taskId];
-              if (task && task.getAttribute(gantt2.config.task_attribute) && task.getAttribute(gantt2.config.task_attribute) == taskId) {
-                const copy2 = task.cloneNode(true);
-                dndNodes.push(task);
+              const taskNode = renders[i2].rendered[taskId];
+              if (taskNode && taskNode.getAttribute(gantt2.config.task_attribute) && taskNode.getAttribute(gantt2.config.task_attribute) == taskId) {
+                const copy2 = taskNode.cloneNode(true);
+                dndNodes.push(taskNode);
                 renders[i2].rendered[taskId] = copy2;
-                task.style.display = "none";
+                taskNode.style.display = "none";
                 copy2.className += " gantt_drag_move ";
-                task.parentNode.appendChild(copy2);
+                taskNode.parentNode.appendChild(copy2);
+              }
+              if (task.rollup) {
+                const parentNodes = renders[i2].rendered;
+                for (let parentId in parentNodes) {
+                  const parentNode = parentNodes[parentId];
+                  const rollupNode = parentNode.querySelector(`[${gantt2.config.task_attribute}="${task.id}"]`);
+                  if (rollupNode) {
+                    const copy2 = rollupNode.cloneNode(true);
+                    parentNode.appendChild(copy2);
+                    gantt2.$task_bars.appendChild(rollupNode);
+                    rollupNode.style.display = "none";
+                    dndNodes.push(rollupNode);
+                  }
+                }
               }
             }
           } else if (task.$split_subtask) {
