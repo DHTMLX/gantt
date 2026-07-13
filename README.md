@@ -72,7 +72,7 @@ gantt.parse({
 });
 ```
 
-[See a live demo](https://snippet.dhtmlx.com/a69d7378a) · or run the bundled gallery with [`npm run start`](#build-from-source) and open `/samples/`.
+[See a live demo](https://snippet.dhtmlx.com/2efktg63) · or run the bundled gallery with [`npm run start`](#build-from-source) and open `/samples/`.
 
 ---
 
