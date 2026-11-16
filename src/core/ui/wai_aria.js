@@ -77,6 +77,24 @@ export default function(gantt){
 			if(gantt.hasChild(task.id)){
 				div.setAttribute("aria-expanded", task.$open ? "true" : "false");
 			}
+
+			// with smart rendering or a filter only a part of the rows is in the DOM,
+			// so the position among the displayed siblings is given explicitly
+			var siblings = gantt.getSiblings(task.id);
+			var position = 0;
+			var size = 0;
+			for(var i = 0; i < siblings.length; i++){
+				if(gantt.getGlobalTaskIndex(siblings[i]) > -1){
+					size++;
+					if(siblings[i] == task.id){
+						position = size;
+					}
+				}
+			}
+			if(position){
+				div.setAttribute("aria-posinset", position);
+				div.setAttribute("aria-setsize", size);
+			}
 		},
 
 		linkAttr: function(link, div){
