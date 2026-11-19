@@ -189,7 +189,7 @@ export default function(gantt) {
 					}
 				},
 				"shift+right": function() {
-					if (gantt.isReadonly(this)) {
+					if (gantt.isReadonly(this.taskId)) {
 						return;
 					}
 					var prevId = gantt.getPrevSibling(this.taskId);
@@ -202,7 +202,7 @@ export default function(gantt) {
 					}
 				},
 				"shift+left": function() {
-					if (gantt.isReadonly(this)) {
+					if (gantt.isReadonly(this.taskId)) {
 						return;
 					}
 					var parent = gantt.getParent(this.taskId);
@@ -233,7 +233,7 @@ export default function(gantt) {
 
 				// delete task
 				"delete": function (e) {
-					if (gantt.isReadonly(this)) {
+					if (gantt.isReadonly(this.taskId)) {
 						return;
 					}
 					gantt.$click.buttons["delete"](this.taskId);
@@ -241,7 +241,7 @@ export default function(gantt) {
 
 				// open lightbox
 				"enter": function () {
-					if (gantt.isReadonly(this)) {
+					if (gantt.isReadonly(this.taskId)) {
 						return;
 					}
 					gantt.showLightbox(this.taskId);
@@ -249,7 +249,7 @@ export default function(gantt) {
 
 				// add subtask
 				"ctrl+enter": function () {
-					if (gantt.isReadonly(this)) {
+					if (gantt.isReadonly(this.taskId)) {
 						return;
 					}
 					gantt.createTask({}, this.taskId);
