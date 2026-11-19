@@ -77,6 +77,7 @@ export default function(gantt) {
 
 			var template = gantt.templates.task_end_date || gantt.templates.task_date;
 			endspan.innerHTML = template(end_date);
+			gantt._waiAria.lightboxDurationInputValueAttr(inps[1], duration, inps[1].value);
 		}
 
 		function _change_duration(step) {

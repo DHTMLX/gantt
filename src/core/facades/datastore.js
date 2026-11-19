@@ -7,6 +7,7 @@ import createDatastoreSelect from "../datastore/select";
 import datastoreRender from "../datastore/datastore_render";
 import isHeadless from "../../utils/is_headless";
 import {replaceValidZeroId} from "../../utils/helpers";
+import { getOwnItemId } from "../datastore/own_item_id";
 
 function getDatastores(){
 	var storeNames = this.$services.getService("datastores");
@@ -195,6 +196,9 @@ var createDatastoreFacade = function(){
 			return false;
 		id = replaceValidZeroId(id, this.config.root_id);
 		if (id){
+			// GS-3658. The caller can give the id 12 as "12"; store the own id so that
+			// getSelectedId() matches the ids from the UI
+			id = getOwnItemId(store, id);
 			let oldSelectId = this.getSelectedId();
 			// Don't repaint the resource panel as the data didn't change
 			store._skipResourceRepaint = true;
@@ -213,6 +217,10 @@ var createDatastoreFacade = function(){
 	},
 	unselectTask: function(id){
 		var store = this.$data.tasksStore;
+		if (id) {
+			// GS-3658. The own id, so that the unselect event gets the same id as the select events
+			id = getOwnItemId(store, id);
+		}
 		store.unselect(id);
 		// GS-730. Split task is not included in the tree, 
 		// so the datastore renderer will think that the task is not visible

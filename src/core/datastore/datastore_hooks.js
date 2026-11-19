@@ -125,17 +125,35 @@ function initDataStores(gantt){
 		return true;
 	});
 
-	tasksStore.attachEvent("onAfterItemMove", function(sid, parent, tindex){
+	// The position of a moved task for the data processor, which sends it as `target` with the next
+	// save of the task.
+	function setDropTarget(store, sid){
 		var source = gantt.getTask(sid);
 
-		if(this.getNextSibling(sid) !== null){
-			source.$drop_target = this.getNextSibling(sid);
-		} else if(this.getPrevSibling(sid) !== null){
-			source.$drop_target = "next:" + this.getPrevSibling(sid);
+		if(store.getNextSibling(sid) !== null){
+			source.$drop_target = store.getNextSibling(sid);
+		} else if(store.getPrevSibling(sid) !== null){
+			source.$drop_target = "next:" + store.getPrevSibling(sid);
 		}else{
 			source.$drop_target = "next:null";
 		}
+	}
 
+	tasksStore.attachEvent("onAfterItemMove", function(sid, parent, tindex){
+		setDropTarget(this, sid);
+	});
+
+	// A silent move gives a task no position for the data processor. A task that already has one -
+	// a `$drop_target` that waits for the next save, or the `target` of an earlier reorder, which
+	// the data processor sends with every later save - gets the position of its new place, as after
+	// a move outside silent(). The old position no longer describes where the task is, and only the
+	// task's own move can tell whether it still applies.
+	tasksStore.attachEvent("onAfterSilentMove", function(sid){
+		var task = gantt.getTask(sid);
+		var target = task.target;
+		if(task.$drop_target || (target !== undefined && target !== null && target !== "")){
+			setDropTarget(this, sid);
+		}
 	});
 
 	tasksStore.attachEvent("onStoreUpdated", function(id, item, action){

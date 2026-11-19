@@ -431,16 +431,7 @@ export default function(gantt: any) {
 			if (!gantt.config.work_time) {
 				time = defaultWorkTimes;
 			} else {
-				const wTime = gantt._working_time_helper;
-				if (wTime && wTime.get_calendar) {
-					time = wTime.get_calendar();
-				} else if (wTime) {
-					time = {
-						hours: wTime.hours,
-						minutes: null,
-						dates: wTime.dates
-					};
-				} else if (gantt.config.worktimes && gantt.config.worktimes.global) {
+				if (gantt.config.worktimes && gantt.config.worktimes.global) {
 					const settings = gantt.config.worktimes.global;
 
 					if (settings.parsed) {
@@ -473,6 +464,37 @@ export default function(gantt: any) {
 			return time;
 		},
 
+		_serializeCustomWeeks(customWeeks: any) {
+			const formatDate = gantt.date.date_to_str("%Y-%m-%d");
+			const result: any = {};
+
+			for (const name in customWeeks) {
+				const week = customWeeks[name];
+				const copy = gantt.mixin({}, week);
+				if (copy.from instanceof Date) {
+					copy.fromDate = formatDate(copy.from);
+				}
+				if (copy.to instanceof Date) {
+					copy.toDate = formatDate(copy.to);
+				}
+				result[name] = copy;
+			}
+			return result;
+		},
+
+		_serializeWorktimes(worktimes: any) {
+			const result: any = {};
+			for (const id in worktimes) {
+				const calendar = worktimes[id];
+				const copy = gantt.mixin({}, calendar);
+				if (calendar.customWeeks) {
+					copy.customWeeks = gantt.ext.export_api._serializeCustomWeeks(calendar.customWeeks);
+				}
+
+				result[id] = copy;
+			}
+			return result;
+		},
 
 		_eachTaskTimed(start:any, end:any) {
 			return function(code:any, parent:any, master:any) {
@@ -1290,6 +1312,12 @@ export default function(gantt: any) {
 			for (const i in config) {
 				res[i] = config[i];
 			}
+
+			if (res.config.worktimes) {
+				res.config = gantt.mixin({}, res.config);
+				res.config.worktimes = gantt.ext.export_api._serializeWorktimes(res.config.worktimes);
+			}
+
 			return res;
 		},
 
@@ -1305,6 +1333,7 @@ export default function(gantt: any) {
 				projectProperties: config.projectProperties || undefined,
 				taskProperties: config.taskProperties || undefined,
 				resourceProperties: config.resourceProperties || undefined,
+				assignmentProperties: config.assignmentProperties || undefined,
 			};
 
 			formData.append("type", config.type || "msproject-parse");

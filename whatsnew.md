@@ -1,3 +1,27 @@
+### 10.0.4
+
+- Add the syncTaskOrder prop to React Gantt, which applies the row order of the tasks array to the chart
+- Improve the performance of scrolling the timeline with many split tasks in the viewport - the split task bars that are already rendered stay in place, and only the bars that enter or leave the viewport are added or removed
+- Add the assignmentProperties parameter to importFromMSProject(), which imports additional and custom properties of resource assignments from MS Project files (requires version 2.5.0.0 or later of the export module)
+
+- Fix the issue where React Gantt did not change the order of the rows when only the order of the tasks array changed
+- Fix the issue where a task moved to the end of its branch in React Gantt when the task received a new id
+- Fix the issue where moving a task inside silent() fired the task move events, added the move to the undo history, and sent it to the server. This also affected React Gantt, Vue Gantt, and Angular Gantt when the application changed the parent of a task in its data
+- Fix the issue where React Gantt crashed when the config prop came from frozen state (a Valtio snapshot, or Immer and Redux Toolkit state in development mode), and changed the objects of a mutable config prop - Gantt now gets its own copy of each config value, see the migration notes
+- Fix the issue where React Gantt reset a resized column width when the config prop got a new but equal object (for example, a config object written inline in JSX)
+- Fix the issue where React Gantt threw an error after the config of a layout cell was changed twice
+- Fix the issue where the editors of the inlineEditors prop of React Gantt did not open after editor_types in the config prop was changed
+- Fix the issue where every template of React Gantt returned an empty string when the component received a callback ref, and an inline callback ref that stored the instance in the state started an endless update loop
+- Fix the issue where tasks and links created from the UI stored string ids in the parent, source, and target properties when the task ids were numbers. locate(), getSelectedId(), and the multiselect methods now also return the ids with the type the tasks have
+- Fix the issue where the DataProcessor did not send the delete request for an item that was added back with the id of a deleted item, for example, after undo in React Gantt with a state manager
+- Fix the error thrown when a customWeeks period of a calendar had hours: false and the duration_unit config was set to "minute"
+- Fix the issue where getClosestWorkTime() with dir: "past" entered a loop and threw an error when a whole month was non-working and its first day was a Sunday
+- Fix the issue where the task rows of the expanded resource panel were not repainted while and after a task was dragged
+- Fix the issue where screen readers announced 0 for the duration fields of the lightbox, including baseline durations, instead of their current value (thanks to Stepan Kuntso)
+- Fix the issue where the dates of the customWeeks periods of calendars were exported to MS Project with a shift that depended on the time zone of the user
+- Fix the issue where the export to MS Project returned an error instead of the file when auto scheduling was enabled and a task had progress but no assigned resources (requires version 2.5.0.0 or later of the export module)
+
+
 ### 10.0.3
 
 - Improve the performance of loading tasks - parsing large datasets no longer slows down quadratically as the number of tasks on the same level grows, so the gain is largest on flat or wide structures and minimal on deep trees that hold few tasks per level

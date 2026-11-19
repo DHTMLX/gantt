@@ -1,6 +1,6 @@
 {
 	"name": "dhtmlx-gantt",
-	"version": "10.0.3",
+	"version": "10.0.4",
 	"description": "DHTMLX Gantt - open source JavaScript Gantt chart (Community edition)",
 	"type": "module",
 	"main": "codebase/dhtmlxgantt.js",
@@ -11,7 +11,9 @@
 		"codebase",
 		"whatsnew.md",
 		"README.md",
-		"LICENSE.md"
+		"LICENSE.md",
+		"AGENTS.md",
+		"CLAUDE.md"
 	],
 	"scripts": {
 		"build": "vite build && node scripts/postbuild.js",

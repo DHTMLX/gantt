@@ -161,4 +161,10 @@ export default function(gantt) {
 		updateAfterRemoveChild(originalMoveTaskParent);
 		updateParentTypes(id);
 	}));
+
+	// Silent moves must update both parents; the store supplies the old parent.
+	gantt.$data.tasksStore.attachEvent("onAfterSilentMove", callIfEnabled(function(id, parent, tindex, oldParent) {
+		updateAfterRemoveChild(oldParent);
+		updateParentTypes(id);
+	}));
 };

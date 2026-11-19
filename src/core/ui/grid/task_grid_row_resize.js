@@ -1,6 +1,13 @@
 import * as domHelpers from "../utils/dom_helpers";
+import { getOwnItemId } from "../../datastore/own_item_id";
 
 function createRowResizer(gantt, grid){
+
+	// GS-3658. `locate` returns the attribute string for this attribute, which tasks and resources share;
+	// the events get the own id of the row
+	function locateRowId(e){
+		return getOwnItemId(grid.$config.rowStore, gantt.locate(e, grid.$getConfig().task_grid_row_resizer_attribute));
+	}
 
 	var _task_grid_row_resize = {
 		row_before_start: gantt.bind(function (dnd, obj, e) {
@@ -10,17 +17,14 @@ function createRowResizer(gantt, grid){
 			var el = domHelpers.locateAttribute(e, config.task_grid_row_resizer_attribute);
 			if (!el) return false;
 
-			var row_id = this.locate(e, config.task_grid_row_resizer_attribute),
-				row = store.getItem(row_id);
+			var row = store.getItem(locateRowId(e));
 
 			if (grid.callEvent("onBeforeRowResize", [row]) === false)
 				return false;
 		}, gantt),
 
 		row_after_start: gantt.bind(function (dnd, obj, e) {
-			var config = grid.$getConfig();
-
-			var row_id = this.locate(e, config.task_grid_row_resizer_attribute);
+			var row_id = locateRowId(e);
 			dnd.config.marker.innerHTML = "";
 
 			dnd.config.marker.className += " gantt_row_grid_resize_area";

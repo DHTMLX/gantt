@@ -72,6 +72,16 @@ function createMixin(_super){
 							}
 							linkedStore._quick_refresh = true;
 							self.relevantResources.forEach(function(id){
+								const row = linkedStore.getItem(id);
+								if (row && row.$role === "task") {
+									// Quick refresh skips the filter that normally rebuilds fetched copies.
+									// Keep their display range current without updating assignment data.
+									const gantt = self.$gantt;
+									const task = gantt.getTask(row.$task_id);
+									row.start_date = gantt.copy(task.start_date);
+									row.end_date = gantt.copy(task.end_date);
+									row.duration = task.duration;
+								}
 								linkedStore.refresh(id);
 							});
 							linkedStore._quick_refresh = false;
@@ -174,21 +184,28 @@ function createMixin(_super){
 
 		_getIdsFromAssignments: function(id){
 			const gantt = this.$gantt;
+			const linkedStore = this.$config.rowStore;
 			const resourceIds = [];
+			const addAssignmentRows = function(assignment){
+				resourceIds.push(assignment.resource_id);
+				if (linkedStore.$config.fetchTasks) {
+					// GS-3700. Fetched tasks are separate rows; refreshing their resource does not repaint them.
+					const rowId = assignment.task_id + "_" + assignment.resource_id;
+					if (linkedStore.exists(rowId)) {
+						resourceIds.push(rowId);
+					}
+				}
+			};
 
 			const task = gantt.getTask(id);
 			let assignments = gantt.getTaskAssignments(id);
-			assignments.forEach(function(assignment){
-				resourceIds.push(assignment.resource_id);
-			});
+			assignments.forEach(addAssignmentRows);
 
 			// get child assignments when dragging project task
 			if (gantt.isSummaryTask(task) && gantt.config.drag_project) {
 				gantt.eachTask(function(child){
 					const childAssignments = gantt.getTaskAssignments(child.id);
-					childAssignments.forEach(function(assignment){
-						resourceIds.push(assignment.resource_id);
-					});
+					childAssignments.forEach(addAssignmentRows);
 				}, id);
 			}
 
@@ -197,9 +214,7 @@ function createMixin(_super){
 				const selectedIds = gantt.getSelectedTasks();
 				selectedIds.forEach(function(selectedId){
 					const selectedAssignments = gantt.getTaskAssignments(selectedId);
-					selectedAssignments.forEach(function(assignment){
-						resourceIds.push(assignment.resource_id);
-					});
+					selectedAssignments.forEach(addAssignmentRows);
 				});
 			}
 

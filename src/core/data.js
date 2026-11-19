@@ -620,5 +620,8 @@ export default function(gantt) {
 		gantt._init_task_timing(gantt.getTask(id));
 		return true;
 	});
+	gantt.$data.tasksStore.attachEvent("onAfterSilentMove", function (id) {
+		gantt._init_task_timing(gantt.getTask(id));
+	});
 
 };
