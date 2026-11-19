@@ -6,5 +6,4 @@ src/
 vite.config.js
 tsconfig.json
 eslint.config.js
-AGENTS.md
 CONTRIBUTING.md

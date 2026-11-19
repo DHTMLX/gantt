@@ -54,9 +54,6 @@ export default function extendGantt(gantt: any, dp: any) {
 		gantt.refreshTask(rowId);
 	};
 
-	// fake method for dataprocessor
-	gantt._delete_task = function(rowId, node) {}; // tslint:disable-line
-
 	gantt._sendTaskOrder = function(id, item){
 		if (item.$drop_target) {
 			this._dp.setGanttMode("task");

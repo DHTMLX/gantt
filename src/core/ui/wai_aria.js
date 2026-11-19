@@ -157,6 +157,15 @@ export default function(gantt){
 			});
 		},
 
+		lightboxDurationInputValueAttr: function(input, value, text){
+			input.setAttribute("aria-valuenow", value);
+			if(text){
+				input.setAttribute("aria-valuetext", text);
+			}else{
+				input.removeAttribute("aria-valuetext");
+			}
+		},
+
 		inlineEditorAttr: function(div){
 			div.setAttribute("role", "row");
 		},

@@ -40,9 +40,11 @@ interface ICalendarWorktimes {
 
 
 
-interface ICalendarCustomWeekSettings extends ICalendarWorktimes{
+interface ICalendarCustomWeekSettings extends Omit<ICalendarWorktimes, "hours">{
 	from: Date;
 	to: Date;
+	// `false` gives the period no work hours, `true` or an absent value applies the hours of the calendar
+	hours?: CalendarHoursConfig[] | boolean;
 }
 
 interface ICalendarWorktimeSettings extends ICalendarWorktimes{

@@ -691,7 +691,7 @@ export interface GanttEventCallback {
 	 * @param id the id of the double clicked task
 	 * @param e a native event object
 	*/
-	"onTaskDblClick"(id: string, e?: Event): boolean;
+	"onTaskDblClick"(id: string | number, e?: Event): boolean;
 
 	/**
 	 * fires when the user drags a task
@@ -2908,9 +2908,9 @@ export interface GanttStatic {
 	getScrollState(): { x: number, y: number };
 
 	/**
-	 * returns the id of the selected task
+	 * returns the id of the selected task, or null if no task is selected
 	*/
-	getSelectedId(): string;
+	getSelectedId(): string | number | null;
 
 	/**
 	 * returns an array of the currently selected tasks
@@ -4969,7 +4969,7 @@ export interface GanttUIState {
 	/**
 	 * the id of a task that the user is currently dragging in the Gantt chart. *undefined* or *null*, if no tasks are being dragged in the Gantt chart.
 	*/
-	drag_id: string | null | undefined,
+	drag_id: string | number | null | undefined,
 
 	/**
 	 * the drag mode. Has these values: 'move','resize','progress', 'ignore' when a task is dragged. Otherwise, has *null* or *undefined* value.
@@ -4984,7 +4984,7 @@ export interface GanttUIState {
 	/**
 	 * the id of a task that is currently opened in the lightbox. *undefined* or *null*, if no tasks are opened in the lightbox.
 	*/
-	lightbox: string | null | undefined,
+	lightbox: string | number | null | undefined,
 
 	/**
 	 * the new link creation state, returns *true* when the link is created from the start of the predecessor task.
@@ -5034,7 +5034,7 @@ export interface GanttUIState {
 	/**
 	 * the id of the currently selected task. *undefined* or *null*, if no tasks are selected in the Gantt chart.
 	*/
-	selected_task: string | null | undefined
+	selected_task: string | number | null | undefined
 }
 
 export interface RoundDateConfig {
@@ -5601,7 +5601,7 @@ export interface CalendarConfig {
 			[timespan: string]: {
 				from: Date,
 				to: Date,
-				hours?: Array<string | number>,
+				hours?: Array<string | number> | boolean,
 				days?: WorkDaysTuple | WorkDaysSettings | boolean,
 			},
 		}
@@ -5862,7 +5862,7 @@ export interface Calendar {
 				[timespan: string]: {
 					from: Date,
 					to: Date,
-					hours?: string[] | number[],
+					hours?: string[] | number[] | boolean,
 					days?: WorkDaysTuple | boolean,
 				},
 			},

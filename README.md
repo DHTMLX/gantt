@@ -1,6 +1,6 @@
 # DHTMLX Gantt - JavaScript Gantt Chart (Community Edition)
 
-[![npm: v.10.0.3](https://img.shields.io/badge/npm-v.10.0.3-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt) · [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md) · [![made by DHTMLX](https://img.shields.io/badge/made%20by-DHTMLX-blue)](https://dhtmlx.com/)
+[![npm: v.10.0.4](https://img.shields.io/badge/npm-v.10.0.4-blue.svg)](https://www.npmjs.com/package/dhtmlx-gantt) · [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md) · [![made by DHTMLX](https://img.shields.io/badge/made%20by-DHTMLX-blue)](https://dhtmlx.com/)
 
 ![](dhtmlx_logo.svg)
 
@@ -206,7 +206,7 @@ The Community Edition covers the everyday Gantt feature set, **including project
 - **Drag-and-drop scheduling** - move task bars to reschedule; resize bars to change duration
 - **Progress indicators** - completion shown as a filled bar segment, editable in the lightbox
 - **Lightbox task editor** - configurable modal dialog; add your own controls
-- **Smart rendering** - only visible rows/columns are drawn, for large datasets
+- **Large-dataset rendering** - row and timeline virtualization renders only visible tasks, links, and timeline cells to reduce rendering overhead
 - **Multiple chart instances** - render several independent Gantts on one page via the `Gantt` factory
 - **Templates** - override any rendered element (bars, grid cells, scale cells, tooltips)
 - **Plugins** - tooltips, quick info, keyboard navigation, fullscreen, drag-timeline, click-drag
@@ -219,6 +219,8 @@ The Community Edition covers the everyday Gantt feature set, **including project
 - **TypeScript** - bundled type definitions
 
 > **Note:** `codebase/dhtmlxgantt.d.ts` describes the full product API, so it lists some PRO-only methods that are not present in this edition.
+
+**Performance at scale**: Explore [benchmarks with up to 100,000 tasks](https://dhtmlx.com/blog/javascript-gantt-performance-benchmark-handling-up-to-100000-tasks/) and [performance optimization tips](https://docs.dhtmlx.com/gantt/guides/performance/). The benchmarks cover both rendering and scheduling workloads, including PRO-only features.
 
 ---
 
@@ -314,6 +316,8 @@ Building with an AI coding assistant (Claude Code, Cursor, Codex…)? Two free h
 
 - [DHTMLX MCP Server](https://docs.dhtmlx.com/gantt/integrations/ai-tools/mcp-server/) - connects your assistant to up-to-date DHTMLX documentation and API reference.
 - [Agent Skills](https://docs.dhtmlx.com/gantt/integrations/ai-tools/agent-skills/) - teach the assistant correct integration patterns and known pitfalls.
+
+The package also ships [AGENTS.md](AGENTS.md) with rules for AI agents (edition limits, common pitfalls). Point your assistant to `node_modules/dhtmlx-gantt/AGENTS.md`.
 
 ## Useful links
 

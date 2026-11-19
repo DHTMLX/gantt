@@ -507,25 +507,26 @@ export class DataProcessor {
 				break;
 			case "delete":
 			case "deleted":
-				if(!this.deleteAfterConfirmation || this._ganttMode !== "task"){
+				if (this.deleteAfterConfirmation && this._ganttMode === "task" && this.$gantt.isTaskExists(sid)) {
 					this.$gantt.setUserData(sid, this.action_param, "true_deleted", this._ganttMode);
-					this.$gantt[this._methods[3]](sid);
+					const task = this.$gantt.getTask(sid);
+					this.$gantt.silent(() => {
+						this.$gantt.deleteTask(sid);
+					});
+					this.$gantt.callEvent("onAfterTaskDelete", [sid, task]);
+					this.$gantt.render();
 					delete this._in_progress[marker];
 					return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
-				}else{
-					if (this._ganttMode === "task" && this.$gantt.isTaskExists(sid)) {
-						this.$gantt.setUserData(sid, this.action_param, "true_deleted", this._ganttMode);
-						const task = this.$gantt.getTask(sid);
-						this.$gantt.silent(() => {
-							this.$gantt.deleteTask(sid);
-						});
-						this.$gantt.callEvent("onAfterTaskDelete", [sid, task]);
-						this.$gantt.render();
-						delete this._in_progress[marker];
-					}
+				}
+				if (this._in_progress[marker] === "wait" && this.getState(sid) === "deleted") {
+					// a delete of this id queued during the request is already done on the server
+					this.setUpdated(sid, false);
+					delete this._in_progress[marker];
 					return this.callEvent("onAfterUpdate", [sid, action, tid, btag]);
 				}
-
+				// The item left Gantt before this response. End the request like any other, so that
+				// no state passes to an item that comes back with the same id.
+				break;
 		}
 
 		if (this._in_progress[marker] !== "wait") {
@@ -680,7 +681,7 @@ export class DataProcessor {
 			clear:""
 		};
 
-		this._methods=["_row_style","setCellTextStyle","_change_id","_delete_task"];
+		this._methods=["_row_style","setCellTextStyle","_change_id"];
 		extendGantt(this.$gantt, this);
 		const dataProcessorEvents = new DataProcessorEvents(this.$gantt, this);
 		dataProcessorEvents.attach();
@@ -691,7 +692,6 @@ export class DataProcessor {
 			delete this.$gantt._dp;
 			delete this.$gantt._change_id;
 			delete this.$gantt._row_style;
-			delete this.$gantt._delete_task;
 			delete this.$gantt._sendTaskOrder;
 			delete this.$gantt;
 

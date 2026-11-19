@@ -1,5 +1,6 @@
 import * as domHelpers from "../utils/dom_helpers";
 import isPlaceholderTask from "../../../utils/placeholder_task";
+import { getOwnItemId } from "../../datastore/own_item_id";
 
 function _init_dnd(gantt, grid) {
 	var DnD = gantt.$services.getService("dnd");
@@ -14,6 +15,11 @@ function _init_dnd(gantt, grid) {
 
 	function getStore(){
 		return gantt.getDatastore(grid.$config.bind);
+	}
+
+	// GS-3658. The attribute value is always a string; the events get the own id of the row
+	function getRowId(el){
+		return getOwnItemId(getStore(), el.getAttribute(grid.$config.item_attribute));
 	}
 
 	function checkPlaceholderTask(id){
@@ -33,7 +39,7 @@ function _init_dnd(gantt, grid) {
 			return false;
 		}
 
-		var id = el.getAttribute(grid.$config.item_attribute);
+		var id = getRowId(el);
 		if (checkPlaceholderTask(id)) return false;
 
 		var datastore = getStore();
@@ -58,7 +64,7 @@ function _init_dnd(gantt, grid) {
 			element.style.position = "static";
 		}
 
-		dnd.config.id = el.getAttribute(grid.$config.item_attribute);
+		dnd.config.id = getRowId(el);
 
 		var store = getStore();
 

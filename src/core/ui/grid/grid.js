@@ -8,6 +8,7 @@ import rowResize from "./task_grid_row_resize";
 import ColumnDnd from "../plugins/column_grid_dnd";
 
 import mouseEventContainer from "../mouse_event_container";
+import { getOwnItemId } from "../../datastore/own_item_id";
 
 var Grid = function (parent, config, factory, gantt) {
 	this.$config = utils.mixin({}, config || {});
@@ -390,13 +391,18 @@ Grid.prototype = {
 
 	_initEvents: function () {
 		var gantt = this.$gantt;
+		// GS-3658. The attribute value is always a string; the open and close events get the own id of the row
+		var getRowId = gantt.bind(function (target) {
+			return getOwnItemId(this.$config.rowStore, target.getAttribute(this.$config.item_attribute));
+		}, this);
+
 		this._mouseDelegates.delegate("click", "gantt_close", gantt.bind(function (e, id, trg) {
 			var store = this.$config.rowStore;
 			if (!store) return true;
 
 			var target = domHelpers.locateAttribute(e, this.$config.item_attribute);
 			if (target) {
-				store.close(target.getAttribute(this.$config.item_attribute));
+				store.close(getRowId(target));
 
 			}
 			return false;
@@ -408,7 +414,7 @@ Grid.prototype = {
 
 			var target = domHelpers.locateAttribute(e, this.$config.item_attribute);
 			if (target) {
-				store.open(target.getAttribute(this.$config.item_attribute));
+				store.open(getRowId(target));
 
 			}
 			return false;

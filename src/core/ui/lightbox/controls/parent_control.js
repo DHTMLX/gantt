@@ -36,6 +36,15 @@ export default function(gantt) {
 		return gantt.form_blocks.select.set_value.apply(gantt, [newOptions, value, ev, config]);
 	};
 
+	ParentControl.prototype.get_value = function(node, ev, config) {
+		const value = gantt.form_blocks.select.get_value.apply(gantt, arguments);
+		// GS-3658. The select gives the option value as a string; the parent is the option's own key
+		const option = (config.options || []).find(function(item) {
+			return String(item.key) === value;
+		});
+		return option ? option.key : value;
+	};
+
 	function _display(config, item_id) {
 		var tasks = [],
 			options = [];

@@ -493,9 +493,17 @@ TreeDataStore.prototype = utils.mixin({
 					return;
 				}
 			}
-			
 
-			if(this.callEvent("onBeforeItemMove", [sid, parent, tindex]) === false)
+
+			// GS-3389: Silent moves emit no public move events, cannot be vetoed by apps, and create no undo entry.
+			// Store handlers still guard and update tree state (`onBeforeSilentMove`, `onAfterSilentMove`).
+			var silent = this.isSilent();
+			if(silent){
+				// Keep placeholder and extension guards active during silent moves.
+				if(isPlaceholderTask(sid, null, this, this._ganttConfig) ||
+					this.callEvent("onBeforeSilentMove", [sid, parent, tindex]) === false)
+					return false;
+			}else if(this.callEvent("onBeforeItemMove", [sid, parent, tindex]) === false)
 				return false;
 
 			var placeholderIds = [];
@@ -543,7 +551,11 @@ TreeDataStore.prototype = utils.mixin({
 
 			this._moveInner(this.getIndexById(sid), this.getIndexById(parent) + tindex);
 
-			this.callEvent("onAfterItemMove", [sid, parent, tindex]);
+			if(silent){
+				this.callEvent("onAfterSilentMove", [sid, parent, tindex, source_pid]);
+			}else{
+				this.callEvent("onAfterItemMove", [sid, parent, tindex]);
+			}
 			this.refresh();
 		},
 
