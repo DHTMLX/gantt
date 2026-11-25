@@ -5,6 +5,7 @@ import DataProcessorEvents from "./data_processor_events";
 import extendGantt from "./extend_gantt";
 import SimpleStorage from "./simple_storage";
 import global from "../../utils/global";
+import type { DataProcessorBatchResponseRow, Id } from "../../types/gantt_types";
 
 export interface DataProcessor { // tslint:disable-line
 	$gantt: any;
@@ -50,7 +51,8 @@ export function createDataProcessor(config: any) {
 	dp.setTransactionMode({
 		mode: tMode,
 		router,
-		headers
+		headers,
+		batch: config.batch
 	}, config.batchUpdate);
 	if(config.deleteAfterConfirmation){
 		dp.deleteAfterConfirmation = config.deleteAfterConfirmation;
@@ -78,6 +80,7 @@ export class DataProcessor {
 	protected _invalid: object;
 	protected _storage: SimpleStorage;
 	protected _tSend: boolean;
+	protected _batchMode: boolean;
 	protected _serializeAsJson: boolean;
 	protected _router: any;
 	protected _utf: boolean;
@@ -126,6 +129,7 @@ export class DataProcessor {
 	}
 
 	setTransactionMode(mode:any, total?:any) {
+		let batch = false;
 		if (typeof mode === "object") {
 			this._tMode = mode.mode || this._tMode;
 
@@ -136,18 +140,26 @@ export class DataProcessor {
 			if (utils.defined(mode.payload)) {
 				this._payload = mode.payload;
 			}
+			batch = !!mode.batch;
 			this._tSend = !!total;
 		} else {
 			this._tMode = mode;
 			this._tSend = total;
 		}
 
+		if (batch && this._tMode !== "JSON") {
+			throw new Error(`Incorrect dataProcessor configuration: "batch: true" is supported only by the **JSON** transaction mode, and not by **${this._tMode}**.
+The REST and REST-JSON modes address a row by the request URL and pick the HTTP method per row state, so sending several rows in one request requires a dedicated endpoint convention rather than a flag.
+Use gantt.createDataProcessor({ url, mode: "JSON", batch: true }) or implement a custom router.`);
+		}
+		this._batchMode = batch;
+
 		if (this._tMode === "REST") {
 			this._tSend = false;
 		}
 
 		if (this._tMode === "JSON" || this._tMode === "REST-JSON") {
-			this._tSend = false;
+			this._tSend = this._batchMode;
 			this._serializeAsJson = true;
 			this._headers = this._headers || {};
 			this._headers["Content-Type"] = "application/json";
@@ -602,6 +614,15 @@ export class DataProcessor {
 			const tid = tag.tid || itemId[0];
 			that.afterUpdateCallback(sid, tid, action, tag, mode);
 		};
+
+		const batchResponse = this._getBatchResponse(tag);
+		if (batchResponse) {
+			this._processBatchResponse(that, batchResponse, id, mode);
+			that.finalizeUpdate();
+			this.setGanttMode(mode);
+			return;
+		}
+
 		if (tag) {
 			// GS-753. When multiple tasks are updated, unhighlight all of them
 			if (Array.isArray(id) && id.length > 1) {
@@ -633,6 +654,63 @@ export class DataProcessor {
 			that.afterUpdateCallback(sid, tid, action, btag, mode);
 		}
 		that.finalizeUpdate();
+	}
+
+	/**
+	 * Recognizes a per-row response: either a bare array of row results or an object with
+	 * a `batch` array. Anything else keeps the single-object response path.
+	 * @param tag parsed JSON response
+	 * @returns the array of per-row results, or null
+	 */
+	protected _getBatchResponse(tag: any): DataProcessorBatchResponseRow[] | null {
+		if (Array.isArray(tag)) {
+			return tag;
+		}
+		if (tag && Array.isArray(tag.batch)) {
+			return tag.batch;
+		}
+		return null;
+	}
+
+	/**
+	 * Applies a per-row response, mirroring the XML `//data/action` loop: each row resolves its
+	 * own sid, tid and action. Rows the response does not mention are released from
+	 * `_in_progress` so they can be sent again instead of being stuck.
+	 * @param dataProcessor the dataProcessor the request callback was bound to
+	 * @param rows per-row results from the response
+	 * @param sentIds ids sent in the request
+	 * @param mode gantt mode the request was sent for
+	 */
+	protected _processBatchResponse(
+		dataProcessor: DataProcessor,
+		rows: DataProcessorBatchResponseRow[],
+		sentIds: Id[],
+		mode: string
+	) {
+		const answered: { [id: string]: boolean } = {};
+
+		for (let i = 0; i < rows.length; i++) {
+			const row = rows[i] || {};
+			const sid = row.sid !== undefined ? row.sid : row.id;
+			if (sid === undefined) {
+				continue;
+			}
+			const tid = row.tid !== undefined ? row.tid : (row.id !== undefined ? row.id : sid);
+			const action = row.action || this.getState(sid) || "updated";
+
+			answered[sid] = true;
+			dataProcessor.afterUpdateCallback(sid, tid, action, row, mode);
+		}
+
+		if (sentIds) {
+			const unanswered = [];
+			for (let i = 0; i < sentIds.length; i++) {
+				if (!answered[sentIds[i]]) {
+					unanswered.push(sentIds[i]);
+				}
+			}
+			this.cleanUpdate(unanswered);
+		}
 	}
 
 	cleanUpdate(id: any[]) {
@@ -926,6 +1004,43 @@ export class DataProcessor {
 		return output;
 	}
 
+	protected _isBatchRequest(rowId?: any): boolean {
+		return !!this._batchMode && rowId === undefined;
+	}
+
+	/**
+	 * Builds the `{ id, action, data }` envelope the JSON mode sends for one row.
+	 */
+	protected _serializeJsonRow(rawItem: any, rowId?: any): any {
+		const data = {};
+		const preprocessedData = this._cleanupItemBeforeSend(rawItem);
+		for (const key in preprocessedData) {
+			if (key === this.action_param || key === "id" || key === "gr_id") {
+				continue;
+			}
+			data[key] = preprocessedData[key];
+		}
+
+		return {
+			id: rowId !== undefined ? rowId : (rawItem ? rawItem.id : undefined),
+			action: rawItem ? rawItem[this.action_param] : undefined,
+			data
+		};
+	}
+
+	protected _serializeBatch(dataToSend: any): any[] {
+		const batch = [];
+		for (const id in dataToSend) {
+			const rawItem = dataToSend[id];
+			if (!rawItem) {
+				continue;
+			}
+			
+			batch.push(this._serializeJsonRow(rawItem, rawItem.id !== undefined ? rawItem.id : id));
+		}
+		return batch;
+	}
+
 	protected _sendData(dataToSend: any, rowId?: any) {
 		if (!dataToSend) {
 			return; // nothing to send
@@ -1066,22 +1181,11 @@ See https://docs.dhtmlx.com/gantt/desktop__server_side.html#customrouting and ht
 				queryParams.data = this.serialize(data, rowId);
 				break;
 			case "JSON":
-				data = {};
-				const preprocessedData = this._cleanupItemBeforeSend(dataToSend);
-				for (const key in preprocessedData) {
-					if (key === this.action_param || key === "id" || key === "gr_id") {
-						continue;
-					}
-					data[key] = preprocessedData[key];
-				}
-
 				queryParams.url = url;
 				queryParams.method = "POST";
-				queryParams.data = JSON.stringify({
-					id: rowId,
-					action: dataToSend[this.action_param],
-					data
-				});
+				queryParams.data = this._isBatchRequest(rowId)
+					? JSON.stringify({ batch: this._serializeBatch(dataToSend) })
+					: JSON.stringify(this._serializeJsonRow(dataToSend, rowId));
 				break;
 			case "REST":
 			case "REST-JSON":

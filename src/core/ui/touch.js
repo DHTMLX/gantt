@@ -25,6 +25,31 @@ export default function(gantt) {
 		}
 	});
 
+	const DRAG_HANDLE_CLASSES = ["gantt_task_drag", "gantt_task_progress_drag", "gantt_link_point", "gantt_link_control"];
+
+	function classifyTouchTarget(node) {
+		let rank = -1;
+		let inBar = false;
+		let target = node;
+		while (target) {
+			if (target.classList) {
+				if (!inBar && target.classList.contains("gantt_task_line")) {
+					inBar = true;
+				}
+				if (rank === -1) {
+					for (let i = 0; i < DRAG_HANDLE_CLASSES.length; i++) {
+						if (target.classList.contains(DRAG_HANDLE_CLASSES[i])) {
+							rank = i;
+							break;
+						}
+					}
+				}
+			}
+			target = target.parentNode;
+		}
+		return { rank, inBar };
+	}
+
 	function addTouchEvents(){
 		if (gantt.config.touch != "force")
 			gantt.config.touch = gantt.config.touch &&
@@ -42,16 +67,31 @@ export default function(gantt) {
 			if (touchEventsSupported) {
 				gantt._touch_events(["touchmove", "touchstart", "touchend"], function (ev) {
 					if (ev.touches && ev.touches.length > 1) return null;
-					if (ev.touches[0])
+					if (ev.touches[0]) {
+						const touch = ev.touches[0];
+						let target = ev.target;
+						if (ev.type === "touchstart") {
+							const native = classifyTouchTarget(target);
+							
+							if (native.inBar && native.rank !== 0) {
+								const root = (target.getRootNode && target.getRootNode()) || document;
+								const atPoint = root.elementFromPoint(touch.clientX, touch.clientY);
+								const atRank = atPoint ? classifyTouchTarget(atPoint).rank : -1;
+								if (atRank !== -1 && (native.rank === -1 || atRank < native.rank)) {
+									target = atPoint;
+								}
+							}
+						}
 						return {
-							target: ev.target,
-							pageX: ev.touches[0].pageX,
-							pageY: ev.touches[0].pageY,
-							clientX: ev.touches[0].clientX,
-							clientY: ev.touches[0].clientY
+							target: target,
+							pageX: touch.pageX,
+							pageY: touch.pageY,
+							clientX: touch.clientX,
+							clientY: touch.clientY
 						};
-					else
+					} else {
 						return ev;
+					}
 				}, function (ev) {
 					return ev.defaultPrevented;
 				});

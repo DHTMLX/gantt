@@ -316,6 +316,38 @@ export default function(gantt: any) {
 			}
 
 			delete result.editor_types;
+
+			// The ext/toolbar plugin injects a { view: "toolbar" } layout cell, but
+			// the export worker's gantt does not register that view. Strip any
+			// toolbar cell from a DEEP copy of the layout (never the live config),
+			// then unwrap the single-child wrapper the auto-injection introduced.
+			if (result.layout) {
+				const stripToolbar = function(node:any):any {
+					if (!node || typeof node !== "object") {
+						return node;
+					}
+					["rows", "cols", "views"].forEach(function(key) {
+						if (Array.isArray(node[key])) {
+							node[key] = node[key]
+								.filter(function(cell:any) { return !(cell && cell.view === "toolbar"); })
+								.map(stripToolbar);
+						}
+					});
+					return node;
+				};
+				let layout = stripToolbar(gantt.copy(result.layout));
+				if (layout && Array.isArray(layout.rows) && layout.rows.length === 1 && !layout.cols) {
+					const only = layout.rows[0];
+					if (only && (only.rows || only.cols)) {
+						if (layout.css && !only.css) {
+							only.css = layout.css;
+						}
+						layout = only;
+					}
+				}
+				result.layout = layout;
+			}
+
 			return result;
 		},
 
@@ -851,7 +883,7 @@ export default function(gantt: any) {
 
 			// Save filtered tasks in a separate dataset to not iterate all tasks multiple times
 			const datasetForExport: any = [];
-			let tasks = config.data || gantt.serialize().data;
+			let tasks = config.data || gantt.serialize(null, { order: "display" }).data;
 			tasks.forEach(function(task:any, index:any){
 				// GS-3508. Don't export tasks outside the timeline with disabled `show_tasks_outside_timescale`
 				if (!gantt.config.show_tasks_outside_timescale && !gantt.ext.export_api._isTaskInsideTimeline(task)){

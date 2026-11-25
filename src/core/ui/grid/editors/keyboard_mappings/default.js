@@ -18,83 +18,6 @@ export default {
 			}
 			return true;
 		});
-		//GS-2598: new resource control click handler
-		if(grid.$config.id === "GridRL"){
-			gantt.event(gantt.getLightbox(), "click", function (e) {
-				const domHelpers = gantt.utils.dom;
-				const state = controller.getState();
-				const cell = controller.locateCell(e.target);
-				// click on the resource table
-				if (cell && controller.getEditorConfig(cell.columnName)) {
-					// validation for unassigned case
-					if(cell.columnName == 'duration' || cell.columnName == 'end'){
-						const tempAssignmentStore = gantt.getDatastore("temp_resource_assignment_store");
-						const assignment = tempAssignmentStore.getItem(cell.id);
-						if(assignment){
-							if(!assignment.start_date){
-								gantt.message({
-									type:"warning",
-									text:"Specify assignment start date"
-								});
-								controller.hide();
-								return false;
-							}
-						}
-					}
-					if (controller.isVisible() && state.id == cell.id && state.columnName == cell.columnName) {
-					// do nothing if editor is already active in this cell
-					} else {
-						controller.startEdit(cell.id, cell.columnName);
-					}
-					if(controller.isChanged()){
-						controller.save();
-					}
-					return false;
-				}
-				// do nothing if add resource button clicked
-				if(domHelpers.closest(e.target, `.gantt_custom_button.gantt_add_resources`)){
-					return;
-				}
-				// handle assignment deleting
-				if(domHelpers.closest(e.target, `[data-assignment-delete]`)){
-					const assignmentId = e.target.getAttribute("data-assignment-delete");
-					gantt.confirm({
-						text: "Resource assignment will be deleted permanently, are you sure?",
-						cancel:"No",
-						ok:"Delete", 
-						callback: function(result){
-							if(result){
-								const tempAssignmentStore = gantt.getDatastore("temp_resource_assignment_store");
-								tempAssignmentStore.removeItem(assignmentId);
-								// handle deleting last grid row, 
-								if (tempAssignmentStore.getItems().length == 0){
-									const resourceSection = gantt.getLightboxSection(grid.$config.sectionName);
-									const block = gantt.form_blocks["resource_selector"];
-									const node = gantt._lightbox_root.querySelector("#" + resourceSection.section.id).nextSibling;
-									block.set_value.call(gantt, node, [], {}, resourceSection.section, true);
-								}
-								gantt.refreshData();
-							}else{
-								return;
-							}
-						}
-					});
-				}
-				//click outside the resource table
-				if(controller.isVisible()) {
-					controller.save();
-					controller.hide();
-				} else {
-					controller.hide();
-				}
-			});
-			// before saving lightbox need to save controller value if its modified
-			// covering date type inputs
-			gantt.lightbox_events.gantt_save_btn = function () {
-				controller.save();
-				gantt._save_lightbox();
-			};
-		};
 
 		// GS-3482: close the editor before the lightbox opens. The resource grid lives inside the
 		// lightbox itself, so its own controller must not close on its own opening.
@@ -194,30 +117,6 @@ export default {
 				e.preventDefault();
 			}
 		};
-		// GS-2598: update inline editor in the lightbox
-		if(grid.$config.id === "GridRL"){
-			placeholder.onkeyup = function (e) {
-				e = e || window.event;
-
-				var keyboard = gantt.constants.KEY_CODES;
-				if (e.defaultPrevented || (e.shiftKey && e.keyCode != keyboard.TAB)) {
-					return;
-				}
-				if(gantt._lightbox_id && controller.isChanged()){
-					controller.save();
-				}
-			};
-			let timeout;
-			placeholder.onwheel = function (e) {
-				e = e || window.event;
-				if(gantt._lightbox_id && controller.isChanged()){
-					clearTimeout(timeout);
-					timeout=setTimeout(function(){
-						controller.save();
-					},100);
-				}
-			};
-		}
 	},
 	onHide: function () {
 

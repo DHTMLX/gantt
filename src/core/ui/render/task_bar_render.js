@@ -1,3 +1,6 @@
+import { hasPauses, getWorkSegments } from "../../common/pauses";
+import { getBarTopPadding } from "./baseline_helper";
+
 function createTaskRenderer(gantt) {
 
 	function _render_task_element(task, view, config) {
@@ -34,20 +37,7 @@ function createTaskRenderer(gantt) {
 			controlsMargin = (height - pos.height)/2;
 		}
 
-		var padd = Math.floor((view.getItemHeight(task.id) - height) / 2);
-		const hasBaselines = gantt.config.baselines && task.baselines && task.baselines.length;
-		const baselinesOnDifferentRow = gantt.config.baselines && (gantt.config.baselines.render_mode == "separateRow" || gantt.config.baselines.render_mode == "individualRow");
-		if (hasBaselines && baselinesOnDifferentRow){
-			if (task.bar_height !== "full" && task.bar_height < task.row_height){
-				if (taskType === cfg.types.milestone){
-					let milestoneHeight = view.getBarHeight(task.id, true);
-					let milestoneWidth = Math.sqrt(2 * milestoneHeight * milestoneHeight);
-					padd = Math.floor((milestoneWidth - height) / 2) + 2;
-				} else {
-					padd = 2;
-				}
-			}
-		}
+		var padd = getBarTopPadding(gantt, view, task, height, taskType === cfg.types.milestone);
 	//	if(task.type == cfg.types.milestone){
 	//		padd -= 1;
 	//	}
@@ -70,12 +60,25 @@ function createTaskRenderer(gantt) {
 			div.setAttribute(view.$config.bind + "_id", task.id); // 'task_id'/'resource_id' for backward compatibility
 		}
 
-		if (cfg.show_progress && taskType != cfg.types.milestone) {
+		// task.pauses: the bar is drawn as work segments, without progress
+		var paused = taskType == cfg.types.task && hasPauses(gantt, task);
+
+		if (cfg.show_progress && taskType != cfg.types.milestone && !paused) {
 			_render_task_progress(task, div, width, cfg, templates);
+		}
+
+		var widestSegment = null;
+		if (paused) {
+			widestSegment = _render_work_segments(task, div, pos, view);
 		}
 
 		//use separate div to display content above progress bar
 		var content = _render_task_content(task, width, templates);
+		if (widestSegment) {
+			// the text goes over the widest work part, not over a pause
+			content.style.left = widestSegment.left + "px";
+			content.style.width = widestSegment.width + "px";
+		}
 
 		div.appendChild(content);
 
@@ -88,6 +91,9 @@ function createTaskRenderer(gantt) {
 		}
 		if (pos.width < 20){
 			css += " gantt_thin_task";
+		}
+		if (paused) {
+			css += " gantt_task_line_gapped";
 		}
 		div.className = css;
 
@@ -155,6 +161,35 @@ function createTaskRenderer(gantt) {
 			}
 		}
 		return div;
+	}
+
+	// One .gantt_task_segment per work part, positioned inside the bar. The bar
+	// itself stays a single element spanning start_date..end_date, so drag,
+	// links and getTaskNode keep working with it.
+	// Returns the position of the widest segment, relative to the bar.
+	function _render_work_segments(task, element, pos, view) {
+		// The segments are elapsed offsets from start_date, so a moved bar keeps
+		// its shape without any calendar math.
+		var segments = getWorkSegments(gantt, task);
+		var origin = pos;
+		var wrapper = document.createElement("div");
+		wrapper.className = "gantt_task_segments";
+		var widest = null;
+		for (var i = 0; i < segments.length; i++) {
+			var segmentPos = view.getItemPosition(task, segments[i].start_date, segments[i].end_date);
+			var left = Math.round(segmentPos.left - origin.left);
+			var width = Math.round(segmentPos.width);
+			var segment = document.createElement("div");
+			segment.className = "gantt_task_segment";
+			segment.style.left = left + "px";
+			segment.style.width = width + "px";
+			wrapper.appendChild(segment);
+			if (!widest || width > widest.width) {
+				widest = { left: left, width: width };
+			}
+		}
+		element.appendChild(wrapper);
+		return widest;
 	}
 
 	function _render_side_content(task, template, cssClass, marginStyle) {
@@ -305,6 +340,10 @@ function createTaskRenderer(gantt) {
 		}
 
 		css.push("gantt_bar_" + gantt.getTaskType(task.type));
+
+		if (!gantt._isStoredTaskActive(task)) {
+			css.push("gantt_task_inactive");
+		}
 
 
 		if (gantt.isSummaryTask(task))

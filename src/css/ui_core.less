@@ -1,0 +1,1387 @@
+/*
+ * UI core: popup primitive + control kit styles.
+ * Token-driven only — see src/themes/variables.less ("ui core" block).
+ * Design: ai-drafts/ui-controls-library-design.md §8.
+ */
+
+@import (reference) "./src/buttons.less";
+
+/* ---------- popup primitive ---------- */
+
+.dhx_ui_popup {
+	background: var(--dhx-ui-popup-background);
+	color: var(--dhx-ui-popup-color);
+	border: var(--dhx-ui-popup-border);
+	border-radius: var(--dhx-ui-popup-border-radius);
+	box-shadow: var(--dhx-ui-box-shadow-m);
+	font-family: var(--dhx-ui-font-family);
+	font-size: var(--dhx-ui-font-size);
+	box-sizing: border-box;
+
+	*,
+	*:before,
+	*:after {
+		box-sizing: border-box;
+	}
+}
+
+.dhx_ui_zband_popup {
+	z-index: var(--dhx-ui-z-popup);
+}
+
+.dhx_ui_zband_modal {
+	z-index: var(--dhx-ui-z-modal);
+}
+
+.dhx_ui_zband_notification {
+	z-index: var(--dhx-ui-z-notification);
+}
+
+.dhx_ui_backdrop {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: var(--dhx-ui-backdrop-background);
+}
+
+.dhx_ui_popup_modal .dhx_ui_popup_body {
+	padding: var(--dhx-ui-modal-padding);
+}
+
+/* ---------- shared control bits ---------- */
+
+.dhx_ui_control {
+	display: flex;
+	align-items: center;
+	position: relative;
+	width: 100%;
+	font-family: var(--dhx-ui-font-family);
+	font-size: var(--dhx-ui-font-size);
+}
+
+.dhx_ui_input {
+	flex: 1 1 auto;
+	width: 100%;
+	min-width: 0;
+	height: var(--dhx-ui-control-height);
+	padding: 0 8px;
+	background: var(--dhx-ui-input-background);
+	color: var(--dhx-ui-input-color);
+	border: var(--dhx-ui-input-border);
+	border-radius: var(--dhx-ui-input-border-radius);
+	font-family: inherit;
+	font-size: inherit;
+	outline: none;
+
+	&:focus {
+		outline: var(--dhx-ui-focus-ring);
+		outline-offset: -1px;
+	}
+}
+
+textarea.dhx_ui_input {
+	height: auto;
+	padding: 8px;
+	resize: vertical;
+}
+
+.dhx_ui_disabled {
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+/* ---------- combo ---------- */
+
+.dhx_ui_combo .dhx_ui_input {
+	padding-right: 28px;
+}
+
+/* field prefix icon: only present when the selected option carries an icon */
+.dhx_ui_combo_field_icon {
+	display: none;
+}
+
+.dhx_ui_combo_has_icon .dhx_ui_combo_field_icon {
+	display: block;
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	width: 16px;
+	height: 16px;
+	margin-top: -8px;
+	color: var(--dhx-ui-base-colors-icons);
+	pointer-events: none;
+}
+
+.dhx_ui_combo_has_icon .dhx_ui_input {
+	padding-left: 30px;
+}
+
+.dhx_ui_combo_toggle,
+.dhx_ui_datepicker_toggle {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	width: 12px;
+	height: 12px;
+	margin-top: -8px;
+	cursor: pointer;
+	color: var(--dhx-ui-base-colors-icons);
+}
+
+.dhx_ui_datepicker_masked .dhx_ui_input {
+	/* segmented editing selects whole slots — no free-floating caret. (No
+	   tabular-nums here on purpose: it would shift the at-rest date text and
+	   churn the reviewed lightbox screenshot baseline; the field is short enough
+	   that per-digit jitter while typing is negligible.) */
+	caret-color: transparent;
+}
+
+.dhx_ui_combo_toggle:after {
+	content: "";
+	display: block;
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+}
+
+.dhx_ui_combo_dropdown .dhx_ui_popup_body,
+.dhx_ui_datepicker_dropdown .dhx_ui_popup_body {
+	padding: 4px 0;
+}
+
+.dhx_ui_combo_list {
+	max-height: 220px;
+	overflow-y: auto;
+}
+
+.dhx_ui_combo_option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	cursor: pointer;
+}
+
+.dhx_ui_combo_option_icon {
+	flex: 0 0 auto;
+	width: 16px;
+	color: var(--dhx-ui-base-colors-icons);
+}
+
+.dhx_ui_combo_option_label {
+	flex: 1 1 auto;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dhx_ui_combo_option_active {
+	background: var(--dhx-ui-option-hover-background);
+}
+
+.dhx_ui_combo_option_selected {
+	font-weight: var(--dhx-ui-important-font-weight);
+	color: var(--dhx-ui-base-colors-primary);
+
+	.dhx_ui_combo_option_icon {
+		color: var(--dhx-ui-base-colors-primary);
+	}
+}
+
+.dhx_ui_combo_empty,
+.dhx_ui_combo_loading {
+	padding: 6px 10px;
+	color: var(--dhx-ui-base-colors-text-light);
+}
+
+/* ---------- number stepper ---------- */
+
+.dhx_ui_stepper .dhx_ui_input {
+	text-align: center;
+	border-radius: 0;
+	border-left: none;
+	border-right: none;
+}
+
+.dhx_ui_stepper_btn {
+	flex: 0 0 auto;
+	width: calc(var(--dhx-ui-control-height)*4/5);
+	height: var(--dhx-ui-control-height);
+	padding: 1px 4px;
+	background: var(--dhx-ui-input-background);
+	color: var(--dhx-ui-base-colors-primary);
+	border: var(--dhx-ui-input-border);
+	font-family: inherit;
+	font-size: calc(var(--dhx-ui-font-size) + 4px);
+	line-height: calc(var(--dhx-ui-font-size) + 4px);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+		outline-offset: -1px;
+	}
+}
+
+.dhx_ui_stepper_decrement {
+	border-radius: var(--dhx-ui-input-border-radius) 0 0 var(--dhx-ui-input-border-radius);
+}
+
+.dhx_ui_stepper_increment {
+	border-radius: 0 var(--dhx-ui-input-border-radius) var(--dhx-ui-input-border-radius) 0;
+}
+
+/* ---------- datepicker calendar ---------- */
+
+.dhx_ui_calendar {
+	width: 252px;
+	padding: 8px;
+	user-select: none;
+}
+
+.dhx_ui_calendar_header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
+
+.dhx_ui_calendar_title {
+	font-weight: var(--dhx-ui-important-font-weight);
+	white-space: nowrap;
+}
+
+// clickable month / year labels in the header (day + month views): plain-text
+// look, hover affordance — drilling into the month / year pickers
+.dhx_ui_calendar_title_part {
+	padding: 2px 6px;
+	background: transparent;
+	border: none;
+	border-radius: var(--dhx-ui-border-radius);
+	font-family: inherit;
+	font-size: inherit;
+	font-weight: inherit;
+	color: inherit;
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+	}
+}
+
+.dhx_ui_calendar_nav {
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	background: transparent;
+	border: none;
+	border-radius: var(--dhx-ui-border-radius);
+	font-size: 16px;
+	line-height: 1;
+	color: var(--dhx-ui-base-colors-icons);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+		color: var(--dhx-ui-input-color);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+	}
+}
+
+.dhx_ui_calendar_weekdays,
+.dhx_ui_calendar_grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+
+.dhx_ui_calendar_weekday {
+	text-align: center;
+	font-size: var(--dhx-ui-caption-font-size);
+	color: var(--dhx-ui-base-colors-text-light);
+	padding: 2px 0 4px;
+}
+
+.dhx_ui_calendar_day {
+	height: 30px;
+	padding: 0;
+	background: transparent;
+	border: none;
+	border-radius: var(--dhx-ui-border-radius);
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--dhx-ui-input-color);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+		outline-offset: -2px;
+	}
+}
+
+.dhx_ui_calendar_day_other {
+	color: var(--dhx-ui-base-colors-icons);
+}
+
+.dhx_ui_calendar_day_nonwork {
+	background: var(--dhx-ui-nonwork-background);
+	color: var(--dhx-ui-nonwork-color);
+	border-radius: 0;
+}
+
+.dhx_ui_calendar_day_today {
+	box-shadow: inset 0 0 0 1px var(--dhx-ui-base-colors-primary);
+}
+
+// keyboard-focused day: focus stays on the input (aria-activedescendant), so
+// the day's own :focus-visible never fires — this class carries the ring
+.dhx_ui_calendar_day_focus {
+	outline: var(--dhx-ui-focus-ring);
+	outline-offset: -2px;
+}
+
+.dhx_ui_calendar_day_selected {
+	background: var(--dhx-ui-base-colors-primary);
+	color: var(--dhx-ui-base-colors-text-on-fill);
+
+	&:hover {
+		background: var(--dhx-ui-base-colors-primary-hover);
+	}
+}
+
+.dhx_ui_calendar_day_disabled {
+	opacity: 0.4;
+	cursor: default;
+
+	&:hover {
+		background: transparent;
+	}
+}
+
+/* month / year picker grids (drilled into from the header labels) */
+.dhx_ui_calendar_cells {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 4px;
+	padding: 4px 0;
+}
+
+.dhx_ui_calendar_cell {
+	height: 44px;
+	padding: 0;
+	background: transparent;
+	border: none;
+	border-radius: var(--dhx-ui-border-radius);
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--dhx-ui-input-color);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+		outline-offset: -2px;
+	}
+}
+
+.dhx_ui_calendar_cell_other {
+	color: var(--dhx-ui-base-colors-icons);
+}
+
+// keyboard-focused month/year cell: focus stays on the input, so this class
+// carries the ring (mirrors .dhx_ui_calendar_day_focus)
+.dhx_ui_calendar_cell_focus {
+	outline: var(--dhx-ui-focus-ring);
+	outline-offset: -2px;
+}
+
+.dhx_ui_calendar_cell_selected {
+	background: var(--dhx-ui-base-colors-primary);
+	color: var(--dhx-ui-base-colors-text-on-fill);
+
+	&:hover {
+		background: var(--dhx-ui-base-colors-primary-hover);
+	}
+}
+
+.dhx_ui_calendar_cell_disabled {
+	opacity: 0.4;
+	cursor: default;
+
+	&:hover {
+		background: transparent;
+	}
+}
+
+.dhx_ui_calendar_footer {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 6px;
+	padding-top: 6px;
+	border-top: 1px solid var(--dhx-ui-base-colors-border-light);
+}
+
+.dhx_ui_calendar_action {
+	padding: 4px 8px;
+	background: transparent;
+	border: none;
+	border-radius: var(--dhx-ui-border-radius);
+	font-family: inherit;
+	font-size: var(--dhx-ui-caption-font-size);
+	color: var(--dhx-ui-base-colors-primary);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+	}
+}
+
+/* ---------- time input ---------- */
+
+.dhx_ui_time_input .dhx_ui_input {
+	/* keep HH:MM digits aligned as the masked value re-renders */
+	font-variant-numeric: tabular-nums;
+	/* segmented editing selects whole segments — no free-floating caret */
+	caret-color: transparent;
+}
+
+.dhx_ui_time_input_has_dropdown .dhx_ui_input {
+	/* room for the clock toggle */
+	padding-right: 28px;
+}
+
+.dhx_ui_time_input_toggle {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	width: 12px;
+	height: 12px;
+	margin-top: -8px;
+	cursor: pointer;
+	color: var(--dhx-ui-base-colors-icons);
+}
+
+/* multi-column dropdown selector (hours · minutes · optional AM/PM) */
+.dhx_ui_time_dropdown_columns {
+	display: flex;
+}
+
+.dhx_ui_time_column {
+	max-height: 220px;
+	overflow-y: auto;
+	padding: 4px;
+	border-right: 1px solid var(--dhx-ui-base-colors-border-light);
+
+	&:last-child {
+		border-right: none;
+	}
+}
+
+.dhx_ui_time_option {
+	display: block;
+	width: 100%;
+	min-width: 42px;
+	padding: 5px 10px;
+	background: transparent;
+	border: none;
+	border-radius: var(--dhx-ui-border-radius);
+	font-family: inherit;
+	font-size: inherit;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	color: var(--dhx-ui-input-color);
+	cursor: pointer;
+
+	&:hover {
+		background: var(--dhx-ui-option-hover-background);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+		outline-offset: -1px;
+	}
+}
+
+.dhx_ui_time_option_selected {
+	background: var(--dhx-ui-base-colors-primary);
+	color: var(--dhx-ui-base-colors-text-on-fill);
+
+	&:hover {
+		background: var(--dhx-ui-base-colors-primary-hover);
+	}
+}
+
+/* ---------- datetime composite (lightbox time/duration/constraint/baseline) ---------- */
+
+.dhx_ui_datetime {
+	/* override .dhx_ui_control width:100% — the composite sits inline next to
+	   siblings (the duration stepper, the constraint type combo) */
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: auto;
+}
+
+.dhx_ui_datetime_date {
+	flex: 0 0 auto;
+	width: 150px;
+}
+
+.dhx_ui_datetime_time {
+	flex: 0 0 auto;
+	/* wide enough for "hh:mm AM" alongside the clock toggle */
+	width: 110px;
+}
+
+/* combined date+time DatePicker popup (withTime): calendar + time columns side
+   by side */
+.dhx_ui_datetime_popup {
+	display: flex;
+	/* top-align: the calendar is the height driver — the time columns are capped
+	   to its measured height (see _syncTimePanelHeight) so the popup never grows
+	   past the mini-calendar (no blank space below a short month) */
+	align-items: flex-start;
+}
+
+.dhx_ui_datetime_popup .dhx_ui_calendar {
+	border-right: 1px solid var(--dhx-ui-base-colors-border-light);
+}
+
+.dhx_ui_datetime_time_panel {
+	display: flex;
+	padding: 8px 0;
+
+	.dhx_ui_time_column {
+		/* fallback bound before/without the JS height sync; the inline max-height
+		   set from the calendar height wins when present */
+		max-height: 320px;
+	}
+}
+
+/* ---------- tabs ---------- */
+
+.dhx_ui_tabs {
+	display: block;
+}
+
+.dhx_ui_tabs_header {
+	display: flex;
+	gap: 4px;
+	border-bottom: 1px solid var(--dhx-ui-base-colors-border);
+
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	/* a tab may overlap the bottom border; that must not add a vertical scrollbar */
+	overflow-y: hidden;
+	/* tabs that do not fit are reached with a thin scrollbar in the colors of the skin */
+	scrollbar-width: thin;
+	scrollbar-color: var(--dhx-ui-base-colors-icons) transparent;
+
+	/* browsers without scrollbar-color; the others ignore these rules */
+	&::-webkit-scrollbar {
+		height: 6px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: var(--dhx-ui-base-colors-icons);
+		border-radius: 3px;
+	}
+}
+
+.dhx_ui_tabs_tab {
+	padding: 8px 12px;
+	flex: 0 0 auto;
+	white-space: nowrap;
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid transparent;
+	font-family: inherit;
+	font-size: inherit;
+	color: var(--dhx-ui-base-colors-text-light);
+	cursor: pointer;
+	/* the label stacks over a hidden copy at the active font weight (::after) */
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+
+	/* reserves the width of the active label, so a tab keeps its size when it becomes active */
+	&::after {
+		content: attr(data-label);
+		height: 0;
+		overflow: hidden;
+		visibility: hidden;
+		font-weight: var(--dhx-ui-important-font-weight);
+		user-select: none;
+		pointer-events: none;
+	}
+
+	&:hover {
+		color: var(--dhx-ui-input-color);
+	}
+
+	&:focus-visible {
+		outline: var(--dhx-ui-focus-ring);
+		outline-offset: -2px;
+	}
+}
+
+.dhx_ui_tabs_tab_active {
+	color: var(--dhx-ui-base-colors-primary);
+	border-bottom-color: var(--dhx-ui-base-colors-primary);
+	font-weight: var(--dhx-ui-important-font-weight);
+}
+
+.dhx_ui_tabs_panel {
+	padding: 12px 0;
+}
+
+/* ---------- checkbox / radio groups ---------- */
+
+.dhx_ui_checkbox_group,
+.dhx_ui_radio_group {
+	display: block;
+}
+
+.dhx_ui_checkbox_row,
+.dhx_ui_radio_row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 0;
+	cursor: pointer;
+}
+
+/* ---------- field ---------- */
+
+.dhx_ui_field {
+	display: block;
+	margin-bottom: 10px;
+}
+
+.dhx_ui_field_label {
+	display: block;
+	margin-bottom: 4px;
+	font-size: var(--dhx-ui-caption-font-size);
+	color: var(--dhx-ui-base-colors-text-light);
+}
+
+.dhx_ui_field_required {
+	color: var(--dhx-ui-error-text-color);
+	margin-left: 2px;
+}
+
+.dhx_ui_field_description {
+	margin-top: 4px;
+	font-size: var(--dhx-ui-caption-font-size);
+	color: var(--dhx-ui-base-colors-text-light);
+}
+
+.dhx_ui_field_validation {
+	margin-top: 4px;
+	font-size: var(--dhx-ui-caption-font-size);
+	color: var(--dhx-ui-error-text-color);
+}
+
+.dhx_ui_field_invalid .dhx_ui_input {
+	border-color: var(--dhx-ui-base-colors-error);
+}
+
+/* ---------- buttons ---------- */
+
+.dhx_ui_button {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+}
+
+/* Flat reset for the non-filled variants (outline / link / icon / toggle base).
+   The FILLED variants (primary `dhx_ui_btn`, danger `dhx_ui_btn_danger`)
+   are excluded so they keep the background + border from their buttons.less
+   mixin — otherwise a same-specificity reset here would blank the primary
+   button (it only reappeared on :hover). */
+// .dhx_ui_button:not(.dhx_ui_btn):not(.dhx_ui_btn_danger):not(:hover):not(:active):not(:disabled):not(.dhx_ui_toggle_pressed) {
+// 	background: transparent;
+// 	border-color: transparent;
+// }
+
+.dhx_ui_btn_link {
+	.dhx_gantt_button--mixin();
+	.dhx_gantt_button_link--mixin();
+}
+
+/* Opt-out for icon-only buttons that should read as neutral chrome rather than
+   as a coloured action — the lightbox delete buttons, matching the datepicker
+   and time-input toggles. .dhx_gantt_button--mixin remaps the icon token to the
+   button's text color in every state, so the per-state selectors below have to
+   outrank it. `inherit` picks up the ambient (root or theme) icon color; naming
+   the token in its own value would be a circular reference. */
+.dhx_ui_button.dhx_ui_button_neutral_icon {
+	&,
+	&:disabled {
+		--dhx-ui-base-colors-icons: inherit;
+	}
+
+	/* hover / press feedback stays inside the neutral ramp — same token pairing
+	   .dhx_gantt_button_icon--mixin uses. These tokens are declared on :root, so
+	   they resolve against the ambient (or theme) icon color, not against the
+	   value being set here. */
+	&:hover {
+		--dhx-ui-base-colors-icons: var(--dhx-ui-base-colors-icons-hover);
+	}
+
+	&:active {
+		--dhx-ui-base-colors-icons: var(--dhx-ui-base-colors-icons-active);
+	}
+}
+
+/* ---------- toggle ---------- */
+
+.dhx_ui_toggle:disabled {
+	cursor: default;
+}
+
+.dhx_ui_toggle.dhx_ui_toggle_pressed {
+	background: var(--dhx-ui-base-colors-primary-lighter);
+	border-color: var(--dhx-ui-base-colors-primary);
+	color: var(--dhx-ui-base-colors-primary);
+	--dhx-ui-base-colors-icons: var(--dhx-ui-base-colors-primary);
+}
+
+/* ---------- switch (boolean form field) ----------
+   A real checkbox carries state and focus; only the track and knob are painted,
+   so keyboard and screen-reader behaviour stays the platform's. */
+
+.dhx_ui_switch {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	width: auto;
+	cursor: pointer;
+	color: var(--dhx-ui-input-color);
+}
+
+.dhx_ui_field_label[for]:has(+ .dhx_ui_field_control > .dhx_ui_switch > .dhx_ui_switch_input:enabled) {
+	cursor: pointer;
+}
+
+.dhx_ui_switch:has(> .dhx_ui_switch_input:disabled),
+.dhx_ui_field_label[for]:has(+ .dhx_ui_field_control > .dhx_ui_switch > .dhx_ui_switch_input:disabled) {
+	cursor: default;
+}
+
+.dhx_ui_switch_input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.dhx_ui_switch_track {
+	position: relative;
+	flex: 0 0 auto;
+	width: 30px;
+	height: 17px;
+	border-radius: 9px;
+	background: var(--dhx-ui-base-colors-background-alt);
+	border: 1px solid var(--dhx-ui-base-colors-border);
+	transition: background-color .18s ease, border-color .18s ease;
+}
+
+.dhx_ui_switch_knob {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 11px;
+	height: 11px;
+	border-radius: 50%;
+	background: var(--dhx-gantt-base-colors-background);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+	transition: transform .18s cubic-bezier(.2, .7, .3, 1);
+}
+
+.dhx_ui_switch_input:checked + .dhx_ui_switch_track {
+	background: var(--dhx-ui-base-colors-primary);
+	border-color: var(--dhx-ui-base-colors-primary);
+
+	.dhx_ui_switch_knob {
+		transform: translateX(13px);
+	}
+}
+
+.dhx_ui_switch_input:focus-visible + .dhx_ui_switch_track {
+	outline: var(--dhx-ui-focus-ring);
+	outline-offset: 2px;
+}
+
+.dhx_ui_switch_input:disabled + .dhx_ui_switch_track {
+	opacity: .5;
+}
+
+@media (forced-colors: active) {
+	.dhx_ui_switch_track {
+		border-color: CanvasText;
+	}
+
+	.dhx_ui_switch_input:checked + .dhx_ui_switch_track {
+		background: Highlight;
+	}
+
+	.dhx_ui_switch_knob {
+		background: CanvasText;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.dhx_ui_switch_track,
+	.dhx_ui_switch_knob {
+		transition: none;
+	}
+}
+
+/* ---------- menu ---------- */
+
+.dhx_ui_popup.dhx_ui_menu {
+	border-radius: var(--dhx-ui-popup-border-radius);
+}
+
+.dhx_ui_menu .dhx_ui_popup_body {
+	padding: 4px;
+}
+
+.dhx_ui_menu_list {
+	min-width: 220px;
+	max-height: calc(100vh - 16px);
+	overflow-y: auto;
+	outline: none;
+}
+
+.dhx_ui_menu_item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 34px;
+	padding: 6px 12px;
+	border-radius: var(--dhx-ui-border-radius);
+	box-sizing: border-box;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.dhx_ui_menu_item:has(.dhx_gantt_icon_check) {
+	font-weight: 500;
+}
+
+.dhx_ui_menu_item_active {
+	background: var(--dhx-ui-base-colors-background-alt);
+}
+
+.dhx_ui_menu_item_disabled {
+	--dhx-ui-base-colors-icons: var(--dhx-ui-base-colors-readonly);
+	color: var(--dhx-ui-base-colors-readonly);
+	cursor: default;
+}
+
+.dhx_ui_menu_item_icon,
+.dhx_ui_menu_item_arrow {
+	--dhx-gantt-icon-size: 18px;
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	color: var(--dhx-ui-base-colors-icons);
+
+	&:before {
+		line-height: 1;
+	}
+}
+
+.dhx_ui_menu_item_label {
+	flex: 1 1 auto;
+}
+
+.dhx_ui_menu_item_arrow {
+	margin-left: 8px;
+}
+
+.dhx_ui_menu_separator {
+	height: 1px;
+	margin: 4px 0;
+	background: var(--dhx-ui-base-colors-border-light);
+}
+
+/* ---------- toolbar composition helper ---------- */
+
+.dhx_ui_toolbar {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 12px;
+	width: 100%;
+	height: 100%;
+	background: var(--dhx-ui-toolbar-background);
+	border-bottom: 1px solid var(--dhx-ui-toolbar-border);
+	font-family: var(--dhx-ui-font-family);
+	font-size: var(--dhx-ui-font-size);
+	box-sizing: border-box;
+	/* one row: items that do not fit move into the overflow menu button */
+	flex-wrap: nowrap;
+	overflow: hidden;
+	--dhx-ui-control-height: 30px;
+
+	/* measured widths must not shrink; the spacer takes the free space */
+	> :not(.dhx_ui_toolbar_spacer) {
+		flex-shrink: 0;
+	}
+
+	> .dhx_ui_toolbar_item_overflow {
+		display: none !important;
+	}
+
+	&.dhx_ui_toolbar_wrap {
+		flex-wrap: wrap;
+		/* the content sets the height; the layout row follows it (toolbar_view.ts) */
+		height: auto;
+		min-height: var(--dhx-gantt-toolbar-height, 44px);
+		padding-block: 6px;
+		overflow: visible;
+	}
+
+	&.dhx_ui_toolbar_overflow_panel {
+		height: auto;
+		padding: 8px;
+		border-bottom: 0;
+		background: transparent;
+		overflow: visible;
+	}
+
+	.dhx_ui_toolbar_overflow_button {
+		--dhx-gantt-btn-padding: 0 7px;
+	}
+
+	.dhx_ui_toolbar_field {
+		display: flex;
+		flex: none;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.dhx_ui_toolbar_label {
+		white-space: nowrap;
+	}
+
+	.dhx_ui_toolbar_input {
+		flex: none;
+		width: 12rem;
+
+		&.dhx_ui_datepicker {
+			width: 9rem;
+		}
+
+		&.dhx_ui_stepper {
+			width: 6rem;
+		}
+	}
+
+	> .dhx_ui_segmented {
+		width: auto;
+	}
+
+	.dhx_ui_button {
+		height: var(--dhx-ui-control-height);
+		border-radius: var(--dhx-ui-border-radius);
+		--dhx-gantt-btn-padding: 0 11px;
+		--dhx-gantt-btn-font-weight: 500;
+		--dhx-gantt-icon-size: 16px;
+	}
+
+	.dhx_ui_btn_outline {
+		--dhx-gantt-btn-outline-background: var(--dhx-gantt-base-colors-background);
+		--dhx-gantt-btn-outline-color: var(--dhx-gantt-base-colors-text-base);
+		--dhx-gantt-btn-outline-border-color: var(--dhx-ui-base-colors-border);
+
+		--dhx-gantt-btn-outline-background-hover: var(--dhx-ui-base-colors-background-alt);
+		--dhx-gantt-btn-outline-color-hover: var(--dhx-gantt-base-colors-text-base);
+		--dhx-gantt-btn-outline-border-hover: var(--dhx-ui-base-colors-border);
+
+		--dhx-gantt-btn-outline-background-active: var(--dhx-gantt-base-colors-hover-color);
+		--dhx-gantt-btn-outline-color-active: var(--dhx-gantt-base-colors-text-base);
+		--dhx-gantt-btn-outline-border-active: var(--dhx-ui-base-colors-border);
+
+		--dhx-gantt-btn-outline-border-color-disabled: var(--dhx-ui-base-colors-border-light);
+
+		.dhx_ui_button_icon {
+			--dhx-gantt-base-colors-icons: var(--dhx-ui-base-colors-icons);
+		}
+	}
+
+	.dhx_ui_toolbar_menu_button::after {
+		color: var(--dhx-ui-base-colors-icons);
+		opacity: 1;
+	}
+
+	.dhx_ui_toggle.dhx_ui_toggle_pressed {
+		background: var(--dhx-ui-base-colors-primary-lighter);
+		border-color: color-mix(in srgb, var(--dhx-ui-base-colors-primary) 40%, transparent);
+		color: var(--dhx-gantt-base-colors-text-base);
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-base-colors-text-base);
+	}
+
+	/* labelled toggles only; decoration, the state stays in aria-pressed */
+	.dhx_ui_toggle:has(.dhx_ui_button_label)::after {
+		--dhx-ui-toolbar-toggle-knob-color: var(--dhx-ui-base-colors-icons);
+		content: "";
+		flex: none;
+		width: 26px;
+		height: 14px;
+		margin-inline-start: 2px;
+		border: 1px solid var(--dhx-ui-base-colors-border);
+		border-radius: 7px;
+		box-sizing: border-box;
+		background-color: var(--dhx-ui-base-colors-background-alt);
+		background-image: radial-gradient(circle, var(--dhx-ui-toolbar-toggle-knob-color) 4px, transparent 4.5px);
+		background-repeat: no-repeat;
+		background-size: 12px 100%;
+		background-position: left center;
+
+		@media (prefers-reduced-motion: no-preference) {
+			transition: background-position .18s cubic-bezier(.2, .7, .3, 1);
+		}
+	}
+
+	.dhx_ui_toggle.dhx_ui_toggle_pressed:has(.dhx_ui_button_label)::after {
+		--dhx-ui-toolbar-toggle-knob-color: var(--dhx-ui-base-colors-text-on-fill);
+		border-color: var(--dhx-ui-base-colors-primary);
+		background-color: var(--dhx-ui-base-colors-primary);
+		background-position: right center;
+	}
+}
+
+/* The knob positions are physical: mirror them in RTL and undo that in an LTR
+   part of an RTL page. Attribute selectors, as :dir() needs Chromium 120. */
+[dir="rtl"] .dhx_ui_toolbar .dhx_ui_toggle:has(.dhx_ui_button_label)::after,
+.dhx_ui_toolbar[dir="rtl"] .dhx_ui_toggle:has(.dhx_ui_button_label)::after {
+	transform: scaleX(-1);
+}
+
+[dir="rtl"] [dir="ltr"] .dhx_ui_toolbar .dhx_ui_toggle:has(.dhx_ui_button_label)::after,
+[dir="rtl"] .dhx_ui_toolbar[dir="ltr"] .dhx_ui_toggle:has(.dhx_ui_button_label)::after {
+	transform: none;
+}
+
+@media (forced-colors: active) {
+	.dhx_ui_toolbar .dhx_ui_toggle:has(.dhx_ui_button_label)::after {
+		--dhx-ui-toolbar-toggle-knob-color: CanvasText;
+		forced-color-adjust: none;
+		border-color: CanvasText;
+		background-color: Canvas;
+	}
+
+	.dhx_ui_toolbar .dhx_ui_toggle.dhx_ui_toggle_pressed:has(.dhx_ui_button_label)::after {
+		--dhx-ui-toolbar-toggle-knob-color: HighlightText;
+		background-color: Highlight;
+	}
+}
+
+.dhx_ui_toolbar_separator {
+	flex: 0 0 auto;
+	width: 1px;
+	height: 20px;
+	margin: 0 4px;
+	background: var(--dhx-ui-base-colors-border);
+}
+
+.dhx_ui_toolbar_spacer {
+	flex: 1 1 auto;
+}
+
+/* burger glyph of the collapsed toolbar: three bars in the icon color */
+.dhx_ui_toolbar_burger_icon {
+	display: inline-block;
+	flex: none;
+	width: 14px;
+	height: 12px;
+	color: var(--dhx-ui-base-colors-icons);
+	background:
+		linear-gradient(currentColor, currentColor) top / 100% 2px no-repeat,
+		linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+		linear-gradient(currentColor, currentColor) bottom / 100% 2px no-repeat;
+}
+
+@media (forced-colors: active) {
+	.dhx_ui_toolbar_burger_icon {
+		forced-color-adjust: none;
+		color: ButtonText;
+	}
+}
+
+/* dropdown-button caret */
+.dhx_ui_toolbar_menu_button {
+	position: relative;
+
+	.dhx_ui_button_label {
+		margin-right: 4px;
+	}
+}
+
+.dhx_ui_toolbar_menu_button::after {
+	content: "";
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	margin-left: 2px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: translateY(-2px) rotate(45deg);
+	opacity: .6;
+}
+
+/* segmented control: the toolbar adds .dhx_ui_segmented, so a standalone radio
+   group is not affected. One font weight for all states keeps the width fixed
+   when the selection moves. */
+.dhx_ui_segmented.dhx_ui_radio_group {
+	flex: 0 0 auto;
+	display: inline-flex;
+	flex-direction: row;
+	gap: 0;
+	padding: 2px;
+	border: 1px solid var(--dhx-ui-toolbar-segmented-border);
+	border-radius: calc(var(--dhx-ui-border-radius) + 2px);
+	background: var(--dhx-ui-toolbar-segmented-background);
+	box-sizing: border-box;
+
+	.dhx_ui_radio_row {
+		margin: 0;
+		padding: 0 10px;
+		height: calc(var(--dhx-ui-control-height) - 6px);
+		display: inline-flex;
+		align-items: center;
+		border-radius: var(--dhx-ui-border-radius);
+		color: var(--dhx-ui-toolbar-segmented-color);
+		font-weight: 500;
+		transition: background-color .12s, color .12s;
+
+		/* tinted from the label color: the contrast skins paint the track with the base background */
+		&:hover:not(:has(.dhx_ui_radio:checked)) {
+			color: var(--dhx-gantt-base-colors-text-base);
+			background: color-mix(in srgb, var(--dhx-ui-toolbar-segmented-color) 12%, transparent);
+		}
+
+		&:has(.dhx_ui_radio:checked) {
+			background: var(--dhx-gantt-base-colors-background);
+			color: var(--dhx-gantt-base-colors-text-base);
+			box-shadow: 0 0 0 1px var(--dhx-gantt-base-colors-border-light), 0 1px 2px rgba(0, 0, 0, .12);
+		}
+
+		&:has(.dhx_ui_radio:focus-visible) {
+			outline: var(--dhx-ui-focus-ring);
+			outline-offset: 0;
+		}
+	}
+
+	.dhx_ui_radio {
+		position: absolute;
+		opacity: 0;
+		width: 0;
+		height: 0;
+	}
+}
+
+/* The overrides below repeat the full selectors so that they outrank the rules above.
+   Forced colors drop the chip's fill and shadow; a Highlight border marks the checked
+   option instead, and the rest (focus ring included) keeps the system palette. Every
+   row gets the border so that the width does not change with the selection. */
+@media (forced-colors: active) {
+	.dhx_ui_segmented.dhx_ui_radio_group .dhx_ui_radio_row {
+		box-sizing: border-box;
+		border: 2px solid Canvas;            /* a transparent border is forced to CanvasText */
+		padding-inline: 8px;                 /* the 10 px padding minus the border keeps the width */
+	}
+
+	.dhx_ui_segmented.dhx_ui_radio_group .dhx_ui_radio_row:has(.dhx_ui_radio:checked) {
+		border-color: Highlight;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.dhx_ui_segmented.dhx_ui_radio_group .dhx_ui_radio_row {
+		transition: none;
+	}
+}
+
+/* ---------- registry adapter hosts ---------- */
+
+/* form block host inside the lightbox: let the control define its height */
+.dhx_ui_form_block {
+	overflow: visible;
+}
+
+/* inline editor host inside the grid placeholder */
+.dhx_ui_inline_editor {
+	height: 100%;
+	display: flex;
+	align-items: center;
+
+	.dhx_ui_control {
+		height: 100%;
+	}
+
+	.dhx_ui_input,
+	.dhx_ui_stepper_btn {
+		height: 100%;
+		border-radius: 0;
+	}
+
+	/* the stepper reports its own width to the container query below */
+	.dhx_ui_stepper {
+		container: dhx_inline_stepper / inline-size;
+	}
+}
+
+/* A narrow grid column leaves no room for the value next to the +/- buttons,
+   so the inline stepper drops them below 90px (the width at which a 3-digit
+   value still fits beside them). Kept at the top level: Less 3 drops the
+   parent selector of a nested @container. */
+@container dhx_inline_stepper (width < 90px) {
+	.dhx_ui_inline_editor .dhx_ui_stepper_btn {
+		display: none;
+	}
+
+	.dhx_ui_inline_editor .dhx_ui_stepper .dhx_ui_input {
+		border: var(--dhx-ui-input-border);
+	}
+}
+
+/* The same for the Hours/Day stepper of the resource control: below 90px its
+   24px buttons leave no room for a 3-digit or decimal value ("100", "12.5"). */
+@container dhx_resource_stepper (width < 90px) {
+	.dhx_ui_resource_cell .dhx_ui_stepper_btn {
+		display: none;
+	}
+
+	.dhx_ui_resource_cell .dhx_ui_stepper .dhx_ui_input {
+		border: var(--dhx-ui-input-border);
+		border-radius: var(--dhx-ui-input-border-radius);
+	}
+}
+
+/* resources control: rows filtered out by search / "hide empty" stay in the
+   DOM (so edits + get_value survive), hidden via this class */
+.gantt_resource_row_hidden {
+	display: none;
+}
+
+/* ---------- resource_selector kit table (migration Step 7) ---------- */
+
+.dhx_ui_resource_grid {
+	border: 1px solid var(--dhx-ui-base-colors-border);
+	border-radius: 2px;
+	max-height: 200px;
+	overflow-y: auto;
+	overflow-x: hidden;
+
+	.dhx_ui_resource_table {
+		width: 100%;
+		/* fixed layout honours the proportional % column widths so the table
+		   fills the section, like the legacy grid stretched to the lightbox */
+		table-layout: fixed;
+		border-collapse: collapse;
+		font-family: var(--dhx-ui-font-family);
+		font-size: var(--dhx-ui-font-size);
+	}
+
+	.dhx_ui_resource_head_cell {
+		position: sticky;
+		top: 0;
+		z-index: 1;
+		padding: 6px 6px;
+		background: var(--dhx-ui-resource-head-background);
+		border-bottom: 1px solid var(--dhx-ui-base-colors-border);
+		color: var(--dhx-ui-resource-head-color);
+		font-weight: 600;
+		vertical-align: middle;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.dhx_ui_resource_cell {
+		padding: 4px 6px;
+		border-bottom: 1px solid var(--dhx-ui-base-colors-border-light);
+		vertical-align: middle;
+		/* read-only template cells: clip gracefully instead of overflowing */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+
+		/* let editable kit controls fill / shrink to the column width */
+		.dhx_ui_control {
+			width: 100%;
+			box-sizing: border-box;
+		}
+		.dhx_ui_input {
+			min-width: 0;
+		}
+		/* compact +/- buttons so the stepper fits narrow value columns */
+		.dhx_ui_stepper_btn {
+			width: 24px;
+		}
+		/* the stepper reports its own width to the container query below */
+		.dhx_ui_stepper {
+			container: dhx_resource_stepper / inline-size;
+		}
+	}
+
+	.dhx_ui_resource_row:last-child .dhx_ui_resource_cell {
+		border-bottom: 0;
+	}
+
+	/* the delete button reads as a centered icon-only link button */
+	.dhx_ui_resource_cell_delete {
+		text-align: center;
+
+		.dhx_ui_button.dhx_ui_btn_link {
+			padding: 0;
+			min-width: 24px;// WCAG min target size
+			width: auto;
+			display: inline-flex;
+		}
+	}
+}

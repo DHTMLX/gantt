@@ -101,6 +101,27 @@ export const getAdjustedPosition = function (gantt, timeline, sizes, heightLimit
   return { height, marginTop };
 };
 
+// The top offset of a task bar in its row: centered, or at the top of the row
+// when baselines are drawn in their own strip below the bar. Shared by the bar
+// and the layers drawn next to it (leveling delay), so they stay aligned.
+export const getBarTopPadding = function (gantt, view, task, height, isMilestone) {
+  let padd = Math.floor((view.getItemHeight(task.id) - height) / 2);
+  const hasBaselines = gantt.config.baselines && task.baselines && task.baselines.length;
+  const baselinesOnDifferentRow = gantt.config.baselines && (gantt.config.baselines.render_mode == "separateRow" || gantt.config.baselines.render_mode == "individualRow");
+  if (hasBaselines && baselinesOnDifferentRow) {
+    if (task.bar_height !== "full" && task.bar_height < task.row_height) {
+      if (isMilestone) {
+        const milestoneHeight = view.getBarHeight(task.id, true);
+        const milestoneWidth = Math.sqrt(2 * milestoneHeight * milestoneHeight);
+        padd = Math.floor((milestoneWidth - height) / 2) + 2;
+      } else {
+        padd = 2;
+      }
+    }
+  }
+  return padd;
+};
+
 export default {
   hasBaselinesBelow,
   childrenHaveBaselines,
@@ -109,5 +130,6 @@ export default {
   getMaxParentHeight,
   getMilestoneHeight,
   getInvertedMilestoneHeight,
-  getAdjustedPosition
+  getAdjustedPosition,
+  getBarTopPadding
 };

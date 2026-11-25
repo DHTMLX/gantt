@@ -1,6 +1,6 @@
 import * as helpers from "./helpers";
 
-interface EventElement {
+export interface EventElement {
 		addEventListener?: (event: string, handler: EventListenerOrEventListenerObject, options?: boolean) => void;
 		attachEvent?: (event: string, handler: EventListenerOrEventListenerObject) => void;
 		removeEventListener?: (event: string, handler: EventListenerOrEventListenerObject, options?: boolean) => void;

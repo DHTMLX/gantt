@@ -8,6 +8,8 @@ import auto_scheduling_config from "./auto_scheduling_config";
 
 // MIT edition plugin set. Excluded vs the other editions:
 //   - wbs, resources, resource_assignments, baselines (Pro-only)
+//   - outline_number (Pro-only, same as wbs - getOutlineNumber/getTaskByOutlineNumber
+//     must not appear in this list)
 //   - new_task_placeholder (the "+ New task" empty row is built on
 //     unscheduled tasks, which this edition does not support)
 // task_query provides the public getTaskBy API that plugins/resources.js

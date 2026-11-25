@@ -3,11 +3,11 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<title>Basic filtering</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -15,60 +15,31 @@
 			margin: 0px;
 			overflow: hidden;
 		}
-		.filters_wrapper {
-			font: 600 14px Roboto;
-		}
-
-		.filters_wrapper span {
-			font-weight: bold;
-			padding-right: 5px;
-			color: rgba(0,0,0,0.7);
-		}
-
-		.filters_wrapper label {
-			padding-right: 3px;
-		}
-
 	</style>
 </head>
 
 <body>
-<div class="gantt_control">
-	<div class="filters_wrapper" id="filters_wrapper">
-		<span>Display tasks with priority:</span>
-
-		<label class="checked_label" id="scale1">
-			<input type="checkbox" name="1" value="1" checked/>
-			<i class="material-icons icon_color">check_box</i>High
-		</label>
-
-		<label id="scale2">
-			<input type="checkbox" name="2" value="1"/>
-			<i class="material-icons">check_box_outline_blank</i>Normal
-		</label>
-
-		<label id="scale3">
-			<input type="checkbox" name="3" value="1"/>
-			<i class="material-icons">check_box_outline_blank</i>Low
-		</label>
-	</div>
-</div>
-
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 
 
 <script>
 
-	var filter_inputs = document.querySelectorAll("#filters_wrapper input");
-	for (var i = 0; i < filter_inputs.length; i++) {
-		var filter_input = filter_inputs[i];
+	gantt.plugins({ toolbar: true });
+	gantt.config.toolbar = [
+		{ id: "1", comp: "toggle", label: "High priority", pressed: true },
+		{ id: "2", comp: "toggle", label: "Normal priority" },
+		{ id: "3", comp: "toggle", label: "Low priority" }
+	];
 
-		// attach event handler to update filters object and refresh data (so filters will be applied)
-		filter_input.onchange = function () {
-			gantt.render();
-			updIcon(this);
+	const activePriorities = new Set(["1"]);
+	gantt.attachEvent("onToolbarItemChange", function(id, pressed) {
+		if (pressed) {
+			activePriorities.add(id);
+		} else {
+			activePriorities.delete(id);
 		}
-	}
+		gantt.render();
+	});
 
 	function hasPriority(parent, priority) {
 		if (gantt.getTask(parent).priority == priority)
@@ -82,19 +53,8 @@
 		return false;
 	}
 
-	gantt.attachEvent("onBeforeTaskDisplay", function (id, task) {
-		for (var i = 0; i < filter_inputs.length; i++) {
-			var filter_input = filter_inputs[i];
-
-
-			if (filter_input.checked) {
-				if (hasPriority(id, filter_input.name)) {
-					return true;
-				}
-			}
-
-		}
-		return false;
+	gantt.attachEvent("onBeforeTaskDisplay", function(id) {
+		return Array.from(activePriorities).some(priority => hasPriority(id, priority));
 	});
 
 	gantt.config.columns = [
@@ -108,20 +68,9 @@
 			}
 		}
 	];
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(users_data);
-
-	function updIcon(el){
-		el.parentElement.classList.toggle("checked_label");
-
-		var iconEl = el.parentElement.querySelector("i"),
-			checked = "check_box",
-			unchecked = "check_box_outline_blank",
-			className = "icon_color";
-
-		iconEl.textContent = iconEl.textContent==checked?unchecked:checked;
-		iconEl.classList.toggle(className);
-	}
 
 </script>
 </body>

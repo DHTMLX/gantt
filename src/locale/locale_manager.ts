@@ -1,3 +1,5 @@
+import type { IGanttLocale } from "../types.d.ts";
+
 export default class LocaleManager{
 	private _locales:{[key:string]: IGanttLocale };
 

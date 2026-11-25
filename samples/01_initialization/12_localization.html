@@ -4,9 +4,10 @@
 	<title>Localization</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
+	<script src="../common/sample_toolbar.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -17,70 +18,13 @@
 		#gantt_here {
 			width: 100%;
 			height: 800px;
-			height: calc(100vh - 52px);
+			height: 100%;
 		}
 
 	</style>
 </head>
 
 <body>
-<div class="gantt_control">
-	<label>Current locale:</label>
-	<select class="locale_changer" onchange="changeLocale(this.value)">
-		<option class="locale_" value="">Choose locale</option>
-		<option class="locale_af" value="af">Afrikaans</option>
-		<option class="locale_sq" value="sq">Albanian</option>
-		<option class="locale_ar" value="ar">Arabic</option>
-		<option class="locale_be" value="be">Belarusian</option>
-		<option class="locale_bs" value="bs">Bosnian</option>
-		<option class="locale_bg" value="bg">Bulgarian</option>
-		<option class="locale_ca" value="ca">Catalan</option>
-		<option class="locale_cn" value="cn">Chinese (Simplified)</option>
-		<option class="locale_zh_hk" value="zh_hk">Chinese (Hong Kong)</option>
-		<option class="locale_zh_tw" value="zh_tw">Chinese (Taiwan)</option>
-		<option class="locale_hr" value="hr">Croatian</option>
-		<option class="locale_cs" value="cs">Czech</option>
-		<option class="locale_da" value="da">Danish</option>
-		<option class="locale_nl" value="nl">Dutch</option>
-		<option class="locale_nl_be" value="nl_be">Dutch (Belgium)</option>
-		<option class="locale_" value="">English</option>
-		<option class="locale_et" value="et">Estonian</option>
-		<option class="locale_fi" value="fi">Finnish</option>
-		<option class="locale_fr" value="fr" selected>French (France)</option>
-		<option class="locale_fr_ca" value="fr_ca">French (Canada)</option>
-		<option class="locale_de" value="de">German (Germany)</option>
-		<option class="locale_de_at" value="de_at">German (Austria)</option>
-		<option class="locale_el" value="el">Greek</option>
-		<option class="locale_he" value="he">Hebrew</option>
-		<option class="locale_hu" value="hu">Hungarian</option>
-		<option class="locale_id" value="id">Indonesian</option>
-		<option class="locale_ga" value="ga">Irish</option>
-		<option class="locale_it" value="it">Italian</option>
-		<option class="locale_jp" value="jp">Japanese</option>
-		<option class="locale_kr" value="kr">Korean</option>
-		<option class="locale_lv" value="lv">Latvian</option>
-		<option class="locale_lt" value="lt">Lithuanian</option>
-		<option class="locale_mk" value="mk">Macedonian</option>
-		<option class="locale_ms" value="ms">Malay</option>
-		<option class="locale_nb" value="nb">Norwegian (Bokmål)</option>
-		<option class="locale_no" value="no">Norwegian (Nynorsk)</option>
-		<option class="locale_fa" value="fa">Persian</option>
-		<option class="locale_pl" value="pl">Polish</option>
-		<option class="locale_pt" value="pt">Portuguese (Portugal)</option>
-		<option class="locale_pt_br" value="pt_br">Portuguese (Brazil)</option>
-		<option class="locale_ro" value="ro">Romanian</option>
-		<option class="locale_ru" value="ru">Russian</option>
-		<option class="locale_sk" value="sk">Slovak</option>
-		<option class="locale_si" value="si">Slovenian</option>
-		<option class="locale_es" value="es">Spanish (Spain)</option>
-		<option class="locale_es_mx" value="es_mx">Spanish (Mexico)</option>
-		<option class="locale_sv" value="sv">Swedish</option>
-		<option class="locale_th" value="th">Thai</option>
-		<option class="locale_tr" value="tr">Turkish</option>
-		<option class="locale_ua" value="ua">Ukrainian</option>
-		<option class="locale_vi" value="vi">Vietnamese</option>
-	</select>
-</div>
 <div id="gantt_here"></div>
 <script>
 	function changeLocale(lang) {
@@ -88,7 +32,68 @@
 			gantt.render();
 	}
 
-	changeLocale("fr")
+	gantt.plugins({ toolbar: true });
+	gantt.config.toolbar = { items: [{
+		id: "locale", comp: "combo", label: "Current locale:", width: 192,
+		placeholder: "Choose locale", value: "fr", options: [
+		{ key: '__default__', label: 'Choose locale' },
+		{ key: 'af', label: 'Afrikaans' },
+		{ key: 'sq', label: 'Albanian' },
+		{ key: 'ar', label: 'Arabic' },
+		{ key: 'be', label: 'Belarusian' },
+		{ key: 'bs', label: 'Bosnian' },
+		{ key: 'bg', label: 'Bulgarian' },
+		{ key: 'ca', label: 'Catalan' },
+		{ key: 'cn', label: 'Chinese (Simplified)' },
+		{ key: 'zh_hk', label: 'Chinese (Hong Kong)' },
+		{ key: 'zh_tw', label: 'Chinese (Taiwan)' },
+		{ key: 'hr', label: 'Croatian' },
+		{ key: 'cs', label: 'Czech' },
+		{ key: 'da', label: 'Danish' },
+		{ key: 'nl', label: 'Dutch' },
+		{ key: 'nl_be', label: 'Dutch (Belgium)' },
+		{ key: '', label: 'English' },
+		{ key: 'et', label: 'Estonian' },
+		{ key: 'fi', label: 'Finnish' },
+		{ key: 'fr', label: 'French (France)' },
+		{ key: 'fr_ca', label: 'French (Canada)' },
+		{ key: 'de', label: 'German (Germany)' },
+		{ key: 'de_at', label: 'German (Austria)' },
+		{ key: 'el', label: 'Greek' },
+		{ key: 'he', label: 'Hebrew' },
+		{ key: 'hu', label: 'Hungarian' },
+		{ key: 'id', label: 'Indonesian' },
+		{ key: 'ga', label: 'Irish' },
+		{ key: 'it', label: 'Italian' },
+		{ key: 'jp', label: 'Japanese' },
+		{ key: 'kr', label: 'Korean' },
+		{ key: 'lv', label: 'Latvian' },
+		{ key: 'lt', label: 'Lithuanian' },
+		{ key: 'mk', label: 'Macedonian' },
+		{ key: 'ms', label: 'Malay' },
+		{ key: 'nb', label: 'Norwegian (Bokmål)' },
+		{ key: 'no', label: 'Norwegian (Nynorsk)' },
+		{ key: 'fa', label: 'Persian' },
+		{ key: 'pl', label: 'Polish' },
+		{ key: 'pt', label: 'Portuguese (Portugal)' },
+		{ key: 'pt_br', label: 'Portuguese (Brazil)' },
+		{ key: 'ro', label: 'Romanian' },
+		{ key: 'ru', label: 'Russian' },
+		{ key: 'sk', label: 'Slovak' },
+		{ key: 'si', label: 'Slovenian' },
+		{ key: 'es', label: 'Spanish (Spain)' },
+		{ key: 'es_mx', label: 'Spanish (Mexico)' },
+		{ key: 'sv', label: 'Swedish' },
+		{ key: 'th', label: 'Thai' },
+		{ key: 'tr', label: 'Turkish' },
+		{ key: 'ua', label: 'Ukrainian' },
+		{ key: 'vi', label: 'Vietnamese' }
+	] }] };
+	gantt.attachEvent("onToolbarItemChange", function(id, value) {
+		changeLocale(value === "__default__" ? "" : value);
+	});
+	gantt.i18n.setLocale("fr");
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(demo_tasks);
 

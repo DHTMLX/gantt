@@ -1,11 +1,37 @@
 import * as utils from "../../utils/utils";
 import * as domHelpers from "./utils/dom_helpers";
+import { getGanttUiKit } from "./gantt_ui_kit";
 
+/*
+ * gantt.alert / confirm / message / modalbox.
+ *
+ * Since the ui-core migration (Step 3, docs/internal/ui-core/03-migration-status.md)
+ * the modal boxes ride on the ModalPopup primitive: it owns the backdrop
+ * (with the legacy dhx_modal_cover class — z-index 17 under the box's 18),
+ * centering, the modal stack, the intrinsic focus trap, aria-modal and
+ * focus save/restore. This module keeps building the legacy
+ * gantt_modal_box element (classes, buttons, aria, click routing) and the
+ * popup ADOPTS it, so the DOM contract is unchanged.
+ *
+ * Kept here on purpose (deviations from the original migration plan):
+ * - modal_key: Enter/Space-to-confirm and ESC-to-cancel read
+ *   messageBox.keyboard dynamically, act on the most recent ok/cancel box
+ *   and work with focus anywhere on the page (capture phase) — none of
+ *   which maps to the primitive's per-popup ESC dismissal;
+ * - modalBox.focus: the delayed focus keeps the legacy timing the kb-nav
+ *   extension's focus save/restore relies on (the popup's own focus-first
+ *   is disabled via autoFocus: false).
+ * Toasts (gantt.message) are not popups; they only adopt the notification
+ * z-band token on the gantt_message_area element.
+ */
 export default function(gantt) {
 
 	var boxAttribute = "data-dhxbox";
 
 	var _dhx_msg_cfg = null;
+	function createModalPopup(config) {
+		return getGanttUiKit(gantt).createModal(config);
+	}
 
 	function callback(config, result) {
 		var usercall = config.callback;
@@ -53,18 +79,6 @@ export default function(gantt) {
 	var eventElement = domHelpers.getRootNode(gantt.$root) || document;
 	gantt.event(eventElement, "keydown", modal_key, true);
 
-	function modality(mode) {
-		if (!modality.cover) {
-			modality.cover = document.createElement("div");
-			//necessary for IE only
-			modality.cover.onkeydown = modal_key;
-			modality.cover.className = "dhx_modal_cover";
-			document.body.appendChild(modality.cover);
-		}
-
-		modality.cover.style.display = mode ? "inline-block" : "none";
-	}
-
 	function button(text, className, result) {
 		var buttonAriaAttrs = gantt._waiAria.messageButtonAttrString(text);
 		var name = className.toLowerCase().replace(/ /g, "_");
@@ -75,7 +89,9 @@ export default function(gantt) {
 	function info(text) {
 		if (!messageBox.area) {
 			messageBox.area = document.createElement("div");
-			messageBox.area.className = "gantt_message_area";
+			// the z-band token class aligns the toast layer with the ui-core
+			// stacking model (same computed z-index as the legacy value)
+			messageBox.area.className = "gantt_message_area dhx_ui_zband_notification";
 			messageBox.area.style[messageBox.position] = "5px";
 		}
 		if (!domHelpers.isChildOf(messageBox.area, document.body)){
@@ -125,7 +141,8 @@ export default function(gantt) {
 		var box = document.createElement("div");
 
 		var contentId = utils.uid();
-		gantt._waiAria.messageModalAttr(box, contentId);
+		var titleId = config.title ? utils.uid() : null;
+		gantt._waiAria.messageModalAttr(box, titleId || contentId, titleId ? contentId : null);
 
 
 		box.className = " gantt_modal_box gantt-" + config.type;
@@ -138,7 +155,7 @@ export default function(gantt) {
 		if (config.height)
 			box.style.height = config.height;
 		if (config.title)
-			inner += '<div class="gantt_popup_title">' + config.title + '</div>';
+			inner += '<div class="gantt_popup_title" id="' + titleId + '">' + config.title + '</div>';
 		inner += '<div class="gantt_popup_text" id="' + contentId + '"><span>' + (config.content ? '' : config.text) + '</span></div><div  class="gantt_popup_controls">';
 		if (ok)
 			inner += button(getFirstDefined(config.ok, gantt.locale.labels.message_ok, "OK"), "ok", true);
@@ -191,16 +208,23 @@ export default function(gantt) {
 	function _createBox(config, ok, cancel) {
 		var box = config.tagName ? config : _boxStructure(config, ok, cancel);
 
-		if (!config.hidden)
-			modality(true);
-		document.body.appendChild(box);
-		var x = Math.abs(Math.floor(((window.innerWidth || document.documentElement.offsetWidth) - box.offsetWidth) / 2));
-		var y = Math.abs(Math.floor(((window.innerHeight || document.documentElement.offsetHeight) - box.offsetHeight) / 2));
-		if (config.position == "top")
+		var popup = createModalPopup({
+			node: box,
+			container: function() { return document.body; },
+			position: config.position == "top" ? { type: "none" } : { type: "center" },
+			// ESC/Enter/Space stay with modal_key (dynamic messageBox.keyboard)
+			dismiss: { escape: false, outsideClick: false },
+			autoFocus: false,
+			backdropClassName: "dhx_modal_cover"
+		});
+		box.$msgPopup = popup;
+		popup.show();
+
+		if (config.position == "top") {
+			// legacy "top" placement: docked under the upper edge, centered horizontally
 			box.style.top = "-3px";
-		else
-			box.style.top = y + 'px';
-		box.style.left = x + 'px';
+			box.style.left = Math.abs(Math.floor(((window.innerWidth || document.documentElement.offsetWidth) - box.offsetWidth) / 2)) + "px";
+		}
 		//necessary for IE only
 		box.onkeydown = modal_key;
 
@@ -262,9 +286,16 @@ export default function(gantt) {
 	modalBox.hide = function (node) {
 		while (node && node.getAttribute && !node.getAttribute(boxAttribute))
 			node = node.parentNode;
-		if (node) {
-			node.parentNode.removeChild(node);
-			modality(false);
+		if (node && node.parentNode) {
+			var popup = node.$msgPopup;
+			if (popup) {
+				node.$msgPopup = null;
+				// removes the node and the backdrop, pops the modal stack,
+				// restores focus, detaches everything
+				popup.destroy();
+			} else {
+				node.parentNode.removeChild(node);
+			}
 
 			gantt.callEvent("onAfterMessagePopup", [node]);
 		}
@@ -337,12 +368,11 @@ export default function(gantt) {
 	});
 
 	gantt.attachEvent("onDestroy", function(){
-		if(modality.cover && modality.cover.parentNode){
-			modality.cover.parentNode.removeChild(modality.cover);
-		}
-
 		for(var i = 0; i < popups.length; i++){
-			if(popups[i].parentNode){
+			if(popups[i].$msgPopup){
+				popups[i].$msgPopup.destroy();
+				popups[i].$msgPopup = null;
+			} else if(popups[i].parentNode){
 				popups[i].parentNode.removeChild(popups[i]);
 			}
 		}

@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<title>Zoom To Fit</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
-	<script src="../common/testdata.js"></script>
+	<script src="../common/sample_toolbar.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 
 	<style>
 		html, body {
@@ -17,13 +18,7 @@
 	</style>
 </head>
 <body>
-<div class="gantt_control">
-	<button class='zoom_fit' onclick="gantt.ext.zoom.zoomToFit()">Zoom to Fit</button>
-	<button class='zoom_reset' onclick="gantt.ext.zoom.resetZoom()">Reset</button>
-	<input type=button value="Zoom In" onclick="gantt.ext.zoom.zoomIn();">
-	<input type=button value="Zoom Out" onclick="gantt.ext.zoom.zoomOut();">
-</div>
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px); position: relative;'></div>
+<div id="gantt_here" style='width:100%; height:100%; position: relative;'></div>
 <script>
 
 	// Zoom-to-Fit is built into the zoom extension - the buttons above call the ready-made
@@ -147,7 +142,27 @@
 
 	gantt.ext.zoom.setLevel("day");
 
+	gantt.message.position = "bottom";
 	gantt.message({text: "Scale the Gantt chart to make the whole project fit the screen", expire: -1});
+	gantt.plugins({ toolbar: true });
+
+	gantt.config.toolbar = [
+		{ id: "fit_timeline", label: "Zoom to Fit" },
+		{ id: "reset_timeline_zoom", label: "Reset" },
+		{ id: "zoom_in_step", label: "Zoom In" },
+		{ id: "zoom_out_step", label: "Zoom Out" }
+	];
+	const zoomActions = {
+		fit_timeline: () => gantt.ext.zoom.zoomToFit(),
+		reset_timeline_zoom: () => gantt.ext.zoom.resetZoom(),
+		zoom_in_step: () => gantt.ext.zoom.zoomIn(),
+		zoom_out_step: () => gantt.ext.zoom.zoomOut()
+	};
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		zoomActions[id]();
+	});
+
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(demo_tasks);
 

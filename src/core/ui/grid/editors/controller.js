@@ -1,23 +1,47 @@
 import getKeyboardMapping from "./keyboard_mappings";
 import textEditorFactory from "./editors/text";
-import numberEditorFactory from "./editors/number";
-import selectEditorFactory from "./editors/select";
-import dateEditorFactory from "./editors/date";
 import predecessorEditorFactory from "./editors/predecessor";
+import successorEditorFactory from "./editors/successor";
 import durationEditorFactory from "./editors/duration";
+import comboEditorFactory from "./editors/combo";
+import datepickerEditorFactory from "./editors/datepicker";
+import datetimeEditorFactory from "./editors/datetime";
+import stepperEditorFactory from "./editors/stepper";
 import * as utils from "../../../../utils/utils";
 import * as domHelpers from "../../utils/dom_helpers";
 import eventable from "../../../../utils/eventable";
 import linkedPropertiesProcessor from "./linked_properties";
 
 function initConfigs(gantt){
+	// ui-core kit-backed editors (docs/internal/ui-core): the factories
+	// return ready editor objects, not classes — per-edit state lives on
+	// the controller's placeholder (see editors/inline_editor_adapter.ts).
+	// A single stateless editor object safely serves every grid/cell.
+	var comboEditor = comboEditorFactory(gantt);
+	var datepickerEditor = datepickerEditorFactory(gantt);
+	var datetimeEditor = datetimeEditorFactory(gantt);
+	var stepperEditor = stepperEditorFactory(gantt);
+
 	gantt.config.editor_types = {
 		text: new (textEditorFactory(gantt))(),
-		number: new (numberEditorFactory(gantt))(),
-		select: new (selectEditorFactory(gantt))(),
-		date: new (dateEditorFactory(gantt))(),
 		predecessor: new (predecessorEditorFactory(gantt))(),
-		duration: new (durationEditorFactory(gantt))()
+		successor: new (successorEditorFactory(gantt))(),
+		duration: new (durationEditorFactory(gantt))(),
+		combo: comboEditor,
+		datepicker: datepickerEditor,
+		// additive kit-backed date+time editor (refinement #4): DatePicker +
+		// TimeInput composed in the cell, merged on commit — lets a Start/End
+		// column edit minute precision inline (the `date` editor is calendar-only)
+		datetime: datetimeEditor,
+		stepper: stepperEditor,
+		// Step 6 (docs/internal/ui-core §S6.1): the built-in type names now
+		// resolve to the kit-backed editors, replacing the deleted legacy
+		// select/date/number modules. The type strings stay the same, so
+		// consumer configs (and the type checks in this controller) are
+		// unchanged; only the rendering is kit-backed now.
+		select: comboEditor,
+		date: datepickerEditor,
+		number: stepperEditor
 	};
 }
 
@@ -263,6 +287,7 @@ function create(gantt){
 				grid.$grid_data.appendChild(placeholder);
 
 				const onAfterShow = (function(){
+					gantt._waiAria.inlineEditorInputAttr(placeholder, column);
 					this._editor = editor;
 					this._placeholder = placeholder;
 					this._itemId = editorState.id;

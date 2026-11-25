@@ -64,7 +64,7 @@ var createTasksDatastoreFacade = function(){
 
 		if (!utils.defined(parent)) parent = this.getParent(item) || 0;
 		if (!this.isTaskExists(parent)) parent = this.config.root_id;
-		this.setParent(item, parent);
+		this.setParent(item, parent, true);
 
 		// GS-1583. Save the $open state to the Undo Stack
 		if (this.getState().lightbox && this.isTaskExists(parent)) {
@@ -136,7 +136,7 @@ var createTasksDatastoreFacade = function(){
 		return this.$data.tasksStore.setParent(task, new_pid, silent);
 	},
 	getSiblings: function (id) {
-		// GS-477. Already a copy - the datastore does not hand out live branch arrays.
+		// already a copy - the datastore does not hand out live branch arrays
 		return this.$data.tasksStore.getSiblings(id);
 	},
 	getNextSibling: function (id) {
@@ -157,7 +157,7 @@ var createTasksDatastoreFacade = function(){
 		if(!this.hasChild(id)){
 			return [];
 		}else{
-			// GS-477. Already a copy - the datastore does not hand out live branch arrays.
+			// already a copy - the datastore does not hand out live branch arrays
 			return this.$data.tasksStore.getChildren(id);
 		}
 	},

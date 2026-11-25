@@ -101,12 +101,31 @@ var initializer = (function(){
 							direction: sort
 						};
 						this.sort(sorting_method, sort == "desc");
+
+						if (this.ext && this.ext.accessibility) {
+							const localeLabels = this.locale.labels;
+
+							let columnLabel = (conf && conf.label) || localeLabels["column_" + column] || localeLabels[column];
+							if (typeof columnLabel === "function") {
+								columnLabel = columnLabel.call(this, column, conf);
+							}
+
+							if (typeof columnLabel !== "string" || !columnLabel) {
+								columnLabel = column;
+							}
+
+							const directionText = (sort === "asc") ? localeLabels.aria_sort_ascending : localeLabels.aria_sort_descending;
+							this.ext.accessibility.announce(columnLabel + ", " + directionText);
+						}
 					}
 				}, gantt), grid.$grid);
 
 				this._mouseDelegates.delegate("click", "gantt_add", gantt.bind(function (e, id, trg) {
 					var config = grid.$getConfig();
-					if (config.readonly) return;
+					var store = grid.$config.rowStore;
+					// a task row checks the task's own read-only state, the header "+" checks the config
+					var taskRow = id && store && store.$config.name === "task" && store.exists(id);
+					if (taskRow ? !gantt._canAddSubtask(id, config) : config.readonly) return;
 
 					var item = {};
 					this.createTask(item, id ? id : gantt.config.root_id);

@@ -10,7 +10,6 @@ import Scrollbar from "./layout/scrollbar_cell";
 import Timeline from "./timeline/timeline";
 import Grid from "./grid/grid";
 import ResourceGrid from "./grid/resource_grid";
-import ResourceGridLightbox from "./grid/resource_grid_lightbox";
 import ResourceTimeline from "./timeline/resource_timeline";
 import ResourceHistogram from "./timeline/resource_histogram";
 
@@ -29,6 +28,7 @@ import resourceHistogramRenderer from "./render/resource_histogram_render";
 import gridTaskRowResizerRenderer from "./render/task_grid_row_resize_render";
 import renderConstraints from "./render/task_constraints_render";
 import renderDeadline from "./render/task_deadline_render";
+import renderLevelingDelay from "./render/task_leveling_delay_render";
 import renderBaselines from "./render/task_baselines_render";
 import mainGridInitializer from "./grid/main_grid_initializer";
 import mainTimelineInitializer from "./timeline/main_timeline_initializer";
@@ -75,7 +75,6 @@ function initUI(gantt){
 	});
 
 	factory.registerView("resourceGrid", ResourceGrid);
-	factory.registerView("GridRL", ResourceGridLightbox);
 	factory.registerView("resourceTimeline", ResourceTimeline);
 	factory.registerView("resourceHistogram", ResourceHistogram);
 
@@ -115,6 +114,9 @@ function initUI(gantt){
 			},
 			taskDeadline: function(){
 				return renderDeadline(gantt);
+			},
+			taskLevelingDelay: function(){
+				return renderLevelingDelay(gantt);
 			},
 			taskBaselines: function(){
 				return renderBaselines(gantt);

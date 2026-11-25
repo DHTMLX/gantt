@@ -2,7 +2,7 @@
 // `getIgnoreFilter` hook with a ColumnFilter (false => ignore column), reproducing
 // the legacy rule: ignored = gantt.ignore_time(date) || skip_off_time non-working.
 
-import { GanttStatic } from "../../common/gantt_types";
+import { GanttStatic } from "../../../types/gantt_types";
 import ScaleHelper, { ScaleHelperApi } from "./scales";
 import { ColumnFilter, ScaleDescriptor } from "./scale_manager/types";
 

@@ -6,6 +6,8 @@ import fullscreen from "./fullscreen";
 import keyboard_navigation from "./keyboard_navigation";
 import quick_info from "./quick_info";
 import tooltip from "./tooltip";
+import toolbar from "./toolbar";
+import context_menu from "./context_menu";
 
 export default {
 	click_drag,
@@ -14,5 +16,7 @@ export default {
 	keyboard_navigation,
 	quick_info,
 	tooltip,
-	export_api
+	export_api,
+	toolbar,
+	context_menu
 };

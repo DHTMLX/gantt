@@ -4,9 +4,10 @@
 	<title>Gantt message types</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -14,22 +15,25 @@
 			margin: 0px;
 			overflow: hidden;
 		}
-		.buttons input {
-			min-width: 100px;
-		}
 	</style>
 </head>
 
 <body>
 
-	<div class="buttons gantt_control">
-		<input type="button" value="Info" onclick="showMessage('info')"/>
-		<input type="button" value="Warning" onclick="showMessage('warning')"/>
-		<input type="button" value="Error" onclick="showMessage('error')"/>
-	</div>
-	<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+	<div id="gantt_here" style="width:100%; height:100%;"></div>
 
 	<script>
+		gantt.plugins({ toolbar: true });
+		gantt.config.toolbar = [
+			{ id: "info", label: "Info" },
+			{ id: "warning", label: "Warning" },
+			{ id: "error", label: "Error" }
+		];
+		gantt.attachEvent("onToolbarItemClick", function(id) {
+			showMessage(id);
+		});
+
+		gantt.config.layout = withSampleToolbar(gantt.config.layout);
 		gantt.init("gantt_here");
 		gantt.parse(projects_with_milestones);
 
@@ -46,6 +50,7 @@
 			gantt.message({type:type, text:text, expire: 10000});
 
 		}
+		gantt.message.position = "bottom";
 		gantt.message({text:"Click on the buttons to explore Gantt message types", expire:-1, type:"error"});
 	</script>
 </body>

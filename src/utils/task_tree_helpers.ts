@@ -1,4 +1,5 @@
-import { GanttStatic, Task, Link } from "../core/common/gantt_types";
+import { GanttStatic, Task, Link } from "../types/gantt_types";
+import type { GanttInternal } from "../types/gantt_internal_types";
 
 type Id = string | number;
 
@@ -6,7 +7,7 @@ type LinkMap = Record<string, Link>;
 type TaskMap = Record<string, Task>;
 
 
-function copyLinkIdsArray(gantt: GanttStatic, linkIds: Id[], targetHash: LinkMap): void {
+function copyLinkIdsArray(gantt: GanttInternal, linkIds: Id[], targetHash: LinkMap): void {
 	for (let i = 0; i < linkIds.length; i++) {
 		if (gantt.isLinkExists(linkIds[i])) {
 			targetHash[String(linkIds[i])] = gantt.getLink(linkIds[i]);
@@ -14,21 +15,21 @@ function copyLinkIdsArray(gantt: GanttStatic, linkIds: Id[], targetHash: LinkMap
 	}
 }
 
-function copyLinkIds(gantt: GanttStatic, task: Task, targetHash: LinkMap): void {
+function copyLinkIds(gantt: GanttInternal, task: Task, targetHash: LinkMap): void {
 	if (task.$source && task.$target){
 		copyLinkIdsArray(gantt, task.$source, targetHash);
 		copyLinkIdsArray(gantt, task.$target, targetHash);
 	}
 }
 
-function getSubtreeLinks(gantt: GanttStatic, rootId: Id): LinkMap {
+function getSubtreeLinks(gantt: GanttInternal, rootId: Id): LinkMap {
 	const res: LinkMap = {};
 
 	if (gantt.isTaskExists(rootId)) {
 		copyLinkIds(gantt, gantt.getTask(rootId), res);
 	}
 
-	gantt.eachTask(function(child) {
+	gantt.eachTask(function(child: Task) {
 		copyLinkIds(gantt, child, res);
 	}, rootId);
 

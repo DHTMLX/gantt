@@ -3,7 +3,7 @@
 // method surface used by timeline.js / export_api. The ignore filter is injected
 // via `getIgnoreFilter`, overridden in scales_ignore.ts.
 
-import { GanttConfigOptions, GanttStatic } from "../../common/gantt_types";
+import { GanttConfigOptions, GanttStatic } from "../../../types/gantt_types";
 import ScaleManager from "./scale_manager/scale_manager";
 import {
 	ColumnFilter,
@@ -13,6 +13,8 @@ import {
 	ScaleLayout
 } from "./scale_manager/types";
 
+
+// TODO: inspect if needed and extract into module if so
 // gantt exposes a private DST correction helper that is not part of GanttStatic.
 type GanttWithDST = GanttStatic & {
 	_correct_dst_change(date: Date, prevOffset: number, step: number, unit: string): Date;

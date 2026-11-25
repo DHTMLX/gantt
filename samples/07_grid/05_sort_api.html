@@ -4,20 +4,30 @@
 	<title>Using sorting methods</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
-	<script src="../common/testdata.js"></script>
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
+	<script src="../common/testdata_public.js"></script>
 </head>
 
 <body style="margin: 0">
-<div class="gantt_control">
-	<input type='button' value='Sort by priority' onclick='sortByPriority()'>
-	<input type='button' value='Sort by task name' onclick='sortByName()'>
-</div>
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+<div id="gantt_here" style="width:100%; height:100vh;"></div>
 
 <script>
 	var p_direction = false;
 	var n_direction = false;
+
+	gantt.plugins({ toolbar: true });
+	gantt.config.toolbar = [
+		{ id: "sort_by_priority", label: "Sort by priority" },
+		{ id: "sort_by_name", label: "Sort by task name" }
+	];
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		if (id === "sort_by_priority") {
+			sortByPriority();
+		} else if (id === "sort_by_name") {
+			sortByName();
+		}
+	});
 
 	function sortByPriority() {
 		if (p_direction) {
@@ -50,6 +60,7 @@
 		{ name: "add", label: "", width: 44 }
 	]
 
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(users_data);
 </script>

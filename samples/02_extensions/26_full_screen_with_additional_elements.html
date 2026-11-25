@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<title>Full Screen with additional elements</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 	<style>
 		html, body {
 			height: 100%;
@@ -16,22 +16,21 @@
 			margin: 0px;
 		}
 		#myCover {
-			width:700px;
-			height:600px;
-		}
-		#toggleBtn {
-			max-height: 30px;
+			width: 700px;
+			max-width: 100%;
+			height: 600px;
+			display: flex;
+			flex-direction: column;
 		}
 		#gantt_here {
-			height: calc(100% - 52px);
+			flex: 1;
+			min-height: 0;
 		}
 	</style>
 </head>
 <body>
 	<div id="myCover">
-		<div class="gantt_control">
-			<button id="toggle_fullscreen" onclick="gantt.ext.fullscreen.toggle();">toggle fullscreen</button>
-		</div>
+		<div id="fullscreen_toolbar" class="sample-toolbar-host"></div>
 		<div id="gantt_here"></div>
 	</div>
 	<script>
@@ -44,5 +43,13 @@
 		gantt.init("gantt_here");
 
 		gantt.parse(demo_tasks);
+
+		const toolbar = gantt.ext.ui.createToolbar({
+			items: [{ id: "toggle_fullscreen", label: "toggle fullscreen" }],
+			onItemClick: function (id) {
+				if (id === "toggle_fullscreen") { gantt.ext.fullscreen.toggle(); }
+			}
+		});
+		toolbar.mount(document.getElementById("fullscreen_toolbar"));
 	</script>
 </body>

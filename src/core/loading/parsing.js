@@ -8,9 +8,9 @@ export default function(gantt) {
 		this.on_load({xmlDoc: {responseText: data}}, type);
 	};
 
-	gantt.serialize = function (type) {
+	gantt.serialize = function (type, options) {
 		type = type || "json";
-		return this[type].serialize();
+		return this[type].serialize(options);
 	};
 
 	/*
@@ -204,18 +204,30 @@ export default function(gantt) {
 			}
 			return copy;
 		},
-		serialize: function () {
-			var tasks = [];
-			var links = [];
+		serialize: function (options) {
+			options = options || {};
+			let tasks = [];
+			let links = [];
 			let baselines = [];
 
-			gantt.eachTask(function (obj) {
+			// GS-3626. "canonical" walks stored WBS order (ignores sort/filter/collapse);
+			// "display" always walks the current grid order. Defaults to canonical only
+			// once the wbs extension is active - see docs/internal/wbs-codes-and-outline-numbers/design.md#6-compatibility.
+			const order = options.order || ((gantt.ext && gantt.ext.wbs) ? "canonical" : "display");
+			const self = this;
+			function collectTask(obj) {
 				gantt.resetProjectDates(obj);
-				tasks.push(this.serializeTask(obj));
-			}, gantt.config.root_id, this);
+				tasks.push(self.serializeTask(obj));
+			}
 
-			var rawLinks = gantt.getLinks();
-			for (var i = 0; i < rawLinks.length; i++) {
+			if (order === "canonical") {
+				gantt.$data.tasksStore.eachItemCanonical(collectTask, gantt.config.root_id);
+			} else {
+				gantt.eachTask(collectTask, gantt.config.root_id);
+			}
+
+			const rawLinks = gantt.getLinks();
+			for (let i = 0; i < rawLinks.length; i++) {
 				links.push(this.serializeLink(rawLinks[i]));
 			}
 

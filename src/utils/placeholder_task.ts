@@ -1,5 +1,6 @@
-import { GanttStatic, DatastoreMethods, TreeDatastoreMethods } from "../core/common/gantt_types";
+import { GanttInternal } from "../types/gantt_internal_types";
 import { IGanttConfig } from "../core/common/config";
+import TreeDatastoreInternal from "../core/datastore/treedatastore";
 
 /**
  * Check the over task or draggble task is placeholder task
@@ -12,8 +13,8 @@ interface CustomConfig {
 
 export default function isPlaceholderTask(
 	id: string | number,
-	gantt: GanttStatic | null,
-	store: DatastoreMethods & TreeDatastoreMethods,
+	gantt: GanttInternal | null,
+	store: TreeDatastoreInternal,
 	config?: IGanttConfig | CustomConfig
 ): boolean {
 	const actualConfig = gantt ? gantt.config : config;

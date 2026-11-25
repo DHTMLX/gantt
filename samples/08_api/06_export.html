@@ -4,9 +4,10 @@
 	<title>Export data from Gantt</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -19,18 +20,11 @@
 
 <body>
 
-<div class="gantt_control">
-	<input value="Export to PDF" type="button" onclick='gantt.exportToPDF()'>
-	<input value="Export to PNG" type="button" onclick='gantt.exportToPNG()'>
-	<input value="Export :: Dark" type="button" onclick='gantt.exportToPNG({ skin:"dark" })'>
-	<input value="Export :: Broadway" type="button" onclick='gantt.exportToPDF({ skin:"broadway" })'>
-	<input value="Export :: Skyblue" type="button" onclick='gantt.exportToPDF({ skin:"skyblue" })'>
-	<input value="Export :: Material" type="button" onclick='gantt.exportToPNG({ skin:"material" })'>
-</div>
 
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 <script>
 	gantt.plugins({
+		toolbar: true,
 		export_api: true,
 	});
 	gantt.config.grid_width = 440;
@@ -41,6 +35,27 @@
 	gantt.config.columns[0].template = function (obj) {
 		return obj.text + " - <b>" + obj.progress*100 + "%</b>";
 	}
+	gantt.config.toolbar = [
+		{ id: "export_to_pdf", label: "Export to PDF" },
+		{ id: "export_to_png", label: "Export to PNG" },
+		{ id: "export_dark", label: "Export :: Dark" },
+		{ id: "export_broadway", label: "Export :: Broadway" },
+		{ id: "export_skyblue", label: "Export :: Skyblue" },
+		{ id: "export_material", label: "Export :: Material" }
+	];
+	const toolbarActions = {
+		export_to_pdf: () => gantt.exportToPDF(),
+		export_to_png: () => gantt.exportToPNG(),
+		export_dark: () => gantt.exportToPNG({ skin:"dark" }),
+		export_broadway: () => gantt.exportToPDF({ skin:"broadway" }),
+		export_skyblue: () => gantt.exportToPDF({ skin:"skyblue" }),
+		export_material: () => gantt.exportToPNG({ skin:"material" })
+	};
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		toolbarActions[id]();
+	});
+
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(demo_tasks);
 </script>

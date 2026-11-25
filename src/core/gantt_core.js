@@ -125,16 +125,19 @@ export default function(gantt){
 			}
 		});
 
+		this.callEvent("onGanttLayoutReady", []);
+		this.$layout.render();
+
+		// GS-276. `$layout.render` resizes the layout on its own, and both callers of `rebuildLayout`
+		// repaint the data right after it. Subscribing after the initial render keeps that first
+		// repaint from being done twice
 		this.$layout.attachEvent("onResize", function(){
 			gantt._quickRefresh(function(){
 				gantt.refreshData();
 			});
 		});
 
-		this.callEvent("onGanttLayoutReady", []);
-		this.$layout.render();
-
-		this.$container = this.$layout.$container.firstChild;
+		this.$container = this.$layout.$container.querySelector(".gantt_layout_root");
 
 		addResizeListener(this);
 	}).bind(gantt);

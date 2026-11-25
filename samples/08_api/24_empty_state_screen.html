@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <title>Show empty state screen</title>
 <script src="../../codebase/dhtmlxgantt.js"></script>
 <link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-<link rel="stylesheet" href="../common/controls_styles.css?v=7.1.7">
+<link rel="stylesheet" href="../common/sample_toolbar.css">
+<script src="../common/sample_toolbar.js"></script>
 
 <style>
   html,
@@ -21,24 +22,21 @@
 
 <body>
 
-<div class="gantt_control" >
-  <input type=button value="Toggle grid" onclick="toggleGrid()">
-</div>
-
-<div id="gantt_here" style="width: 100%; height: 90%;position: relative;"></div>
+<div id="gantt_here" style="width: 100%; height: 100%;position: relative;"></div>
 
   <script>
 
-
-  function toggleGrid(){
-    gantt.config.show_grid = !gantt.config.show_grid;
+  gantt.plugins({ toolbar: true });
+  gantt.config.toolbar = { items: [{ id: "toggle-grid", comp: "toggle", label: "Show grid", pressed: true }] };
+  gantt.attachEvent("onToolbarItemChange", function(id, value) {
+    gantt.config.show_grid = value;
     gantt.render();
-  }
-
+  });
   gantt.config.show_empty_state = true;
 
-  gantt.config.start_date = new Date(2025, 04, 01);
-  gantt.config.end_date = new Date(2025, 05, 01);
+  gantt.config.start_date = new Date(2027, 3, 29);
+  gantt.config.end_date = new Date(2027, 4, 30);
+  gantt.config.layout = withSampleToolbar(gantt.config.layout);
   gantt.init("gantt_here");
 
   gantt.attachEvent("onLightboxSave", function(id, task, is_new){

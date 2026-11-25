@@ -2,7 +2,7 @@
 	position: fixed;
 	right: 5px;
 	width: 320px;
-	z-index: 1000;
+	// z-index owned by the dhx_ui_zband_notification class applied in message.js
 }
 
 .gantt-info {
@@ -12,7 +12,6 @@
 	font-size: var(--dhx-gantt-regular-font-size);
 	font-weight: var(--dhx-gantt-regular-font-weight);
 	line-height: var(--dhx-gantt-regular-line-height);
-	z-index: 14;
 	overflow: hidden;
 	margin: 5px;
 	margin-bottom: 10px;
@@ -43,7 +42,7 @@
 	box-shadow: var(--dhx-gantt-box-shadow-l);
 	border: var(--dhx-gantt-modal-border);
 	border-radius: var(--dhx-gantt-modal-border-radius);
-	z-index: 18;
+	z-index: var(--dhx-gantt-z-modal);
 	border-radius: var(--dhx-gantt-modal-border-radius);
 	font-family: var(--dhx-gantt-font-family);
 	font-size: var(--dhx-gantt-font-size);
@@ -95,7 +94,7 @@ div.dhx_modal_cover {
 
 	opacity: 0.2;
 	position: fixed;
-	z-index: 17;
+	z-index: var(--dhx-gantt-z-modal);
 	left: 0px;
 	top: 0px;
 	width: 100%;

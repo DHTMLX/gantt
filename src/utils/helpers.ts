@@ -94,7 +94,7 @@ function isBooleanObject(obj: unknown): obj is Boolean {
 function isDate(obj: unknown): obj is Date {
 	if (obj && typeof obj === "object") {
 		const dateLike = obj as Date;
-		return !!(dateLike.getFullYear && dateLike.getMonth && dateLike.getDate);
+		return !!(typeof dateLike.getFullYear == "function" && typeof dateLike.getMonth == "function" && typeof dateLike.getDate == "function");
 	} else {
 		return false;
 	}

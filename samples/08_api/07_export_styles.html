@@ -6,9 +6,10 @@
 
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
 	<link rel="stylesheet" href="../common/customstyles.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -20,15 +21,12 @@
 </head>
 
 <body>
-<div class="gantt_control">
-	<input value="Export to PDF" type="button" onclick="exportGantt('pdf')">
-	<input value="Export to PNG" type="button" onclick="exportGantt('png')">
-</div>
-<div id="gantt_here" style='width:100%; height: calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 
 <script>
 
 	gantt.plugins({
+		toolbar: true,
 		export_api: true,
 	});
 
@@ -62,6 +60,19 @@
 		}
 	};
 
+	gantt.config.toolbar = [
+		{ id: "export_to_pdf", label: "Export to PDF" },
+		{ id: "export_to_png", label: "Export to PNG" }
+	];
+	const toolbarActions = {
+		export_to_pdf: () => exportGantt('pdf'),
+		export_to_png: () => exportGantt('png')
+	};
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		toolbarActions[id]();
+	});
+
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(users_data);
 

@@ -4,11 +4,21 @@
 	<title>Using gantt constructor and destructor</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 	<style>
 		html, body {
+			height: 100%;
 			margin: 0px;
 			padding: 0px;
+		}
+		body {
+			display: flex;
+			flex-direction: column;
+		}
+
+		#gantt_here {
+			flex: 1;
+			min-height: 0;
 		}
 	</style>
 
@@ -16,24 +26,24 @@
 
 		window.addEventListener("DOMContentLoaded", function(){
 			var ganttInstance;
-			document.querySelector("#toggle-gantt").addEventListener("click", function(){
+			function toggleGantt() {
 				if(ganttInstance) {
 					ganttInstance.destructor();
 					ganttInstance = null;
 
-					this.value = "Create gantt";
+					toolbar.updateItem("toggle_gantt", { label: "Create gantt" });
 				}else{
 					ganttInstance = Gantt.getGanttInstance({
 						container: "gantt_here",
 						data: {
 							tasks: [
-								{ id: 1, text: "Project #1", start_date: "01-04-2023", duration: 18,
+								{ id: 1, text: "Project #1", start_date: "03-04-2027", duration: 18,
 									progress: 0.4, open: true
 								},
-								{ id: 2, text: "Task #1", start_date: "02-04-2023", duration: 8,
+								{ id: 2, text: "Task #1", start_date: "04-04-2027", duration: 8,
 									progress: 0.6, parent: 1
 								},
-								{ id: 3, text: "Task #2", start_date: "11-04-2023", duration: 8,
+								{ id: 3, text: "Task #2", start_date: "13-04-2027", duration: 8,
 									progress: 0.6, parent: 1
 								}
 							],
@@ -43,18 +53,24 @@
 						}
 					});
 
-					this.value = "Destroy gantt";
+					toolbar.updateItem("toggle_gantt", { label: "Destroy gantt" });
 				}
-			})
-			
+				toolbar.getControl("toggle_gantt").focus();
+			}
+
+			const toolbar = gantt.ext.ui.createToolbar({
+				items: [{ id: "toggle_gantt", label: "Create gantt" }],
+				onItemClick: function (id) {
+					if (id === "toggle_gantt") { toggleGantt(); }
+				}
+			});
+			toolbar.mount(document.getElementById("constructor_toolbar"));
 		})
 	</script>
 </head>
 
 
 <body>
-	<div class="gantt_control">
-		<input value="Create gantt" type="button" id="toggle-gantt">
-	</div>
-	<div id="gantt_here" style='width:100%; height: calc(100vh - 52px);'></div>
+	<div id="constructor_toolbar" class="sample-toolbar-host"></div>
+	<div id="gantt_here"></div>
 </body>

@@ -8,6 +8,7 @@ import rowResize from "./task_grid_row_resize";
 import ColumnDnd from "../plugins/column_grid_dnd";
 
 import mouseEventContainer from "../mouse_event_container";
+import { applyColumnDefaults } from "./columns/column_defaults";
 import { getOwnItemId } from "../../datastore/own_item_id";
 
 var Grid = function (parent, config, factory, gantt) {
@@ -277,7 +278,11 @@ Grid.prototype = {
 
 	getGridColumns: function () {
 		var config = this.$getConfig();
-		return config.columns.slice();
+		var columns = config.columns;
+		for (var i = 0; i < columns.length; i++) {
+			applyColumnDefaults(this.$gantt, columns[i]);
+		}
+		return columns.slice();
 	},
 	isVisible: function () {
 		if (this.$parent && this.$parent.$config) {
@@ -350,6 +355,13 @@ Grid.prototype = {
 	_refreshPlaceholderOnStoreUpdate: function (id) {
 		var config = this.$getConfig(),
 			store = this.$config.rowStore;
+
+		// `batchUpdate` delays the filter pass until the batch ends. A read of the visible count
+		// starts that pass immediately, one time for each change. The repaint at the end of the
+		// batch sets the attribute.
+		if (!store || !this.$gantt.getState("batchUpdate").batch_update) {
+			this.$gantt._waiAria.gridRowCountAttr(this.$grid, store);
+		}
 
 		if (!store || id !== null || !this.isVisible() || !config.smart_rendering) {
 			return;
@@ -661,9 +673,12 @@ Grid.prototype = {
 				col.width = colWidth = gridWidth - width;
 			width += colWidth;
 			var sort = (gantt._sort && col.name == gantt._sort.name) ? (`<div data-column-id="${col.name}" class="gantt_sort gantt_${gantt._sort.direction}"></div>`) : "";
+			// the header "+" adds a top-level task, so only the chart-level read-only value applies
+			var addDisabled = col.name == "add" && !gantt._canAddSubtask(null, config, true);
 			var cssClass = ["gantt_grid_head_cell",
 				("gantt_grid_head_" + col.name),
 				(last ? "gantt_last_cell" : ""),
+				(addDisabled ? "gantt_add_disabled" : ""),
 				templates.grid_header_class(col.name, col)].join(" ");
 
 			var style = "width:" + (colWidth - (last ? 1 : 0)) + "px;";
@@ -678,7 +693,7 @@ Grid.prototype = {
 				renderableComponents[col.name] = label;
 			}
 
-			var ariaAttrs = gantt._waiAria.gridScaleCellAttrString(col, label);
+			var ariaAttrs = gantt._waiAria.gridScaleCellAttrString(col, label, addDisabled);
 
 			var cell = "<div class='" + cssClass + "' style='" + style + "' " + ariaAttrs + 
 				" data-column-id='" + col.name + "' column_id='" + col.name + "'" +
@@ -697,6 +712,9 @@ Grid.prototype = {
 		if (this._renderHeaderResizers) {
 			this._renderHeaderResizers();
 		}
+
+		gantt._waiAria.gridColCountAttr(this.$grid, columns.length);
+		gantt._waiAria.gridRowCountAttr(this.$grid, this.$config.rowStore);
 	},
 
 	_getGridWidth: function () {

@@ -1,6 +1,18 @@
 
 import ExtensionsManager from "../ext/extension_manager";
+import { registerSchedulingEngine, type SchedulingEngineFactory } from "./scheduling_engine_names";
 import scope from "../utils/global";
+import type { IGanttFactory, IGanttInitializationConfig } from "../types.d.ts";
+import type { GanttPlugin, GanttStatic } from "../types/gantt_types";
+import type { GanttInternal } from "../types/gantt_internal_types";
+import type { GanttInstance } from "./make_instance_common";
+
+type SupportedExtensions = { [key: string]: GanttPlugin };
+type GanttFactoryMethod = (supportedExtensions: SupportedExtensions) => GanttInstance;
+
+type GanttGlobalScope = typeof globalThis & {
+	gantt?: Partial<GanttStatic>;
+};
 
 class GanttFactory implements IGanttFactory{
 	protected _seed: number;
@@ -9,7 +21,10 @@ class GanttFactory implements IGanttFactory{
 	protected _bundledExtensions: {[key:string]: GanttPlugin};
 	protected _extensionsManager: ExtensionsManager;
 
-	constructor(factoryMethod: ()=>any, _bundledExtensions:{[key:string]: GanttPlugin}) {
+	constructor(
+		factoryMethod: GanttFactoryMethod,
+		_bundledExtensions: SupportedExtensions
+	) {
 		this._seed = 0;
 		this._ganttPlugin = [];
 		this._factoryMethod = factoryMethod;
@@ -20,9 +35,16 @@ class GanttFactory implements IGanttFactory{
 	plugin = (code: GanttPlugin):void => {
 		this._ganttPlugin.push(code);
 
-		if(scope.gantt !== undefined && scope.gantt.getTask){
-			code(scope.gantt);
+		const globalGantt = (scope as GanttGlobalScope).gantt;
+
+		if (globalGantt !== undefined && typeof globalGantt.getTask === "function") {
+			code(globalGantt as GanttStatic);
 		}
+	};
+
+	/** Makes a scheduling engine selectable by name in `config.auto_scheduling.engine`. */
+	registerSchedulingEngine = (name: string, createEngine: SchedulingEngineFactory): void => {
+		registerSchedulingEngine(name, createEngine);
 	};
 
 	getGanttInstance = (initConfig?: IGanttInitializationConfig):any => {
@@ -39,7 +61,7 @@ class GanttFactory implements IGanttFactory{
 		return gantt;
 	};
 
-	protected _initFromConfig = (gantt: any, initConfig: IGanttInitializationConfig):any => {
+	protected _initFromConfig = (gantt: GanttInternal, initConfig: IGanttInitializationConfig):any => {
 		if(initConfig.plugins){
 			for(const i in initConfig.plugins){
 				const ext = this._extensionsManager.getExtension(i);

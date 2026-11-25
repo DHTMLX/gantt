@@ -1,4 +1,5 @@
 import { markBuiltinTemplate } from "../../utils/template_security";
+import { formatLevelingDelay } from "./leveling_delay";
 
 export default function(gantt) {
 
@@ -63,6 +64,9 @@ export default function(gantt) {
 			task_text: function (start, end, task) {
 				return task.text;
 			},
+			task_work: function (task) {
+				return task.work != null ? task.work : "";
+			},
 			task_class: function (start, end, task) {
 				return "";
 			},
@@ -92,16 +96,16 @@ export default function(gantt) {
 				return "<div class='gantt_tree_indent'></div>";
 			}),
 			grid_folder: markBuiltinTemplate(function (item) {
-				return "<div class='gantt_tree_icon gantt_folder_" + (item.$open ? "open" : "closed") + "'></div>";
+				return "<div " + gantt._waiAria.gridDecorativeIconAttrString() + "class='gantt_tree_icon gantt_folder_" + (item.$open ? "open" : "closed") + "'></div>";
 			}),
 			grid_file: markBuiltinTemplate(function (item) {
-				return "<div class='gantt_tree_icon gantt_file'></div>";
+				return "<div " + gantt._waiAria.gridDecorativeIconAttrString() + "class='gantt_tree_icon gantt_file'></div>";
 			}),
 			grid_open: markBuiltinTemplate(function (item) {
-				return "<div class='gantt_tree_icon gantt_" + (item.$open ? "close" : "open") + "'></div>";
+				return "<div " + gantt._waiAria.gridToggleButtonAttrString() + "class='gantt_tree_icon gantt_" + (item.$open ? "close" : "open") + "'></div>";
 			}),
 			grid_blank: markBuiltinTemplate(function (item) {
-				return "<div class='gantt_tree_icon gantt_blank'></div>";
+				return "<div " + gantt._waiAria.gridDecorativeIconAttrString() + "class='gantt_tree_icon gantt_blank'></div>";
 			}),
 			date_grid: function (date, item, column) {
 				if (item && gantt.isUnscheduledTask(item) && gantt.config.show_unscheduled) {
@@ -165,6 +169,9 @@ export default function(gantt) {
 			}),
 			baseline_text: function (task, baseline, index) {
 				return "";
+			},
+			leveling_delay_text: function (task, delay, unit) {
+				return formatLevelingDelay(delay, unit);
 			}
 		});
 	}

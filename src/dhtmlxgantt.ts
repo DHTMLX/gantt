@@ -22,3 +22,8 @@ export {
 	applyTemplatePolicy
 } from "./utils/template_security";
 export type { HtmlTemplatePolicy } from "./utils/template_security";
+
+// top-level Toolbar alias (design T2)
+import { Toolbar } from "./core/ui/controls/toolbar_alias";
+(scope as any).Toolbar = Toolbar;
+export { Toolbar };

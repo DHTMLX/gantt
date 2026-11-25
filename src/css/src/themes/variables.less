@@ -25,15 +25,27 @@
 	--dhx-gantt-base-colors-border-light: #F0F0F0;
 	--dhx-gantt-base-colors-border: #DFE0E1;
 
-	--dhx-gantt-base-colors-icons: #A1A4A6;
-	--dhx-gantt-base-colors-icons-active: #8b8e90;
+	/* Icon glyphs only. Dark enough to clear WCAG 1.4.11 (3:1 non-text contrast)
+	   against the light surfaces — an icon-only button's glyph is its sole
+	   visual indicator, so it is in scope for that criterion. */
+	--dhx-gantt-base-colors-icons: #8E8E8E;
+	--dhx-gantt-base-colors-icons-active: #7E7E7E;
 	--dhx-gantt-base-colors-icons-active: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-icons) 100%, #000000 12.6%);
-	--dhx-gantt-base-colors-icons-hover: #76787a;
+	--dhx-gantt-base-colors-icons-hover: #6E6E6E;
 	--dhx-gantt-base-colors-icons-hover: color-mix(in hsl increasing hue, var(--dhx-gantt-base-colors-icons) 100%, #000000 28.5%);
+
+	/* Passive neutral chrome: link lines, readonly text, non-work shading,
+	   disabled control labels. Deliberately lighter than
+	   --dhx-gantt-base-colors-icons — darkening these would weigh down the chart
+	   and make disabled text read as enabled. Anything interactive (icon glyphs,
+	   drag handles) tracks the icon color instead, because WCAG 1.4.11 applies to
+	   it. A theme that overrides the icon color should override this alongside
+	   it. No -hover pair: nothing passive has a hover state. */
+	--dhx-gantt-base-colors-neutral: #A1A4A6;
 
 	--dhx-gantt-base-colors-disabled: #E9E9E9;
 	--dhx-gantt-base-colors-select: #E0E5F3;
-	--dhx-gantt-base-colors-readonly: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-base-colors-readonly: var(--dhx-gantt-base-colors-neutral);
 	--dhx-gantt-base-colors-text-light: #555D63;
 	--dhx-gantt-base-colors-text-base: #23272A;
 	--dhx-gantt-base-colors-text-on-fill: rgba(255, 255, 255, 0.90);
@@ -61,6 +73,10 @@
 
 
 	--dhx-gantt-base-colors-error-text: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-gantt-error-text-color: var(--dhx-gantt-base-colors-error);
+	--dhx-gantt-btn-danger-color: var(--dhx-gantt-error-text-color);
+	--dhx-gantt-btn-danger-color-hover: var(--dhx-gantt-base-colors-error-hover);
+	--dhx-gantt-btn-danger-color-active: var(--dhx-gantt-base-colors-error-active);
 	--dhx-gantt-base-colors-success: #1BC297;
 
 	--dhx-gantt-container-background: var(--dhx-gantt-base-colors-background);
@@ -143,6 +159,12 @@
 	--dhx-gantt-milestone-background: var(--dhx-gantt-task-violet);
 
 	--dhx-gantt-task-marker-color: var(--dhx-gantt-task-background);
+	--dhx-gantt-leveling-delay-color: var(--dhx-gantt-task-background);
+
+	--dhx-gantt-inactive-opacity: .6;
+	--dhx-gantt-inactive-background: var(--dhx-gantt-base-colors-disabled);
+	--dhx-gantt-inactive-color: var(--dhx-gantt-base-colors-text-light);
+	--dhx-gantt-inactive-border: 1px dashed var(--dhx-gantt-base-colors-neutral);
 
 	--dhx-gantt-popup-background: var(--dhx-gantt-container-background);
 	--dhx-gantt-popup-color: var(--dhx-gantt-container-color);
@@ -155,12 +177,18 @@
 	--dhx-gantt-tooltip-border: none;
 	--dhx-gantt-tooltip-border-radius: var(--dhx-gantt-popup-border-radius);
 
-	--dhx-gantt-link-background: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-link-background: var(--dhx-gantt-base-colors-neutral);
 	--dhx-gantt-link-background-hover: var(--dhx-gantt-base-colors-text-light);
 	--dhx-gantt-link-critical-background: var(--dhx-gantt-base-colors-error);
 
-	--dhx-gantt-link-handle-offset: 8px;
-	--dhx-gantt-link-handle-size: 10px;
+	/* Link handle hit-area width = size + offset (see .gantt_link_control).
+	   Default 12+12=24px meets WCAG 2.2 AA target size (SC 2.5.8); lowering below
+	   this breaks it - fine for dense UIs where a11y target size isn't required. */
+	--dhx-gantt-link-handle-offset: 12px;
+	--dhx-gantt-link-handle-size: 12px;
+	/* the drag handles are interactive affordances, not passive chrome, so they
+	   track the icon color — WCAG 1.4.11 applies to them the same way it does to
+	   an icon-only button's glyph */
 	--dhx-gantt-link-handle-border: var(--dhx-gantt-base-colors-icons);
 	--dhx-gantt-link-handle-border-hover: var(--dhx-gantt-base-colors-border);
 	--dhx-gantt-link-handle-background: var(--dhx-gantt-base-colors-border);
@@ -173,6 +201,18 @@
 
 	--dhx-gantt-control-height: 32px;
 	--dhx-gantt-checkbox-height: 20px;
+
+	/* toolbar composition surface (ui-core) */
+	--dhx-gantt-toolbar-height: 44px;
+	--dhx-gantt-toolbar-background: var(--dhx-gantt-base-colors-background);
+	--dhx-gantt-toolbar-border: var(--dhx-gantt-base-colors-border);
+	/* segmented control in the toolbar: track fill, track border color, unselected label color */
+	--dhx-gantt-toolbar-segmented-background: var(--dhx-gantt-base-colors-background-alt);
+	--dhx-gantt-toolbar-segmented-border: transparent;
+	--dhx-gantt-toolbar-segmented-color: var(--dhx-gantt-base-colors-text-light);
+	/* header row of the lightbox resource-assignment table */
+	--dhx-gantt-resource-head-background: var(--dhx-gantt-base-colors-background-alt);
+	--dhx-gantt-resource-head-color: var(--dhx-gantt-base-colors-text-light);
 
 	--dhx-gantt-lightbox_font-family: var(--dhx-gantt-font-family);
 	--dhx-gantt-lightbox-font-size: var(--dhx-gantt-important-font-size);
@@ -209,7 +249,7 @@
 	--dhx-gantt-btn-border-active: var(--dhx-gantt-base-colors-primary-active);
 
 	--dhx-gantt-btn-background-disabled: var(--dhx-gantt-base-colors-disabled);
-	--dhx-gantt-btn-color-disabled: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-btn-color-disabled: var(--dhx-gantt-base-colors-neutral);
 	--dhx-gantt-btn-border-color-disabled: var(--dhx-gantt-base-colors-disabled);
 
 	--dhx-gantt-btn-outline-background: transparent;
@@ -225,8 +265,8 @@
 	--dhx-gantt-btn-outline-border-active: var(--dhx-gantt-base-colors-primary-active);
 
 	--dhx-gantt-btn-outline-background-disabled: transparent;
-	--dhx-gantt-btn-outline-color-disabled: var(--dhx-gantt-base-colors-icons);
-	--dhx-gantt-btn-outline-border-color-disabled: var(--dhx-gantt-base-colors-icons);
+	--dhx-gantt-btn-outline-color-disabled: var(--dhx-gantt-base-colors-neutral);
+	--dhx-gantt-btn-outline-border-color-disabled: var(--dhx-gantt-base-colors-neutral);
 
 	--dhx-gantt-btn-text-transform: none;
 
@@ -251,4 +291,74 @@
 	/* undo delete */
 	--dhx-gantt-undo-delete-background: var(--dhx-gantt-base-colors-text-base);
 	--dhx-gantt-undo-delete-color: var(--dhx-gantt-task-color);
+
+	/* ui core (internal control kit): z-index bands + component tokens */
+	--dhx-gantt-z-popup: 20;
+	--dhx-gantt-z-modal: 30;
+	--dhx-gantt-z-notification: 1000;
+
+	--dhx-gantt-ui-input-background: var(--dhx-gantt-base-colors-background);
+	--dhx-gantt-ui-input-color: var(--dhx-gantt-base-colors-text-base);
+	--dhx-gantt-ui-input-border: 1px solid var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-ui-input-border-radius: var(--dhx-gantt-border-radius);
+	--dhx-gantt-ui-focus-ring: 2px solid var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-ui-option-hover-background: var(--dhx-gantt-base-colors-select);
+	--dhx-gantt-ui-backdrop-background: rgba(0, 0, 0, 0.2);
+	--dhx-gantt-ui-nonwork-color: var(--dhx-gantt-base-colors-neutral);
+	--dhx-gantt-ui-nonwork-background: var(--dhx-gantt-base-colors-background-alt);
+
+	/* neutral UI-core aliases; product themes continue to own the values above */
+	--dhx-ui-font-family: var(--dhx-gantt-font-family);
+	--dhx-ui-font-size: var(--dhx-gantt-font-size);
+	--dhx-ui-box-shadow-m: var(--dhx-gantt-box-shadow-m);
+	--dhx-ui-popup-background: var(--dhx-gantt-popup-background);
+	--dhx-ui-popup-color: var(--dhx-gantt-popup-color);
+	--dhx-ui-popup-border: var(--dhx-gantt-popup-border);
+	--dhx-ui-popup-border-radius: var(--dhx-gantt-popup-border-radius);
+	--dhx-ui-modal-padding: var(--dhx-gantt-modal-padding);
+	--dhx-ui-z-popup: var(--dhx-gantt-z-popup);
+	--dhx-ui-z-modal: var(--dhx-gantt-z-modal);
+	--dhx-ui-z-notification: var(--dhx-gantt-z-notification);
+	--dhx-ui-control-height: var(--dhx-gantt-control-height);
+	--dhx-ui-input-background: var(--dhx-gantt-ui-input-background);
+	--dhx-ui-input-color: var(--dhx-gantt-ui-input-color);
+	--dhx-ui-input-border: var(--dhx-gantt-ui-input-border);
+	--dhx-ui-input-border-radius: var(--dhx-gantt-ui-input-border-radius);
+	--dhx-ui-focus-ring: var(--dhx-gantt-ui-focus-ring);
+	--dhx-ui-option-hover-background: var(--dhx-gantt-ui-option-hover-background);
+	--dhx-ui-backdrop-background: var(--dhx-gantt-ui-backdrop-background);
+	--dhx-ui-nonwork-color: var(--dhx-gantt-ui-nonwork-color);
+	--dhx-ui-nonwork-background: var(--dhx-gantt-ui-nonwork-background);
+	--dhx-ui-base-colors-background-alt: var(--dhx-gantt-base-colors-background-alt);
+	--dhx-ui-base-colors-border: var(--dhx-gantt-base-colors-border);
+	--dhx-ui-base-colors-border-light: var(--dhx-gantt-base-colors-border-light);
+	--dhx-ui-base-colors-error: var(--dhx-gantt-base-colors-error);
+	--dhx-ui-base-colors-icons: var(--dhx-gantt-base-colors-icons);
+	--dhx-ui-base-colors-icons-active: var(--dhx-gantt-base-colors-icons-active);
+	--dhx-ui-base-colors-icons-hover: var(--dhx-gantt-base-colors-icons-hover);
+	--dhx-ui-base-colors-primary: var(--dhx-gantt-base-colors-primary);
+	--dhx-ui-base-colors-primary-hover: var(--dhx-gantt-base-colors-primary-hover);
+	--dhx-ui-base-colors-primary-lighter: var(--dhx-gantt-base-colors-primary-lighter);
+	--dhx-ui-base-colors-readonly: var(--dhx-gantt-base-colors-readonly);
+	--dhx-ui-base-colors-text-light: var(--dhx-gantt-base-colors-text-light);
+	--dhx-ui-base-colors-text-on-fill: var(--dhx-gantt-base-colors-text-on-fill);
+	--dhx-ui-border-radius: var(--dhx-gantt-border-radius);
+	--dhx-ui-caption-font-size: var(--dhx-gantt-caption-font-size);
+	--dhx-ui-important-font-weight: var(--dhx-gantt-important-font-weight);
+	--dhx-ui-toolbar-background: var(--dhx-gantt-toolbar-background);
+	--dhx-ui-toolbar-border: var(--dhx-gantt-toolbar-border);
+	--dhx-ui-toolbar-segmented-background: var(--dhx-gantt-toolbar-segmented-background);
+	--dhx-ui-toolbar-segmented-border: var(--dhx-gantt-toolbar-segmented-border);
+	--dhx-ui-toolbar-segmented-color: var(--dhx-gantt-toolbar-segmented-color);
+	--dhx-ui-resource-head-background: var(--dhx-gantt-resource-head-background);
+	--dhx-ui-resource-head-color: var(--dhx-gantt-resource-head-color);
+	--dhx-ui-error-text-color: var(--dhx-gantt-error-text-color);
+}
+
+:root[data-gantt-theme-increase-contrast]:not([data-gantt-theme]),
+:root[data-gantt-theme-increase-contrast][data-gantt-theme="terrace"] {
+	--dhx-gantt-base-colors-primary: #4163c9;
+	--dhx-gantt-task-green: #157646;
+	--dhx-gantt-base-colors-error: #c62a41;
+	--dhx-gantt-link-background: #767676;
 }

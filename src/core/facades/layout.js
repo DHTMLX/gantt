@@ -189,8 +189,8 @@ function createLayoutFacade(){
 			}
 		},
 
-		roundTaskDates: function() {
-			tryCall.call(this, getTimeline, "roundTaskDates", []);
+		roundTaskDates: function(task) {
+			tryCall.call(this, getTimeline, "roundTaskDates", [task]);
 		},
 
 		getScale: function() {

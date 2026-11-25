@@ -23,7 +23,9 @@ import plugins from "./ui/plugins";
 import touch from "./ui/touch";
 import lightbox from "./ui/lightbox";
 import lightbox_optional_time from "./ui/lightbox/lightbox_optional_time";
+import accessibility from "./ui/accessibility";
 import wai_aria from "./ui/wai_aria";
+import uiCore from "./ui/controls/index";
 
 
 // GS-3658. The task and link attributes hold item ids, so `locate` can return the own id
@@ -82,7 +84,13 @@ export default function(gantt) {
 		touch(gantt);
 		lightbox(gantt);
 		lightbox_optional_time(gantt);
+		accessibility(gantt);
 		wai_aria(gantt);
+		// UI core: gantt.ext.ui popup/control factories. The kit-backed form
+		// blocks and inline editors are defined with their legacy peers and
+		// register inside lightbox/index.js (gantt.form_blocks) and
+		// grid/editors/controller.js (editor_types) — no ordering constraint here
+		uiCore(gantt);
 
 		gantt.locate = function(e) {
 			const trg = domHelpers.getTargetNode(e);

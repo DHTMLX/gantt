@@ -4,7 +4,7 @@
 	<title>Export data from Gantt</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 
 	<style>
 		html, body {
@@ -13,21 +13,24 @@
 			margin: 0px;
 			overflow: hidden;
 		}
+		body {
+			display: flex;
+			flex-direction: column;
+		}
+
+		#gantt_here, #gantt_here2 {
+			flex: 1;
+			min-height: 0;
+		}
 	</style>
 </head>
 
 <body>
-<div class="gantt_control">
-	<input value="Export to PDF : Gantt 1" type="button" onclick='gantt.exportToPDF()' style='margin:0 20px;'>
-	<input value="Export to PNG : Gantt 1" type="button" onclick='gantt.exportToPNG()'>
+<div id="export_toolbar" class="sample-toolbar-host"></div>
 
-	<input value="Export to PDF : Gantt 2" type="button" onclick='gantt2.exportToPDF()' style='margin:0 20px;'>
-	<input value="Export to PNG : Gantt 2" type="button" onclick='gantt2.exportToPNG()'>
+<div id="gantt_here">
 </div>
-
-<div id="gantt_here" style='height:calc((100vh - 52px)/2);'>
-</div>
-<div id="gantt_here2" style='height:calc((100vh - 52px)/2);'>
+<div id="gantt_here2">
 </div>
 <script>
 	gantt.plugins({
@@ -37,13 +40,13 @@
 	gantt.init("gantt_here");
 	gantt.parse({
 		data: [
-			{ id: 1, text: "Project #1", start_date: "01-04-2023", duration: 18,
+			{ id: 1, text: "Project #1", start_date: "03-04-2027", duration: 18,
 				progress: 0.4, open: true
 			},
-			{ id: 2, text: "Task #1", start_date: "02-04-2023", duration: 8,
+			{ id: 2, text: "Task #1", start_date: "04-04-2027", duration: 8,
 				progress: 0.6, parent: 1
 			},
-			{ id: 3, text: "Task #2", start_date: "11-04-2023", duration: 8,
+			{ id: 3, text: "Task #2", start_date: "13-04-2027", duration: 8,
 				progress: 0.6, parent: 1
 			}
 		],
@@ -60,13 +63,13 @@
 	gantt2.init("gantt_here2");
 	gantt2.parse({
 		data: [
-			{ id: 1, text: "Project #2", start_date: "01-04-2023", duration: 18,
+			{ id: 1, text: "Project #2", start_date: "03-04-2027", duration: 18,
 				progress: 0.4, open: true
 			},
-			{ id: 3, text: "Task #3", start_date: "02-04-2023", duration: 1,
+			{ id: 3, text: "Task #3", start_date: "04-04-2027", duration: 1,
 				progress: 0.6, parent: 1
 			},
-			{ id: 4, text: "Task #4", start_date: "03-04-2023", duration: 1,
+			{ id: 4, text: "Task #4", start_date: "05-04-2027", duration: 1,
 				progress: 0.6, parent: 1
 			}
 		],
@@ -74,6 +77,24 @@
 			{id: 3, source: 3, target: 4, type: "0"}
 		]
 	});
+
+	const toolbar = gantt.ext.ui.createToolbar({
+		items: [
+			{ id: "pdf_gantt_1", label: "Export to PDF : Gantt 1" },
+			{ id: "png_gantt_1", label: "Export to PNG : Gantt 1" },
+			{ id: "pdf_gantt_2", label: "Export to PDF : Gantt 2" },
+			{ id: "png_gantt_2", label: "Export to PNG : Gantt 2" }
+		],
+		onItemClick: function (id) {
+			switch (id) {
+				case "pdf_gantt_1": gantt.exportToPDF(); break;
+				case "png_gantt_1": gantt.exportToPNG(); break;
+				case "pdf_gantt_2": gantt2.exportToPDF(); break;
+				case "png_gantt_2": gantt2.exportToPNG(); break;
+			}
+		}
+	});
+	toolbar.mount(document.getElementById("export_toolbar"));
 </script>
 
 </body>

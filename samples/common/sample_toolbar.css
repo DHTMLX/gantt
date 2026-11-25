@@ -1,0 +1,18 @@
+.dhx_ui_toolbar {
+	--dhx-ui-toolbar-background: #ededed;
+	--dhx-ui-base-colors-border: #D9D9D9;
+	justify-content: safe center;
+}
+
+.dhx_ui_toolbar .dhx_ui_button:hover {
+	--dhx-ui-base-colors-border: #B3B3B3;
+}
+
+.sample-toolbar-host {
+	flex: 0 0 auto;
+}
+
+.sample-toolbar-host > .dhx_ui_toolbar {
+	height: auto;
+	min-height: 51px;
+}

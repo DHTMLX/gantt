@@ -7,7 +7,7 @@ function addResizeListener(gantt){
 	var resizeWatcher = document.createElement('iframe');
 	resizeWatcher.className = "gantt_container_resize_watcher";
 	resizeWatcher.tabIndex = -1;
-	if(gantt.config.wai_aria_attributes){
+	if(gantt.ext.accessibility.isEnabled()){
 		resizeWatcher.setAttribute("role", "none");
 		resizeWatcher.setAttribute("aria-hidden", true);
 	}

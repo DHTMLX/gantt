@@ -13,6 +13,15 @@ export default function(gantt){
 		return (text + "").replace(singleQuotes, "&#39;");
 	}
 
+	function labels(){
+		return gantt.ext.accessibility.labels;
+	}
+
+	function gridSemantics(){
+		const accessibility = gantt.config.accessibility;
+		return accessibility ? accessibility.grid_semantics !== false : true;
+	}
+
 	gantt._waiAria = {
 		getAttributeString: function(attr){
 			var attributes = [" "];
@@ -25,17 +34,26 @@ export default function(gantt){
 
 		},
 
-		getTimelineCellAttr:function(dateString){
+		getTimelineCellAttr:function(dateString, date, scale){
 
-			return gantt._waiAria.getAttributeString({"aria-label": dateString});
+			const label = labels().timelineCell(date, scale, dateString);
+			return gantt._waiAria.getAttributeString({"role": "columnheader", "aria-label": label});
 		},
 
-		_taskCommonAttr: function(task, div){
+		getTimelineScaleContainerAttr:function(){
+			return gantt._waiAria.getAttributeString({"role": "table"});
+		},
+
+		getTimelineScaleRowAttr:function(){
+			return gantt._waiAria.getAttributeString({"role": "row"});
+		},
+
+		_taskCommonAttr: function(task, div, getLabel){
 
 			if(!(task.start_date && task.end_date))
 				return;
 
-			div.setAttribute("aria-label", stripHTMLLite(gantt.templates.tooltip_text(task.start_date, task.end_date, task)));
+			div.setAttribute("aria-label", stripHTMLLite(getLabel(task)));
 
 			if(task.$dataprocessor_class){
 				div.setAttribute("aria-busy", true);
@@ -44,54 +62,101 @@ export default function(gantt){
 		},
 
 		setTaskBarAttr: function(task, div){
-			this._taskCommonAttr(task, div);
+			this._taskCommonAttr(task, div, labels().taskBar);
 
 			// task bars are complex elements that should be treated as a single element
 			div.setAttribute("role", "img");
-
-			if(!gantt.isReadonly(task) && gantt.config.drag_move){
-				if(task.id != gantt.getState("tasksDnd").drag_id){
-					div.setAttribute("aria-grabbed", false);
-				}else{
-					div.setAttribute("aria-grabbed", true);
-				}
-			}
 		},
 
-		taskRowAttr: function(task, div){
-
-			this._taskCommonAttr(task, div);
-
-			if(!gantt.isReadonly(task) && gantt.config.order_branch){
-				div.setAttribute("aria-grabbed", false);
-			}
-
-			div.setAttribute("role", "row");
-			// selected attribute should be added only to the grid  because
-			// other parts don't have the keyboard navigation
-			div.setAttribute("aria-selected", gantt.isSelectedTask(task.id) ? "true" : "false");
-
-			// allowed values start from 1, set 1 for non-tree datastores
-			div.setAttribute("aria-level", task.$level + 1 || 1);
+	_cellStateAttr: function(task){
+			const attrs = {
+				"aria-selected": gantt.isSelectedTask(task.id) ? "true" : "false"
+			};
 
 			if(gantt.hasChild(task.id)){
-				div.setAttribute("aria-expanded", task.$open ? "true" : "false");
+				attrs["aria-expanded"] = task.$open ? "true" : "false";
+			}
+
+			return attrs;
+		},
+
+		_rowStateAttr: function(task, store){
+			const attrs = this._cellStateAttr(task);
+
+			attrs["aria-level"] = task.$level + 1 || 1;
+
+			// getBranchIndex/hasChild answer this in O(1) off the branch position
+			// index; getChildren() would copy the whole sibling branch per row
+			if(gridSemantics() && store && store.exists(task.id) && typeof store.getParent === "function" && typeof store.getBranchIndex === "function"){
+				const index = store.getBranchIndex(task.id);
+				if(index !== -1){
+					attrs["aria-posinset"] = index + 1;
+					attrs["aria-setsize"] = store.hasChild(store.getParent(task.id)) || 0;
+				}
+
+				const rowIndex = typeof store.getIndexById === "function" ? store.getIndexById(task.id) : -1;
+				if(rowIndex !== -1){
+					attrs["aria-rowindex"] = rowIndex + 1;
+				}
+			}
+
+			return attrs;
+		},
+
+		taskRowAttr: function(task, div, store){
+
+			this._taskCommonAttr(task, div, labels().taskRow);
+
+			div.setAttribute("role", "row");
+
+			const stateAttrs = this._rowStateAttr(task, store);
+			for(const name in stateAttrs){
+				div.setAttribute(name, stateAttrs[name]);
 			}
 		},
 
 		linkAttr: function(link, div){
 
-			var linkTypes = gantt.config.links;
-
-			var toStart = link.type == linkTypes.finish_to_start || link.type == linkTypes.start_to_start;
-			var fromStart = link.type == linkTypes.start_to_start || link.type == linkTypes.start_to_finish;
-
-			var content = gantt.locale.labels.link + " " +  gantt.templates.drag_link(link.source, fromStart, link.target, toStart);
-
 			// links are complex elements that should be treated as a single element
 			div.setAttribute("role", "img");
 
-			div.setAttribute("aria-label", stripHTMLLite(content));
+			div.setAttribute("aria-label", stripHTMLLite(labels().link(link)));
+		},
+
+		resourceRowAttr: function(resource, div, store){
+			div.setAttribute("aria-label", stripHTMLLite(labels().resourceRow(resource)));
+			div.setAttribute("role", "row");
+			div.setAttribute("aria-level", resource.$level + 1 || 1);
+
+			if(store && store.hasChild && store.hasChild(resource.id)){
+				div.setAttribute("aria-expanded", resource.$open ? "true" : "false");
+			}
+
+			if(gridSemantics() && store && store.exists(resource.id) && typeof store.getParent === "function" && typeof store.getBranchIndex === "function"){
+				const index = store.getBranchIndex(resource.id);
+				if(index !== -1){
+					div.setAttribute("aria-posinset", index + 1);
+					div.setAttribute("aria-setsize", store.hasChild(store.getParent(resource.id)) || 0);
+				}
+			}
+		},
+
+		resourceCellAttr: function(resource, date, value, div){
+			div.setAttribute("role", "gridcell");
+			div.setAttribute("aria-label", stripHTMLLite(labels().resourceCell(resource, date, value)));
+		},
+
+		resourceBarsAttr: function(div){
+			div.setAttribute("aria-hidden", "true");
+		},
+
+		resourceTimelineAttr: function(div){
+			div.setAttribute("role", "grid");
+		},
+
+		resourceTimelineRowAttr: function(resource, div){
+			div.setAttribute("role", "row");
+			div.setAttribute("aria-label", stripHTMLLite(labels().resourceRow(resource)));
 		},
 
 		gridSeparatorAttr: function(div){
@@ -113,6 +178,7 @@ export default function(gantt){
 
 		lightboxAttr: function(div){
 			div.setAttribute("role", "dialog");
+			div.setAttribute("aria-modal", "true");
 			div.setAttribute("aria-hidden", "true");
 			div.firstChild.setAttribute("role", "heading");
 			div.firstChild.setAttribute("aria-level", "1");
@@ -127,7 +193,7 @@ export default function(gantt){
 		},
 
 		lightboxSelectAttrString: function(time_option){
-			var label = "";
+			let label = "";
 
 			switch (time_option) {
 				case "%Y":
@@ -166,12 +232,58 @@ export default function(gantt){
 			}
 		},
 
+		lightboxTextareaAttrString: function(section){
+			const label = (section && (section.label || gantt.locale.labels["section_" + section.name] || section.name)) || "";
+			return this.getAttributeString({"aria-label": label});
+		},
+
 		inlineEditorAttr: function(div){
 			div.setAttribute("role", "row");
 		},
 
+		inlineEditorInputAttr: function(placeholder, column){
+			if(!placeholder || !column){
+				return;
+			}
+			var input = placeholder.querySelector("input, textarea, select, [role='combobox'], [role='spinbutton']");
+			if(!input || input.getAttribute("aria-label") || input.getAttribute("aria-labelledby")){
+				return;
+			}
+			var label = stripHTMLLite(column.label || column.name || "").trim();
+			if(label){
+				input.setAttribute("aria-label", label);
+			}
+		},
+
 		gridAttrString: function(){
-			return [" role='treegrid'", gantt.config.multiselect ? "aria-multiselectable='true'" : "aria-multiselectable='false'", " "].join(" ");
+			return [
+				" role='treegrid'",
+				"aria-label='" + escapeQuotes(gantt.locale.labels.aria_grid || "") + "'",
+				gantt.config.multiselect ? "aria-multiselectable='true'" : "aria-multiselectable='false'",
+				" "
+			].join(" ");
+		},
+
+		gridRowCountAttr: function(gridEl, store){
+			if(!gridEl){
+				return;
+			}
+			if(!gridSemantics() || !store || typeof store.countVisible !== "function"){
+				gridEl.removeAttribute("aria-rowcount");
+				return;
+			}
+			gridEl.setAttribute("aria-rowcount", store.countVisible());
+		},
+
+		gridColCountAttr: function(gridEl, count){
+			if(!gridEl){
+				return;
+			}
+			if(!gridSemantics()){
+				gridEl.removeAttribute("aria-colcount");
+				return;
+			}
+			gridEl.setAttribute("aria-colcount", count);
 		},
 
 
@@ -179,11 +291,15 @@ export default function(gantt){
 			return "role='row'";
 		},
 
-		gridScaleCellAttrString: function(column, label){
+		gridScaleCellAttrString: function(column, label, addDisabled){
 			var attrs = "";
 			if(column.name == "add"){
 				// a more precise role is button, but it is not valid for the grid header
-				attrs = this.getAttributeString({"role":"columnheader", "aria-label": gantt.locale.labels.new_task});
+				var addAttributes = {"role":"columnheader", "aria-label": gantt.locale.labels.new_task};
+				if (addDisabled) {
+					addAttributes["aria-disabled"] = "true";
+				}
+				attrs = this.getAttributeString(addAttributes);
 			}else{
 
 				var attributes = {
@@ -211,20 +327,47 @@ export default function(gantt){
 		reorderMarkerAttr: function(div){
 			div.setAttribute("role", "grid");
 			div.firstChild.removeAttribute("aria-level");
-			div.firstChild.setAttribute("aria-grabbed", "true");
 		},
 
-		gridCellAttrString: function(column, textValue, task){
-			var attributes = {"role":"gridcell", "aria-label": textValue};
+		gridCellAttrString: function(column, textValue, task, store, colIndex){
+			var ariaLabel = labels().gridCell(column, textValue, task);
+			var attributes = {"role":"gridcell", "aria-label": ariaLabel};
 			if(!column.editor || gantt.isReadonly(task)){
 				attributes["aria-readonly"] = true;
+			}
+
+			const stateAttrs = this._cellStateAttr(task);
+			for(const name in stateAttrs){
+				attributes[name] = stateAttrs[name];
+			}
+
+			if(gridSemantics()){
+				if(typeof colIndex === "number"){
+					attributes["aria-colindex"] = colIndex + 1;
+				}
+				const rowIndex = store && typeof store.getIndexById === "function" ? store.getIndexById(task.id) : -1;
+				if(rowIndex !== -1){
+					attributes["aria-rowindex"] = rowIndex + 1;
+				}
 			}
 
 			return this.getAttributeString(attributes);
 		},
 
-		gridAddButtonAttrString: function(column){
-			return this.getAttributeString({"role":"button", "aria-label": gantt.locale.labels.new_task});
+		gridAddButtonAttrString: function(column, disabled){
+			var attributes = {"role":"button", "aria-label": gantt.locale.labels.new_task};
+			if (disabled) {
+				attributes["aria-disabled"] = "true";
+			}
+			return this.getAttributeString(attributes);
+		},
+
+		gridToggleButtonAttrString: function(){
+			return this.getAttributeString({"role":"button", "aria-label": gantt.locale.labels.aria_toggle_row});
+		},
+
+		gridDecorativeIconAttrString: function(){
+			return this.getAttributeString({"aria-hidden": "true"});
 		},
 
 		messageButtonAttrString: function(buttonLabel){
@@ -236,10 +379,13 @@ export default function(gantt){
 			//div.setAttribute("tabindex", "-1");
 		},
 
-		messageModalAttr: function(div, uid){
+		messageModalAttr: function(div, uid, describedById){
 			div.setAttribute("role", "dialog");
 			if(uid){
 				div.setAttribute("aria-labelledby", uid);
+			}
+			if(describedById){
+				div.setAttribute("aria-describedby", describedById);
 			}
 
 		//	div.setAttribute("tabindex", "-1");
@@ -254,7 +400,8 @@ export default function(gantt){
 		},
 
 		quickInfoHeader: function(div, header){
-			div.setAttribute("aria-label", header);
+			const label = (header && header.trim()) ? header : gantt.locale.labels.aria_dialog_quickinfo;
+			div.setAttribute("aria-label", label);
 		},
 
 		quickInfoButtonAttrString: function(label){
@@ -275,7 +422,7 @@ export default function(gantt){
 	};
 
 	function isDisabled(){
-		return !gantt.config.wai_aria_attributes;
+		return !gantt.ext.accessibility.isEnabled();
 	}
 
 	for(var i in gantt._waiAria){

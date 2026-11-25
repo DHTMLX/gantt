@@ -17,7 +17,8 @@
 	&:focus,
 	&:focus-visible {
 		border-color: var(--dhx-gantt-base-colors-primary);
-		outline: none;
+		outline: var(--dhx-gantt-ui-focus-ring);
+		outline-offset: -2px;
 	}
 
 	&:disabled {
@@ -49,7 +50,7 @@
 	background-color: var(--dhx-gantt-lightbox-background);
 	color: var(--dhx-gantt-lightbox-color);
 	position: absolute;
-	z-index: 15;
+	z-index: var(--dhx-gantt-z-modal);
 	font-family: var(--dhx-gantt-lightbox_font-family);
 	font-size: var(--dhx-gantt-lightbox-font-size);
 	font-weight: var(--dhx-gantt-lightbox-font-weight);
@@ -133,8 +134,18 @@
 	}
 }
 
+.gantt_section_constraint{
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
 .gantt_section_constraint [data-constraint-time-select] {
-	margin-left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: space-between;
 }
 
 .gantt_cal_larea {
@@ -151,7 +162,7 @@
 	width: 100%;
 	height: 100%;
 	position: fixed;
-	z-index: 16;
+	z-index: var(--dhx-gantt-z-modal);
 	top: 0px;
 	left: 0px;
 	background-color: rgba(0, 0, 0, 0.3);
@@ -229,7 +240,7 @@
 	display: flex;
 	justify-content: flex-start;
 	align-items: center;
-	gap: 4px;
+	gap: 16px;
 
 	.gantt_duration_end_date {
 		color: var(--dhx-gantt-base-colors-text-light);
@@ -484,6 +495,15 @@
 	display: flex;
 	margin-top: 12px;
 	margin-bottom: 4px;
+	gap: var(--dhx-gantt-base-module);
+
+	&:has(+ .dhx_ui_form_block > .dhx_ui_switch > .dhx_ui_switch_input:enabled) > label[for] {
+		cursor: pointer;
+	}
+
+	&:has(+ .dhx_ui_form_block > .dhx_ui_switch > .dhx_ui_switch_input:disabled) > label[for] {
+		cursor: default;
+	}
 
 	.gantt_custom_button {
 		.dhx_gantt_button--mixin();

@@ -6,7 +6,9 @@ export default function(gantt: any){
 
 	gantt.ext.dragTimeline = {
 		create: () => EventsManager.create(gantt),
-		_isDragInProgress: () => EventsManager._isDragInProgress
+		_isDragInProgress: () => EventsManager._isDragInProgress,
+		// the drag sets config.readonly for its duration; this keeps the value from before it, undefined when no drag runs
+		_readonlyBeforeDrag: undefined
 	};
 
 	gantt.config.drag_timeline = {

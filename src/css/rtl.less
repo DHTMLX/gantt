@@ -7,4 +7,16 @@
 	.gantt_cell{
 		flex-direction: row-reverse;
 	}
+
+	// time runs right to left: the leveling delay area touches the bar on its other side
+	.gantt_leveling_delay_forward{
+		border-right: 1px dashed var(--dhx-gantt-leveling-delay-color);
+		border-left: none;
+		border-radius: 0 4px 4px 0;
+	}
+	.gantt_leveling_delay_backward{
+		border-left: 1px dashed var(--dhx-gantt-leveling-delay-color);
+		border-right: none;
+		border-radius: 4px 0 0 4px;
+	}
 }

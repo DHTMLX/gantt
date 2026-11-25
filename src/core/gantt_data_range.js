@@ -1,5 +1,6 @@
 import ScaleHelper from "./ui/timeline/scales_ignore";
 import PrimaryScaleHelper from "./ui/timeline/scales";
+import { getLevelingDelayRange } from "./common/leveling_delay";
 
 function resolveConfigRange(unit, gantt){
 	var range = {
@@ -73,8 +74,14 @@ function _init_tasks_range(gantt) {
 				end_date: new Date()
 			};
 		}
-		// extend the displayed date range including the constraints, deadlines and baselines
+		// extend the displayed date range including the constraints, deadlines, baselines and leveling delays
+		const hasInactiveTasks = gantt._hasInactiveTasks();
 		gantt.eachTask(function(task){
+			// GS-3542: inactive tasks are out of getSubtaskDates() by design, but they keep their
+			// dates and must stay visible - without this they would drop out of the timeline
+			if (hasInactiveTasks && task.start_date && task.end_date && !gantt._isStoredTaskActive(task)){
+				extendRangeForDates(range, task.start_date, task.end_date);
+			}
 			if (gantt.config.deadlines && task.deadline){
 				extendRangeForDates(range, task.deadline, task.deadline);
 			}
@@ -87,6 +94,12 @@ function _init_tasks_range(gantt) {
 				task.baselines.forEach(function(baseline){
 					extendRangeForDates(range, baseline.start_date, baseline.end_date);
 				});
+			}
+			if (gantt.config.leveling_delays && task.leveling_delay){
+				const delayRange = getLevelingDelayRange(gantt, task);
+				if (delayRange){
+					extendRangeForDates(range, delayRange.start_date, delayRange.end_date);
+				}
 			}
 		});
 

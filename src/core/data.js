@@ -423,8 +423,12 @@ export default function(gantt) {
 		var res = 0,
 			root = taskId !== undefined ? taskId : gantt.config.root_id;
 
+		const skipInactiveChildren = this._hasInactiveTasks() && (!this.isTaskExists(root) || this.isTaskActive(root));
+
 		this.eachTask(function (child) {
 			if (this.getTaskType(child.type) == gantt.config.types.project || this.isUnscheduledTask(child))
+				return;
+			if (skipInactiveChildren && !this._isStoredTaskActive(child, root))
 				return;
 
 			res += child.duration;
@@ -445,9 +449,16 @@ export default function(gantt) {
 			rootTask = gantt.getTask(root);
 		}
 
+		// GS-3542: an active summary ignores inactive children (no dates, no rollup, no split parts),
+		// but an inactive summary still derives its span from them - otherwise a branch switched off
+		// as a whole would have nothing left to measure and would collapse onto a default duration
+		const skipInactiveChildren = gantt._hasInactiveTasks() && (!rootTask || gantt._isStoredTaskActive(rootTask));
+
 		gantt.eachTask(function (child) {
 			const isScheduledSummary = (gantt.getTaskType(child.type) == gantt.config.types.project && (child.auto_scheduling === false));
 			if ((gantt.getTaskType(child.type) == gantt.config.types.project && !isScheduledSummary) || gantt.isUnscheduledTask(child))
+				return;
+			if (skipInactiveChildren && !gantt._isStoredTaskActive(child, root))
 				return;
 
 			if(child.rollup){
@@ -486,8 +497,20 @@ export default function(gantt) {
 	};
 
 
+	function sameItems(oldItems, newItems) {
+		oldItems = oldItems || [];
+		newItems = newItems || [];
+		if (oldItems.length !== newItems.length) return false;
+		for (let i = 0; i < oldItems.length; i++) {
+			if (oldItems[i] !== newItems[i]) return false;
+		}
+		return true;
+	}
+
 // upward calculation of project duration
-	gantt._update_parents = function (taskId, silent, updateAll) {
+	// recalculateAll (GS-3542): go up to the root even past unchanged parents, but unlike updateAll
+	// repaint only the parents whose dates, rollup or split items changed
+	gantt._update_parents = function (taskId, silent, updateAll, recalculateAll) {
 		if (!taskId) return;
 
 		var task = this.getTask(taskId);
@@ -507,15 +530,18 @@ export default function(gantt) {
 
 			var oldStart = task[startDateField].valueOf(),
 				oldEnd = task[endDateField].valueOf();
+			const oldRollup = task.$rollup;
+			const oldInlineSplit = task.$inlineSplit;
 
 			gantt.resetProjectDates(task);
 
-			// not refresh parent projects if dates hasn't changed
-			if (!updateAll && oldStart == task[startDateField].valueOf() && oldEnd == task[endDateField].valueOf()) {
+			if (!updateAll && oldStart == task[startDateField].valueOf() && oldEnd == task[endDateField].valueOf() &&
+				sameItems(oldRollup, task.$rollup)) {
 				has_changed = false;
 			}
 
-			if (has_changed && !silent) {
+			const repaint = has_changed || (recalculateAll && !sameItems(oldInlineSplit, task.$inlineSplit));
+			if (repaint && !silent) {
 				this.refreshTask(task.id, true);
 			}
 
@@ -525,8 +551,8 @@ export default function(gantt) {
 		}
 
 
-		if (has_changed && pid && this.isTaskExists(pid)) {
-			this._update_parents(pid, silent, updateAll);
+		if ((has_changed || recalculateAll) && pid && this.isTaskExists(pid)) {
+			this._update_parents(pid, silent, updateAll, recalculateAll);
 		}
 	};
 

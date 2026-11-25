@@ -1,7 +1,4 @@
-interface IPoint {
-	x: number;
-	y: number;
-}
+import type { Point } from "../../types/gantt_types";
 
 let _dragInProgress: boolean = false;
 
@@ -13,14 +10,15 @@ export class EventsManager {
 		return _dragInProgress;
 	}
 	private _mouseDown: boolean = false;
-	private _startPoint: IPoint;
-	private _scrollState: IPoint;
+	private _startPoint: Point;
+	private _scrollState: Point;
 	private _originAutoscroll: boolean;
 	private _domEvents: any;
 	private _timeline: any;
 	private _gantt: any;
-	private _trace: IPoint[];
+	private _trace: Point[];
 	private _originalReadonly: boolean;
+	private _ownsReadonlyBeforeDrag: boolean = false;
 
 	constructor(gantt: any) {
 		this._gantt = gantt;
@@ -30,6 +28,15 @@ export class EventsManager {
 
 	destructor() {
 		this._domEvents.detachAll();
+		// a layout reset during a drag destroys this manager before mouseup
+		this._clearReadonlyBeforeDrag();
+	}
+
+	private _clearReadonlyBeforeDrag(): void {
+		if (this._ownsReadonlyBeforeDrag) {
+			this._gantt.ext.dragTimeline._readonlyBeforeDrag = undefined;
+			this._ownsReadonlyBeforeDrag = false;
+		}
 	}
 
 	attach(timeline: any): void {
@@ -112,7 +119,7 @@ export class EventsManager {
 			}
 			if (this._mouseDown === true) {
 				this._trace.push({ x: event.clientX, y: event.clientY });
-				const scrollPosition: IPoint = this._countNewScrollPosition({ x: event.clientX, y: event.clientY });
+				const scrollPosition: Point = this._countNewScrollPosition({ x: event.clientX, y: event.clientY });
 				this._setScrollPosition(timeline, scrollPosition);
 				this._scrollState = scrollPosition;
 				this._startPoint = { x: event.clientX, y: event.clientY };
@@ -159,14 +166,14 @@ export class EventsManager {
 		this._timeline.$task.classList.remove("gantt_timeline_move_available");
 	};
 
-	private _getScrollPosition = (timeline: any): IPoint => {
+	private _getScrollPosition = (timeline: any): Point => {
 		const gantt = this._gantt;
 		return {
 			x: gantt.$ui.getView(timeline.$config.scrollX).getScrollState().position,
 			y: gantt.$ui.getView(timeline.$config.scrollY).getScrollState().position
 		};
 	};
-	private _countNewScrollPosition = (coords: IPoint): IPoint => {
+	private _countNewScrollPosition = (coords: Point): Point => {
 		const vector = this._calculateDirectionVector();
 		let shiftX = this._startPoint.x - coords.x;
 		let shiftY = this._startPoint.y - coords.y;
@@ -184,7 +191,7 @@ export class EventsManager {
 		};
 		return result;
 	};
-	private _setScrollPosition = (timeline: any, coords: IPoint): void => {
+	private _setScrollPosition = (timeline: any, coords: Point): void => {
 		const gantt = this._gantt;
 		requestAnimationFrame(() => {
 			gantt.scrollLayoutCell(timeline.$id, coords.x, coords.y);
@@ -199,6 +206,7 @@ export class EventsManager {
 		// users may expect to start dragging the timeline on the task and link coordinates
 		if(this._originalReadonly !== undefined && this._mouseDown){
 			gantt.config.readonly = this._originalReadonly;
+			this._clearReadonlyBeforeDrag();
 			if(gantt.config.drag_timeline && gantt.config.drag_timeline.render){
 				gantt.render();
 			}
@@ -227,6 +235,8 @@ export class EventsManager {
 
 		gantt.$root.classList.add("gantt_noselect");
 		this._originalReadonly = gantt.config.readonly;
+		gantt.ext.dragTimeline._readonlyBeforeDrag = this._originalReadonly;
+		this._ownsReadonlyBeforeDrag = true;
 		gantt.config.readonly = true;
 
 		if(gantt.config.drag_timeline && gantt.config.drag_timeline.render){
