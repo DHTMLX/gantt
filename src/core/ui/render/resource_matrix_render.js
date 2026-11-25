@@ -8,7 +8,7 @@ function generateRenderResourceLine(gantt){
 	var getResourceLoad = resourceTimetable(gantt);
 	var renderedResourceLines = {};
 
-	function renderResourceLineCell(resource, day, templates, config, timeline){
+	function renderResourceLineCell(resource, day, templates, config, timeline, columnIndex){
 		var css = templates.resource_cell_class(day.start_date, day.end_date, resource, day.tasks, day.assignments);
 		var content = templates.resource_cell_value(day.start_date, day.end_date, resource, day.tasks, day.assignments);
 		var height = timeline.getItemHeight(resource.id) - 1;
@@ -17,6 +17,7 @@ function generateRenderResourceLine(gantt){
 			var sizes = timeline.getItemPosition(resource, day.start_date, day.end_date);
 			var el = document.createElement('div');
 			el.setAttribute(timeline.$config.item_attribute, resource.id);
+			el.setAttribute("data-column-index", columnIndex);
 			el.className = ["gantt_resource_marker", css].join(" ");
 
 			el.style.cssText = [
@@ -30,6 +31,7 @@ function generateRenderResourceLine(gantt){
 			if(content)
 				el.innerHTML = content;
 
+			gantt._waiAria.resourceCellAttr(resource, day.start_date, { used: content }, el);
 			return el;
 		}
 		return null;
@@ -63,7 +65,7 @@ function generateRenderResourceLine(gantt){
 				continue;
 			}
 
-			var cell = renderResourceLineCell(resource, day, templates, config, timeline);
+			var cell = renderResourceLineCell(resource, day, templates, config, timeline, columnIndex);
 			if(cell){
 				cells.push(cell);
 				renderedResourceLines[resource.id][columnIndex] = cell;
@@ -73,6 +75,7 @@ function generateRenderResourceLine(gantt){
 		var row = null;
 		if(cells.length){
 			row = document.createElement("div");
+			gantt._waiAria.resourceTimelineRowAttr(resource, row);
 			for(var i = 0; i < cells.length; i++){
 				row.appendChild(cells[i]);
 			}
@@ -107,7 +110,7 @@ function generateRenderResourceLine(gantt){
 			}
 
 			if(!renderedResourceLines[resource.id] || !renderedResourceLines[resource.id][columnIndex]){
-				var cell = renderResourceLineCell(resource, day, templates, config, timeline);
+				var cell = renderResourceLineCell(resource, day, templates, config, timeline, columnIndex);
 				if(cell){
 					node.appendChild(cell);
 					renderedResourceLines[resource.id][columnIndex] = cell;

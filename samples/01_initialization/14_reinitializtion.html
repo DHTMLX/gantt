@@ -4,7 +4,7 @@
 	<title>Reinitialize in another container</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 	<style>
 		html,
 		body {
@@ -29,17 +29,15 @@
 
 <body>
 	<div id="gantt_here" class="gantt-container"></div>
-	<div class="gantt_control">
-		<input type="button" value="Reinitialize in another container" onclick="reinit()">
-	</div>
+	<div id="reinit_toolbar" class="sample-toolbar-host"></div>
 	<div id="gantt_here2" class="gantt-container"></div>
 	<script>
 		gantt.init("gantt_here");
 		gantt.parse({
 			data: [
-				{ id: 1, text: "Project #2", start_date: "01-04-2023", duration: 18, progress: 0.4, open: true },
-				{ id: 2, text: "Task #1", start_date: "02-04-2023", duration: 8, progress: 0.6, parent: 1 },
-				{ id: 3, text: "Task #2", start_date: "11-04-2023", duration: 8, progress: 0.6, parent: 1 }
+				{ id: 1, text: "Project #2", start_date: "03-04-2027", duration: 18, progress: 0.4, open: true },
+				{ id: 2, text: "Task #1", start_date: "04-04-2027", duration: 8, progress: 0.6, parent: 1 },
+				{ id: 3, text: "Task #2", start_date: "13-04-2027", duration: 8, progress: 0.6, parent: 1 }
 			],
 			links: [
 				{ id: 1, source: 1, target: 2, type: "1" },
@@ -57,5 +55,13 @@
 			}
 			gantt.init(currentContainer);
 		}
+
+		const toolbar = gantt.ext.ui.createToolbar({
+			items: [{ id: "reinit", label: "Reinitialize in another container" }],
+			onItemClick: function (id) {
+				if (id === "reinit") { reinit(); }
+			}
+		});
+		toolbar.mount(document.getElementById("reinit_toolbar"));
 	</script>
 </body>

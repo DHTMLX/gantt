@@ -30,6 +30,16 @@ export class TooltipManager{
 		this._gantt = gantt;
 		this._domEvents = domEventsScope();
 		this._initDelayedFunctions();
+		this._initEscDismiss();
+	}
+
+	private _initEscDismiss(): void {
+		this._domEvents.attach(document, "keydown", (event: KeyboardEvent) => {
+			if(event.keyCode === 27 || event.key === "Escape"){
+				this.delayShow.$cancelTimeout();
+				this.tooltip.hide();
+			}
+		});
 	}
 
 	destructor(): void{

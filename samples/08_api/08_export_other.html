@@ -4,9 +4,10 @@
 	<title>Export data : MS Project, PrimaveraP6, Excel &amp; iCal</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -18,17 +19,12 @@
 </head>
 
 <body>
-<div class="gantt_control">	
-	<input value="Export to MS Project" type="button" onclick='gantt.exportToMSProject({skip_circular_links: false})' style='margin:0 15px;'>
-	<input value="Export to PrimaveraP6" type="button" onclick='gantt.exportToPrimaveraP6({skip_circular_links: false})' style='margin:0 15px;'>
-	<input value="Export to Excel" type="button" onclick='gantt.exportToExcel()' style='margin:0 15px;'>
-	<input value="Export to iCal" type="button" onclick='gantt.exportToICal()' style='margin:0 15px;'>
-</div>
-<div id="gantt_here" style='width:100%; height: calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 
 <script>
 
 	gantt.plugins({
+		toolbar: true,
 		export_api: true,
 	});
 
@@ -42,6 +38,23 @@
 		return obj.text;
 	};
 
+	gantt.config.toolbar = [
+		{ id: "export_to_ms_project", label: "Export to MS Project" },
+		{ id: "export_to_primaverap6", label: "Export to PrimaveraP6" },
+		{ id: "export_to_excel", label: "Export to Excel" },
+		{ id: "export_to_ical", label: "Export to iCal" }
+	];
+	const toolbarActions = {
+		export_to_ms_project: () => gantt.exportToMSProject({skip_circular_links: false}),
+		export_to_primaverap6: () => gantt.exportToPrimaveraP6({skip_circular_links: false}),
+		export_to_excel: () => gantt.exportToExcel(),
+		export_to_ical: () => gantt.exportToICal()
+	};
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		toolbarActions[id]();
+	});
+
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(demo_tasks);
 </script>

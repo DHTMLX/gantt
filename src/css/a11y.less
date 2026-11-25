@@ -1,0 +1,45 @@
+/*
+ * Forced colors — Windows High Contrast, "forced-colors: active".
+ * In this mode the OS overrides every background-color with the system `Canvas`
+ * color. Task/project/milestone bars carry their meaning in the fill, so they
+ * would flatten into the page and disappear. We opt these graphical bars out of
+ * the forced palette (`forced-color-adjust: none`) so the fill survives, and add
+ * a `CanvasText` outline so the shape stays defined against any background.
+ */
+@media (forced-colors: active) {
+  .gantt_task_line {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+  }
+
+  .gantt_line_wrapper div {
+    background-color: CanvasText;
+  }
+  .gantt_task_link div.gantt_link_arrow {
+    color: CanvasText;
+  }
+  .gantt_link_corner {
+    border-color: CanvasText;
+  }
+
+  .gantt_histogram_fill,
+  .gantt_resource_marker_ok,
+  .gantt_resource_marker_overtime {
+    forced-color-adjust: none;
+  }
+  .gantt_histogram_hor_bar,
+  .gantt_histogram_vert_bar {
+    background: CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gantt_container,
+  .gantt_container * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

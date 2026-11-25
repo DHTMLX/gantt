@@ -58,7 +58,7 @@ npm run lint           # eslint over src/ (flat config, intentionally lax)
 - The build must stay green: run `npm run build` after any `src/` change, and `npm run lint` should pass.
 - Sample pages reference `../../codebase/dhtmlxgantt.js` — run a build before opening them.
 - `src/types.d.ts` declares the compile-time globals (`VERSION`, `LICENSE`, …) injected by vite `define`.
-- Some modules are intentional basic implementations of Pro features (e.g. `src/core/ui/render/dummy_layer.js`, re-export shims like `src/core/ui/grid/resource_grid.js`, and `src/core/worktime/strategy/calendar_strategy.js` which re-exports the disabled `no_work_time` strategy — working-time calendars are out of scope). Do not "complete" them — the Pro feature set is out of scope for this edition (see Scope below).
+- Some modules are intentional basic implementations of Pro features (e.g. `src/core/ui/render/dummy_layer.js`, re-export shims like `src/core/ui/grid/resource_grid.js`, and `src/core/worktime/strategy/no_work_time.ts`, the disabled (all-time-is-working) strategy that the calendar manager uses for every calendar — working-time calendars are out of scope). Do not "complete" them — the Pro feature set is out of scope for this edition (see Scope below).
 
 ### Conventions
 

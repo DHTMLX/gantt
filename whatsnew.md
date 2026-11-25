@@ -1,3 +1,31 @@
+### 10.1.0
+
+- Add accessibility settings for screen-reader announcements, grid semantics, increased text contrast in the Terrace skin, and non-colour cues
+- Add keyboard navigation for the resource panel and classic lightbox resource assignments. Improve screen-reader descriptions for task rows, dependency cells and resource load
+- Add scheduling methods to solve a schedule, preview a change set, analyze slack and critical paths, and apply edits
+- Add constraint conflict resolution with a dialog and events to inspect the choices or supply a custom decision
+- Add scheduling engine selection with optional PlanningEngine integration for resource leveling, candidate evaluation and staffing
+- Add resource leveling adjustments and task pauses to the task data model and timeline
+- Add the leveling_delays config and the leveling_delay_text template to show leveling delays in the timeline
+- Add effort-driven tasks with Fixed duration, Fixed units and Fixed work modes
+- Add inactive tasks and links to keep work visible while excluding it from scheduling
+- Add stored WBS codes, canonical outline numbers and row numbers, including WBS masks, locking, bulk generation and new dependency reference modes
+- Add batched JSON DataProcessor requests and a serialization order option in serialize()
+- Add default templates and editors for configured predecessors and successors columns, the successor inline editor, and opt-in duration column formatting
+- Add the configurable toolbar and context menu. The paid packages include a toolbar sample with the default preset
+- Add the advanced task form with configurable tabs and fields, task and link lists, and resource assignment editing
+
+- The Terrace (light) and Dark themes conform to WCAG 2.2 AA
+- Remove the v1 scheduling and analysis engines and their fallback settings, see the migration notes
+- Read the active, pauses and leveling_delay data fields in every chart. Rename these fields if your data already uses them for other values, see the migration notes
+- Improve text contrast in the dark theme and refine support for forced colors and reduced motion
+
+- Fix the issue where reloading tasks with parse() could freeze the page when parent relationships changed. A cyclic task hierarchy now reports an invalid-tree error on reload
+- Fix redundant resource-panel repaints and resource-cell template calls during task updates
+- Fix the issue where Enter, Ctrl+Enter, Shift+Right and Shift+Left changed a read-only task with keyboard navigation (thanks to Stepan Kuntso), see the migration notes
+- Fix undo of an action that updates the same task more than once, such as a task-form save that reschedules the task. One undo now restores the state from before the first update
+
+
 ### 10.0.4
 
 - Add the syncTaskOrder prop to React Gantt, which applies the row order of the tasks array to the chart

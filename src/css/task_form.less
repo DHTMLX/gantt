@@ -1,0 +1,463 @@
+.gantt_cal_light.gantt_task_form {
+	--dhx-gantt-task-form-padding: max(24px, var(--dhx-gantt-lightbox-padding));
+	--dhx-gantt-task-form-tab-padding: 12px;
+	--dhx-gantt-task-form-gutter: 16px;
+
+	display: flex;
+	flex-direction: column;
+	width: 680px;
+	max-width: 92vw;
+	max-height: 86vh;
+
+	.gantt_cal_larea {
+		flex: 1 1 auto;
+		min-height: 0;
+		height: auto;
+		padding: 0;
+		overflow-y: auto;
+		border: none;
+	}
+
+	.gantt_cal_ltitle {
+		padding-left: var(--dhx-gantt-task-form-padding);
+		padding-right: var(--dhx-gantt-task-form-padding);
+	}
+
+	.gantt_cal_lcontrols {
+		flex: 0 0 auto;
+		padding-left: var(--dhx-gantt-task-form-padding);
+		padding-right: var(--dhx-gantt-task-form-padding);
+		background: var(--dhx-gantt-base-colors-background);
+		border-top: 1px solid var(--dhx-gantt-base-colors-border-light);
+
+		.gantt_delete_btn_set {
+			padding: 0;
+			border: 0;
+		}
+	}
+}
+
+.gantt_cal_light.gantt_task_form_tabbed {
+	height: 520px;
+
+	.gantt_cal_larea {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		overflow: hidden;
+	}
+
+	.dhx_ui_tabs {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.dhx_ui_tabs_body {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+	}
+}
+
+/* a panel and a column stack their rows */
+.gantt_task_form_grid,
+.gantt_task_form_column {
+	display: flex;
+	flex-direction: column;
+	row-gap: var(--dhx-gantt-task-form-gutter);
+}
+
+.gantt_task_form_grid {
+	padding: 16px var(--dhx-gantt-task-form-padding);
+}
+
+/*
+ * A row is a grid; its grid-template-columns come from the widths of its entries
+ * (row_layout.ts). Percent columns leave room for the gap, so 50% + 50% fills the row.
+ */
+.gantt_task_form_row {
+	display: grid;
+	column-gap: var(--dhx-gantt-task-form-gutter);
+}
+
+.gantt_task_form_cell,
+.gantt_task_form_column {
+	min-width: 0;
+}
+
+.gantt_task_form_hidden_sections {
+	display: none;
+}
+
+.gantt_task_form_cell_untitled {
+	display: flex;
+	flex-direction: column;
+
+	>.gantt_cal_lsection {
+		display: contents;
+
+		>label {
+			display: none;
+		}
+
+		>.gantt_custom_button {
+			order: 0;
+			margin: 0 0 8px auto;
+		}
+	}
+
+	&.gantt_task_form_cell_buttons_row>.gantt_cal_lsection {
+		display: flex;
+		padding: 8px 0 0;
+
+		>.gantt_custom_button {
+			order: 1;
+			margin: 0 0 0 8px;
+
+			&:first-child {
+				margin-left: auto;
+			}
+		}
+	}
+}
+
+.gantt_task_form .gantt_cal_lsection {
+	margin: 0;
+	padding: 0 0 4px;
+	font-size: var(--dhx-gantt-font-size);
+	color: var(--dhx-gantt-base-colors-text-light);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.gantt_task_form .gantt_cal_ltext {
+	padding: 0;
+}
+
+.gantt_task_form .dhx_ui_datetime {
+	width: 100%;
+}
+
+.gantt_task_form .dhx_ui_datetime_date {
+	flex: 1 1 auto;
+	width: auto;
+	min-width: 0;
+}
+
+.gantt_task_form_inline_switch--mixin() {
+	display: flex;
+	flex-direction: row-reverse;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 10px;
+	align-self: end;
+	min-height: var(--dhx-gantt-control-height);
+
+	.dhx_ui_switch {
+		display: flex;
+	}
+}
+
+.gantt_task_form_cell_type_switch {
+	.gantt_task_form_inline_switch--mixin();
+
+	>.gantt_cal_lsection {
+		display: flex;
+		align-items: center;
+		padding: 0;
+		color: var(--dhx-gantt-base-colors-text-base);
+
+		label {
+			font-weight: normal;
+			line-height: normal;
+		}
+	}
+
+	>.gantt_cal_ltext {
+		flex: 0 0 auto;
+	}
+}
+
+.gantt_task_form_cell_type_select,
+.gantt_task_form_cell_type_typeselect {
+	>.gantt_cal_ltext {
+		position: relative;
+
+		&::after {
+			content: "";
+			position: absolute;
+			top: 50%;
+			right: 12px;
+			width: 8px;
+			height: 8px;
+			margin-top: -8px;
+			border-right: 2px solid var(--dhx-gantt-base-colors-icons);
+			border-bottom: 2px solid var(--dhx-gantt-base-colors-icons);
+			transform: rotate(45deg);
+			pointer-events: none;
+		}
+	}
+
+	select {
+		width: 100%;
+		appearance: none;
+		padding-right: 28px;
+		font-family: var(--dhx-gantt-font-family);
+		cursor: pointer;
+	}
+}
+
+.gantt_task_form .gantt_section_duration {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+
+	>.gantt_time_selects {
+		flex: 0 0 200px;
+	}
+
+	&.gantt_section_duration_select > .gantt_time_selects {
+		flex: 0 1 auto;
+	}
+
+	.gantt_duration {
+		gap: 8px;
+	}
+
+	.gantt_duration_end_date {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		min-width: 0;
+		color: var(--dhx-gantt-base-colors-text-base);
+		font-weight: normal;
+
+		span {
+			&::before {
+				content: "(";
+			}
+
+			&::after {
+				content: ")";
+			}
+		}
+	}
+}
+
+.gantt_task_form_cell_type_constraint {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 16px;
+
+	.gantt_section_constraint,
+	.gantt_section_constraint > label {
+		display: contents;
+	}
+
+	.gantt_section_constraint > span {
+		grid-row: 2;
+		grid-column: 1;
+	}
+
+	.gantt_task_form_inline_caption {
+		grid-row: 1;
+		grid-column: 2;
+		padding: 0 0 4px;
+		font-weight: var(--dhx-gantt-heading-font-weight);
+		color: var(--dhx-gantt-base-colors-text-light);
+	}
+
+	.gantt_section_constraint > label > span:not(.gantt_task_form_inline_caption) {
+		grid-row: 2;
+		grid-column: 2;
+	}
+
+	.gantt_task_form_error {
+		grid-column-start: 1;
+		grid-column-end: -1;
+	}
+}
+
+.gantt_task_form .gantt_cal_template {
+	display: flex;
+	align-items: center;
+	min-height: var(--dhx-gantt-control-height);
+}
+
+/* ---------- link rows (predecessors / successors) ---------- */
+.gantt_task_form_links {
+	padding: 0;
+}
+
+.gantt_task_form_link_row {
+	display: grid;
+	grid-template-columns: 48px 1fr 180px 92px 34px;
+	gap: 6px;
+	align-items: center;
+	margin-bottom: 6px;
+}
+
+.gantt_task_form_links_no_lag .gantt_task_form_link_row {
+	grid-template-columns: 48px 1fr 180px 34px;
+}
+
+.gantt_task_form_links_no_id .gantt_task_form_link_row {
+	grid-template-columns: 1fr 180px 92px 34px;
+}
+
+.gantt_task_form_links_no_id.gantt_task_form_links_no_lag .gantt_task_form_link_row {
+	grid-template-columns: 1fr 180px 34px;
+}
+
+.gantt_task_form_links_empty .gantt_task_form_link_head {
+	display: none;
+}
+
+.gantt_task_form_link_id {
+	font-size: 13px;
+	color: var(--dhx-gantt-base-colors-text-light);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.gantt_task_form_link_head {
+	font-size: 12px;
+	font-weight: var(--dhx-gantt-heading-font-weight);
+	color: var(--dhx-gantt-base-colors-text-light);
+}
+
+.gantt_task_form .gantt_resource_selector_filter_wrapper {
+	margin: 0 0 8px;
+	padding: 0;
+
+	.gantt_resources_filter,
+	.gantt_resources_filter label {
+		display: flex;
+		flex: 1 1 auto;
+		width: 100%;
+	}
+
+	.gantt_resources_filter_input {
+		width: 100%;
+		height: var(--dhx-gantt-control-height);
+		padding: 0 8px;
+	}
+}
+
+.gantt_task_form_link_empty,
+.gantt_task_form .resources_section_placeholder {
+	margin: 0;
+	padding: 24px 0 8px;
+	text-align: center;
+	font-size: var(--dhx-gantt-font-size);
+	color: var(--dhx-gantt-base-colors-text-light);
+}
+
+.gantt_task_form_link_footer,
+.gantt_task_form .gantt_task_form_add_row {
+	display: flex;
+	justify-content: center;
+	margin: 4px 0 0;
+	padding: 0;
+}
+
+.gantt_task_form_link_footer .dhx_ui_button.gantt_task_form_link_add,
+.gantt_task_form .gantt_task_form_add_row .gantt_add_resources {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: auto;
+	height: var(--dhx-gantt-control-height);
+	margin: 0;
+	padding: 0 12px;
+	border: 0;
+	background: transparent;
+	color: var(--dhx-gantt-base-colors-primary);
+	--dhx-gantt-base-colors-icons: var(--dhx-gantt-base-colors-primary);
+	font-family: var(--dhx-gantt-font-family);
+	font-size: var(--dhx-gantt-font-size);
+	font-weight: var(--dhx-gantt-btn-font-weight, normal);
+	cursor: pointer;
+
+	.gantt_custom_button_label {
+		margin: 0;
+		font: inherit;
+	}
+
+	&:hover {
+		background: transparent;
+		color: var(--dhx-gantt-base-colors-primary-hover);
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-base-colors-primary-hover);
+	}
+
+	&:disabled {
+		color: var(--dhx-gantt-base-colors-text-light);
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-base-colors-text-light);
+		cursor: default;
+	}
+}
+
+/* ---------- tabs ---------- */
+.gantt_task_form .dhx_ui_tabs_header {
+	flex: 0 0 auto;
+	gap: 0;
+	margin-top: 8px;
+	padding: 0 calc(var(--dhx-gantt-task-form-padding) - var(--dhx-gantt-task-form-tab-padding));
+	/* a tab scrolled into view stays clear of the fade mask */
+	scroll-padding-inline: 48px;
+}
+
+.gantt_task_form .dhx_ui_tabs_header.gantt_task_form_tabs_more_right {
+	mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+}
+
+.gantt_task_form .dhx_ui_tabs_header.gantt_task_form_tabs_more_left {
+	mask-image: linear-gradient(to left, #000 calc(100% - 48px), transparent);
+}
+
+.gantt_task_form .dhx_ui_tabs_header.gantt_task_form_tabs_more_left.gantt_task_form_tabs_more_right {
+	mask-image: linear-gradient(to right, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+.gantt_task_form .dhx_ui_tabs_tab {
+	padding: 10px var(--dhx-gantt-task-form-tab-padding);
+	margin-bottom: -1px;
+}
+
+.gantt_task_form .dhx_ui_tabs_panel {
+	padding: 0;
+}
+
+/* ---------- validation slot ---------- */
+.gantt_task_form_error {
+	margin: 2px 0 6px;
+	font-size: 12px;
+	color: var(--dhx-gantt-error-text-color, #d8000c);
+
+	/* not colour-only (WCAG SC 1.4.1): the marker carries the meaning too */
+	&::before {
+		content: "⚠ ";
+	}
+}
+/* ---------- summary strip: errors of sections the user cannot see ---------- */
+.gantt_task_form_summary {
+	flex: 0 0 auto;
+	margin: 12px var(--dhx-gantt-task-form-padding) 0;
+	padding: 8px 12px;
+	border: 1px solid var(--dhx-gantt-base-colors-error, #d8000c);
+	border-radius: 4px;
+	font-size: 12px;
+	color: var(--dhx-gantt-error-text-color, #d8000c);
+}
+
+.gantt_task_form_summary_line {
+	/* not colour-only (WCAG SC 1.4.1): the marker carries the meaning too */
+	&::before {
+		content: "⚠ ";
+	}
+}

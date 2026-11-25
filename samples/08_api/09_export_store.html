@@ -4,9 +4,10 @@
 	<title>Export data: store online</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -17,13 +18,7 @@
 	</style>
 </head>
 <body>
-<div class="gantt_control">	
-	<input value="Export to PDF" type="button" onclick='gantt.exportToPDF({ callback:show_result })'>
-	<input value="Export to PNG" type="button" onclick='gantt.exportToPNG({ callback:show_result })'>
-	<input value="Export to Excel" type="button" onclick='gantt.exportToExcel({ callback:show_result })'>
-	<input value="Export to iCal" type="button" onclick='gantt.exportToICal({ callback:show_result })'>
-</div>
-<div id="gantt_here" style='width:100%; height: calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 
 <script>
 	function show_result(info) {
@@ -41,6 +36,7 @@
 	}
 
 	gantt.plugins({
+		toolbar: true,
 		export_api: true,
 	});
 
@@ -53,6 +49,23 @@
 		return obj.text + " -";
 	};
 
+	gantt.config.toolbar = [
+		{ id: "export_to_pdf", label: "Export to PDF" },
+		{ id: "export_to_png", label: "Export to PNG" },
+		{ id: "export_to_excel", label: "Export to Excel" },
+		{ id: "export_to_ical", label: "Export to iCal" }
+	];
+	const toolbarActions = {
+		export_to_pdf: () => gantt.exportToPDF({ callback:show_result }),
+		export_to_png: () => gantt.exportToPNG({ callback:show_result }),
+		export_to_excel: () => gantt.exportToExcel({ callback:show_result }),
+		export_to_ical: () => gantt.exportToICal({ callback:show_result })
+	};
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		toolbarActions[id]();
+	});
+
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(demo_tasks);
 </script>

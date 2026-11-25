@@ -13,6 +13,8 @@ function createGridLineRender(gantt){
 
 		var cells = [];
 		var has_child;
+		// a read-only task gets no new subtasks: its "+" stays in place, marked disabled
+		var addDisabled = store.$config.name === "task" && !gantt._canAddSubtask(item, config, true);
 		for (var i = 0; i < columns.length; i++) {
 			var last = i == columns.length - 1;
 			var col = columns[i];
@@ -21,9 +23,9 @@ function createGridLineRender(gantt){
 			var value;
 			var textValue;
 			if (col.name == "add") {
-				var aria = gantt._waiAria.gridAddButtonAttrString(col);
+				var aria = gantt._waiAria.gridAddButtonAttrString(col, addDisabled);
 
-				value = "<div " + aria + " class='gantt_add'></div>";
+				value = "<div " + aria + " class='gantt_add" + (addDisabled ? " gantt_add_disabled" : "") + "'></div>";
 				textValue = "";
 			} else {
 				if (col.template)
@@ -71,7 +73,7 @@ function createGridLineRender(gantt){
 				style += "text-align:" + col.align + ";justify-content:"  + justifyContent + ";";
 			}
 
-			var aria = gantt._waiAria.gridCellAttrString(col, textValue, item);
+			var aria = gantt._waiAria.gridCellAttrString(col, textValue, item, store, i);
 
 			tree.push(value);
 			cell = "<div class='" + css + "' data-column-index='"+i+"' data-column-name='"+col.name+"' style='" + style + "' " + aria + ">" + tree.join("") + "</div>";
@@ -92,6 +94,10 @@ function createGridLineRender(gantt){
 		css += (item.$transparent) ? " gantt_transparent" : "";
 
 		css += (item.$dataprocessor_class ? " " + item.$dataprocessor_class : "");
+
+		if (storeName === "task" && !gantt._isStoredTaskActive(item)) {
+			css += " gantt_row_inactive";
+		}
 
 		if (templates.grid_row_class) {
 			var css_template = templates.grid_row_class.call(gantt, item.start_date, item.end_date, item);
@@ -120,7 +126,11 @@ function createGridLineRender(gantt){
 			el.setAttribute(view.$config.bind + "_id", item.id); // 'task_id'/'resource_id' for backward compatibility
 		}
 
-		gantt._waiAria.taskRowAttr(item, el);
+		if(store.$config.name === gantt.config.resource_store){
+			gantt._waiAria.resourceRowAttr(item, el, store);
+		}else{
+			gantt._waiAria.taskRowAttr(item, el, store);
+		}
 
 		el.innerHTML = cells.join("");
 		return el;

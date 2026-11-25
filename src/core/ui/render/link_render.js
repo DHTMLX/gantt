@@ -37,6 +37,10 @@ function _render_link_element(link, view, config) {
 	if (link.color) {
 		css += " gantt_link_inline_color";
 	}
+	if (!gantt._isStoredLinkActive(link)) {
+		css += " gantt_link_inactive";
+	}
+
 	var cssTemplate = gantt.templates.link_class ? gantt.templates.link_class(link) : "";
 	if (cssTemplate) {
 		css += " " + cssTemplate;
@@ -45,6 +49,12 @@ function _render_link_element(link, view, config) {
 	if (config.highlight_critical_path && gantt.isCriticalLink) {
 		if (gantt.isCriticalLink(link))
 			css += " gantt_critical_link";
+	}
+
+	// GS-1557: a dependency the schedule does not meet (auto scheduling, "prompt"/"adjust" modes)
+	const unmet = !!(gantt._isConflictLink && gantt._isConflictLink(link));
+	if (unmet) {
+		css += " gantt_link_conflict";
 	}
 
 	div.className = css;
@@ -58,6 +68,10 @@ function _render_link_element(link, view, config) {
 	}
 
 	gantt._waiAria.linkAttr(link, div);
+	if (unmet && div.hasAttribute("aria-label")) {
+		const unmetLabel = gantt.locale.labels.as_conflict_link_unmet || "dependency not met";
+		div.setAttribute("aria-label", div.getAttribute("aria-label").trim() + ", " + unmetLabel);
+	}
 
 	return div;
 }

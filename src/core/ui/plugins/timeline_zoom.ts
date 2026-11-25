@@ -2,6 +2,7 @@ import env from "../../../utils/env";
 import eventable from "../../../utils/eventable";
 import { TModifierKeys } from "../../common/config";
 import type { Scale, TimeUnit } from "../../common/scale_types";
+import { getLevelingDelayRange } from "../../common/leveling_delay";
 
 type TZoomLevelReference = number | string;
 type TZoomToFitScope = "visible" | "all";
@@ -596,6 +597,13 @@ export default class TimelineZoom {
 			task.baselines.forEach((baseline) => {
 				this._extendRangeForDates(range, baseline.start_date, baseline.end_date);
 			});
+		}
+
+		if (gantt.config.leveling_delays && task.leveling_delay) {
+			const delayRange = getLevelingDelayRange(gantt, task);
+			if (delayRange) {
+				this._extendRangeForDates(range, delayRange.start_date, delayRange.end_date);
+			}
 		}
 
 		if (task.$auto_start_date && task.$auto_end_date) {

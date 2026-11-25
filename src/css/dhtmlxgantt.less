@@ -14,10 +14,13 @@
 @import "quickinfo.less";
 @import "tooltip.less";
 @import "resource_panel.less";
+@import "ui_core.less";
+@import "task_form.less";
 @import "ext.less";
 @import "rtl.less";
 @import "layout/cell.less";
 @import "layout/layout.less";
+@import "a11y.less";
 
 // Apply font smoothing for better text rendering
 .gantt_container,
@@ -193,6 +196,37 @@
     .dhx_gantt_icon();
     .dhx_gantt_icon.dhx_gantt_icon_timer();
     pointer-events: none;
+}
+
+// the resource leveling delay area (gantt.config.leveling_delays);
+// its color, --dhx-gantt-leveling-delay-color, is a theme variable (themes/variables.less)
+.gantt_leveling_delay {
+	position: absolute;
+	box-sizing: border-box;
+	display: flex;
+	align-items: flex-start;
+	justify-content: center;
+	overflow: hidden;
+	white-space: nowrap;
+	font-size: 11px;
+	line-height: 13px;
+	font-weight: 600;
+	color: var(--dhx-gantt-leveling-delay-color);
+	border: 1px dashed var(--dhx-gantt-leveling-delay-color);
+	border-radius: 4px;
+	background: repeating-linear-gradient(-45deg, transparent 0 4px,
+		color-mix(in srgb, var(--dhx-gantt-leveling-delay-color) 22%, transparent) 4px 8px);
+	pointer-events: none;
+}
+.gantt_leveling_delay_forward {
+	border-right: none;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.gantt_leveling_delay_backward {
+	border-left: none;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }
 .gantt_task_baseline {
     position: absolute;

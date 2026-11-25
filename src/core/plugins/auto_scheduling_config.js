@@ -13,14 +13,17 @@ export default function(gantt){
 			project_constraint: false,
 			show_constraints: false,
 
-			// Per D-28 / D-31: internal transitional flags for the v2 engine
-			// rollout. Underscore-prefixed → not part of the public API;
-			// wrappers do NOT generate types for them. Phase E (v9.3) removes
-			// both flags entirely. Users may opt back to v1 for one release
-			// cycle by setting `_engine` / `_analysis_engine` to "v1" — a
-			// one-time console.warn fires per gantt instance.
-			_engine: "v2",
-			_analysis_engine: "v2"
+			// GS-1557 / D-36. What to do when the user moves a task and a
+			// link and a constraint then ask for different dates:
+			//   "keep"   - keep the constraint and move the task (the old way),
+			//   "prompt" - ask the user what to do (shows a small dialog),
+			//   "adjust" - change the constraint so the task can stay put.
+			// Used only when apply_constraints is true.
+			resolve_constraint_conflicts: "keep",
+
+			// GS-3581. The chart's scheduling engine: "v2", or a name registered
+			// with Gantt.registerSchedulingEngine.
+			engine: "v2"
 		};
 	}
 
@@ -53,26 +56,24 @@ export default function(gantt){
 		// backward compatibility: build config from old flags
 		const enabled = !!config.auto_scheduling;
 
-		return {
-			...getDefaultAutoSchedulingConfig(),
-			...{
-				enabled,
-				// `auto_scheduling_compatibility: true` means "schedule like pre-6.1
-				// gantt, WITHOUT task constraints" (GS-2083 / GS-3328 — the mapping
-				// used to be inverted). Constraint scheduling is the legacy default,
-				// so an unset flag resolves to apply_constraints: true.
-				apply_constraints: !(config.auto_scheduling_compatibility ?? false),
-				gap_behavior: config.auto_scheduling_strict !== true ? "preserve" : "compress",
-				descendant_links: config.auto_scheduling_descendant_links ?? false,
-				schedule_on_parse: config.auto_scheduling_initial ?? true,
-				move_projects: config.auto_scheduling_move_projects ?? true,
-				use_progress: config.auto_scheduling_use_progress ?? false,
+		const schedulingConfig = getDefaultAutoSchedulingConfig();
+		return Object.assign(schedulingConfig, {
+			enabled,
+			// `auto_scheduling_compatibility: true` means "schedule like pre-6.1
+			// gantt, WITHOUT task constraints" (GS-2083 / GS-3328 — the mapping
+			// used to be inverted). Constraint scheduling is the legacy default,
+			// so an unset flag resolves to apply_constraints: true.
+			apply_constraints: !(config.auto_scheduling_compatibility ?? false),
+			gap_behavior: config.auto_scheduling_strict !== true ? "preserve" : "compress",
+			descendant_links: config.auto_scheduling_descendant_links ?? false,
+			schedule_on_parse: config.auto_scheduling_initial ?? true,
+			move_projects: config.auto_scheduling_move_projects ?? true,
+			use_progress: config.auto_scheduling_use_progress ?? false,
 
-				schedule_from_end: config.schedule_from_end ?? false,
-				project_constraint: config.auto_scheduling_project_constraint ?? false,
-				show_constraints: false
-			}
-		};
+			schedule_from_end: config.schedule_from_end ?? false,
+			project_constraint: config.auto_scheduling_project_constraint ?? false,
+			show_constraints: false
+		});
 	}
 
 	return {

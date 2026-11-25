@@ -2,19 +2,30 @@
  * Global types for dhtmlxGantt
  */
 
-declare const VERSION: string;
-declare const LICENSE: string;
-declare const PRODUCTION: string;
-declare const GPL: string;
-declare const BUILD_TIMESTAMP: number;
+import type {
+  Id,
+	SchedulingEngine,
+	Task,
+	LinkReference
+} from "./types/gantt_types";
 
-declare type TaskID = number | string;
-declare type LinkID = number | string;
+export type { LinkReference };
 
-type TaskType = "task" | "project" | "milestone";
+declare global {
+	const VERSION: string;
+	const LICENSE: string;
+	const PRODUCTION: string;
+	const GPL: string;
+	const BUILD_TIMESTAMP: number;
+}
 
-type GanttPlugin = (gantt: any) => void;
-interface IGanttInitializationConfig {
+declare type TaskID = Id;
+declare type LinkID = Id;
+
+export type TaskType = "task" | "project" | "milestone";
+
+export type GanttPlugin = (gantt: any) => void;
+export interface IGanttInitializationConfig {
 	container?: string|HTMLElement;
 	config?: any;
 	calendars?: ICalendarConfig[];
@@ -25,56 +36,58 @@ interface IGanttInitializationConfig {
 	locale?: any;
 }
 
-type WorkdayConfig = boolean|number|string|CalendarHoursConfig[];
-type CalendarHoursConfig = number|string;
-type WorkDaysTuple = [WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig];
-type WorkDaysSettings = {
+export type WorkdayConfig = boolean|number|string|CalendarHoursConfig[];
+export type CalendarHoursConfig = number|string;
+export type WorkDaysTuple = [WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig, WorkdayConfig];
+export type WorkDaysSettings = {
 	weekdays: WorkDaysTuple,
 	dates: {[date: string]: WorkdayConfig}
 }
 
-interface ICalendarWorktimes {
+export interface ICalendarWorktimes {
 	hours: CalendarHoursConfig[];
 	days: WorkDaysTuple | WorkDaysSettings;
 }
 
 
 
-interface ICalendarCustomWeekSettings extends Omit<ICalendarWorktimes, "hours">{
+export interface ICalendarCustomWeekSettings extends Omit<ICalendarWorktimes, "hours">{
 	from: Date;
 	to: Date;
 	// `false` gives the period no work hours, `true` or an absent value applies the hours of the calendar
 	hours?: CalendarHoursConfig[] | boolean;
 }
 
-interface ICalendarWorktimeSettings extends ICalendarWorktimes{
+export interface ICalendarWorktimeSettings extends ICalendarWorktimes{
 	customWeeks?:{
 		[name:string]:ICalendarCustomWeekSettings;
 	};
 }
 
-interface ICalendarConfig {
+export interface ICalendarConfig {
 	id: number | string;
 	worktime: ICalendarWorktimeSettings;
 }
 
-interface IGanttFactory {
+export interface IGanttFactory {
 	plugin(plugin: GanttPlugin): void;
 	getGanttInstance(settings?: IGanttInitializationConfig) : any;
+	/** Makes a scheduling engine selectable by name in `config.auto_scheduling.engine`. */
+	registerSchedulingEngine(name: string, createEngine: () => SchedulingEngine): void;
 }
 
-interface ITask {
+export interface ITask extends Task {
 	id: TaskID;
-	text: string;
+	text?: string;
 	start_date: Date;
 	end_date: Date;
 	duration: number;
 	progress: number;
 	parent: TaskID;
-	type: TaskType;
-	constraint_type: ConstraintTypes;
-	constraint_date: Date;
-	auto_scheduling: boolean;
+	type?: TaskType;
+	constraint_type?: ConstraintTypes | null;
+	constraint_date?: Date | null;
+	auto_scheduling?: boolean;
 	$rendered_type: TaskType;
 	$source: any[];
 	$target: any[];
@@ -84,7 +97,7 @@ interface ITask {
 	$no_start: boolean;
 	$open: boolean;
 	$rendered_parent: TaskID;
-	$keep_constraints: boolean;
+	$keep_constraints?: boolean;
 }
 
 declare enum LinkType {
@@ -112,7 +125,7 @@ declare enum ConstraintTypes {
 	MFO = "mfo"
 }
 
-interface ILink {
+export interface ILink {
 	id: LinkID;
 	source: TaskID;
 	target: TaskID;
@@ -120,56 +133,26 @@ interface ILink {
 	lag: number;
 }
 
-interface IConnectedGroup {
-	tasks: TaskID[];
-	links: LinkID[];
-}
-
-interface IConnectedGroupsDetailed {
-	tasks: TaskID[];
-	links: LinkID[];
-	processedLinks: IInternalLink[];
-}
-
-/**
- * Internal representation of link, used for auto scheduling and graph network calculations
- */
-interface IInternalLink {
-	hashSum: string;
-	id: LinkID;
-	lag: number;
-	sourceLag: number;
-	targetLag: number;
-	trueLag: number;
-	link: LinkType;
-	preferredStart: Date;
-	source: TaskID;
-	sourceParent: TaskID;
-	target: TaskID;
-	targetParent: TaskID;
-	subtaskLink?: boolean;
-}
-
-interface IDurationFormatterLabel {
+export interface IDurationFormatterLabel {
 	full: string;
 	plural: string;
 	short: string;
 }
 
-interface IDurationFormatter {
+export interface IDurationFormatter {
 	canParse(value: string) : boolean;
 	format(value: number) : string;
-	parse(value: string) : number;
+	parse(value: string) : number | null;
 }
 
-interface ILinkFormatter {
+export interface ILinkFormatter {
 	canParse(value: string) : boolean;
 	format(value: ILink) : string;
-	parse(value: string) : ILink;
+	parse(value: string) : ILink | null;
 }
 
 
-interface IDurationFormatterConfig {
+export interface IDurationFormatterConfig {
 	enter: string;
 	store: string;
 	format: string | string[];
@@ -182,7 +165,7 @@ interface IDurationFormatterConfig {
 	labels: { [unit: string]: IDurationFormatterLabel };
 }
 
-interface ILinkFormatterConfig {
+export interface ILinkFormatterConfig {
 	durationFormatter: IDurationFormatter;
 	labels: {
 		finish_to_finish: string,
@@ -190,19 +173,11 @@ interface ILinkFormatterConfig {
 		start_to_start: string,
 		start_to_finish: string
 	};
+	/** @default "legacy" */
+	reference?: LinkReference;
 }
 
-interface ILinkFormatterConfig {
-	durationFormatter: IDurationFormatter;
-	labels: {
-		finish_to_finish: string,
-		finish_to_start: string,
-		start_to_start: string,
-		start_to_finish: string
-	};
-}
-
-interface IQuickInfoContent {
+export interface IQuickInfoContent {
 	taskId?: TaskID;
 	header?: {
 		title: string,
@@ -213,17 +188,17 @@ interface IQuickInfoContent {
 }
 
 
-type MonthLabelList = [string, string, string, string, string, string, string, string, string, string, string, string];
-type WeekDayLabelList = [string, string, string, string, string, string, string];
+export type MonthLabelList = [string, string, string, string, string, string, string, string, string, string, string, string];
+export type WeekDayLabelList = [string, string, string, string, string, string, string];
 
-interface IGanttLocaleDate {
+export interface IGanttLocaleDate {
 	month_full: MonthLabelList;
 	month_short: MonthLabelList;
 	day_full: WeekDayLabelList;
 	day_short: WeekDayLabelList;
 }
 
-interface IGanttLocaleLabels {
+export interface IGanttLocaleLabels {
 	new_task: string;
 	icon_save: string;
 	icon_cancel: string;
@@ -237,12 +212,52 @@ interface IGanttLocaleLabels {
 	section_deadline: string;
 	section_baselines: string;
 	section_new_resources: string;
+	/* advanced task form - optional until every locale carries them */
+	section_progress?: string;
+	section_predecessors?: string;
+	section_successors?: string;
+	section_resources?: string;
+	section_effort_driven?: string;
+	section_wbs?: string;
+	section_auto_scheduling?: string;
+	section_unscheduled?: string;
+	section_hide_bar?: string;
+	section_rollup?: string;
+	section_priority?: string;
+	section_calendar?: string;
+	calendar_none?: string;
+	tab_general?: string;
+	tab_predecessors?: string;
+	tab_successors?: string;
+	tab_resources?: string;
+	tab_advanced?: string;
+	task_form_link_id?: string;
+	task_form_link_task?: string;
+	task_form_link_type?: string;
+	task_form_link_lag?: string;
+	task_form_add_predecessor?: string;
+	task_form_add_successor?: string;
+	task_form_no_predecessors?: string;
+	task_form_no_successors?: string;
+	task_form_select_task?: string;
+	task_form_remove_row?: string;
+	task_form_error_cycle?: string;
+
+	/* effort-driven tasks */
+	section_work: string;
+	section_scheduling_mode: string;
+	fixed_duration: string;
+	fixed_units: string;
+	fixed_work: string;
 
 	/* grid columns */
 	column_wbs: string;
 	column_text: string;
 	column_start_date: string;
 	column_duration: string;
+	column_predecessors: string;
+	column_successors: string;
+	column_work: string;
 	column_add: string;
 
 	/* link confirmation */
@@ -279,6 +294,31 @@ interface IGanttLocaleLabels {
 	mso: string;
 	mfo: string;
 
+	/* auto-scheduling conflict dialog (GS-1557): {name} placeholders are filled by gantt */
+	as_conflict_title: string;
+	as_conflict_intro_many: string;
+	as_conflict_text_start: string;
+	as_conflict_text_start_many: string;
+	as_conflict_text_finish: string;
+	as_conflict_text_finish_many: string;
+	as_conflict_link_from: string;
+	as_conflict_link_to: string;
+	as_conflict_link_between: string;
+	as_conflict_links_unknown: string;
+	as_conflict_and: string;
+	as_conflict_question: string;
+	as_conflict_adjust: string;
+	as_conflict_adjust_many: string;
+	as_conflict_deactivate: string;
+	as_conflict_remove: string;
+	as_conflict_remove_many: string;
+	as_conflict_keep: string;
+	as_conflict_keep_many: string;
+	as_conflict_apply: string;
+	as_conflict_cancel: string;
+	as_conflict_link_unmet: string;
+	as_conflict_loop: string;
+
 	/* resource control */
 	resources_add_button: string;
 	resources_filter_placeholder: string;
@@ -297,9 +337,92 @@ interface IGanttLocaleLabels {
 	/* deadline control */
 	deadline_enable_button: string;
 	deadline_disable_button: string;
+
+	/* ui core control kit (optional: runtime falls back to English) */
+	ui_combo_no_results?: string;
+	ui_datepicker_today?: string;
+	ui_datepicker_clear?: string;
+	ui_datepicker_prev_month?: string;
+	ui_datepicker_next_month?: string;
+	ui_stepper_increment?: string;
+	ui_stepper_decrement?: string;
+
+	/* context-menu built-ins (optional: falls back to English) */
+	ui_menu_edit?: string;
+	ui_menu_add?: string;
+	ui_menu_add_child?: string;
+	ui_menu_add_before?: string;
+	ui_menu_add_after?: string;
+	ui_menu_add_predecessor?: string;
+	ui_menu_add_successor?: string;
+	ui_menu_convert_to_milestone?: string;
+	ui_menu_convert_to_task?: string;
+	ui_menu_indent?: string;
+	ui_menu_outdent?: string;
+	ui_menu_cut?: string;
+	ui_menu_copy?: string;
+	ui_menu_paste_child?: string;
+	ui_menu_paste_after?: string;
+	ui_menu_clear_clipboard?: string;
+	ui_menu_split?: string;
+	ui_menu_unsplit?: string;
+	ui_menu_complete?: string;
+	ui_menu_rollup?: string;
+	ui_menu_hide_bar?: string;
+	ui_menu_delete?: string;
+	ui_menu_delete_link?: string;
+	ui_menu_deactivate_link?: string;
+	ui_menu_activate_link?: string;
+	ui_menu_add_task?: string;
+	ui_menu_expand_all?: string;
+	ui_menu_collapse_all?: string;
+	ui_menu_sort_asc?: string;
+	ui_menu_sort_desc?: string;
+	ui_menu_hide_column?: string;
+
+	/* toolbar + context-menu composition surface (optional: falls back to English) */
+	ui_toolbar_label?: string;
+	ui_toolbar_add_task?: string;
+	ui_toolbar_undo?: string;
+	ui_toolbar_redo?: string;
+	ui_toolbar_zoom_in?: string;
+	ui_toolbar_zoom_out?: string;
+	ui_toolbar_zoom_level?: string;
+	ui_toolbar_expand_all?: string;
+	ui_toolbar_collapse_all?: string;
+	ui_toolbar_today?: string;
+	ui_toolbar_critical_path?: string;
+	ui_toolbar_fullscreen?: string;
+	ui_toolbar_theme?: string;
+	ui_toolbar_more?: string;
+	ui_toolbar_menu?: string;
+	ui_menu_theme?: string;
+	ui_theme_light?: string;
+	ui_theme_dark?: string;
+	ui_theme_high_contrast?: string;
+	ui_theme_contrast_light?: string;
+	ui_theme_contrast_dark?: string;
+	ui_theme_auto?: string;
+
+	/* screen reader (ARIA) labels */
+	aria_grid: string;
+	aria_dialog_lightbox: string;
+	aria_dialog_quickinfo: string;
+	aria_sort_ascending: string;
+	aria_sort_descending: string;
+	aria_resource_load: string;
+	aria_resource_load_date: string;
+	aria_resource_hours_date: string;
+	aria_task_duration: string;
+	aria_task_progress: string;
+	aria_toggle_row: string;
+	aria_link_finish_to_start: string;
+	aria_link_start_to_start: string;
+	aria_link_finish_to_finish: string;
+	aria_link_start_to_finish: string;
 }
 
-interface IGanttLocale {
+export interface IGanttLocale {
 	date: IGanttLocaleDate;
 	labels: IGanttLocaleLabels;
 }

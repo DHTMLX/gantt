@@ -12,10 +12,10 @@
 	--dhx-gantt-base-colors-primary: #A395FF;
 
 	--dhx-gantt-task-background: var(--dhx-gantt-base-colors-primary);
-	--dhx-gantt-project-background: #77D257;
-	--dhx-gantt-milestone-background: #FCBA2E;
+	--dhx-gantt-project-background: #80BF69;
+	--dhx-gantt-milestone-background: #E1B047;
 
-	--dhx-gantt-task-background: #A395FF;
+	--dhx-gantt-task-background: #B0A7EC;
 
 	--dhx-gantt-task-border: 1px solid rgba(0,0,0, 0.1);
 
@@ -30,6 +30,8 @@
 	--dhx-gantt-base-colors-hover-color: #2A2A2A;
 
 	--dhx-gantt-base-colors-icons: #AAAAAA;
+	/* contrast themes deliberately keep every neutral at the icon value */
+	--dhx-gantt-base-colors-neutral: var(--dhx-gantt-base-colors-icons);
 
 	--dhx-gantt-scale-color: var(--dhx-gantt-base-colors-text-light);
 
@@ -47,4 +49,10 @@
 
 	--dhx-gantt-btn-outline-color-hover:var(--dhx-gantt-base-colors-text-light);
 	--dhx-gantt-btn-outline-color-active:var(--dhx-gantt-base-colors-text-light);
+
+	/* toolbar segmented control: a plain track with a full-strength border and labels.
+	   Both contrast skins use it for one look; see contrast_white.less for the reason. */
+	--dhx-gantt-toolbar-segmented-background: var(--dhx-gantt-base-colors-background);
+	--dhx-gantt-toolbar-segmented-border: var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-toolbar-segmented-color: var(--dhx-gantt-base-colors-text-base);
 }

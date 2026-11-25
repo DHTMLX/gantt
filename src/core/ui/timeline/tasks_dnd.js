@@ -29,6 +29,19 @@ function createTaskDND(timeline, gantt) {
 				};
 			}, this));
 
+			// Internal: copies of the tasks this drag changes, taken before it changed
+			// them. A scheduling preview puts them back to see the chart as it was.
+			// The first copy is the dragged task's, made anew at each mouse-down,
+			// so it also identifies the drag.
+			stateService.registerProvider("tasksDndOriginals", utils.bind(function() {
+				if (!this.drag || !this.drag.id || !this.drag.mode || !this.drag.obj) return null;
+				const originals = [this.drag.obj];
+				for (const id in this.dragMultiple) {
+					if (id != this.drag.id && this.dragMultiple[id].obj) originals.push(this.dragMultiple[id].obj);
+				}
+				return originals;
+			}, this), true);
+
 			var evs = {
 				"before_start": "onBeforeTaskDrag",
 				"before_finish": "onBeforeTaskChanged",
@@ -94,10 +107,13 @@ function createTaskDND(timeline, gantt) {
 
 			var minDurationInUnits = this._calculateMinDuration(cfg.min_duration, cfg.duration_unit);
 			if (task.end_date - task.start_date < cfg.min_duration) {
+				// a floor on the span, not the task interval: the calendar is passed, so
+				// the task's pauses don't round a fractional floor down to nothing
+				var calendar = gantt.getTaskCalendar(task);
 				if (drag.left)
-					task.start_date = gantt.calculateEndDate(task.end_date, -minDurationInUnits, cfg.duration_unit, task);
+					task.start_date = gantt.calculateEndDate({ start_date: task.end_date, duration: -minDurationInUnits, unit: cfg.duration_unit, calendar: calendar });
 				else
-					task.end_date = gantt.calculateEndDate(task.start_date, minDurationInUnits, cfg.duration_unit, task);
+					task.end_date = gantt.calculateEndDate({ start_date: task.start_date, duration: minDurationInUnits, unit: cfg.duration_unit, calendar: calendar });
 			}
 			gantt._init_task_timing(task);
 		},
@@ -383,6 +399,8 @@ function createTaskDND(timeline, gantt) {
 				step = config.time_step;
 			}
 
+			// Snaps by one unit are not the task interval: the calendar is passed,
+			// not the task, so the task's pauses are not applied to them.
 			function fixStart(task) {
 				if (!gantt.config.correct_work_time)
 					return;
@@ -392,7 +410,7 @@ function createTaskDND(timeline, gantt) {
 						start_date: task.start_date,
 						duration: -1,
 						unit: config.duration_unit,
-						task: task
+						calendar: gantt.getTaskCalendar(task)
 					});
 			}
 
@@ -405,7 +423,7 @@ function createTaskDND(timeline, gantt) {
 						start_date: task.end_date,
 						duration: 1,
 						unit: config.duration_unit,
-						task: task
+						calendar: gantt.getTaskCalendar(task)
 					});
 			}
 
@@ -452,14 +470,17 @@ function createTaskDND(timeline, gantt) {
 			}
 		},
 
-		_finalize_mouse_up: function(taskId, config, drag, e) {
-			var task = gantt.getTask(taskId);
-
+		_normalize_task_dates: function(task, config, drag) {
 			if (config.work_time && config.correct_work_time) {
 				this._fix_working_times(task, drag);
 			}
 
 			this._fix_dnd_scale_time(task, drag);
+		},
+
+		_finalize_mouse_up: function(taskId, config, drag, e) {
+			var task = gantt.getTask(taskId);
+			this._normalize_task_dates(task, config, drag);
 
 			if (!this._fireEvent("before_finish", drag.mode, [taskId, drag.mode, gantt.copy(drag.obj), e])) {
 				//drag.obj._dhx_changed = false;
@@ -469,6 +490,7 @@ function createTaskDND(timeline, gantt) {
 					gantt.mixin(task, drag.obj, true);
 				}
 
+				gantt.callEvent("onTaskDragCancel", [taskId, drag.mode, e]);
 
 				gantt.refreshTask(task.id);
 				// GS-2013. Repaint parent projects when the drag is cancelled
@@ -647,12 +669,17 @@ function createTaskDND(timeline, gantt) {
 		},
 
 		round_task_dates: function(task) {
-			var drag_state = this.drag;
-			var config = timeline.$getConfig();
-			if (!drag_state) {
-				drag_state = {mode: config.drag_mode.move};
+			const config = timeline.$getConfig();
+			const activeDrag = this.drag;
+			let drag = activeDrag && activeDrag.id != null && activeDrag.id == task.id
+				? activeDrag : null;
+			if (!drag && activeDrag && activeDrag.mode === config.drag_mode.move) {
+				drag = this.dragMultiple[task.id];
 			}
-			this._fix_dnd_scale_time(task, drag_state);
+			if (!drag || (drag.mode !== config.drag_mode.move && drag.mode !== config.drag_mode.resize)) {
+				drag = {mode: config.drag_mode.move};
+			}
+			this._normalize_task_dates(task, config, drag);
 		},
 		destructor: function() {
 			this._domEvents.detachAll();

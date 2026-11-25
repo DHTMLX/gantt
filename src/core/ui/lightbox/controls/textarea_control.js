@@ -16,7 +16,8 @@ export default function(gantt) {
 	TextareaControl.prototype.render = function(sns) {
 		const height = (sns.height || "130") + "px";
 		const placeholder = sns.placeholder ? `placeholder='${sns.placeholder}'` : "";
-		return `<div class='gantt_cal_ltext gantt_section_${sns.name}' style='height:${height};' ${placeholder}><textarea></textarea></div>`;
+		const ariaAttr = gantt._waiAria.lightboxTextareaAttrString(sns);
+		return `<div class='gantt_cal_ltext gantt_section_${sns.name}' style='height:${height};' ${placeholder}><textarea ${ariaAttr}></textarea></div>`;
 	};
 
 	TextareaControl.prototype.set_value = function(node, value) {

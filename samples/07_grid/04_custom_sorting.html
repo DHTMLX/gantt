@@ -4,23 +4,25 @@
 	<title>Custom sorting function</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
-	<script src="../common/testdata.js"></script>
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
+	<script src="../common/testdata_public.js"></script>
 </head>
 
 <body style="margin: 0">
-<div class="gantt_control">
-	<input type='button' value='Sort by the number of users' onclick='sortByHolders(direction)'>
-</div>
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+<div id="gantt_here" style="width:100%; height:100vh;"></div>
 
 <script>
 	var direction = false;
 
-	function sortByHolders(direction1) {
+	gantt.plugins({ toolbar: true });
+	gantt.config.toolbar = [
+		{ id: "sort_by_users_count", label: "Sort by the number of users" }
+	];
+	gantt.attachEvent("onToolbarItemClick", function() {
 		direction = !direction;
 		gantt.sort(sortHolders);
-	}
+	});
 
 	function sortHolders(a, b) {
 		a = a.users.length;
@@ -49,6 +51,7 @@
     { name: "add", label: "", width: 44 }
 	];
 
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(users_data);
 </script>

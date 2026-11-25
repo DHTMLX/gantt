@@ -1,4 +1,5 @@
 import * as helpers from "../utils/helpers";
+import { hasPauses, getWorkSegments } from "./common/pauses";
 
 export default function createResourceTimelineBuilder(gantt){
 
@@ -26,6 +27,7 @@ export default function createResourceTimelineBuilder(gantt){
 		const timegrid = {};
 
 		const precalculatedTimes = {};
+		const hasInactiveTasks = gantt._hasInactiveTasks();
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i];
 			let task = item;
@@ -34,6 +36,9 @@ export default function createResourceTimelineBuilder(gantt){
 			}
 			if (task.unscheduled){
 				continue; // do not process assignments for unscheduled tasks
+			}
+			if (hasInactiveTasks && !gantt._isStoredTaskActive(task)){
+				continue;
 			}
 			let minDate = (item.start_date || task.start_date);
 			let maxDate = (item.end_date || task.end_date);
@@ -59,6 +64,12 @@ export default function createResourceTimelineBuilder(gantt){
 
 			let calendar = gantt.config.work_time ? gantt.getTaskCalendar(task) : gantt;
 			precalculatedTimes[calendar.id] = {};
+
+			// task.pauses: a cell counts only if the part of it the item covers
+			// overlaps a work segment. Occupancy stays binary per cell, as for any task.
+			const segments = hasPauses(gantt, task) ? getWorkSegments(gantt, task) : null;
+			let segmentIndex = 0;
+
 			while (currDate < maxDate) {
 				const cachedTimes = precalculatedTimes[calendar.id];
 
@@ -69,6 +80,17 @@ export default function createResourceTimelineBuilder(gantt){
 
 				if(cachedTimes[timestamp] === false){
 					continue;
+				}
+
+				if (segments) {
+					const coveredFrom = Math.max(timestamp, minDate.valueOf());
+					const coveredTo = Math.min(currDate.valueOf(), maxDate.valueOf());
+					while (segmentIndex < segments.length && segments[segmentIndex].end_date.valueOf() <= coveredFrom) {
+						segmentIndex++;
+					}
+					if (segmentIndex >= segments.length || segments[segmentIndex].start_date.valueOf() >= coveredTo) {
+						continue;
+					}
 				}
 
 				if (!timegrid[timestamp]){

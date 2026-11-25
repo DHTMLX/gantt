@@ -5,7 +5,8 @@
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
+	<script src="../common/sample_toolbar.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -13,58 +14,51 @@
 			margin: 0px;
 			overflow: hidden;
 		}
-		.filters_wrapper {
-			font: 600 14px Roboto;
-			text-align-last: left;
-			margin-left: 10px;
-		}
-
 	</style>
 </head>
 
 <body>
-<div class="gantt_control">
-	<div class="filters_wrapper" id="filters_wrapper">
-		<label>Search Tasks:</label>
-		<input id='filter' class="gantt_input_styled" type='text' placeholder="Enter task name to filter"/>
-	</div>
-</div>
-
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 
 
 <script>
 
-	gantt.config.open_tree_initially = true;
+	gantt.plugins({ toolbar: true });
+	gantt.config.toolbar = [{
+		id: "search_tasks",
+		comp: "text",
+		placeholder: "Enter task name to filter",
+		tooltip: "Search Tasks"
+	}];
 
-	gantt.init("gantt_here");
-	gantt.parse({
-		"data": [
-			{ "id": 1, "text": "Development", "start_date": "01-05-2025", "duration": 5, "progress": 0.5 },
-			{ "id": 2, "text": "Coding", "start_date": "01-05-2025", "duration": 2, "parent": 1, "progress": 0.5 },
-			{ "id": 3, "text": "Bug fixing", "start_date": "12-05-2025", "duration": 2, "parent": 1, "progress": 0.8 },
-			{ "id": 4, "text": "Feature development", "start_date": "05-05-2025", "duration": 5, "parent": 1, "progress": 0.45 },
-			{ "id": 5, "text": "Coding", "start_date": "06-05-2025", "duration": 2, "parent": 4, "progress": 0.35 },
-			{ "id": 6, "text": "Testing", "start_date": "09-05-2025", "duration": 1, "parent": 4, "progress": 0.75 },
-			{ "id": 7, "text": "Bugfixing", "start_date": "05-05-2025", "duration": 1, "parent": 4, "progress": 0.75 },
-			{ "id": 8, "text": "General QA", "start_date": "07-05-2025", "duration": 2, "parent": 1, "progress": 0.15 },
-			{ "id": 9, "text": "Meta test", "start_date": "14-05-2025", "duration": 7, "progress": 0 },
-			{ "id": 10, "text": "Functional", "start_date": "14-05-2025", "duration": 1, "parent": 9, "progress": 0.75 },
-			{ "id": 11, "text": "UI", "start_date": "16-05-2025", "duration": 1, "parent": 9, "progress": 0 },
-			{ "id": 12, "text": "Feedback", "start_date": "20-05-2025", "duration": 1, "parent": 9, "progress": 0 },
-			{ "id": 13, "text": "RC", "start_date": "22-05-2025", "duration": 1, "progress": 0 },
-			{ "id": 14, "text": "Final milestone", "start_date": "24-05-2025", "duration": 0, "progress": 0.25, "type": 'milestone' }
-		]
-	});
-
-	const filterEl = document.querySelector("#filter")
-	filterEl.addEventListener('input', function (e) {
-		filterValue = filterEl.value;
+	let filterValue = "";
+	gantt.attachEvent("onToolbarItemChange", function(id, value) {
+		filterValue = value;
 		gantt.render();
 	});
 
+	gantt.config.open_tree_initially = true;
 
-	let filterValue = "";
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
+	gantt.init("gantt_here");
+	gantt.parse({
+		"data": [
+			{ "id": 1, "text": "Development", "start_date": "29-04-2027", "duration": 5, "progress": 0.5 },
+			{ "id": 2, "text": "Coding", "start_date": "29-04-2027", "duration": 2, "parent": 1, "progress": 0.5 },
+			{ "id": 3, "text": "Bug fixing", "start_date": "10-05-2027", "duration": 2, "parent": 1, "progress": 0.8 },
+			{ "id": 4, "text": "Feature development", "start_date": "03-05-2027", "duration": 5, "parent": 1, "progress": 0.45 },
+			{ "id": 5, "text": "Coding", "start_date": "04-05-2027", "duration": 2, "parent": 4, "progress": 0.35 },
+			{ "id": 6, "text": "Testing", "start_date": "07-05-2027", "duration": 1, "parent": 4, "progress": 0.75 },
+			{ "id": 7, "text": "Bugfixing", "start_date": "03-05-2027", "duration": 1, "parent": 4, "progress": 0.75 },
+			{ "id": 8, "text": "General QA", "start_date": "05-05-2027", "duration": 2, "parent": 1, "progress": 0.15 },
+			{ "id": 9, "text": "Meta test", "start_date": "12-05-2027", "duration": 7, "progress": 0 },
+			{ "id": 10, "text": "Functional", "start_date": "12-05-2027", "duration": 1, "parent": 9, "progress": 0.75 },
+			{ "id": 11, "text": "UI", "start_date": "14-05-2027", "duration": 1, "parent": 9, "progress": 0 },
+			{ "id": 12, "text": "Feedback", "start_date": "18-05-2027", "duration": 1, "parent": 9, "progress": 0 },
+			{ "id": 13, "text": "RC", "start_date": "20-05-2027", "duration": 1, "progress": 0 },
+			{ "id": 14, "text": "Final milestone", "start_date": "22-05-2027", "duration": 0, "progress": 0.25, "type": 'milestone' }
+		]
+	});
 
 	function filterLogic(task, match) {
 		match = match || false;

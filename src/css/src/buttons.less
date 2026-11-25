@@ -2,9 +2,13 @@
 
 	background: var(--dhx-gantt-btn-background);
 	color: var(--dhx-gantt-btn-color);
+	/* icon glyphs are drawn on a ::before that carries its own `color`, so they
+	   never inherit the button's text color — the icon token has to be remapped
+	   in lockstep with every `color` declaration below */
+	--dhx-gantt-base-colors-icons: var(--dhx-gantt-btn-color);
 	border: 1px solid var(--dhx-gantt-btn-border-color);
 	border-radius: var(--dhx-gantt-border-radius);
-	height: var(--dhx-gantt-control-height);
+	height: var(--dhx-ui-control-height);
 	padding: var(--dhx-gantt-btn-padding, 0 20px);
 	display: flex;
 	justify-content: center;
@@ -26,19 +30,22 @@
 	&:hover {
 		background: var(--dhx-gantt-btn-background-hover);
 		color: var(--dhx-gantt-btn-color-hover);
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-btn-color-hover);
 		border-color: var(--dhx-gantt-btn-border-hover);
 	}
 
 	&:active {
 		background: var(--dhx-gantt-btn-background-active);
 		color: var(--dhx-gantt-btn-color-active);
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-btn-color-active);
 		border-color: var(--dhx-gantt-btn-border-active);
 	}
 
 	&:disabled{
 		background: var(--dhx-gantt-btn-background-disabled);
 		color: var(--dhx-gantt-btn-color-disabled);
-		border-color: var(--dhx-gantt-btn-border-disabled);
+		--dhx-gantt-base-colors-icons: var(--dhx-gantt-btn-color-disabled);
+		border-color: var(--dhx-gantt-btn-border-color-disabled);
 	}
 }
 
@@ -87,46 +94,51 @@
 
 
 	--dhx-gantt-btn-background: transparent;
-	--dhx-gantt-btn-color: var(--dhx-gantt-base-colors-error);
+	--dhx-gantt-btn-color: var(--dhx-gantt-btn-danger-color);
 	--dhx-gantt-btn-border-color: var(--dhx-gantt-base-colors-error);
 
 	--dhx-gantt-btn-background-hover: var(--dhx-gantt-base-colors-error-lighter);
-	--dhx-gantt-btn-color-hover: var(--dhx-gantt-base-colors-error-hover);
+	--dhx-gantt-btn-color-hover: var(--dhx-gantt-btn-danger-color-hover);
 	--dhx-gantt-btn-border-hover: var(--dhx-gantt-base-colors-error-hover);
 
 	--dhx-gantt-btn-background-active: var(--dhx-gantt-base-colors-error-active);
-	--dhx-gantt-btn-color-active: var(--dhx-gantt-base-colors-error-active);
+	/* the active state fills with error-active, so the text has to flip to the
+	   on-fill color - mirrors --dhx-gantt-btn-outline-color-active */
+	--dhx-gantt-btn-color-active: var(--dhx-gantt-base-colors-error-text);
 	--dhx-gantt-btn-border-active: var(--dhx-gantt-base-colors-error-active);
 
 	--dhx-gantt-btn-background-disabled: transparent;
-	--dhx-gantt-btn-color-disabled: var(--dhx-gantt-base-colors-icons);
+	/* --dhx-gantt-btn-color-disabled comes from :root, where it already resolves
+	   to base-colors-icons; restating it here would be circular, since the
+	   :disabled rule in the base mixin remaps that token to this property */
 	--dhx-gantt-btn-border-color-disabled: var(--dhx-gantt-base-colors-icons);
 }
 
 .dhx_gantt_button_danger_link--mixin{
 	--dhx-gantt-icon-size: 18px;
-	padding: 6px 0;
-	--dhx-gantt-base-colors-icons: var(--dhx-gantt-base-colors-error);
+	--dhx-gantt-base-colors-icons: var(--dhx-gantt-btn-danger-color);
 
 	--dhx-gantt-btn-background: transparent;
-	--dhx-gantt-btn-color: var(--dhx-gantt-base-colors-error);
+	--dhx-gantt-btn-color: var(--dhx-gantt-btn-danger-color);
 	--dhx-gantt-btn-border-color: transparent;
 
 	--dhx-gantt-btn-background-hover: transparent;
-	--dhx-gantt-btn-color-hover: var(--dhx-gantt-base-colors-error-hover);
+	--dhx-gantt-btn-color-hover: var(--dhx-gantt-btn-danger-color-hover);
 	--dhx-gantt-btn-border-hover: transparent;
 
 	--dhx-gantt-btn-background-active: transparent;
-	--dhx-gantt-btn-color-active: var(--dhx-gantt-base-colors-error-active);
+	--dhx-gantt-btn-color-active: var(--dhx-gantt-btn-danger-color-active);
 	--dhx-gantt-btn-border-active: transparent;
 
 	--dhx-gantt-btn-background-disabled: transparent;
-	--dhx-gantt-btn-color-disabled: var(--dhx-gantt-base-colors-icons);
+	/* --dhx-gantt-btn-color-disabled comes from :root, where it already resolves
+	   to base-colors-icons; restating it here would be circular, since the
+	   :disabled rule in the base mixin remaps that token to this property */
 	--dhx-gantt-btn-border-color-disabled: transparent;
 }
 
 .dhx_gantt_button_link--mixin {
-	padding: 6px 0;
+	padding: 6px 6px;
 	--dhx-gantt-icon-size: 18px;
 	--dhx-gantt-btn-background: transparent;
 	--dhx-gantt-btn-color: var(--dhx-gantt-base-colors-primary);
@@ -141,7 +153,9 @@
 	--dhx-gantt-btn-border-active: transparent;
 
 	--dhx-gantt-btn-background-disabled: transparent;
-	--dhx-gantt-btn-color-disabled: var(--dhx-gantt-base-colors-icons);
+	/* --dhx-gantt-btn-color-disabled comes from :root, where it already resolves
+	   to base-colors-icons; restating it here would be circular, since the
+	   :disabled rule in the base mixin remaps that token to this property */
 	--dhx-gantt-btn-border-color-disabled: transparent;
 }
 
@@ -165,6 +179,11 @@
 	.dhx_gantt_button_link--mixin();
 }
 
+.dhx_ui_btn,
+.dhx_ui_btn_danger,
+.dhx_ui_btn_outline,
+.dhx_ui_btn_danger_outline,
+.dhx_ui_btn_danger_link,
 .dhx_gantt_btn,
 .dhx_gantt_btn_danger,
 .dhx_gantt_btn_outline,
@@ -187,19 +206,34 @@
 	.dhx_gantt_button_danger--mixin();
 }
 
-.dhx_gantt_btn_outline,
-.dhx_gantt_btn_danger_outline{
+/* Each variant class emitted by the Button control (see VARIANT_CLASSES in
+   sources/core/ui/controls/button.ts) gets its own mixin. The `dhx_ui_btn_*`
+   names below are the ones actually rendered - a `dhx_gantt_button_*` selector
+   here would match nothing. */
+.dhx_ui_btn_outline{
 	.dhx_gantt_button_outline--mixin();
 }
 
-.dhx_gantt_button_danger{
-	.dhx_gantt_button_danger--mixin();
-}
-.dhx_gantt_button_danger_outline{
+.dhx_ui_btn_danger{
 	.dhx_gantt_button_danger--mixin();
 }
 
-.dhx_gantt_button_link,
+.dhx_ui_btn_danger_outline{
+	.dhx_gantt_button_danger_outline--mixin();
+}
+
+.dhx_ui_btn_danger_link{
+	.dhx_gantt_button_danger_link--mixin();
+}
+
+.dhx_gantt_btn_outline{ .dhx_gantt_button_outline--mixin(); }
+.dhx_gantt_btn_danger{ .dhx_gantt_button_danger--mixin(); }
+.dhx_gantt_btn_danger_outline{ .dhx_gantt_button_danger_outline--mixin(); }
+.dhx_gantt_btn_danger_link{ .dhx_gantt_button_danger_link--mixin(); }
+
+/* .dhx_ui_btn_link is wired up in ui_core.less (it needs the ui-core
+   button rules alongside it) - don't add a second rule for it here. */
+
 .gantt_qi_big_icon {
 	.dhx_gantt_button_link--mixin();
 }

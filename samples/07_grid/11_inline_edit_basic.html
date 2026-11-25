@@ -4,7 +4,7 @@
 	<title>Inline editing</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -27,7 +27,7 @@
 	]);
 
 	var textEditor = {type: "text", map_to: "text"};
-	var dateEditor = {type: "date", map_to: "start_date", min: new Date(2023, 0, 1), max: new Date(2024, 0, 1)};
+	var dateEditor = {type: "date", map_to: "start_date", min: new Date(2026, 11, 31), max: new Date(2027, 11, 31)};
 	var durationEditor = {type: "number", map_to: "duration", min:0, max: 100};
 	var priority = {type: "select", map_to: "priority", options:gantt.serverList("priority")};
 

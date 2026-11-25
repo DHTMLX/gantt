@@ -3,11 +3,12 @@
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 	<title>Dynamic scales</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
+	<script src="../common/sample_toolbar.js"></script>
 
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -19,27 +20,8 @@
 </head>
 
 <body>
-<form class="gantt_control">
-	<input type="button" value="Zoom In" onclick="zoomIn()">
-	<input type="button" value="Zoom Out" onclick="zoomOut()">
 
-	<input type="radio" id="scale1" class="gantt_radio" name="scale" value="day">
-	<label for="scale1">Day scale</label>
-
-	<input type="radio" id="scale2" class="gantt_radio" name="scale" value="week">
-	<label for="scale2">Week scale</label>
-
-	<input type="radio" id="scale3" class="gantt_radio" name="scale" value="month">
-	<label for="scale3">Month scale</label>
-
-	<input type="radio" id="scale4" class="gantt_radio" name="scale" value="quarter">
-	<label for="scale4">Quarter scale</label>
-
-	<input type="radio" id="scale5" class="gantt_radio" name="scale" value="year" checked>
-	<label for="scale5">Year scale</label>
-
-</form>
-<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+<div id="gantt_here" style='width:100%; height:100%;'></div>
 
 <script>
 	var zoomConfig = {
@@ -103,25 +85,40 @@
 
 	gantt.ext.zoom.init(zoomConfig);
 	gantt.ext.zoom.setLevel("year");
-	gantt.ext.zoom.attachEvent("onAfterZoom", function(level, config){
-		document.querySelector(".gantt_radio[value='" +config.name+ "']").checked = true;
-	})
 
-	gantt.init("gantt_here", new Date(2025, 8, 1), new Date(2026, 10, 1));
+	gantt.plugins({ toolbar: true });
+
+	gantt.config.toolbar = [
+		{ id: "zoom_in_step", label: "Zoom In" },
+		{ id: "zoom_out_step", label: "Zoom Out" },
+		{
+			id: "scale",
+			comp: "segmented",
+			value: "year",
+			options: [
+				{ key: "day", label: "Day scale" },
+				{ key: "week", label: "Week scale" },
+				{ key: "month", label: "Month scale" },
+				{ key: "quarter", label: "Quarter scale" },
+				{ key: "year", label: "Year scale" }
+			]
+		}
+	];
+	gantt.attachEvent("onToolbarItemClick", function(id) {
+		if (id === "zoom_in_step") gantt.ext.zoom.zoomIn();
+		if (id === "zoom_out_step") gantt.ext.zoom.zoomOut();
+	});
+	gantt.attachEvent("onToolbarItemChange", function(id, value) {
+		if (id === "scale") gantt.ext.zoom.setLevel(value);
+	});
+
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
+	gantt.init("gantt_here", new Date(2026, 7, 31), new Date(2027, 9, 31));
 	gantt.parse(demo_tasks);
 
-	function zoomIn(){
-		gantt.ext.zoom.zoomIn();
-	}
-	function zoomOut(){
-		gantt.ext.zoom.zoomOut()
-	}
+	gantt.ext.zoom.attachEvent("onAfterZoom", function (level, config) {
+		gantt.ext.toolbar.setValue("scale", config.name);
+	});
 
-	var radios = document.getElementsByName("scale");
-	for (var i = 0; i < radios.length; i++) {
-		radios[i].onclick = function (event) {
-			gantt.ext.zoom.setLevel(event.target.value);
-		};
-	}
 </script>
 </body>

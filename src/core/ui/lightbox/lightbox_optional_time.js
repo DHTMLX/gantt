@@ -69,5 +69,7 @@ export default function(gantt) {
 
 	gantt.form_blocks.duration_optional = gantt._extend_to_optional(gantt.form_blocks.duration);
 	gantt.form_blocks.time_optional = gantt._extend_to_optional(gantt.form_blocks.time);
+	gantt.form_blocks.duration_select_optional = gantt._extend_to_optional(gantt.form_blocks.duration_select);
+	gantt.form_blocks.time_select_optional = gantt._extend_to_optional(gantt.form_blocks.time_select);
 
 };

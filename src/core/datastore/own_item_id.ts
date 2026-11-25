@@ -1,4 +1,4 @@
-import { DatastoreMethods } from "../common/gantt_types";
+import type { DatastoreMethods } from "../../types/gantt_types";
 import { checkZeroId } from "../../utils/helpers";
 
 /**

@@ -4,9 +4,10 @@
 	<title>Define displayed date range</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 
-	<script src="../common/testdata.js"></script>
+	<script src="../common/testdata_public.js"></script>
+	<script src="../common/sample_toolbar.js"></script>
 	<style>
 		html, body {
 			height: 100%;
@@ -17,40 +18,16 @@
 		#gantt_here {
 			width: 100%;
 			height: 800px;
-			height: calc(100vh - 52px);
+			height: 100%;
 		}
 
-		.gantt_control{
-			background-color: #e5e0cd;
-		}
 
 	</style>
 </head>
 <body>
-
-<div class="gantt_control">
-	<label>Displayed date range:</label>
-	<input class="start_date" type="date" value="2026-08-01" onchange="changeDates()">
-	&ndash;
-	<input class="end_date" type="date" value="2026-08-20" onchange="changeDates()">
-</div>
 <div id="gantt_here"></div>
 <script>
-	function changeDates() {
-		const startDateEl = document.querySelector(".start_date");
-		const endDateEl = document.querySelector(".end_date");
-		const startDate = new Date(startDateEl.value);
-		const endDate = new Date(endDateEl.value);
-
-		if (!+startDate || !+endDate) {
-			return;
-		}
-
-		gantt.config.start_date = startDate;
-		gantt.config.end_date = endDate;
-		gantt.render();
-	}
-
+	gantt.plugins({ toolbar: true });
 	gantt.setSkin("meadow");
 	gantt.config.scales = [
 		{unit: "month", step: 1, format: "%M"},
@@ -58,9 +35,33 @@
 		{unit: "day", format: "%d %M"}
 	];
 	gantt.config.scale_height = 3 * 28;
-	gantt.config.start_date = new Date(2026, 7, 1);
-	gantt.config.end_date = new Date(2026, 8, 20);
-
+	gantt.config.start_date = new Date(2027, 6, 31);
+	gantt.config.end_date = new Date(2027, 8, 19);
+	const range = {
+		start: new Date(2027, 6, 31),
+		end: new Date(2027, 7, 19)
+	};
+	gantt.config.toolbar = [
+		{ comp: "label", label: "Displayed date range:" },
+		{
+			id: "start", comp: "datepicker", width: 132, ariaLabel: "Start date", value: range.start,
+			config: { format: "%Y-%m-%d", placeholder: "Start date" }
+		},
+		{
+			id: "end", comp: "datepicker", width: 132, ariaLabel: "End date", value: range.end,
+			config: { format: "%Y-%m-%d", placeholder: "End date" }
+		}
+	];
+	gantt.attachEvent("onToolbarItemChange", function(id, value) {
+		range[id] = value;
+		if (!range.start || !range.end || !(range.end > range.start)) {
+			return;
+		}
+		gantt.config.start_date = new Date(range.start);
+		gantt.config.end_date = new Date(range.end);
+		gantt.render();
+	});
+	gantt.config.layout = withSampleToolbar(gantt.config.layout);
 	gantt.init("gantt_here");
 	gantt.parse(demo_tasks);
 </script>

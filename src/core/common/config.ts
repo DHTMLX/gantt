@@ -1,4 +1,5 @@
 import type { Scale, TimeUnit } from "./scale_types";
+import type { GanttConfigOptions } from "../../types/gantt_types";
 
 type Align = "left" | "center" | "right";
 type SectionType = "textarea"
@@ -157,6 +158,14 @@ interface ILayout {
 // "auto" is kept for backward compatibility; it no longer affects date formatting.
 type TCsp = boolean | "auto";
 
+export interface IAccessibilityConfig {
+	aria: boolean;
+	announcements: boolean;
+	grid_semantics: boolean;
+	colorblind_friendly?: boolean;
+	increase_contrast?: boolean;
+}
+
 interface IResourceConfig {
 	dataprocessor_assignments?: boolean;
 	dataprocessor_resources?: boolean;
@@ -168,6 +177,22 @@ interface IResourceConfig {
 	};
 	lightbox_resources?: (resources: any[]) => any[];
 
+}
+
+/**
+ * Effort-driven tasks config
+ */
+interface IEffortConfig {
+	/** master switch; `false` -> feature inert. Default `false`. */
+	enabled: boolean;
+	/** which axis is held constant. Default `"fixed_duration"`. */
+	mode: "fixed_duration" | "fixed_units" | "fixed_work";
+	/** keep Work constant when assignments change. Default `false`. */
+	effort_driven: boolean;
+	/** unit of `task.work` and of assignment `value` (per day). Default `"hour"`. */
+	work_unit: TimeUnit;
+	/** `work_unit` per full day. Default `8`. */
+	hours_per_day: number;
 }
 
 export interface IGanttConfig {
@@ -190,6 +215,7 @@ export interface IGanttConfig {
 	work_time: boolean;
 	correct_work_time: boolean;
 	deadlines: boolean;
+	leveling_delays: boolean;
 	skip_off_time: boolean;
 	cascade_delete: boolean;
 	autosize: boolean | string;
@@ -325,7 +351,8 @@ export interface IGanttConfig {
 	optimize_render: boolean;
 	prevent_default_scroll: boolean;
 	show_errors: boolean;
-	wai_aria_attributes: boolean;
+	wai_aria_attributes?: boolean;
+	accessibility: IAccessibilityConfig;
 	smart_scales: boolean;
 	rtl: boolean;
 	placeholder_task: boolean | object;
@@ -342,25 +369,57 @@ export interface IGanttConfig {
 	 */
 	csp: TCsp;
 
-	resources?: IResourceConfig;
+	resources?: false | IResourceConfig;
 
 	auto_scheduling: object;
+
+	effort: IEffortConfig;
+
+	// TODO : consolidate IGanttConfig and GanttConfigOptions types
+	auto_scheduling_compatibility?: boolean;
+	baselines: any;
+	click_drag: boolean | undefined;
+	constraint_types: any;
+	container_resize_method: any;
+	editor_types : any;
+	end_date: any;
 }
 
+/** new objects of the default lightbox sections of each task type */
+export function defaultLightboxSections(): GanttConfigOptions["lightbox"] {
+	return {
+		sections: [
+			{ name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+			{ name: "time", type: "duration", map_to: "auto" }
+		],
+		project_sections: [
+			{ name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+			{ name: "type", type: "typeselect", map_to: "type" },
+			{ name: "time", type: "duration", readonly: true, map_to: "auto" }
+		],
+		milestone_sections: [
+			{ name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+			{ name: "type", type: "typeselect", map_to: "type" },
+			{ name: "time", type: "duration", single_date: true, map_to: "auto" }
+		]
+	};
+}
+
+// TODO : consolidate IGanttConfig and GanttConfigOptions types
 export default () => {
-	const result: IGanttConfig = {
+	const result: GanttConfigOptions = {
 		layout: {
 			css: "gantt_container",
 			rows: [
 				{
 					cols: [
-						{view: "grid", scrollX: "scrollHor", scrollY: "scrollVer"},
-						{resizer: true, width: 1},
-						{view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
-						{view: "scrollbar", id: "scrollVer"}
+						{ view: "grid", scrollX: "scrollHor", scrollY: "scrollVer" },
+						{ resizer: true, width: 1 },
+						{ view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer" },
+						{ view: "scrollbar", id: "scrollVer" }
 					]
 				},
-				{view: "scrollbar", id: "scrollHor", height: 20}
+				{ view: "scrollbar", id: "scrollHor", height: 20 }
 			]
 		},
 		links: {
@@ -412,6 +471,7 @@ export default () => {
 		readonly: false,
 		container_resize_timeout: 20,
 		deadlines: true,
+		leveling_delays: false,
 
 		/*grid */
 		date_grid: "%Y-%m-%d",
@@ -429,19 +489,18 @@ export default () => {
 		},
 		round_dnd_dates: true,
 		link_wrapper_width: 20,
-		link_arrow_size:12,
+		link_arrow_size: 12,
 		root_id: 0,
 
 		autofit: false, // grid column automatic fit grid_width config
 		columns: [
-			{name: "text", tree: true, width: "*", resize: true},
-			{name: "start_date", align: "center", resize: true},
-			{name: "duration", align: "center"},
-			{name: "add", width: 44}
+			{ name: "text", tree: true, width: "*", resize: true },
+			{ name: "start_date", align: "center", resize: true },
+			{ name: "duration", align: "center" },
+			{ name: "add", width: 44 }
 		],
 
 		/*scale*/
-
 		scale_offset_minimal: true,
 		inherit_scale_class: false,
 
@@ -472,22 +531,7 @@ export default () => {
 		buttons_right: [
 			"gantt_delete_btn"
 		],
-		lightbox: {
-			sections: [
-				{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-				{name: "time", type: "duration", map_to: "auto"}
-			],
-			project_sections: [
-				{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-				{name: "type", type: "typeselect", map_to: "type"},
-				{name: "time", type: "duration", readonly: true, map_to: "auto"}
-			],
-			milestone_sections: [
-				{name: "description", height: 70, map_to: "text", type: "textarea", focus: true},
-				{name: "type", type: "typeselect", map_to: "type"},
-				{name: "time", type: "duration", single_date: true, map_to: "auto"}
-			]
-		},
+		lightbox: defaultLightboxSections(),
 		drag_lightbox: true,
 		sort: false,
 		details_on_create: true,
@@ -499,9 +543,9 @@ export default () => {
 		order_branch_free: false,
 
 		// task height is deprecated, use 'bar_height' instead
-		task_height: undefined,// number px of 'full' for row height
+		task_height: undefined, // number px of 'full' for row height
 		bar_height: "full",
-		bar_height_padding:9,
+		bar_height_padding: 9,
 		min_column_width: 70,
 
 		// min width for grid column (when resizing)
@@ -540,9 +584,16 @@ export default () => {
 		optimize_render: true,
 		prevent_default_scroll: false,
 		show_errors: true,
-		wai_aria_attributes: true,
+		wai_aria_attributes: undefined,
+		accessibility: {
+			aria: true,
+			announcements: true,
+			grid_semantics: true,
+			colorblind_friendly: false,
+			increase_contrast: false
+		},
 		smart_scales: true,
-		rtl:false,
+		rtl: false,
 		placeholder_task: false,
 		horizontal_scroll_key: "shiftKey",
 		drag_timeline: {
@@ -552,7 +603,77 @@ export default () => {
 		},
 		drag_multiple: true,
 		csp: "auto",
-		auto_scheduling: {}
+		auto_scheduling: {},
+		// unset on purpose: runtime distinguishes "not configured" from an explicit value (GS-2083)
+		auto_scheduling_compatibility: undefined,
+		effort: {
+			enabled: false,
+			mode: "fixed_duration",
+			effort_driven: false,
+			work_unit: "hour",
+			hours_per_day: 8
+		},
+
+		baselines: false,
+		click_drag: undefined,
+		constraint_types: undefined,
+		container_resize_method: undefined,
+		editor_types: {
+			text: undefined,
+			number: undefined,
+			duration: undefined,
+			date: undefined,
+			select: undefined,
+			predecessor: undefined
+		},
+		end_date: undefined,
+		external_render: undefined,
+		grid_width: undefined,
+		highlight_critical_path: undefined,
+		inline_editors_date_processing: undefined,
+		inline_editors_multiselect_open: undefined,
+		keyboard_navigation: undefined,
+		keyboard_navigation_cells: undefined,
+		link_line_width: undefined,
+		link_radius: undefined,
+		multiselect: undefined,
+		multiselect_one_level: undefined,
+		open_split_tasks: undefined,
+		process_resource_assignments: true,
+		project_end: undefined,
+		project_start: undefined,
+		quick_info_detached: undefined,
+		quickinfo_buttons: undefined,
+		redo: undefined,
+		reorder_grid_columns: undefined,
+		resource_assignment_store: "resourceAssignments",
+		resource_attribute: undefined,
+		resource_property: "owner_id",
+		resource_render_empty_cells: false,
+		resource_store: "resource",
+		resources: false,
+		scale_height: undefined,
+		schedule_from_end: undefined,
+		scroll_size: 15,
+		show_empty_state: false,
+		show_markers: undefined,
+		show_quick_info: undefined,
+		start_date: undefined,
+		timeline_placeholder: false,
+		tooltip_hide_timeout: undefined,
+		tooltip_offset_x: undefined,
+		tooltip_offset_y: undefined,
+		tooltip_timeout: undefined,
+		touch: true,
+		touch_drag: 75,
+		touch_feedback: true,
+		touch_feedback_duration: 1,
+		undo: undefined,
+		undo_actions: undefined,
+		undo_steps: undefined,
+		undo_types: undefined,
+		wheel_scroll_sensitivity: undefined,
+		wide_form: false
 	};
 	return result;
 };

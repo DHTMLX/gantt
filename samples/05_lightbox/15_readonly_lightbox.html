@@ -5,7 +5,7 @@
 	<title>Readonly lightbox</title>
 	<script src="../../codebase/dhtmlxgantt.js"></script>
 	<link rel="stylesheet" href="../../codebase/dhtmlxgantt.css">
-	<link rel="stylesheet" href="../common/controls_styles.css">
+	<link rel="stylesheet" href="../common/sample_toolbar.css">
 
 	<style>
 		html,
@@ -24,16 +24,23 @@
 		}
 
 
+		body {
+			display: flex;
+			flex-direction: column;
+		}
+
+		#gantt_here {
+			flex: 1;
+			min-height: 0;
+		}
 	</style>
 </head>
 
 <body>
 
-	<div class="gantt_control">
-		<input value="Toggle Readonly Mode" type="button" onclick='toggleReadonly()'>
-	</div>
+	<div id="readonly_toolbar" class="sample-toolbar-host"></div>
 
-	<div id="gantt_here" style='width:100%; height:calc(100vh - 52px);'></div>
+	<div id="gantt_here"></div>
 	<script>
 
 		function toggleReadonly() {
@@ -44,9 +51,9 @@
 
 		var tasks = {
 			"data": [
-				{ "id": "1", "text": "Ordinary task #1", "start_date": "05-04-2025", "duration": 3, "progress": 0.4, "open": true },
-				{ "id": "2", "text": "Editable task #2", "editable": true, "start_date": "07-04-2025", "duration": 2, "progress": 0.6 },
-				{ "id": "3", "text": "Readonly task #3", "readonly": true, "start_date": "04-04-2025", "duration": 2, "progress": 0.6 },
+				{ "id": "1", "text": "Ordinary task #1", "start_date": "03-04-2027", "duration": 3, "progress": 0.4, "open": true },
+				{ "id": "2", "text": "Editable task #2", "editable": true, "start_date": "05-04-2027", "duration": 2, "progress": 0.6 },
+				{ "id": "3", "text": "Readonly task #3", "readonly": true, "start_date": "02-04-2027", "duration": 2, "progress": 0.6 },
 			],
 			"links": [
 			]
@@ -89,6 +96,15 @@
 
 		gantt.init("gantt_here");
 		gantt.parse(tasks);
+
+		const toolbar = gantt.ext.ui.createToolbar({
+			items: [{ id: "readonly_mode", label: "Toggle Readonly Mode" }],
+			onItemClick: function (id) {
+				if (id === "readonly_mode") { toggleReadonly(); }
+			}
+		});
+		toolbar.mount(document.getElementById("readonly_toolbar"));
+		gantt.message.position = "bottom";
 
 		gantt.message({
 			text: `

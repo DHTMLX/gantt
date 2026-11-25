@@ -2,7 +2,7 @@ var taskData = {
     "data": [
       {
         "id": "512",
-        "start_date": "2024-09-23 00:00:00",
+        "start_date": "2027-09-27 00:00:00",
         "duration": 59,
         "text": "House Construction",
         "progress": "0",
@@ -11,12 +11,12 @@ var taskData = {
         "level": "0",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-21 00:00:00",
+        "end_date": "2027-11-25 00:00:00",
         "owner_id": []
       },
       {
         "id": "513",
-        "start_date": "2024-09-23 00:00:00",
+        "start_date": "2027-09-27 00:00:00",
         "duration": 5,
         "text": "Architectural design",
         "progress": "0",
@@ -25,12 +25,12 @@ var taskData = {
         "level": "1",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-09-28 00:00:00",
+        "end_date": "2027-10-02 00:00:00",
         "owner_id": []
       },
       {
         "id": "514",
-        "start_date": "2024-09-23 00:00:00",
+        "start_date": "2027-09-27 00:00:00",
         "duration": 3,
         "text": "Create a draft of architecture",
         "progress": "0",
@@ -39,12 +39,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-09-26 00:00:00",
+        "end_date": "2027-09-30 00:00:00",
         "owner_id": []
       },
       {
         "id": "515",
-        "start_date": "2024-09-24 00:00:00",
+        "start_date": "2027-09-28 00:00:00",
         "duration": 2,
         "text": "Prepare construction documents",
         "progress": "0",
@@ -53,12 +53,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-09-26 00:00:00",
+        "end_date": "2027-09-30 00:00:00",
         "owner_id": [7, 9]
       },
       {
         "id": "516",
-        "start_date": "2024-09-26 00:00:00",
+        "start_date": "2027-09-30 00:00:00",
         "duration": 1,
         "text": "Agreement to architectural plan",
         "progress": "0",
@@ -67,12 +67,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-09-27 00:00:00",
+        "end_date": "2027-10-01 00:00:00",
         "owner_id": [7]
       },
       {
         "id": "517",
-        "start_date": "2024-09-27 00:00:00",
+        "start_date": "2027-10-01 00:00:00",
         "duration": 1,
         "text": "Agreement with client",
         "progress": "0",
@@ -81,12 +81,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-09-28 00:00:00",
+        "end_date": "2027-10-02 00:00:00",
         "owner_id": [7]
       },
       {
         "id": "518",
-        "start_date": "2024-09-28 00:00:00",
+        "start_date": "2027-10-02 00:00:00",
         "duration": 39,
         "text": "Construction Phase",
         "progress": "0",
@@ -95,12 +95,12 @@ var taskData = {
         "level": "1",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-06 00:00:00",
+        "end_date": "2027-11-10 00:00:00",
         "owner_id": []
       },
       {
         "id": "519",
-        "start_date": "2024-09-28 00:00:00",
+        "start_date": "2027-10-02 00:00:00",
         "duration": 7,
         "text": "Foundation",
         "progress": "0",
@@ -109,12 +109,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-05 00:00:00",
+        "end_date": "2027-10-09 00:00:00",
         "owner_id": [8,9]
       },
       {
         "id": "520",
-        "start_date": "2024-09-28 00:00:00",
+        "start_date": "2027-10-02 00:00:00",
         "duration": 4,
         "text": "Excavation",
         "progress": "0",
@@ -123,12 +123,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-02 00:00:00",
+        "end_date": "2027-10-06 00:00:00",
         "owner_id": [8,9]
       },
       {
         "id": "521",
-        "start_date": "2024-10-02 00:00:00",
+        "start_date": "2027-10-06 00:00:00",
         "duration": 3,
         "text": "Pour concrete",
         "progress": "0",
@@ -137,12 +137,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-05 00:00:00",
+        "end_date": "2027-10-09 00:00:00",
         "owner_id": [8]
       },
       {
         "id": "522",
-        "start_date": "2024-10-05 00:00:00",
+        "start_date": "2027-10-09 00:00:00",
         "duration": 7,
         "text": "Ground floor",
         "progress": "0",
@@ -151,12 +151,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-12 00:00:00",
+        "end_date": "2027-10-16 00:00:00",
         "owner_id": []
       },
       {
         "id": "523",
-        "start_date": "2024-10-05 00:00:00",
+        "start_date": "2027-10-09 00:00:00",
         "duration": 3,
         "text": "Walls to 1st Floor",
         "progress": "0",
@@ -165,12 +165,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-08 00:00:00",
+        "end_date": "2027-10-12 00:00:00",
         "owner_id": [8]
       },
       {
         "id": "524",
-        "start_date": "2024-10-08 00:00:00",
+        "start_date": "2027-10-12 00:00:00",
         "duration": 4,
         "text": "Roof structure",
         "progress": "0",
@@ -179,12 +179,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-12 00:00:00",
+        "end_date": "2027-10-16 00:00:00",
         "owner_id": [8]
       },
       {
         "id": "525",
-        "start_date": "2024-10-12 00:00:00",
+        "start_date": "2027-10-16 00:00:00",
         "duration": 8,
         "text": "1st Floor",
         "progress": "0",
@@ -193,12 +193,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-20 00:00:00",
+        "end_date": "2027-10-24 00:00:00",
         "owner_id": []
       },
       {
         "id": "526",
-        "start_date": "2024-10-12 00:00:00",
+        "start_date": "2027-10-16 00:00:00",
         "duration": 4,
         "text": "Walls to Terrace",
         "progress": "0",
@@ -207,12 +207,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-16 00:00:00",
+        "end_date": "2027-10-20 00:00:00",
         "owner_id": [8]
       },
       {
         "id": "527",
-        "start_date": "2024-10-16 00:00:00",
+        "start_date": "2027-10-20 00:00:00",
         "duration": 4,
         "text": "Roof Structure",
         "progress": "0",
@@ -221,12 +221,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-20 00:00:00",
+        "end_date": "2027-10-24 00:00:00",
         "owner_id": [8]
       },
       {
         "id": "528",
-        "start_date": "2024-10-20 00:00:00",
+        "start_date": "2027-10-24 00:00:00",
         "duration": 17,
         "text": "General works",
         "progress": "0",
@@ -235,12 +235,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-06 00:00:00",
+        "end_date": "2027-11-10 00:00:00",
         "owner_id": []
       },
       {
         "id": "529",
-        "start_date": "2024-10-20 00:00:00",
+        "start_date": "2027-10-24 00:00:00",
         "duration": 1,
         "text": " Installation of air conditioning systems",
         "progress": "0",
@@ -249,12 +249,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-21 00:00:00",
+        "end_date": "2027-10-25 00:00:00",
         "owner_id": [13]
       },
       {
         "id": "530",
-        "start_date": "2024-10-21 00:00:00",
+        "start_date": "2027-10-25 00:00:00",
         "duration": 2,
         "text": "Installation of heating systems",
         "progress": "0",
@@ -263,12 +263,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-23 00:00:00",
+        "end_date": "2027-10-27 00:00:00",
         "owner_id": [13]
       },
       {
         "id": "531",
-        "start_date": "2024-10-23 00:00:00",
+        "start_date": "2027-10-27 00:00:00",
         "duration": 7,
         "text": "Electricity installation",
         "progress": "0",
@@ -277,12 +277,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-10-30 00:00:00",
+        "end_date": "2027-11-03 00:00:00",
         "owner_id": [12]
       },
       {
         "id": "532",
-        "start_date": "2024-10-30 00:00:00",
+        "start_date": "2027-11-03 00:00:00",
         "duration": 7,
         "text": "Waterworks and Plumbing",
         "progress": "0",
@@ -291,12 +291,12 @@ var taskData = {
         "level": "3",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-06 00:00:00",
+        "end_date": "2027-11-10 00:00:00",
         "owner_id": [11]
       },
       {
         "id": "533",
-        "start_date": "2024-11-06 00:00:00",
+        "start_date": "2027-11-10 00:00:00",
         "duration": 15,
         "text": "Decoration Phase",
         "progress": "0",
@@ -305,12 +305,12 @@ var taskData = {
         "level": "1",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-21 00:00:00",
+        "end_date": "2027-11-25 00:00:00",
         "owner_id": []
       },
       {
         "id": "534",
-        "start_date": "2024-11-06 00:00:00",
+        "start_date": "2027-11-10 00:00:00",
         "duration": 4,
         "text": "Walls",
         "progress": "0",
@@ -319,12 +319,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-10 00:00:00",
+        "end_date": "2027-11-14 00:00:00",
         "owner_id": [10]
       },
       {
         "id": "535",
-        "start_date": "2024-11-09 00:00:00",
+        "start_date": "2027-11-13 00:00:00",
         "duration": 3,
         "text": "Ceilings",
         "progress": "0",
@@ -333,12 +333,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-12 00:00:00",
+        "end_date": "2027-11-16 00:00:00",
         "owner_id": [10]
       },
       {
         "id": "536",
-        "start_date": "2024-11-11 00:00:00",
+        "start_date": "2027-11-15 00:00:00",
         "duration": 3,
         "text": "Floorings",
         "progress": "0",
@@ -347,12 +347,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-14 00:00:00",
+        "end_date": "2027-11-18 00:00:00",
         "owner_id": [13]
       },
       {
         "id": "537",
-        "start_date": "2024-11-14 00:00:00",
+        "start_date": "2027-11-18 00:00:00",
         "duration": 3,
         "text": "Furniture ",
         "progress": "0",
@@ -361,12 +361,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-17 00:00:00",
+        "end_date": "2027-11-21 00:00:00",
         "owner_id": [13]
       },
       {
         "id": "538",
-        "start_date": "2024-11-17 00:00:00",
+        "start_date": "2027-11-21 00:00:00",
         "duration": 4,
         "text": "Final Touches",
         "progress": "0",
@@ -375,12 +375,12 @@ var taskData = {
         "level": "2",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-21 00:00:00",
+        "end_date": "2027-11-25 00:00:00",
         "owner_id": [13]
       },
       {
         "id": "539",
-        "start_date": "2024-11-21 00:00:00",
+        "start_date": "2027-11-25 00:00:00",
         "duration": 0,
         "text": "Project submission",
         "progress": "0",
@@ -389,7 +389,7 @@ var taskData = {
         "level": "1",
         "project_id": "51",
         "open": true,
-        "end_date": "2024-11-21 00:00:00",
+        "end_date": "2027-11-25 00:00:00",
         "owner_id": []
       }
     ],

@@ -70,11 +70,31 @@ var initLinksDND = function(timeline, gantt) {
 
 	}, this));
 
+	// While a link is dragged, every task's link control is a drop target (see task.less).
+	// Set on mousedown: the first drag mousemove is hit-tested before onAfterDragStart runs.
+	const link_drag_active_css = "gantt_link_drag_active";
+	function setLinkDragActive(active){
+		if (timeline.$task_bars) {
+			timeline.$task_bars.classList.toggle(link_drag_active_css, active);
+		}
+	}
+
+	timeline.$task_bars.addEventListener("mousedown", function(e){
+		if (domHelpers.locateClassName(e, link_edge_marker)) {
+			setLinkDragActive(true);
+			document.addEventListener("mouseup", function(){
+				setLinkDragActive(false);
+			}, { once: true });
+		}
+	});
+
 	dnd.attachEvent("onAfterDragStart", gantt.bind(function(obj,e) {
+		setLinkDragActive(true);
 		if(gantt.config.touch) {
 			gantt.refreshData();
 		}
 		updateMarkedHtml(dnd.config.marker);
+		gantt.callEvent("onLinkDragStart", [_link_source_task, !!_link_source_task_start]);
 	}, this));
 
 	function getVieportSize(){
@@ -192,12 +212,23 @@ var initLinksDND = function(timeline, gantt) {
 
 		showDirectingLine(this._dir_start.x, this._dir_start.y, this._dir_end.x, this._dir_end.y);
 
+		// Notification hook (GS-3484): lets the app react to the link being
+		// drawn — e.g. preview the would-be schedule via
+		// gantt.ext.autoScheduling.preview. Same payload as
+		// gantt.getState("linksDnD"); consumers throttle themselves.
+		gantt.callEvent("onLinkDragMove", [getDndState()]);
+
 		return true;
 	}, this));
 
 
 	dnd.attachEvent("onDragEnd", gantt.bind(function() {
+		setLinkDragActive(false);
 		var drag = getDndState();
+
+		// Fires whether or not a link will be created — the cleanup signal
+		// `onLinkCreated` can't provide (it only fires on a valid drop).
+		gantt.callEvent("onLinkDragEnd", [drag]);
 
 		if(drag.link_source_id && drag.link_target_id && drag.link_source_id != drag.link_target_id){
 			var type = gantt._get_link_type(drag.link_from_start, drag.link_to_start);

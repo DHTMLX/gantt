@@ -19,7 +19,7 @@
 */
 
 import dateParsers from "./date_parsers";
-import type { DateHelpers } from "./gantt_types";
+import type { DateHelpers } from "./../../types/gantt_types";
 
 export default function(gantt: any): DateHelpers {
 	const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/;

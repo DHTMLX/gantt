@@ -9,12 +9,22 @@
 	--dhx-gantt-base-colors-border-light: #4B4B4B;
 
 	--dhx-gantt-navline-font-color: var(--dhx-gantt-base-colors-text-base);
-	--dhx-gantt-base-colors-primary: #3B72F8;
-	--dhx-gantt-base-colors-error: #EB284F;
+	--dhx-gantt-base-colors-primary: #4A7FFB;
+	--dhx-gantt-base-colors-error: #C41E3A;
+	--dhx-gantt-error-text-color: #F05673;
+	--dhx-gantt-btn-danger-color-hover: color-mix(in srgb, #F05673 85%, #FFFFFF);
+	--dhx-gantt-btn-danger-color-active: color-mix(in srgb, #F05673 70%, #FFFFFF);
+
+	--dhx-gantt-task-blue: #3763D6;
+	--dhx-gantt-task-green: #127A48;
 
 	--dhx-gantt-base-colors-select: #2A2A2A;
 	--dhx-gantt-base-colors-hover-color: #2A2A2A;
 	--dhx-gantt-base-colors-icons: #AAAAAA;
+	/* this theme reads well enough that icons and neutral chrome can share a
+	   value; the split only exists to keep the light themes' links from being
+	   dragged along when the icon color is darkened for contrast */
+	--dhx-gantt-base-colors-neutral: var(--dhx-gantt-base-colors-icons);
 
 	--dhx-gantt-scale-color: var(--dhx-gantt-base-colors-text-light);
 
@@ -24,6 +34,12 @@
 	--dhx-gantt-popup-border: 1px solid #4B4B4B;
 
 	--dhx-gantt-btn-font-weight: 600;
+	--dhx-gantt-btn-background: var(--dhx-gantt-task-blue);
+	--dhx-gantt-btn-border-color: var(--dhx-gantt-task-blue);
+	--dhx-gantt-btn-background-hover: color-mix(in hsl increasing hue, var(--dhx-gantt-task-blue) 100%, #000000 6%);
+	--dhx-gantt-btn-border-hover: var(--dhx-gantt-btn-background-hover);
+	--dhx-gantt-btn-background-active: color-mix(in hsl increasing hue, var(--dhx-gantt-task-blue) 100%, #000000 16.6%);
+	--dhx-gantt-btn-border-active: var(--dhx-gantt-btn-background-active);
 	--dhx-gantt-undo-delete-background: var(--dhx-gantt-popup-background);
 
 	--dhx-gantt-link-handle-border: var(--dhx-gantt-base-colors-border);

@@ -1,37 +1,73 @@
 import TemplateControlConstructor from "./controls/template_control";
 import TextareaControlConstructor from "./controls/textarea_control";
-import TimeControlConstructor from "./controls/time_control";
-import SelectControlConstructor from "./controls/select_control";
+import timeControlFactory from "./controls/time_control";
+import timeSelectControlFactory from "./controls/time_select_control";
+import selectControlFactory from "./controls/select_control";
 import CheckboxControlConstructor from "./controls/checkbox_control";
 import RadioControlConstructor from "./controls/radio_control";
-import DurationControlConstructor from "./controls/duration_control";
-import ParentControlConstructor from "./controls/parent_control";
-import ResourcesControlConstructor from "./controls/resources_control";
-import ConstraintControlConstructor from "./controls/constraint_control";
+import durationControlFactory from "./controls/duration_control";
+import durationSelectControlFactory from "./controls/duration_select_control";
+import parentControlFactory from "./controls/parent_control";
+import resourcesControlFactory from "./controls/resources_control";
+import constraintControlFactory from "./controls/constraint_control";
 import TypeselectControlConstructor from "./controls/typeselect_control";
-import BaselineControlConstructor from "./controls/baseline_control";
-import NewResourcesControlConstructor from "./controls/resource_selector_control";
+import baselineControlFactory from "./controls/baseline_control";
+import resourceSelectorControlFactory from "./controls/resource_selector_control";
+import comboControlFactory from "./controls/combo_control";
+import datepickerControlFactory from "./controls/datepicker_control";
+import stepperControlFactory from "./controls/stepper_control";
+import textControlFactory from "./controls/text_control";
+import switchControlFactory from "./controls/switch_control";
+import progressControlFactory from "./controls/progress_control";
+import calendarControlFactory from "./controls/calendar_control";
 
 import * as domHelpers from "../utils/dom_helpers";
 import * as helpers from "../../../utils/helpers";
-	
+import { getGanttUiKit } from "../gantt_ui_kit";
+import { defaultLightboxSections } from "../../common/config";
+
 
 export default function (gantt) {
+
+	/*
+	 * Lightbox shell — ui-core migration Step 4
+	 * (docs/internal/ui-core/03-migration-status.md): the cover, centering,
+	 * show/hide lifecycle and drag_lightbox ride on the ModalPopup primitive,
+	 * which ADOPTS the legacy-built gantt_cal_light element and nests it
+	 * inside the backdrop, preserving the `.gantt_cal_cover > .gantt_cal_light`
+	 * DOM contract. The section/control system, the save/cancel keyboard
+	 * handling on the box (edit_save/edit_cancel are button semantics, not
+	 * shell dismissal) and all lightbox events are untouched. A legacy
+	 * cover fallback remains in showCover/hideCover for custom lightboxes
+	 * (gantt._custom_lightbox) that were never built by getLightbox.
+	 */
+	function createLightboxPopup(box) {
+		var config = {
+			node: box,
+			container: function() { return gantt._lightbox_root || gantt.$root; },
+			position: {
+				type: "center",
+				boundary: function() { return gantt._lightbox_root || gantt.$root; }
+			},
+			// ESC = edit_cancel semantics, handled by the box's own keydown
+			dismiss: { escape: false, outsideClick: false },
+			// sections own the initial focus (section.focus flag)
+			autoFocus: false,
+			backdropClassName: "gantt_cal_cover",
+			nestInBackdrop: true,
+			cssPosition: "absolute",
+			dragHandle: gantt.config.drag_lightbox ? box.firstChild : undefined
+		};
+		return getGanttUiKit(gantt).createModal(config);
+	}
 
 
 	var TemplateControl = TemplateControlConstructor(gantt);
 	var TextareaControl = TextareaControlConstructor(gantt);
-	var TimeControl = TimeControlConstructor(gantt);
-	var SelectControl = SelectControlConstructor(gantt);
 	var CheckboxControl = CheckboxControlConstructor(gantt);
 	var RadioControl = RadioControlConstructor(gantt);
-	var DurationControl = DurationControlConstructor(gantt);
-	var ParentControl = ParentControlConstructor(gantt);
-	var ResourcesControl = ResourcesControlConstructor(gantt);
-	var ConstraintControl = ConstraintControlConstructor(gantt);
+	var ParentControl = parentControlFactory(gantt);
 	var TypeselectControl = TypeselectControlConstructor(gantt);
-	var BaselineControl = BaselineControlConstructor(gantt);
-	var NewResourcesControl = NewResourcesControlConstructor(gantt);
 
 	gantt._lightbox_methods = {};
 	gantt._lightbox_template = "<div class='gantt_cal_ltitle'><span class='gantt_mark'>&nbsp;</span><span class='gantt_time'></span><span class='gantt_title'></span></div><div class='gantt_cal_larea'></div>";
@@ -132,6 +168,46 @@ export default function (gantt) {
 	gantt.getLightboxType = function () {
 		return this.getTaskType(this._lightbox_type);
 	};
+
+	// how the advanced task form (the task_form plugin) stands in this instance
+	function taskFormState() {
+		const extensions = gantt.$services.getService("extensionState");
+		if (!extensions || !extensions.isAvailable("task_form")) {
+			return "absent";
+		}
+		return extensions.isActive("task_form") ? "active" : "inactive";
+	}
+
+	// what the app has to do to get the advanced task form; the classic lightbox renders
+	// with the plugin active only when the app turned the form off
+	function taskFormAdvice() {
+		const lightbox = gantt.config.lightbox;
+		const turnedOff = !!lightbox && lightbox.advanced === false;
+		switch (taskFormState()) {
+			case "absent":
+				return ", which this build of Gantt does not include";
+			case "active":
+				return ": remove gantt.config.lightbox.advanced = false";
+			default:
+				return turnedOff
+					? ": call gantt.plugins({ task_form: true }) and remove gantt.config.lightbox.advanced = false"
+					: ": call gantt.plugins({ task_form: true })";
+		}
+	}
+
+	// `advanced: true` does nothing without the plugin. Silent when the build has no plugin,
+	// so that one app config runs on the free and the paid builds.
+	function warnAboutInactiveTaskForm() {
+		const lightbox = gantt.config.lightbox;
+		if (gantt.$_taskFormWarned || !(lightbox && lightbox.advanced) || taskFormState() !== "inactive") {
+			return;
+		}
+		gantt.$_taskFormWarned = true;
+		// eslint-disable-next-line no-console
+		console.warn("gantt.config.lightbox.advanced is set, but the task_form plugin is not active, "
+			+ "so the classic lightbox is used. Call gantt.plugins({ task_form: true }) to turn on the advanced task form.");
+	}
+
 	gantt.getLightbox = function (type) {
 		var lightboxDiv;
 		var fullWidth;
@@ -145,6 +221,7 @@ export default function (gantt) {
 			type = this.getLightboxType();
 
 		if (!this._lightbox || this.getLightboxType() != this.getTaskType(type)) {
+			warnAboutInactiveTaskForm();
 			this._lightbox_type = this.getTaskType(type);
 			lightboxDiv = document.createElement("div");
 			classNames = "gantt_cal_light";
@@ -172,24 +249,23 @@ export default function (gantt) {
 			gantt._waiAria.lightboxAttr(lightboxDiv);
 
 			if (gantt.config.drag_lightbox) {
-				lightboxDiv.firstChild.onmousedown = gantt._ready_to_dnd;
-				lightboxDiv.firstChild.addEventListener('touchstart', function(e){
-					gantt._ready_to_dnd(e.touches[0]);
-				});
+				// dragging itself is handled by the popup (dragHandle config)
 				lightboxDiv.firstChild.onselectstart = function () {
 					return false;
 				};
 				lightboxDiv.firstChild.style.cursor = "pointer";
-				gantt._init_dnd_events();
 			}
 
 			// GS-1428: If there is lightbox node, we need to remove it from the DOM
 			if (this._lightbox){
 				this.resetLightbox();
 			}
-			show_cover();
-			this._cover.insertBefore(lightboxDiv, this._cover.firstChild);
+			// keep the hidden box in the DOM: sections are queried by id
+			// through _lightbox_root before the lightbox is shown; the popup
+			// reparents it into the cover on show
+			gantt._lightbox_root.appendChild(lightboxDiv);
 			this._lightbox = lightboxDiv;
+			lightboxDiv.$lbPopup = createLightboxPopup(lightboxDiv);
 
 			sns = this._get_typed_lightbox_config(type);
 			html = this._render_sections(sns);
@@ -219,26 +295,39 @@ export default function (gantt) {
 		var html = "";
 		for (var i = 0; i < sns.length; i++) {
 			var block = this.form_blocks[sns[i].type];
-			if (!block) continue; //ignore incorrect blocks
+			if (!block) {
+				// rows and columns lay out the advanced task form only
+				this.assert(!(Array.isArray(sns[i].cols) || Array.isArray(sns[i].rows)),
+					"Lightbox: cols and rows entries need the advanced task form" + taskFormAdvice()
+					+ "; their sections are not shown");
+				continue; //ignore incorrect blocks
+			}
 			sns[i].id = "area_" + this.uid();
 
 			var display = sns[i].hidden ? " style='display:none'" : "";
 			var button = "";
 			if (sns[i].button) {
-				button = "<div class='gantt_custom_button' data-index='" + i + "'><div class='gantt_custom_button_" + sns[i].button + "'></div><div class='gantt_custom_button_label'>" + this.locale.labels["button_" + sns[i].button] + "</div></div>";
+				button = "<button class='gantt_custom_button' data-index='" + i + "'><div class='gantt_custom_button_" + sns[i].button + "'></div><div class='gantt_custom_button_label'>" + this.locale.labels["button_" + sns[i].button] + "</div></button>";
 			}
 			if (sns[i].type == "baselines") {
-				button = "<div class='gantt_custom_button gantt_remove_baselines' data-index='" + i + "'><div class='gantt_custom_button_delete_baselines'></div><div class='gantt_custom_button_label'>" + this.locale.labels.baselines_remove_all_button + "</div></div>" +
-				"<div class='gantt_custom_button gantt_add_baselines' data-index='" + i + "'><div class='gantt_custom_button_add_baseline'></div><div class='gantt_custom_button_label'>" + this.locale.labels.baselines_add_button + "</div></div>";
+				button = "<button class='gantt_custom_button gantt_remove_baselines' data-index='" + i + "'><div class='gantt_custom_button_delete_baselines'></div><div class='gantt_custom_button_label'>" + this.locale.labels.baselines_remove_all_button + "</div></button>" +
+				"<button class='gantt_custom_button gantt_add_baselines' data-index='" + i + "'><div class='gantt_custom_button_add_baseline'></div><div class='gantt_custom_button_label'>" + this.locale.labels.baselines_add_button + "</div></button>";
 			}
 			if (sns[i].type == "resource_selector") {
 				sns[i].index = i;
-				button = `<div class='gantt_custom_button gantt_add_resources' data-index='${i}' data-resource-selector-section='${i}' data-section-name='${sns.name}'><div class='gantt_custom_button_add_resources gantt_add'></div><div class='gantt_custom_button_label'>${this.locale.labels.resources_add_button}</div></div>`;
+				button = `<button class='gantt_custom_button gantt_add_resources' data-index='${i}' data-resource-selector-section='${i}' data-section-name='${sns.name}'><div class='gantt_custom_button_add_resources gantt_add'></div><div class='gantt_custom_button_label'>${this.locale.labels.resources_add_button}</div></button>`;
 			}
 			if (this.config.wide_form) {
 				html += "<div class='gantt_wrap_section' " + display + ">";
 			}
-			html += "<div id='" + sns[i].id + "' class='gantt_cal_lsection'><label>" + button + (sns[i].label || this.locale.labels["section_" + sns[i].name]||sns[i].name) + "</label></div>" + block.render.call(this, sns[i]);
+			// buttons are kept OUTSIDE the <label>: a control-less <label> is
+			// implicitly associated with its first labelable descendant, so a
+			// button nested here would receive the label's forwarded :hover (and
+			// click) — lighting up the first button whenever any part of the
+			// section header is hovered. As direct children of the section they
+			// keep the same flex placement (order:1 + margin-left:auto) via the
+			// `.gantt_cal_lsection .gantt_custom_button` descendant selectors.
+			html += "<div id='" + sns[i].id + "' class='gantt_cal_lsection'>" + button + "<label>" + (sns[i].label || this.locale.labels["section_" + sns[i].name]||sns[i].name) + "</label></div>" + block.render.call(this, sns[i]);
 			html += "</div>";
 		}
 		return html;
@@ -251,15 +340,27 @@ export default function (gantt) {
 		if(!box){
 			return;
 		}
+		const popup = box.$lbPopup;
+		// isDraggedByUser is not in the public UIPopup typing: a popup from a replaced
+		// gantt.ext.ui.createModal may lack it
+		if (popup && popup.isDraggedByUser && popup.isDraggedByUser()) {
+			return;
+		}
 		const rootElement = gantt._lightbox_root || gantt.$root;
 		box.style.top = Math.max(rootElement.offsetHeight / 2 - box.offsetHeight/2, 0) + "px";
 		box.style.left = Math.max(rootElement.offsetWidth / 2 - box.offsetWidth/2, 0) + "px";
 	};
 
 	gantt.showCover = function (box) {
+		if (box && box.$lbPopup) {
+			// popup path: cover + centering + focus trap + aria-modal
+			box.$lbPopup.show();
+			return;
+		}
+		// legacy path: custom lightboxes and cover-only calls
 		if (box){
 			box.style.display="block";
-	
+
 			this._setLbPosition(box);
 		}
 		show_cover();
@@ -269,14 +370,11 @@ export default function (gantt) {
 		if(gantt._cover) {
 			return;
 		}
-	
+
 		gantt._cover=document.createElement("div");
 		gantt._cover.className="gantt_cal_cover";
 		gantt._cover.style.display = "none";
-	
-		gantt.event(gantt._cover, "mousemove", gantt._move_while_dnd);
-		gantt.event(gantt._cover, "mouseup", gantt._finish_dnd);
-	
+
 		const rootElement = gantt._lightbox_root || gantt.$root;
 		rootElement.appendChild(gantt._cover);
 	};
@@ -365,6 +463,10 @@ export default function (gantt) {
 			var event = e || window.event;
 			var target = e.target || e.srcElement;
 			var buttonTarget = domHelpers.getClassName(target).indexOf("gantt_btn_set") > -1;
+			var interactiveTarget = target && target.closest && (
+				target.tagName === "BUTTON" ||
+				!!target.closest(".dhx_ui_resource_grid")
+			);
 
 			switch ((e || event).keyCode) {
 				case gantt.constants.KEY_CODES.SPACE: {
@@ -375,10 +477,10 @@ export default function (gantt) {
 					break;
 				}
 				case gantt.keys.edit_save:
-					if ((e || event).shiftKey) return;
+					if ((e || event).shiftKey || (e || event).defaultPrevented) return;
 					if (buttonTarget && target.click) {
 						target.click();
-					} else {
+					} else if (!interactiveTarget) {
 						gantt._save_lightbox();
 					}
 					break;
@@ -428,11 +530,15 @@ export default function (gantt) {
 
 		// TODO: do we need any blockable events here to prevent closing lightbox?
 		this.hideLightbox();
+		return true;
 	};
 
 	gantt._resolve_default_mapping = function (section) {
 		var mapping = section.map_to;
-		var time_controls = { "time": true, "time_optional": true, "duration": true, "duration_optional": true };
+		var time_controls = {
+			time: true, time_optional: true, duration: true, duration_optional: true,
+			time_select: true, time_select_optional: true, duration_select: true, duration_select_optional: true
+		};
 		if (time_controls[section.type]) {
 			if (section.map_to == "auto") {
 				mapping = { start_date: "start_date", end_date: "end_date", duration: "duration" };
@@ -501,17 +607,55 @@ export default function (gantt) {
 		this.callEvent("onAfterLightbox", []);
 	};
 	gantt.hideCover = function (box) {
-		if(box){
+		if (box && box.$lbPopup) {
+			// removes the cover, restores focus, pops the modal stack
+			box.$lbPopup.hide();
+		} else if (box) {
 			box.style.display = "none";
 		}
 		if (this._cover)
 			this._cover.parentNode.removeChild(this._cover);
 		this._cover = null;
 	};
+	function destroyLightboxControls(box) {
+		if (!box || !box.querySelectorAll) {
+			return;
+		}
+		// Controls may be exposed on section hosts, resource rows, or
+		// resource-selector cells. Destroy each instance once before removing
+		// the lightbox DOM so child dropdown popups release their listeners.
+		var controls = [];
+		function collect(node) {
+			["$uiControl", "$uiAmount", "$firstControl"].forEach(function (key) {
+				var control = node && node[key];
+				if (control && typeof control.destroy === "function" && controls.indexOf(control) === -1) {
+					controls.push(control);
+				}
+			});
+		}
+		collect(box);
+		var nodes = box.querySelectorAll("*");
+		for (var i = 0; i < nodes.length; i++) {
+			collect(nodes[i]);
+		}
+		controls.forEach(function (control) {
+			try {
+				control.destroy();
+			} catch (e) {
+				// A custom control must not prevent lightbox removal.
+			}
+		});
+	}
 
 	gantt.resetLightbox = function () {
-		if (gantt._lightbox && !gantt._custom_lightbox)
+		if (gantt._lightbox && !gantt._custom_lightbox){
+			if (gantt._lightbox.$lbPopup){
+				gantt._lightbox.$lbPopup.destroy();
+				gantt._lightbox.$lbPopup = null;
+			}
+			destroyLightboxControls(gantt._lightbox);
 			gantt._lightbox.remove();
+		}
 		gantt._lightbox = null;
 	};
 	gantt._set_lightbox_values = function (data, box) {
@@ -552,6 +696,9 @@ export default function (gantt) {
 			if (section.focus)
 				block.focus.call(gantt, node);
 		}
+		// kit-backed sections (switch, combo, datepicker...) mount their input on the
+		// first set_value, after the build bound the labels: bind them again
+		bindLabelsToInputs(sns);
 		if (gantt.isTaskExists(data.id)){
 			gantt._lightbox_id = data.id;
 		}
@@ -574,7 +721,10 @@ export default function (gantt) {
 
 		if (!this._lightbox)
 			this.getLightbox();
-		var header = gantt._lightbox_root.querySelector("#" + section.id);
+		// a section that the lightbox did not render, for example a field of the advanced task form
+		var header = section.id ? gantt._lightbox_root.querySelector("#" + section.id) : null;
+		if (!header)
+			return null;
 		var node = header.nextSibling;
 
 		var result = {
@@ -598,7 +748,9 @@ export default function (gantt) {
 		return result;
 	};
 	gantt._lightbox_methods.get_select_control = function (result) {
-		result.control = result.node.getElementsByTagName("select")[0];
+		// ui-core Step 6: the select section is a kit Combo — expose its <input>
+		// (the value is the option label; use getValue()/get_value for the key)
+		result.control = result.node.getElementsByTagName("input")[0];
 		return result;
 	};
 	gantt._lightbox_methods.get_textarea_control = function (result) {
@@ -606,51 +758,23 @@ export default function (gantt) {
 		return result;
 	};
 	gantt._lightbox_methods.get_time_control = function (result) {
-		result.control = result.node.getElementsByTagName("select"); // array
+		// ui-core Step 6: the time section is a DatePicker + TimeInput composite —
+		// expose the <input>s (was the array of native <select>s)
+		result.control = result.node.getElementsByTagName("input"); // array-like
 		return result;
 	};
+	function getNativeDateSelects(result) {
+		result.control = result.node.getElementsByTagName("select");
+		return result;
+	}
+	gantt._lightbox_methods.get_time_select_control = getNativeDateSelects;
+	gantt._lightbox_methods.get_time_select_optional_control = getNativeDateSelects;
+	gantt._lightbox_methods.get_duration_select_control = getNativeDateSelects;
+	gantt._lightbox_methods.get_duration_select_optional_control = getNativeDateSelects;
 
 
-	gantt._init_dnd_events = function () {
-		var eventElement = gantt._lightbox_root;
-		this.event(eventElement, "mousemove", gantt._move_while_dnd);
-		this.event(eventElement, "mouseup", gantt._finish_dnd);
-		this.event(eventElement, "touchmove", function (e){
-			gantt._move_while_dnd(e.touches[0]);
-		});
-		this.event(eventElement, "touchend", function (e){
-			gantt._finish_dnd(e.touches[0]);
-		});
-		// GS-1952: In Salesforce environment, the lightbox is attached to the Gantt container. 
-		// So when Gantt is reinitialized, the events are no longer attached to the Gantt container.
-		// gantt._init_dnd_events = function () {
-		// };
-	};
-	gantt._move_while_dnd = function (event) {
-		if (gantt._dnd_start_lb) {
-			if (!document.gantt_unselectable) {
-				gantt._lightbox_root.className += " gantt_unselectable";
-				document.gantt_unselectable = true;
-			}
-			var lb = gantt.getLightbox();
-			var now = [event.pageX, event.pageY];
-			lb.style.top = gantt._lb_start[1] + now[1] - gantt._dnd_start_lb[1] + "px";
-			lb.style.left = gantt._lb_start[0] + now[0] - gantt._dnd_start_lb[0] + "px";
-		}
-	};
-	gantt._ready_to_dnd = function (event) {
-		var lb = gantt.getLightbox();
-		gantt._lb_start = [lb.offsetLeft, lb.offsetTop];
-		gantt._dnd_start_lb = [event.pageX, event.pageY];
-	};
-	gantt._finish_dnd = function () {
-		if (gantt._lb_start) {
-			gantt._lb_start = gantt._dnd_start_lb = false;
-			gantt._lightbox_root.className = gantt._lightbox_root.className.replace(" gantt_unselectable", "");
-			document.gantt_unselectable = false;
-		}
-	};
-
+	// drag_lightbox moving is implemented by the popup primitive
+	// (dragHandle config in createLightboxPopup) since ui-core Step 4
 
 	gantt._focus = function (node, select) {
 		if (node && node.focus) {
@@ -669,97 +793,37 @@ export default function (gantt) {
 
 
 	gantt.form_blocks = {
-		getTimePicker: function (sns, hidden) {
-			var html = "";
-			var cfg = this.config;
-			var i;
-			var options;
-			var ariaAttrs;
-			var readonly;
-			var display;
-			var settings = {
-				first: 0,
-				last: 24 * 60,
-				date: this.date.date_part(new Date(gantt._min_date.valueOf())),
-				timeFormat: getTimeFormat(sns)
-			};
-
-			// map: default order => real one
-			sns._time_format_order = { size: 0 };
-
-			if (gantt.config.limit_time_select) {
-				settings.first = 60 * cfg.first_hour;
-				settings.last = 60 * cfg.last_hour + 1;
-				settings.date.setHours(cfg.first_hour);
-			}
-
-			for (i = 0; i < settings.timeFormat.length; i++) {
-				// adding spaces between selects
-				if (i > 0) {
-					html += " ";
-				}
-
-				options = getHtmlTimePickerOptions(sns, i, settings);
-
-				if (options) {
-					ariaAttrs = gantt._waiAria.lightboxSelectAttrString(settings.timeFormat[i]);
-					readonly = sns.readonly ? "disabled='disabled'" : "";
-					display = hidden ? " style='display:none' " : "";
-					html += "<select " + readonly + display + ariaAttrs + ">" + options + "</select>";
-				}
-			}
-			return html;
-		},
-		getTimePickerValue: function (selects, config, offset) {
-			var map = config._time_format_order;
-			var needSetTime = gantt.defined(map[3]);
-
-			var time;
-			var hours = 0;
-			var minutes = 0;
-
-			var mapOffset = offset || 0;
-
-			if (needSetTime) {
-				time = parseInt(selects[map[3] + mapOffset].value, 10);
-				hours = Math.floor(time / 60);
-				minutes = time % 60;
-			}
-			return new Date(selects[map[2] + mapOffset].value, selects[map[1] + mapOffset].value, selects[map[0] + mapOffset].value, hours, minutes);
-		},
-
-		_fill_lightbox_select: function (s, i, d, map) {
-			s[i + map[0]].value = d.getDate();
-			s[i + map[1]].value = d.getMonth();
-			s[i + map[2]].value = d.getFullYear();
-			if (gantt.defined(map[3])) {
-				var v = d.getHours() * 60 + d.getMinutes();
-				v = Math.round(v / gantt._get_timepicker_step()) * gantt._get_timepicker_step();
-				var input = s[i + map[3]];
-				input.value = v;
-				//in case option not shown
-				input.setAttribute("data-value", v);
-			}
-		},
 		template: new TemplateControl(),
 		textarea: new TextareaControl(),
-		select: new SelectControl(),
-		time: new TimeControl(),
-		duration: new DurationControl(),
-		parent: new ParentControl(),
+		select: selectControlFactory(gantt),
+		time: timeControlFactory(gantt),
+		duration: durationControlFactory(gantt),
+		time_select: timeSelectControlFactory(gantt),
+		duration_select: durationSelectControlFactory(gantt),
+		parent: ParentControl,
 		radio: new RadioControl(),
 		checkbox: new CheckboxControl(),
-		resources: new ResourcesControl(),
-		constraint: new ConstraintControl(),
-		baselines: new BaselineControl(),
+		resources: resourcesControlFactory(gantt),
+		constraint: constraintControlFactory(gantt),
+		baselines: baselineControlFactory(gantt),
 		typeselect: new TypeselectControl(),
-		resource_selector: new NewResourcesControl()
+		resource_selector: resourceSelectorControlFactory(gantt),
+		// ui-core kit-backed blocks (docs/internal/ui-core): the factories
+		// return ready form-block objects, not classes — per-section state
+		// lives on the section node (see controls/form_block_adapter.ts)
+		combo: comboControlFactory(gantt),
+		datepicker: datepickerControlFactory(gantt),
+		stepper: stepperControlFactory(gantt),
+		text: textControlFactory(gantt),
+		switch: switchControlFactory(gantt),
+		progress: progressControlFactory(gantt),
+		calendar: calendarControlFactory(gantt)
 	};
 
 	gantt._is_lightbox_timepicker = function () {
 		var s = this._get_typed_lightbox_config();
 		for (var i = 0; i < s.length; i++)
-			if (s[i].name == "time" && s[i].type == "time")
+			if (s[i].name === "time" && (s[i].type === "time" || s[i].type === "time_select"))
 				return true;
 		return false;
 	};
@@ -806,11 +870,42 @@ export default function (gantt) {
 		var field = _get_type_name.call(this, type);
 
 		if (gantt.config.lightbox[field + "_sections"]) {
-			return gantt.config.lightbox[field + "_sections"];
+			return classicSections(gantt.config.lightbox[field + "_sections"], field);
 		} else {
-			return gantt.config.lightbox.sections;
+			return classicSections(gantt.config.lightbox.sections, field);
 		}
 	};
+
+	// the default sections of this gantt, for a lightbox setting without sections. They are
+	// made once: rendering stamps an id on each section, and saving finds the section by it
+	let defaultSections = null;
+
+	// the flat section array of a setting that the advanced task form also accepts
+	function classicSections(config, typeName) {
+		if (config && !Array.isArray(config) && Array.isArray(config.tabs)) {
+			// grouped sections: the sections of all tabs in order. cols and rows entries stay,
+			// so that _render_sections reports them
+			const sections = [];
+			config.tabs.forEach(function (tab) {
+				if (tab && Array.isArray(tab.children)) {
+					tab.children.forEach(function (entry) {
+						if (entry) {
+							sections.push(entry);
+						}
+					});
+				}
+			});
+			return sections;
+		}
+		// only a missing list gets the defaults: other values are read as they are
+		if (config !== undefined && config !== null) {
+			return config;
+		}
+		if (!defaultSections) {
+			defaultSections = defaultLightboxSections();
+		}
+		return defaultSections[typeName + "_sections"] || defaultSections.sections;
+	}
 
 	gantt._silent_redraw_lightbox = function (type) {
 		var oldType = this.getLightboxType();
@@ -853,7 +948,7 @@ export default function (gantt) {
 			if (!inputBlock) continue;
 
 			input = inputBlock.querySelector("input, select, textarea");
-			if (input) {
+			if (input && label) {
 				input.id = input.id || "input_" + gantt.uid();
 				section.inputId = input.id;
 				label.setAttribute("for", section.inputId);
@@ -873,96 +968,6 @@ export default function (gantt) {
 
 			ariaAttr = gantt._waiAria.lightboxButtonAttrString(button);
 			html += "<div " + ariaAttr + " class='gantt_btn_set gantt_left_btn_set " + button + "_set'" + "><div dhx_button='1' data-dhx-button='1' class='" + button + "'></div><div>" + gantt.locale.labels[button] + "</div></div>";
-		}
-		return html;
-	}
-
-	function getTimeFormat(sns) {
-		var scale;
-		var unit;
-		var result;
-
-		if (sns.time_format) return sns.time_format;
-
-		// default order
-		result = ["%d", "%m", "%Y"];
-		scale = gantt.getScale();
-		unit = scale ? scale.unit : gantt.config.duration_unit;
-		if (helpers.getSecondsInUnit(unit) < helpers.getSecondsInUnit("day")) {
-			result.push("%H:%i");
-		}
-		return result;
-	}
-
-	function getHtmlTimePickerOptions(sns, index, settings) {
-		var range;
-		var offset;
-		var start_year;
-		var end_year;
-		var i;
-		var time;
-		var diff;
-		var tdate;
-		var html = "";
-
-		switch (settings.timeFormat[index]) {
-			case "%Y":
-				sns._time_format_order[2] = index;
-				sns._time_format_order.size++;
-				//year
-
-				if (sns.year_range) {
-					if (!isNaN(sns.year_range)) {
-						range = sns.year_range;
-					} else if (sns.year_range.push) {
-						// if
-						start_year = sns.year_range[0];
-						end_year = sns.year_range[1];
-					}
-				}
-
-				range = range || 10;
-				offset = offset || Math.floor(range / 2);
-				start_year = start_year || settings.date.getFullYear() - offset;
-				end_year = end_year || gantt.getState().max_date.getFullYear() + offset;
-
-				for (i = start_year; i <= end_year; i++)
-					html += "<option value='" + (i) + "'>" + (i) + "</option>";
-				break;
-			case "%m":
-				sns._time_format_order[1] = index;
-				sns._time_format_order.size++;
-				//month
-				for (i = 0; i < 12; i++)
-					html += "<option value='" + i + "'>" + gantt.locale.date.month_full[i] + "</option>";
-				break;
-			case "%d":
-				sns._time_format_order[0] = index;
-				sns._time_format_order.size++;
-				//days
-				for (i = 1; i < 32; i++)
-					html += "<option value='" + i + "'>" + i + "</option>";
-				break;
-			case "%H:%i":
-				//  var last = 24*60, first = 0;
-				sns._time_format_order[3] = index;
-				sns._time_format_order.size++;
-				//hours
-				i = settings.first;
-				tdate = settings.date.getDate();
-				sns._time_values = [];
-
-				while (i < settings.last) {
-					time = gantt.templates.time_picker(settings.date);
-					html += "<option value='" + i + "'>" + time + "</option>";
-					sns._time_values.push(i);
-					settings.date.setTime(settings.date.valueOf() + gantt._get_timepicker_step() * 60 * 1000);
-					diff = (settings.date.getDate() != tdate) ? 1 : 0; // moved or not to the next day
-					i = diff * 24 * 60 + settings.date.getHours() * 60 + settings.date.getMinutes();
-				}
-				break;
-			default:
-				break;
 		}
 		return html;
 	}

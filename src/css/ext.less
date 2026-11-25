@@ -131,13 +131,115 @@
 	}
 }
 
+.gantt_as_conflict_popup {
+	display: flex;
+	flex-direction: column;
+	width: ~"min(560px, calc(100vw - 24px))";
+	max-height: calc(100vh - 24px);
+
+	.dhx_ui_popup_body {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+}
+
+.gantt_as_conflict {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	min-height: 0;
+	text-align: start;
+	overflow-wrap: anywhere;
+}
+
+.gantt_as_conflict_title {
+	font-size: calc(var(--dhx-ui-font-size) * 1.15);
+	font-weight: var(--dhx-gantt-important-font-weight);
+}
+
+// the description scrolls; the question, the options and the buttons stay visible
+.gantt_as_conflict_description {
+	flex: 0 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+
+	p {
+		margin: 0;
+	}
+}
+
+.gantt_as_conflict_intro {
+	margin-bottom: 6px;
+}
+
+.gantt_as_conflict_list {
+	margin: 0;
+	padding: 0;
+}
+
+ul.gantt_as_conflict_list {
+	padding-inline-start: 20px;
+}
+
+.gantt_as_conflict_item + .gantt_as_conflict_item {
+	margin-top: 6px;
+}
+
+.gantt_as_conflict_question {
+	flex-shrink: 0;
+	font-weight: var(--dhx-gantt-important-font-weight);
+}
+
+.gantt_as_conflict_options {
+	flex-shrink: 0;
+
+	.dhx_ui_radio_row {
+		align-items: flex-start;
+	}
+
+	.dhx_ui_radio {
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	.dhx_ui_radio_label {
+		min-width: 0;
+	}
+}
+
+.gantt_as_conflict_controls {
+	display: flex;
+	flex-direction: var(--dhx-gantt-btn-order);
+	flex-wrap: wrap;
+	flex-shrink: 0;
+	gap: 8px;
+
+	.dhx_ui_button {
+		min-width: 0;
+		height: auto;
+		min-height: var(--dhx-ui-control-height);
+		white-space: normal;
+	}
+}
+
+@media (max-width: 480px) {
+	.gantt_as_conflict_controls {
+		flex-direction: column;
+
+		.dhx_ui_button {
+			width: 100%;
+		}
+	}
+}
+
 .gantt_rtl{
 	.gantt_constraint_marker{
 		&.gantt_constraint_marker_snlt,
 		&.gantt_constraint_marker_fnlt,
 		&.gantt_constraint_marker_mfo {
 			transform: rotate(0deg);
-		}	
+		}
 	}
 
 	.gantt_constraint_marker{

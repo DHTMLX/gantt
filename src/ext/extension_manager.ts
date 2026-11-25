@@ -1,7 +1,9 @@
-export default class ExtensionsManager{
-	private _extensions:{[key:string]: GanttPlugin };
+import type { GanttPlugin } from "../types/gantt_types";
 
-	constructor(config: {[key:string]: GanttPlugin }){
+export default class ExtensionsManager{
+	private _extensions:{[key:string]: GanttPlugin } | undefined;
+
+	constructor(config: {[key:string]: GanttPlugin } | undefined){
 		this._extensions = {};
 		for(const i in config){
 			this._extensions[i] = config[i];
@@ -9,10 +11,12 @@ export default class ExtensionsManager{
 	}
 
 	addExtension = (name: string, ext: GanttPlugin) => {
-		this._extensions[name] = ext;
+		if (this._extensions) {
+			this._extensions[name] = ext;
+		}
 	};
 
-	getExtension = (name: string): GanttPlugin => {
-		return this._extensions[name];
+	getExtension = (name: string): GanttPlugin | undefined => {
+		return this._extensions && this._extensions[name];
 	};
 }

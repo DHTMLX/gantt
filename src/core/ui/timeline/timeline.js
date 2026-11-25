@@ -22,7 +22,7 @@ Timeline.prototype = {
 		container.innerHTML += "<div class='gantt_task' style='width:inherit;height:inherit;'></div>";
 		this.$task = container.childNodes[0];
 
-		this.$task.innerHTML = "<div class='gantt_task_scale'></div><div class='gantt_data_area'></div>";
+		this.$task.innerHTML = "<div class='gantt_task_scale' " + this.$gantt._waiAria.getTimelineScaleContainerAttr() + "></div><div class='gantt_data_area'></div>";
 		this.$task_scale = this.$task.childNodes[0];
 
 		this.$task_data = this.$task.childNodes[1];
@@ -33,8 +33,9 @@ Timeline.prototype = {
 		const taskConstraints = "<div class='gantt_task_constraints'></div>";
 		const taskDeadlines = "<div class='gantt_task_deadlines'></div>";
 		const taskBaselines = "<div class='gantt_task_baselines'></div>";
+		const taskLevelingDelays = "<div class='gantt_task_leveling_delays'></div>";
 
-		this.$task_data.innerHTML = taskBg + taskBaselines + links + taskBars + taskConstraints + taskDeadlines;
+		this.$task_data.innerHTML = taskBg + taskBaselines + links + taskBars + taskConstraints + taskDeadlines + taskLevelingDelays;
 
 		this.$task_bg = this.$task_data.childNodes[0];
 		this.$task_baselines = this.$task_data.childNodes[1];
@@ -42,6 +43,11 @@ Timeline.prototype = {
 		this.$task_bars = this.$task_data.childNodes[3];
 		this.$task_constraints = this.$task_data.childNodes[4];
 		this.$task_deadlines = this.$task_data.childNodes[5];
+		this.$task_leveling_delays = this.$task_data.childNodes[6];
+
+		if(this.$config.bind === this.$gantt.config.resource_store){
+			this.$gantt._waiAria.resourceTimelineAttr(this.$task_bars);
+		}
 
 		this._tasks = {
 			col_width: 0,
@@ -404,7 +410,8 @@ Timeline.prototype = {
 				cssClass += " " + tplClass;
 			}
 
-			html.push("<div class=\"" + cssClass + "\" style=\"height:" + (scales[i].height) +
+			html.push("<div class=\"" + cssClass + "\" " + this.$gantt._waiAria.getTimelineScaleRowAttr() +
+				" style=\"height:" + (scales[i].height) +
 				"px;position:relative;line-height:" + (scales[i].height) + "px\">" + this._prepareScaleHtml(scales[i], fromPos, toPos, i) + "</div>");
 		}
 
@@ -484,7 +491,7 @@ Timeline.prototype = {
 				template = css.call(this, date);
 				if (template) cssclass += " " + template;
 
-				var ariaAttr = this.$gantt._waiAria.getTimelineCellAttr(value);
+				var ariaAttr = this.$gantt._waiAria.getTimelineCellAttr(value, date, config);
 				var cell = `<div class='${cssclass}' ${ariaAttr} style='${style}'><span ${labelPosition}>${value}</span></div>`;
 				cells.push(cell);
 			} else {

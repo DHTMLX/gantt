@@ -1,13 +1,15 @@
 @font-face {
     font-family: "dhx-gantt-icons";
-    /* src: url("./dhx-gantt-icons.woff?d2ea3e087edb3b9fad35a6580bd8acd3") format("woff"),
-url("./dhx-gantt-icons.woff2?d2ea3e087edb3b9fad35a6580bd8acd3") format("woff2"); */
+    /* src: url("./dhx-gantt-icons.woff?3b120767c3e92396eaa7ecd15ca8bb63") format("woff"),
+url("./dhx-gantt-icons.woff2?3b120767c3e92396eaa7ecd15ca8bb63") format("woff2"); */
+    font-display: block;
 
     src: url("./iconfont/dhx-gantt-icons.woff") format("woff"),
 url("./iconfont/dhx-gantt-icons.woff2") format("woff2");
 }
 
-.dhx_gantt_icon {
+.dhx_gantt_icon,
+.dhx_menu_icon {
     &:before{
         font-family: dhx-gantt-icons !important;
         font-style: normal;
@@ -24,87 +26,310 @@ url("./iconfont/dhx-gantt-icons.woff2") format("woff2");
     }
 }
 
-.dhx_gantt_icon.dhx_gantt_icon_arrow_down {
+.dhx_gantt_icon.dhx_gantt_icon_arrow_down,
+.dhx_menu_icon.dhx_gantt_icon_arrow_down {
     &:before{
         content: "\f101";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_arrow_up {
+.dhx_gantt_icon.dhx_gantt_icon_arrow_up,
+.dhx_menu_icon.dhx_gantt_icon_arrow_up {
     &:before{
         content: "\f102";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_close {
+.dhx_gantt_icon.dhx_gantt_icon_calendar,
+.dhx_menu_icon.dhx_gantt_icon_calendar {
     &:before{
         content: "\f103";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_constraint_left_dotted {
+.dhx_gantt_icon.dhx_gantt_icon_check,
+.dhx_menu_icon.dhx_gantt_icon_check {
     &:before{
         content: "\f104";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_constraint_left_solid {
+.dhx_gantt_icon.dhx_gantt_icon_close,
+.dhx_menu_icon.dhx_gantt_icon_close {
     &:before{
         content: "\f105";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_constraint_right_dotted {
+.dhx_gantt_icon.dhx_gantt_icon_collapse_all,
+.dhx_menu_icon.dhx_gantt_icon_collapse_all {
     &:before{
         content: "\f106";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_constraint_right_solid {
+.dhx_gantt_icon.dhx_gantt_icon_constraint_left_dotted,
+.dhx_menu_icon.dhx_gantt_icon_constraint_left_dotted {
     &:before{
         content: "\f107";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_delete {
+.dhx_gantt_icon.dhx_gantt_icon_constraint_left_solid,
+.dhx_menu_icon.dhx_gantt_icon_constraint_left_solid {
     &:before{
         content: "\f108";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_dots_vertical {
+.dhx_gantt_icon.dhx_gantt_icon_constraint_right_dotted,
+.dhx_menu_icon.dhx_gantt_icon_constraint_right_dotted {
     &:before{
         content: "\f109";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_edit {
+.dhx_gantt_icon.dhx_gantt_icon_constraint_right_solid,
+.dhx_menu_icon.dhx_gantt_icon_constraint_right_solid {
     &:before{
         content: "\f10a";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_menu_down {
+.dhx_gantt_icon.dhx_gantt_icon_contrast,
+.dhx_menu_icon.dhx_gantt_icon_contrast {
     &:before{
         content: "\f10b";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_menu_right {
+.dhx_gantt_icon.dhx_gantt_icon_critical_path,
+.dhx_menu_icon.dhx_gantt_icon_critical_path {
     &:before{
         content: "\f10c";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_minus {
+.dhx_gantt_icon.dhx_gantt_icon_delete,
+.dhx_menu_icon.dhx_gantt_icon_delete {
     &:before{
         content: "\f10d";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_plus {
+.dhx_gantt_icon.dhx_gantt_icon_dots_vertical,
+.dhx_menu_icon.dhx_gantt_icon_dots_vertical {
     &:before{
         content: "\f10e";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_rounded_arrow_right {
+.dhx_gantt_icon.dhx_gantt_icon_edit,
+.dhx_menu_icon.dhx_gantt_icon_edit {
     &:before{
         content: "\f10f";
     }
 }
-.dhx_gantt_icon.dhx_gantt_icon_timer {
+.dhx_gantt_icon.dhx_gantt_icon_expand_all,
+.dhx_menu_icon.dhx_gantt_icon_expand_all {
     &:before{
         content: "\f110";
-        max-width: 100%;
-        max-height: 100%;
-        font-size: 1em;
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_fullscreen,
+.dhx_menu_icon.dhx_gantt_icon_fullscreen {
+    &:before{
+        content: "\f111";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_indent,
+.dhx_menu_icon.dhx_gantt_icon_indent {
+    &:before{
+        content: "\f112";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_menu_down,
+.dhx_menu_icon.dhx_gantt_icon_menu_down {
+    &:before{
+        content: "\f113";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_menu_right,
+.dhx_menu_icon.dhx_gantt_icon_menu_right {
+    &:before{
+        content: "\f114";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_minus,
+.dhx_menu_icon.dhx_gantt_icon_minus {
+    &:before{
+        content: "\f115";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_outdent,
+.dhx_menu_icon.dhx_gantt_icon_outdent {
+    &:before{
+        content: "\f116";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_plus,
+.dhx_menu_icon.dhx_gantt_icon_plus {
+    &:before{
+        content: "\f117";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_redo,
+.dhx_menu_icon.dhx_gantt_icon_redo {
+    &:before{
+        content: "\f118";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_rounded_arrow_right,
+.dhx_menu_icon.dhx_gantt_icon_rounded_arrow_right {
+    &:before{
+        content: "\f119";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_theme_dark,
+.dhx_menu_icon.dhx_gantt_icon_theme_dark {
+    &:before{
+        content: "\f11a";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_theme_light,
+.dhx_menu_icon.dhx_gantt_icon_theme_light {
+    &:before{
+        content: "\f11b";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_timer,
+.dhx_menu_icon.dhx_gantt_icon_timer {
+    &:before{
+        content: "\f11c";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_undo,
+.dhx_menu_icon.dhx_gantt_icon_undo {
+    &:before{
+        content: "\f11d";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_zoom_in,
+.dhx_menu_icon.dhx_gantt_icon_zoom_in {
+    &:before{
+        content: "\f11e";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_zoom_out,
+.dhx_menu_icon.dhx_gantt_icon_zoom_out {
+    &:before{
+        content: "\f11f";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_chevron_right,
+.dhx_menu_icon.dhx_gantt_icon_chevron_right {
+    &:before{
+        content: "\f120";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_clipboard_clear,
+.dhx_menu_icon.dhx_gantt_icon_clipboard_clear {
+    &:before{
+        content: "\f121";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_copy,
+.dhx_menu_icon.dhx_gantt_icon_copy {
+    &:before{
+        content: "\f122";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_cut,
+.dhx_menu_icon.dhx_gantt_icon_cut {
+    &:before{
+        content: "\f123";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_eye_off,
+.dhx_menu_icon.dhx_gantt_icon_eye_off {
+    &:before{
+        content: "\f124";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_eye,
+.dhx_menu_icon.dhx_gantt_icon_eye {
+    &:before{
+        content: "\f125";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_link_off,
+.dhx_menu_icon.dhx_gantt_icon_link_off {
+    &:before{
+        content: "\f126";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_milestone,
+.dhx_menu_icon.dhx_gantt_icon_milestone {
+    &:before{
+        content: "\f127";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_paste_after,
+.dhx_menu_icon.dhx_gantt_icon_paste_after {
+    &:before{
+        content: "\f128";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_paste_child,
+.dhx_menu_icon.dhx_gantt_icon_paste_child {
+    &:before{
+        content: "\f129";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_predecessor,
+.dhx_menu_icon.dhx_gantt_icon_predecessor {
+    &:before{
+        content: "\f12a";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_sort_asc,
+.dhx_menu_icon.dhx_gantt_icon_sort_asc {
+    &:before{
+        content: "\f12b";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_sort_desc,
+.dhx_menu_icon.dhx_gantt_icon_sort_desc {
+    &:before{
+        content: "\f12c";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_split,
+.dhx_menu_icon.dhx_gantt_icon_split {
+    &:before{
+        content: "\f12d";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_subtask,
+.dhx_menu_icon.dhx_gantt_icon_subtask {
+    &:before{
+        content: "\f12e";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_successor,
+.dhx_menu_icon.dhx_gantt_icon_successor {
+    &:before{
+        content: "\f12f";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_task_above,
+.dhx_menu_icon.dhx_gantt_icon_task_above {
+    &:before{
+        content: "\f130";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_task_below,
+.dhx_menu_icon.dhx_gantt_icon_task_below {
+    &:before{
+        content: "\f131";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_task,
+.dhx_menu_icon.dhx_gantt_icon_task {
+    &:before{
+        content: "\f132";
+    }
+}
+.dhx_gantt_icon.dhx_gantt_icon_unsplit,
+.dhx_menu_icon.dhx_gantt_icon_unsplit {
+    &:before{
+        content: "\f133";
     }
 }
 

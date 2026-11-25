@@ -111,9 +111,7 @@ gantt._cached_functions = {
 		var override_gantt = [];
 
 		var gantt_methods  = [
-			'_isProjectEnd',
-			'_getProjectEnd',
-			'_getSlack'
+			'_getProjectEnd'
 		];
 
 

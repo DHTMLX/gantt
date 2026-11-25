@@ -1,10 +1,10 @@
-import { GanttCallback, HandlerSettings } from "../core/common/gantt_types";
+import { GanttCallback, HandlerSettings } from "../types/gantt_types";
 
 type EventId = string | number;
 
 interface EventStorage {
 	(eventArguments?: any[]): boolean;
-	addEvent(handler: GanttCallback, settings?: HandlerSettings): EventId | false;
+	addEvent(handler: GanttCallback, settings?: HandlerSettings | string): EventId | false;
 	removeEvent(id: EventId): void;
 	clear(): void;
 }
@@ -15,9 +15,9 @@ interface EventHostType {
 }
 
 export interface EventableObject {
-	attachEvent(eventName: string, handler: GanttCallback, settings?: HandlerSettings): EventId;
+	attachEvent(eventName: string, handler: GanttCallback, settings?: HandlerSettings | string): EventId;
 	attachAll(callback: GanttCallback): void;
-	callEvent(name: string, eventArguments: any[]): boolean;
+	callEvent(name: string, eventArguments: any[]): boolean | undefined;
 	checkEvent(name: string): boolean;
 	detachEvent(id?: EventId): void;
 	detachAllEvents(): void;
@@ -95,9 +95,9 @@ const createEventStorage = function(obj: unknown): EventStorage {
 
 			if (settings && settings.once) {
 				const originalHandler = handler;
-				handler = function(): void {
-					originalHandler();
+				handler = function(this: unknown, ...args: any[]): any {
 					eventStorage.removeEvent(handlerId);
+					return originalHandler.apply(this, args);
 				};
 			}
 
@@ -129,19 +129,19 @@ const createEventStorage = function(obj: unknown): EventStorage {
 function makeEventable<T extends Record<string, any>>(obj: T): asserts obj is T & EventableObject {
 	const eventHost = new (EventHost as unknown as { new(): EventHostType })();
 	const target = obj as T & Partial<EventableObject>;
-	target.attachEvent = function(eventName: string, handler: GanttCallback, settings?: HandlerSettings): EventId {
+	target.attachEvent = function(eventName: string, handler: GanttCallback, settings?: HandlerSettings | string): EventId {
 		eventName = listenerKey(eventName, true);
 		if (!eventHost.listeners[eventName]) {
 			eventHost.listeners[eventName] = createEventStorage(this);
 		}
 
-		if (settings && settings.thisObject) {
+		if (settings && typeof settings !== "string" && settings.thisObject) {
 			handler = handler.bind(settings.thisObject);
 		}
 
 		const innerId = eventHost.listeners[eventName].addEvent(handler, settings);
 		let handlerId: EventId = eventName + ":" + innerId;
-		if (settings && settings.id !== undefined) {
+		if (settings && typeof settings !== "string" && settings.id !== undefined) {
 			handlerId = settings.id;
 		}
 		return handlerId;

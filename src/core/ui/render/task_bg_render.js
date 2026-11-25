@@ -196,6 +196,10 @@ function createTaskBgRender(gantt){
 			css += " gantt_selected";
 		}
 
+		if (store.$config.name === "task" && !gantt._isStoredTaskActive(item)) {
+			css += " gantt_task_row_inactive";
+		}
+
 		row.className = css;
 
 		if (config.smart_rendering) {

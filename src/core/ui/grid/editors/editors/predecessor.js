@@ -43,11 +43,19 @@ export default function(gantt) {
 		return labels.join((config.delimiter || ",") + " ");
 	}
 
+	// GS-3626: the complete edit is validated before any link changes - one malformed
+	// or unresolved code rejects the whole edit and keeps the existing links, so a typo
+	// can never delete the links it failed to restate
 	function getSelectedLinks(taskId, predecessorCodes, config) {
 		var links = [];
+		var rejected = false;
 		// select only unique codes GS-1439
 		[...new Set(predecessorCodes)].forEach(function (code) {
 			var link = getFormatter(config).parse(code);
+			if(!link || link.source === null || link.source === undefined){
+				rejected = true;
+				return;
+			}
 			if(link){
 				link.target = taskId;
 				// GS-1290 A way to preserve the link. Otherwise validation will return false
@@ -59,7 +67,7 @@ export default function(gantt) {
 				}
 			}
 		});
-		return links;
+		return rejected ? null : links;
 	}
 
 	function formatLinkKey(link){
@@ -68,6 +76,9 @@ export default function(gantt) {
 
 	function getLinksDiff(task, predecessorCodes, config) {
 		var selectedLinks = getSelectedLinks(task.id, predecessorCodes, config);
+		if(!selectedLinks){
+			return null;
+		}
 		var existingLinksSearch = {};
 		task.$target.forEach(function (linkId) {
 			var link = gantt.getLink(linkId);
@@ -113,7 +124,7 @@ export default function(gantt) {
 
 			var linksDiff = getLinksDiff(task, this.get_value(id, column, node), column.editor);
 
-			if (linksDiff.add.length || linksDiff.remove.length) {
+			if (linksDiff && (linksDiff.add.length || linksDiff.remove.length)) {
 				gantt.batchUpdate(function () {
 					linksDiff.add.forEach(function (link) {
 						gantt.addLink(link);

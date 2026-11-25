@@ -43,6 +43,10 @@
   background: var(--dhx-gantt-task-progress-color);
 }
 
+:root[data-gantt-theme-colorblind] .gantt_task_progress {
+  border-right: 2px solid var(--dhx-gantt-task-color);
+}
+
 .gantt_task_progress_wrapper {
   border-radius: inherit;
   position: relative;
@@ -62,6 +66,48 @@
 
 .gantt_task_line.gantt_drag_move div {
   cursor: move;
+}
+
+// task.pauses: the bar is a transparent frame, the fill moves to the work
+// segments, and a dashed line runs through the pauses
+.gantt_task_line.gantt_task_line_gapped {
+  background: transparent;
+  border-color: transparent;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px dashed var(--dhx-gantt-task-background);
+  }
+
+  &.gantt_selected {
+    box-shadow: none;
+
+    .gantt_task_segment {
+      box-shadow: var(--dhx-gantt-box-shadow-s);
+    }
+  }
+}
+
+.gantt_task_segments {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.gantt_task_segment {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  border-radius: var(--dhx-gantt-task-border-radius);
+  background: var(--dhx-gantt-task-background);
+  border: var(--dhx-gantt-task-border);
 }
 
 .gantt_touch_move,
@@ -136,9 +182,13 @@
 .gantt_link_control {
 
   position: absolute;
-  width:calc(var(--dhx-gantt-link-handle-offset) + var(--dhx-gantt-link-handle-size));
+  /* Hit-area width from the handle vars (default 12+12=24px → WCAG 2.2 AA
+     SC 2.5.8) */
+  width: calc(var(--dhx-gantt-link-handle-size) + var(--dhx-gantt-link-handle-offset));
+  z-index: 2;
   top: 50%;
   display: flex;
+  justify-content: center;
   align-items: center;
   transition: all var(--dhx-gantt-base-transition)
 }
@@ -163,13 +213,11 @@
 .gantt_link_control.task_left {
   transform: translate(-100%, -50%);
   left: 0;
-  justify-content: flex-start;
 }
 
 .gantt_link_control.task_right {
   transform: translate(100%, -50%);
   right: 0;
-  justify-content: flex-end;
 }
 
 .gantt_task_line.gantt_link_source,
@@ -181,6 +229,20 @@
   .gantt_link_control div,
   .gantt_task_drag {
     display: block;
+  }
+}
+
+.gantt_link_control {
+  pointer-events: none;
+}
+
+.gantt_task_line.gantt_link_source,
+.gantt_task_line.gantt_link_target,
+.gantt_task_line.gantt_selected,
+.gantt_task_line:hover,
+.gantt_link_drag_active .gantt_task_line {
+  .gantt_link_control {
+    pointer-events: auto;
   }
 }
 
@@ -248,20 +310,22 @@
   cursor: w-resize;
 }
 
+/* GS-3633: resize owns the strip inside the bar and the link control the area
+   outside it. At 0%/100% progress the handles meet: resize > progress > link. */
 .gantt_task_drag {
   min-height: 16px;
   height: 50%;
-  width: 8px;
-  z-index: 1;
+  width: 12px;
+  z-index: 4;
   top: -1px;
 }
 
 .gantt_task_drag.task_left {
-  left: -7px;
+  left: 0;
 }
 
 .gantt_task_drag.task_right {
-  right: -7px;
+  right: 0;
 }
 
 .gantt_task_progress_drag {
@@ -269,7 +333,7 @@
   min-height: 12px;
   bottom: -3px;
   transform: translate(-50%);
-  z-index: 1;
+  z-index: 3;
   align-items: flex-end;
 }
 
@@ -320,12 +384,36 @@
   box-shadow: var(--dhx-gantt-box-shadow-s);
 }
 
+.gantt_task_line.gantt_menu_copied,
+.gantt_task_line.gantt_menu_cut {
+  outline: 2px dashed var(--dhx-gantt-base-colors-primary);
+  outline-offset: 1px;
+}
+
+.gantt_grid_data .gantt_row.gantt_menu_copied,
+.gantt_grid_data .gantt_row.gantt_menu_cut {
+  .gantt_cell:first-child {
+    box-shadow: inset 3px 0 0 0 var(--dhx-gantt-base-colors-primary);
+  }
+}
+
+.gantt_task_line.gantt_menu_cut,
+.gantt_grid_data .gantt_row.gantt_menu_cut {
+  opacity: 0.55;
+}
+
 
 .gantt_cal_quick_info.gantt_project,
 .gantt_task_line.gantt_project{
 	--dhx-gantt-task-color: var(--dhx-gantt-project-color);
 	--dhx-gantt-task-background: var(--dhx-gantt-project-background);
   --dhx-gantt-task-progress-color: var(--dhx-gantt-project-progress-color);
+}
+
+:root[data-gantt-theme-colorblind] .gantt_task_line.gantt_project:not(.gantt_task_line_planned) {
+  background-image: repeating-linear-gradient(-45deg,
+    transparent 0 7px,
+    color-mix(in srgb, var(--dhx-gantt-task-color) 30%, transparent) 7px 10px);
 }
 
 .gantt_task_line.gantt_project.gantt_task_line_planned{
@@ -403,6 +491,17 @@
   --dhx-gantt-task-progress: rgba(0, 0, 0, 0.4);
 }
 
+:root[data-gantt-theme-colorblind] {
+  .gantt_critical_task {
+    box-shadow: 1px 2px 5px 0 rgba(0, 0, 0, 0.6);
+  }
+}
+:root[data-gantt-theme-colorblind][data-gantt-theme="contrast-black"] {
+  .gantt_critical_task {
+    box-shadow: 1px 2px 5px 0 rgba(255, 255, 255, 0.65);
+  }
+}
+
 .gantt_critical_link  {
   --dhx-gantt-link-background: var(--dhx-gantt-link-critical-background);
 }
@@ -417,7 +516,7 @@
 .gantt_qi_big_icon:focus,
 .gantt_popup_button:focus,
 .gantt_grid_head_cell:focus {
-  box-shadow: inset 0px 0px 1px 1px var(--dhx-gantt-base-colors-primary);
+  box-shadow: inset 0 0 0 2px var(--dhx-gantt-base-colors-primary);
 }
 
 .gantt_split_parent,
@@ -429,4 +528,52 @@
 .gantt_rollup_child .gantt_link_control,
 .gantt_rollup_child:hover .gantt_link_control {
   display: none;
+}
+
+/* Inactive tasks and links */
+.gantt_task_line.gantt_task_inactive {
+  background: var(--dhx-gantt-inactive-background);
+  border: var(--dhx-gantt-inactive-border);
+  color: var(--dhx-gantt-inactive-color);
+
+  --dhx-gantt-task-color: var(--dhx-gantt-inactive-color);
+  --dhx-gantt-task-progress-color: transparent;
+}
+
+.gantt_row.gantt_row_inactive {
+  .gantt_tree_content {
+    text-decoration: line-through;
+  }
+
+  .gantt_cell {
+    opacity: var(--dhx-gantt-inactive-opacity);
+  }
+}
+
+// GS-1557: a dependency the schedule does not meet. Dashed in the error color,
+// so it differs from a critical link (solid) and an inactive one (faded).
+.gantt_task_link.gantt_link_conflict {
+  --dhx-gantt-link-background: var(--dhx-gantt-base-colors-error);
+
+  .gantt_line_wrapper div {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--dhx-gantt-link-background) 0 5px,
+      transparent 5px 8px
+    );
+  }
+}
+
+.gantt_task_link.gantt_link_inactive {
+  opacity: var(--dhx-gantt-inactive-opacity);
+
+  .gantt_line_wrapper div {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--dhx-gantt-link-background) 0 3px,
+      transparent 3px 6px
+    );
+  }
 }

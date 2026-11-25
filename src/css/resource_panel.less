@@ -13,6 +13,19 @@
 	background: var(--dhx-gantt-base-colors-error);
 }
 
+:root[data-gantt-theme-colorblind] {
+	.gantt_resource_marker_overtime {
+		background-image: repeating-linear-gradient(-45deg,
+			transparent 0 4px,
+			rgba(0, 0, 0, 0.35) 4px 8px);
+	}
+	.column_overload .gantt_histogram_fill {
+		background-image: repeating-linear-gradient(to right,
+			transparent 0 3px,
+			color-mix(in srgb, var(--dhx-gantt-base-colors-error) 45%, transparent) 3px 6px);
+	}
+}
+
 .gantt_histogram_label{
 	width:100%;
 	height: 100%;

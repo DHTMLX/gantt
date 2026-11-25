@@ -116,6 +116,15 @@
   opacity: 1;
 }
 
+// a "+" that refuses new tasks: a row of a read-only task or chart, or the header of a read-only chart
+.gantt_add.gantt_add_disabled,
+.gantt_grid_data .gantt_row:hover .gantt_add.gantt_add_disabled,
+.gantt_grid_head_cell.gantt_grid_head_add.gantt_add_disabled,
+.gantt_grid_head_cell.gantt_grid_head_add.gantt_add_disabled:hover {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .gantt_task_row,
 .gantt_row {
   border-bottom:var(--dhx-gantt-task-row-border);
@@ -145,8 +154,8 @@
 .gantt_grid_scale .gantt_grid_column_resize_wrap {
   cursor: col-resize;
   position: absolute;
-  width: 13px;
-  margin-left: -7px;
+  width: 24px;
+  margin-left: -12px;
 }
 
 .gantt_grid_column_resize_wrap .gantt_grid_column_resize {
@@ -320,7 +329,7 @@
 .gantt_tree_icon.gantt_open,
 .gantt_tree_icon.gantt_close {
   .dhx_gantt_icon();
-  width: 20px;
+  width: 24px;
   cursor: pointer;
 }
 
@@ -380,7 +389,7 @@
 }
 
 .gantt_error {
-  color: var(--dhx-gantt-base-colors-error);
+  color: var(--dhx-gantt-error-text-color);
 }
 
 .gantt_status {

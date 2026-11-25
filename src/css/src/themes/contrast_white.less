@@ -22,7 +22,7 @@
 
 	--dhx-gantt-base-colors-error: #d01e11;
 
-	--dhx-gantt-base-colors-error-text: #141414;
+	--dhx-gantt-base-colors-error-text: #FFFFFF;
 
 	--dhx-gantt-btn-color: #FFFFFF;
 	--dhx-gantt-btn-color-hover: #FFFFFF;
@@ -32,6 +32,8 @@
 	--dhx-gantt-base-colors-hover-color: #E7E5E5;
 
 	--dhx-gantt-base-colors-icons: #303030;
+	/* contrast themes deliberately keep every neutral at the icon value */
+	--dhx-gantt-base-colors-neutral: var(--dhx-gantt-base-colors-icons);
 
 	--dhx-gantt-scale-color: var(--dhx-gantt-base-colors-text-light);
 
@@ -47,4 +49,14 @@
 
 	--dhx-gantt-btn-outline-color-hover:#212121;
 	--dhx-gantt-btn-outline-color-active:#FFFFFF;
+
+	/* toolbar segmented control: a plain track with a full-strength border and labels.
+	   On the default background-alt track the labels fall below 4.5:1 in contrast-white. */
+	--dhx-gantt-toolbar-segmented-background: var(--dhx-gantt-base-colors-background);
+	--dhx-gantt-toolbar-segmented-border: var(--dhx-gantt-base-colors-border);
+	--dhx-gantt-toolbar-segmented-color: var(--dhx-gantt-base-colors-text-base);
+
+	/* resource-assignment table header: same reason as the segmented track above */
+	--dhx-gantt-resource-head-background: var(--dhx-gantt-base-colors-background);
+	--dhx-gantt-resource-head-color: var(--dhx-gantt-base-colors-text-base);
 }
